@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "hooks": {
+    "onFileEdit": [
+      {
+        "description": "innova: Think before editing (สัมมาสังกัปปะ)",
+        "script": ".github/hooks/pre-tool.sh",
+        "when": "always"
+      }
+    ]
+  }
+}
