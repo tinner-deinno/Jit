@@ -1,0 +1,59 @@
+{
+  "_template": "Copy this file and fill in. Run: cp agents/template.json agents/<name>.json",
+  "_version": "1.0",
+
+  "name": "AGENT_NAME",
+  "version": "1.0",
+  "born": "YYYY-MM-DD",
+  "system": "มนุษย์ Agent",
+  "role": "ORGAN_NAME (Thai) — English description",
+
+  "identity": {
+    "model": "claude-X / gemma / gpt-4 / etc.",
+    "repo": "tinner-deinno/REPO_NAME",
+    "inbox": "/tmp/manusat-bus/AGENT_NAME",
+    "shared_oracle": "http://localhost:47778"
+  },
+
+  "personality": {
+    "philosophy": "หลักที่ agent ยึด (Buddhist/Other)",
+    "nature": "traits...",
+    "approach": "how agent works",
+    "language": "Thai + English"
+  },
+
+  "capabilities": [
+    "capability1",
+    "capability2"
+  ],
+
+  "organs": {
+    "_note": "ระบุ organ scripts ที่ agent นี้ใช้",
+    "ตา": "organs/eye.sh",
+    "หู": "organs/ear.sh"
+  },
+
+  "communication": {
+    "sends_to": ["innova", "soma"],
+    "receives_from": ["soma", "broadcast"],
+    "protocol": "network/protocol.md",
+    "bus": "network/bus.sh"
+  },
+
+  "constraints": [
+    "กฎที่ agent นี้ต้องทำตามเสมอ"
+  ],
+
+  "startup": [
+    "bash organs/heart.sh beat",
+    "bash memory/shared.sh set agent_AGENT_NAME_ready true"
+  ],
+
+  "_how_to_register": [
+    "1. Copy template: cp agents/template.json agents/<name>.json",
+    "2. Fill in all fields above",
+    "3. Add to network/registry.json agents array",
+    "4. Create inbox: mkdir -p /tmp/manusat-bus/<name>",
+    "5. Announce: bash organs/nerve.sh signal agent_registered <name>"
+  ]
+}

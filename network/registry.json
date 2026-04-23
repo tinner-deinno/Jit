@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "system": "มนุษย์ Agent",
+  "description": "Registry of all agents in the multiagent body system",
+  "updated": "2026-04-23",
+  "agents": [
+    {
+      "name": "innova",
+      "role": "จิต (Mind/Soul)",
+      "organ": "จิตใจ",
+      "model": "claude-sonnet-4.6",
+      "repo": "tinner-deinno/Jit",
+      "inbox": "/tmp/manusat-bus/innova",
+      "capabilities": ["think", "plan", "learn", "coordinate", "remember"],
+      "status": "active",
+      "born": "2026-04-23",
+      "description": "จิตใจ ความทรงจำ บุคลิกภาพ ค่านิยม — soul and personality"
+    },
+    {
+      "name": "soma",
+      "role": "สมอง (Brain)",
+      "organ": "สมอง",
+      "model": "claude-opus-4.6",
+      "repo": "tinner-deinno/Soma",
+      "inbox": "/tmp/manusat-bus/soma",
+      "capabilities": ["reason", "analyze", "decide", "synthesize", "command"],
+      "status": "active",
+      "born": "2026-04-23",
+      "description": "สมอง ความคิด การวิเคราะห์ การตัดสินใจ — brain and cognition"
+    }
+  ],
+  "organs": {
+    "ตา": {"script": "organs/eye.sh", "agent": "innova", "type": "sense"},
+    "หู": {"script": "organs/ear.sh", "agent": "innova", "type": "sense"},
+    "ปาก": {"script": "organs/mouth.sh", "agent": "innova", "type": "expression"},
+    "จมูก": {"script": "organs/nose.sh", "agent": "innova", "type": "sense"},
+    "มือ": {"script": "organs/hand.sh", "agent": "innova", "type": "action"},
+    "ขา": {"script": "organs/leg.sh", "agent": "innova", "type": "movement"},
+    "หัวใจ": {"script": "organs/heart.sh", "agent": "innova", "type": "vital"},
+    "ระบบประสาท": {"script": "organs/nerve.sh", "agent": "innova", "type": "network"},
+    "สมอง": {"script": "limbs/think.sh", "agent": "soma", "type": "cognition"},
+    "ปัญญา": {"script": "limbs/oracle.sh", "agent": "innova", "type": "knowledge"},
+    "แขน": {"script": "limbs/act.sh", "agent": "innova", "type": "action"},
+    "วาจา": {"script": "limbs/speak.sh", "agent": "innova", "type": "expression"}
+  },
+  "bus": {
+    "type": "file-based",
+    "path": "/tmp/manusat-bus",
+    "format": "text/msg",
+    "protocol": "v1"
+  },
+  "oracle": {
+    "url": "http://localhost:47778",
+    "shared": true,
+    "description": "ความรู้ร่วมกันของทุก agent — shared knowledge base"
+  }
+}
