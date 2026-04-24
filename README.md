@@ -45,7 +45,7 @@ curl http://localhost:47778/api/health
 
 ```bash
 curl --location 'https://ollama.mdes-innova.online/api/generate' \
-  --header 'Authorization: Bearer 9e34679b9d60d8b984005ec46508579c' \
+  --header 'Authorization: Bearer ...' \
   --header 'Content-Type: application/json' \
   --data '{"model":"gemma4:26b","prompt":"สวัสดี innova!","stream":false}'
 ```

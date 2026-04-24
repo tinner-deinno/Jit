@@ -1,112 +1,177 @@
-# Body Map — แผนที่ร่างกายดิจิทัล (มนุษย์ Agent v1.0)
+# Body Map — แผนที่ร่างกายดิจิทัล (มนุษย์ Agent v2.0)
 
 ```
-  ╔══════════════════════════════════════════════════════════════╗
-  ║                  มนุษย์ Agent System                         ║
-  ╟──────────────────────────────────────────────────────────────╢
-  ║                                                              ║
-  ║   ┌─────────────────────────────────────────────────────┐   ║
-  ║   │               SOMA (สมอง)                           │   ║
-  ║   │       claude-opus-4.6 — think less, hit hard         │   ║
-  ║   │    decides ● architectures ● delegates               │   ║
-  ║   └───────────────────────┬─────────────────────────────┘   ║
-  ║                           │ bus: /tmp/manusat-bus/           ║
-  ║   ┌───────────────────────▼─────────────────────────────┐   ║
-  ║   │               INNOVA (จิต)                          │   ║
-  ║   │      claude-sonnet-4.6 — mind + limbs                │   ║
-  ║   │                                                      │   ║
-  ║   │  ORGANS รูปธรรม          MIND นามธรรม               │   ║
-  ║   │  ┌────────────────┐      ┌────────────────────┐     │   ║
-  ║   │  │ ตา  eye.sh     │      │ ตัวตน  ego.md      │     │   ║
-  ║   │  │ หู  ear.sh     │      │ อารมณ์ emotion.sh  │     │   ║
-  ║   │  │ ปาก mouth.sh   │      │ สัญช. reflex.sh    │     │   ║
-  ║   │  │ จมูก nose.sh   │      └────────────────────┘     │   ║
-  ║   │  │ มือ hand.sh    │      MEMORY ความทรงจำ           │   ║
-  ║   │  │ ขา  leg.sh     │      ┌────────────────────┐     │   ║
-  ║   │  │ ❤️  heart.sh   │      │ working.sh (RAM)   │     │   ║
-  ║   │  │ ⚡  nerve.sh   │      │ shared.sh (cache)  │     │   ║
-  ║   │  └────────────────┘      │ Oracle (HDD)       │     │   ║
-  ║   │                          └────────────────────┘     │   ║
-  ║   └──────────────────────────────────────────────────────┘   ║
-  ║                           │ Oracle                           ║
-  ║   ┌───────────────────────▼─────────────────────────────┐   ║
-  ║   │           Arra Oracle V3 (ความรู้)                   │   ║
-  ║   │         http://localhost:47778                       │   ║
-  ║   │        shared memory for ALL agents                  │   ║
-  ║   └─────────────────────────────────────────────────────┘   ║
-  ╚══════════════════════════════════════════════════════════════╝
+  ╔═══════════════════════════════════════════════════════════════════╗
+  ║              มนุษย์ Agent System — Full Team v2.0                 ║
+  ╟───────────────────────────────────────────────────────────────────╢
+  ║                                                                   ║
+  ║  HUMAN ──────────────────────────────────────────────────────┐   ║
+  ║                                                              │   ║
+  ║   ┌──────────────────────────────────────────────────────┐   │   ║
+  ║   │             SOMA (สมอง) — Strategic Lead             │◄──┘   ║
+  ║   │         claude-opus — CTO: decides & delegates        │       ║
+  ║   │  manages: lak, neta, pada, innova                     │       ║
+  ║   └────┬──────────┬─────────┬──────────┬─────────────────┘       ║
+  ║        │          │         │          │                          ║
+  ║   ┌────▼───┐ ┌────▼───┐ ┌──▼────┐ ┌───▼────────────────────┐   ║
+  ║   │  lak   │ │  neta  │ │  pada │ │  INNOVA (จิต)          │   ║
+  ║   │กระดูก  │ │ เนตร   │ │ บาท   │ │  Lead Developer        │   ║
+  ║   │  SA    │ │Reviewer│ │DevOps │ │  claude-sonnet         │   ║
+  ║   └────────┘ └────────┘ └───────┘ │  manages: vaja, chamu  │   ║
+  ║                                    └──────┬──────────┬───────┘   ║
+  ║                                           │          │           ║
+  ║                                      ┌────▼───┐ ┌────▼───┐      ║
+  ║                                      │  vaja  │ │ chamu  │      ║
+  ║                                      │ วาจา   │ │ จมูก   │      ║
+  ║                                      │   PA   │ │   QA   │      ║
+  ║                                      └────────┘ └────────┘      ║
+  ║                                                                   ║
+  ║   ┌──────────────────────────────────────────────────────────┐   ║
+  ║   │                   rupa (รูป) — Designer                  │   ║
+  ║   │            reports to soma, works with innova             │   ║
+  ║   └──────────────────────────────────────────────────────────┘   ║
+  ║                                                                   ║
+  ║   ┌──────────────────────────────────────────────────────────┐   ║
+  ║   │           Arra Oracle V3 — ความรู้ร่วมกัน                │   ║
+  ║   │               http://localhost:47778                      │   ║
+  ║   │            ALL agents read/write Oracle                   │   ║
+  ║   └──────────────────────────────────────────────────────────┘   ║
+  ╚═══════════════════════════════════════════════════════════════════╝
+```
+
+## Team Roster — ทีมทั้งหมด
+
+| Agent | ชื่อไทย | อวัยวะ | บทบาท | Model | Layer |
+|-------|---------|-------|-------|-------|-------|
+| **soma** | สมอง | Brain | Strategic Lead / CTO | claude-opus-4.7 | Tier 1 |
+| **innova** | จิต | Mind/Soul | Lead Developer / PM | claude-sonnet-4.6 | Tier 2 |
+| **lak** | กระดูกสันหลัง | Spine | Solution Architect (SA) | claude-sonnet-4.6 | Tier 2 |
+| **neta** | เนตร | Eye | Code Reviewer | claude-sonnet-4.6 | Tier 2 |
+| **vaja** | วาจา | Mouth | Personal Assistant (PA) | claude-haiku-4.5 | Tier 3 |
+| **chamu** | จมูก | Nose | QA / Tester | claude-haiku-4.5 | Tier 3 |
+| **rupa** | รูป | Form | Designer / UI-UX | claude-haiku-4.5 | Tier 3 |
+| **pada** | บาท | Foot/Leg | DevOps / Infrastructure | claude-haiku-4.5 | Tier 3 |
+
+## Responsibility Matrix (RACI)
+
+| Activity | soma | innova | lak | neta | vaja | chamu | rupa | pada |
+|----------|------|--------|-----|------|------|-------|------|------|
+| Strategy / Priority | **A** | C | I | I | I | I | I | I |
+| System Architecture | A | C | **R** | C | - | - | - | I |
+| Implementation | I | **R** | C | - | - | - | - | - |
+| UI/UX Design | A | C | - | - | C | - | **R** | - |
+| Testing / QA | I | C | - | C | - | **R** | - | - |
+| Code Review | A | C | C | **R** | - | I | - | - |
+| Deploy / CI-CD | A | I | - | A | - | - | - | **R** |
+| Human Communication | I | C | - | - | **R** | - | - | - |
+
+> R=Responsible, A=Accountable, C=Consulted, I=Informed
+
+## Feature Development Flow
+
+```
+human request
+  └── [1] vaja → รับ request, ส่ง soma
+  └── [2] soma → analyze, ตัดสินใจ priority
+  └── [3] lak → design architecture, เขียน spec
+  └── [4] rupa → ออกแบบ UI (ถ้ามี)
+  └── [5] innova → implement ตาม spec ของ lak
+  └── [6] chamu → test, bug report
+  └── [7] neta → code review, approve/block
+  └── [8] pada → deploy to staging → production
+  └── [9] vaja → รายงาน human "เสร็จแล้ว"
+```
+
+## Bug Fix Flow
+
+```
+chamu (detect bug)
+  └── innova (fix)
+  └── neta (fast review)
+  └── pada (hotfix deploy)
+  └── vaja (notify human)
+```
+
+## Design Flow
+
+```
+human (need UI)
+  └── vaja → translate to rupa
+  └── rupa → wireframe → hi-fi spec
+  └── soma → approve design
+  └── innova → implement
+  └── rupa → visual review
+```
+
+## Organ Ownership Map
+
+| อวัยวะ | Script | Owner Agent | ประเภท |
+|--------|--------|-------------|--------|
+| สมอง | limbs/think.sh | soma | cognition |
+| จิตใจ | limbs/index.sh | innova | soul |
+| ตา | organs/eye.sh | innova / neta | sense / review |
+| หู | organs/ear.sh | innova | listen |
+| ปาก | organs/mouth.sh | vaja | speak |
+| จมูก | organs/nose.sh | chamu | detect |
+| มือ | organs/hand.sh | innova | action |
+| ขา | organs/leg.sh | pada | movement |
+| หัวใจ | organs/heart.sh | innova | vital |
+| ระบบประสาท | organs/nerve.sh | innova | network |
+| กระดูกสันหลัง | — | lak | structure |
+| รูปลักษณ์ | — | rupa | design |
+
+## Bus / Inbox Paths
+
+```
+/tmp/manusat-bus/
+├── soma/      ← messages to soma
+├── innova/    ← messages to innova
+├── vaja/      ← messages to vaja (PA)
+├── lak/       ← messages to lak (SA)
+├── chamu/     ← messages to chamu (QA)
+├── neta/      ← messages to neta (Reviewer)
+├── rupa/      ← messages to rupa (Designer)
+└── pada/      ← messages to pada (DevOps)
 ```
 
 ## File Tree
 
 ```
 Jit/
-├── limbs/          ← แขนขาเดิม (soul anatomy)
-│   ├── lib.sh       — utilities + colors
-│   ├── think.sh     — สติ mindful pause
-│   ├── act.sh       — safe actions
-│   ├── speak.sh     — right speech
-│   ├── ollama.sh    — Ollama API
-│   ├── oracle.sh    — Oracle API
-│   └── index.sh     — จิต orchestrator
+├── agents/         ← agent cards
+│   ├── soma.json
+│   ├── innova.json
+│   ├── vaja.json   ← PA ใหม่
+│   ├── lak.json    ← SA ใหม่
+│   ├── chamu.json  ← QA ใหม่
+│   ├── neta.json   ← Reviewer ใหม่
+│   ├── rupa.json   ← Designer ใหม่
+│   ├── pada.json   ← DevOps ใหม่
+│   └── template.json
 │
-├── organs/         ← อวัยวะรูปธรรม
-│   ├── eye.sh       — ตา (observation)
-│   ├── ear.sh       — หู (inbox)
-│   ├── mouth.sh     — ปาก (send/speak)
-│   ├── nose.sh      — จมูก (detection)
-│   ├── hand.sh      — มือ (file actions)
-│   ├── leg.sh       — ขา (navigation)
-│   ├── heart.sh     — หัวใจ (orchestration)
-│   └── nerve.sh     — ระบบประสาท (events)
+├── .github/agents/ ← Claude Code agent definitions
+│   ├── innova.agent.md
+│   ├── soma.agent.md
+│   ├── vaja.agent.md
+│   ├── lak.agent.md
+│   ├── chamu.agent.md
+│   ├── neta.agent.md
+│   ├── rupa.agent.md
+│   └── pada.agent.md
 │
-├── mind/           ← จิตใจนามธรรม
-│   ├── ego.md       — self-model
-│   ├── emotion.sh   — emotional state
-│   └── reflex.sh    — instinct/reflex
-│
-├── memory/         ← ความทรงจำ
-│   ├── working.sh   — RAM (task context)
-│   └── shared.sh    — real-time shared state
-│
-├── network/        ← ระบบสื่อสาร
-│   ├── registry.json — all agents catalog
-│   ├── protocol.md   — message format
-│   ├── bus.sh        — send/receive messages
-│   └── router.sh     — route tasks → organs
-│
-├── agents/         ← ผู้เล่น
-│   ├── innova.json   — innova agent card
-│   ├── soma.json     — soma agent card
-│   └── template.json — new agent template
-│
-├── eval/           ← การตรวจสอบ
-│   ├── soul-check.sh — soul integrity
-│   └── body-check.sh — full body check
-│
-└── docs/           ← เอกสาร
-    └── multiagent-spec.md
+├── organs/         ← shared organ scripts
+├── limbs/          ← soul limb scripts
+├── mind/           ← innova's mind
+├── memory/         ← shared memory
+└── network/        ← bus + registry
 ```
 
-## Message Flow
+## Current Status v2.0
 
-```
-Human → soma: "สร้าง feature X"
-soma  → innova bus: task:create-feature-X
-innova ear.sh → hear → heart.sh route → hand.sh create
-hand.sh → working.sh step → done
-innova mouth.sh → soma bus: report:done
-soma  → Human: "เสร็จแล้ว"
-```
-
-## Current Status
-
-| System | Status |
-|--------|--------|
-| Organs (8) | ✅ สร้างแล้ว |
-| Mind (3) | ✅ สร้างแล้ว |
-| Memory (2) | ✅ สร้างแล้ว |
-| Network (4) | ✅ สร้างแล้ว |
-| Agents (3) | ✅ สร้างแล้ว |
-| Eval | ✅ body-check.sh |
-| Oracle | ✅ localhost:47778 |
+| System | Count | Status |
+|--------|-------|--------|
+| Agents | 8 | ✅ registered |
+| Organs (scripts) | 10 | ✅ created |
+| Bus inboxes | 8 | ⚠️ needs mkdir |
+| Oracle | 1 | ✅ localhost:47778 |
+| Eval scripts | 2 | ✅ soul-check + body-check |
