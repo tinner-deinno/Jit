@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎤 innova Voice Bridge</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-dim: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --red: #f85149;
+      --yellow: #d29922;
+      --purple: #bc8cff;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+                   "Noto Sans Thai", "Sarabun", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      gap: 1.5rem;
+    }
+
+    .header { text-align: center; }
+    .header h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; }
+    .header p { color: var(--text-dim); font-size: 0.9rem; margin-top: 0.3rem; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .lang-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .lang-btn {
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.15s;
+    }
+    .lang-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .mic-wrap {
+      display: flex;
+      justify-content: center;
+      margin: 1rem 0;
+    }
+    #micBtn {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      position: relative;
+    }
+    #micBtn:hover { border-color: var(--accent); transform: scale(1.05); }
+    #micBtn.recording {
+      border-color: var(--red);
+      background: rgba(248, 81, 73, 0.1);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    #micBtn.recording::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 2px solid var(--red);
+      animation: ripple 1.2s ease-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.4); }
+      50%       { box-shadow: 0 0 0 16px rgba(248, 81, 73, 0); }
+    }
+    @keyframes ripple {
+      0%   { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    .mic-label {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-top: 0.5rem;
+    }
+    .mic-label.recording { color: var(--red); }
+
+    .transcript-section { margin-top: 1rem; }
+    .transcript-section label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    .transcript-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      min-height: 3.5rem;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+    #interimBox { color: var(--text-dim); font-style: italic; }
+    #finalBox   { color: var(--text); }
+
+    #statusBox {
+      margin-top: 1rem;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      border: 1px solid var(--border);
+      min-height: 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .status-ok     { border-color: var(--green); background: rgba(63, 185, 80, 0.08); color: var(--green); }
+    .status-error  { border-color: var(--red);   background: rgba(248, 81, 73, 0.08); color: var(--red); }
+    .status-info   { border-color: var(--border); color: var(--text-dim); }
+    .status-warn   { border-color: var(--yellow); background: rgba(210, 153, 34, 0.08); color: var(--yellow); }
+
+    .pane-info {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .pane-info code {
+      background: var(--bg);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-family: "Fira Code", "Consolas", monospace;
+      color: var(--purple);
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .clear-btn {
+      padding: 0.35rem 1rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .clear-btn:hover { border-color: var(--text-dim); color: var(--text); }
+
+    #errorBanner {
+      display: none;
+      width: 100%;
+      max-width: 520px;
+      padding: 1rem;
+      border-radius: 8px;
+      background: rgba(248, 81, 73, 0.1);
+      border: 1px solid var(--red);
+      color: var(--red);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🎤 innova Voice Bridge</h1>
+    <p>พูดแล้ว text จะถูกส่งไปที่ Claude TUI (ไม่กด Enter)</p>
+  </div>
+
+  <div id="errorBanner"></div>
+
+  <div class="card">
+    <div class="lang-row">
+      <button class="lang-btn active" data-lang="th-TH">🇹🇭 ไทย</button>
+      <button class="lang-btn" data-lang="en-US">🇺🇸 English</button>
+    </div>
+
+    <div class="mic-wrap">
+      <button id="micBtn" title="กด เพื่อเริ่ม/หยุด">🎤</button>
+    </div>
+    <div class="mic-label" id="micLabel">กดปุ่มเพื่อเริ่มพูด</div>
+
+    <div class="transcript-section">
+      <label>กำลังฟัง (real-time):</label>
+      <div class="transcript-box" id="interimBox">—</div>
+    </div>
+
+    <div class="transcript-section">
+      <label>ส่งแล้ว (สุดท้าย):</label>
+      <div class="transcript-box" id="finalBox">—</div>
+    </div>
+
+    <div id="statusBox" class="status-info">ℹ️ รอการพูด...</div>
+
+    <div class="actions">
+      <button class="clear-btn" id="clearBtn">🗑 ล้างข้อความ</button>
+    </div>
+
+    <div class="pane-info" id="paneInfo">กำลังโหลด pane target...</div>
+  </div>
+
+  <script>
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      document.getElementById('errorBanner').style.display = 'block'
+      document.getElementById('errorBanner').textContent =
+        '❌ บราวเซอร์นี้ไม่รองรับ Web Speech API — กรุณาใช้ Chrome หรือ Edge'
+      document.getElementById('micBtn').disabled = true
+    }
+
+    const recognition = SpeechRecognition ? new SpeechRecognition() : null
+    let isRecording = false
+    let currentLang = 'th-TH'
+
+    if (recognition) {
+      recognition.continuous = true
+      recognition.interimResults = true
+      recognition.lang = currentLang
+      recognition.maxAlternatives = 1
+    }
+
+    const micBtn    = document.getElementById('micBtn')
+    const micLabel  = document.getElementById('micLabel')
+    const interim   = document.getElementById('interimBox')
+    const finalBox  = document.getElementById('finalBox')
+    const statusBox = document.getElementById('statusBox')
+    const paneInfo  = document.getElementById('paneInfo')
+    const clearBtn  = document.getElementById('clearBtn')
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'))
+        btn.classList.add('active')
+        currentLang = btn.dataset.lang
+        if (recognition) {
+          recognition.lang = currentLang
+          if (isRecording) {
+            recognition.stop()
+          }
+        }
+      })
+    })
+
+    micBtn.addEventListener('click', () => {
+      if (!recognition) return
+      if (isRecording) {
+        stopRecording()
+      } else {
+        startRecording()
+      }
+    })
+
+    function startRecording() {
+      recognition.lang = currentLang
+      recognition.start()
+      isRecording = true
+      micBtn.classList.add('recording')
+      micBtn.textContent = '⏸'
+      micLabel.textContent = 'กำลังฟัง... (กดอีกครั้งเพื่อหยุด)'
+      micLabel.classList.add('recording')
+      setStatus('info', '🎤 กำลังฟัง...')
+    }
+
+    function stopRecording() {
+      recognition.stop()
+      isRecording = false
+      micBtn.classList.remove('recording')
+      micBtn.textContent = '🎤'
+      micLabel.textContent = 'กดปุ่มเพื่อเริ่มพูด'
+      micLabel.classList.remove('recording')
+      setStatus('info', 'ℹ️ หยุดฟังแล้ว')
+      interim.textContent = '—'
+    }
+
+    if (recognition) {
+      recognition.onresult = (event) => {
+        let interimText = ''
+        let finalText = ''
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript
+          if (event.results[i].isFinal) {
+            finalText += transcript
+          } else {
+            interimText += transcript
+          }
+        }
+
+        if (interimText) {
+          interim.textContent = interimText
+        }
+
+        if (finalText.trim()) {
+          interim.textContent = '—'
+          finalBox.textContent = finalText.trim()
+          postSpeak(finalText.trim())
+        }
+      }
+
+      recognition.onend = () => {
+        if (isRecording) {
+          setTimeout(() => {
+            if (isRecording) {
+              try { recognition.start() } catch(e) { }
+            }
+          }, 200)
+        }
+      }
+
+      recognition.onerror = (event) => {
+        const ignorable = ['no-speech', 'audio-capture']
+        if (ignorable.includes(event.error)) {
+          console.log('[voice] speech error (ignorable):', event.error)
+          return
+        }
+        setStatus('error', `❌ Speech error: ${event.error}`)
+        if (event.error === 'not-allowed') {
+          setStatus('error', '❌ ไม่ได้รับอนุญาตใช้ไมค์ — กรุณาอนุญาตในเบราวเซอร์')
+          isRecording = false
+          micBtn.classList.remove('recording')
+          micBtn.textContent = '🎤'
+          micLabel.classList.remove('recording')
+          micLabel.textContent = 'กดปุ่มเพื่อเริ่มพูด'
+        }
+      }
+
+      recognition.onspeechstart = () => {
+        setStatus('info', '🔊 ตรวจพบเสียง...')
+      }
+    }
+
+    async function postSpeak(text) {
+      setStatus('info', `📤 กำลังส่ง: "${text.substring(0, 40)}${text.length > 40 ? '...' : ''}"`)
+      try {
+        const resp = await fetch('/speak', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        })
+        const data = await resp.json()
+        if (data.ok) {
+          setStatus('ok', `✅ ส่งแล้ว → Claude (${data.length} ตัวอักษร) · pane: ${data.pane}`)
+        } else {
+          setStatus('error', `❌ ส่งไม่ได้: ${data.error}`)
+        }
+      } catch (err) {
+        setStatus('error', `❌ Network error: ${err.message}`)
+      }
+    }
+
+    function setStatus(type, msg) {
+      statusBox.className = `status-${type}`
+      statusBox.textContent = msg
+    }
+
+    clearBtn.addEventListener('click', () => {
+      interim.textContent = '—'
+      finalBox.textContent = '—'
+      setStatus('info', 'ℹ️ ล้างแล้ว')
+    })
+
+    async function loadStatus() {
+      try {
+        const resp = await fetch('/status')
+        const data = await resp.json()
+        if (data.pane) {
+          paneInfo.innerHTML = `Claude pane: <code>${data.pane}</code>`
+        } else {
+          paneInfo.innerHTML = `⚠️ Claude pane ยังไม่ถูก set — รัน <code>innova-startup.sh</code> ก่อน`
+        }
+      } catch {
+        paneInfo.textContent = '⚠️ ไม่สามารถติดต่อ voice server'
+      }
+    }
+
+    loadStatus()
+    setInterval(loadStatus, 30000)
+  </script>
+</body>
+</html>
