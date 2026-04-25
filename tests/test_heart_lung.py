@@ -13,14 +13,11 @@ class HeartLungIntegrationTest(unittest.TestCase):
         os.makedirs(os.path.join(self.root, 'network'), exist_ok=True)
         os.makedirs(os.path.join(self.root, 'limbs'), exist_ok=True)
 
-        shutil.copy(
-            os.path.join(os.getcwd(), 'organs', 'heart.sh'),
-            os.path.join(self.root, 'organs', 'heart.sh'),
-        )
-        shutil.copy(
-            os.path.join(os.getcwd(), 'organs', 'lung.sh'),
-            os.path.join(self.root, 'organs', 'lung.sh'),
-        )
+        for script in ['heart.sh', 'lung.sh', 'eye.sh', 'ear.sh', 'nose.sh', 'mouth.sh', 'hand.sh', 'leg.sh', 'nerve.sh']:
+            shutil.copy(
+                os.path.join(os.getcwd(), 'organs', script),
+                os.path.join(self.root, 'organs', script),
+            )
         with open(os.path.join(self.root, 'network', 'bus.sh'), 'w') as f:
             f.write('#!/usr/bin/env bash\ncase "$1" in broadcast) exit 0 ;; send) exit 0 ;; *) exit 0 ;; esac\n')
         with open(os.path.join(self.root, 'limbs', 'lib.sh'), 'w') as f:
@@ -57,6 +54,8 @@ class HeartLungIntegrationTest(unittest.TestCase):
         )
         self.assertIn('->💓', result.stdout)
         self.assertIn('❤️‍🔥->', result.stdout)
+        self.assertIn('Eye receives clean energy', result.stdout)
+        self.assertIn('Nerve receives clean energy', result.stdout)
 
     def test_lung_filter_output(self):
         result = subprocess.run(

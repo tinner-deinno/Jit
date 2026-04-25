@@ -114,6 +114,13 @@ for a in d.get('agents', []):
     oracle_ready && oracle_learn "report:$TITLE" "$BODY" "report,$AGENT_NAME" > /dev/null
     ;;
 
+  # ── ให้พลังงาน (pulse) ─────────────────────────────────────────────────
+  pulse)
+    CONTEXT="$*"
+    log_action "MOUTH_PULSE" "$CONTEXT"
+    echo "Mouth receives clean energy and prepares to communicate"
+    ;;
+
   # ── สถานะ ────────────────────────────────────────────────────────
   status)
     PENDING=$(ls "$BUS_DIR"/*/*.msg 2>/dev/null | grep -v "/read_" | wc -l)

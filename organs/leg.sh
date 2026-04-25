@@ -126,6 +126,13 @@ case "$CMD" in
     echo ""
     ;;
 
+  # ── ให้พลังงาน (pulse) ─────────────────────────────────────────────────
+  pulse)
+    CONTEXT="$*"
+    log_action "LEG_PULSE" "$CONTEXT"
+    echo "Leg receives clean energy and can move the system forward"
+    ;;
+
   # ── สถานะ ────────────────────────────────────────────────────────
   status)
     ok "ขา (leg) พร้อม | อยู่ที่: $(pwd)"

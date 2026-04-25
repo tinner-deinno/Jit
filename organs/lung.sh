@@ -37,6 +37,13 @@ case "${1:-help}" in
     shift || true
     clean_blood "$*"
     ;;
+
+  pulse)
+    CONTEXT="$*"
+    log_action "LUNG_PULSE" "$CONTEXT"
+    echo "Lung receives clean energy and keeps the blood pure"
+    ;;
+
   status)
     echo "=== Lung Status ==="
     echo "log: $LUNG_LOG"

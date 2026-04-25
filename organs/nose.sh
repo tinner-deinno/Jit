@@ -125,6 +125,13 @@ case "$CMD" in
     log_action "NOSE_CHANGES" "git log+diff"
     ;;
 
+  # ── ให้พลังงาน (pulse) ─────────────────────────────────────────────────
+  pulse)
+    CONTEXT="$*"
+    log_action "NOSE_PULSE" "$CONTEXT"
+    echo "Nose receives clean energy and confirms system quality"
+    ;;
+
   # ── สถานะ ────────────────────────────────────────────────────────
   status)
     ok "จมูก (nose) พร้อม"

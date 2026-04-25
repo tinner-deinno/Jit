@@ -91,6 +91,13 @@ print('...(ตัดที่ 2000 chars)')
     [ -x "$NERVE" ] && bash "$NERVE" signal "eye_observed" "$TOPIC" "eye"
     ;;
 
+  # ── ให้พลังงาน (pulse) ─────────────────────────────────────────────────
+  pulse)
+    CONTEXT="$*"
+    log_action "EYE_PULSE" "$CONTEXT"
+    echo "Eye receives clean energy and focuses on observation"
+    ;;
+
   # ── สถานะ ─────────────────────────────────────────────────────────
   status)
     ok "ตา (eye) พร้อม"

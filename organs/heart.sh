@@ -86,6 +86,27 @@ broadcast_clean_blood() {
   bash "$SCRIPT_DIR/../network/bus.sh" broadcast "heartbeat:OUT" "$energy_payload" >/dev/null 2>&1 || true
 }
 
+pulse_organ() {
+  local organ="$1" energy_payload="$2"
+  local organ_script="$SCRIPT_DIR/$organ.sh"
+  if [ -x "$organ_script" ]; then
+    local result
+    result=$(bash "$organ_script" pulse "$energy_payload" 2>/dev/null)
+    echo "  🫀 $organ: ${result:-ready}"
+  else
+    echo "  ⚠️  $organ ไม่พร้อม"
+  fi
+}
+
+pulse_organs() {
+  local energy_payload="$1"
+  local organs=(lung eye ear nose mouth hand leg nerve)
+  echo "  🫀 Heart pumping clean energy through organs..."
+  for organ in "${organs[@]}"; do
+    pulse_organ "$organ" "$energy_payload"
+  done
+}
+
 case "$CMD" in
 
   # ── ส่ง heartbeat ────────────────────────────────────────────────
@@ -105,7 +126,7 @@ case "$CMD" in
     fi
 
     if [ "$phase" = "out" ] || [ "$phase" = "cycle" ]; then
-      local energy_payload="{ \"timestamp\": \"$ts\", \"energy\": \"clean\", \"note\": \"blood out to all agents\" }"
+      energy_payload="{ \"timestamp\": \"$ts\", \"energy\": \"clean\", \"note\": \"blood out to all agents\" }"
       broadcast_clean_blood "$energy_payload"
       echo "{\"heartbeat\":\"$ts\",\"from\":\"heart\",\"phase\":\"OUT\",\"status\":\"alive\"}" \
         > /tmp/manusat-bus/heartbeat-out.json 2>/dev/null || true
@@ -113,6 +134,7 @@ case "$CMD" in
       NERVE="$SCRIPT_DIR/nerve.sh"
       [ -x "$NERVE" ] && bash "$NERVE" signal "heartbeat:OUT" "$ts" "heart"
       echo -ne "❤️‍🔥-> "
+      pulse_organs "$energy_payload"
     fi
     ;;
 

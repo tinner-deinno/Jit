@@ -125,6 +125,13 @@ case "$CMD" in
     fi
     ;;
 
+  # ── ให้พลังงาน (pulse) ─────────────────────────────────────────────────
+  pulse)
+    CONTEXT="$*"
+    log_action "HAND_PULSE" "$CONTEXT"
+    echo "Hand receives clean energy and is ready to execute actions"
+    ;;
+
   # ── สถานะ ────────────────────────────────────────────────────────
   status)
     ok "มือ (hand) พร้อม"

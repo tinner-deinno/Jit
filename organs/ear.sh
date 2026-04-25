@@ -113,6 +113,13 @@ case "$CMD" in
     log_action "EAR_CLEAR" "$MY_INBOX"
     ;;
 
+  # ── ให้พลังงาน (pulse) ─────────────────────────────────────────────────
+  pulse)
+    CONTEXT="$*"
+    log_action "EAR_PULSE" "$CONTEXT"
+    echo "Ear receives clean energy and listens for new signals"
+    ;;
+
   # ── สถานะ ────────────────────────────────────────────────────────
   status)
     MSGS=$(ls "$MY_INBOX"/*.msg 2>/dev/null | wc -l)

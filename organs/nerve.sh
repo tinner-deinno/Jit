@@ -124,6 +124,13 @@ print('channel created:', '$CHANNEL_FILE')
     log_action "NERVE_CONNECT" "$AGENT_A↔$AGENT_B"
     ;;
 
+  # ── ให้พลังงาน (pulse) ─────────────────────────────────────────────────
+  pulse)
+    CONTEXT="$*"
+    log_action "NERVE_PULSE" "$CONTEXT"
+    echo "Nerve receives clean energy and propagates the signal across the system"
+    ;;
+
   # ── สถานะ ────────────────────────────────────────────────────────
   status)
     EVENTS=$(cat "$EVENT_LOG" 2>/dev/null | wc -l)
