@@ -97,6 +97,8 @@ create_session() {
   tmux new-window -t "$SESSION" -n "innova" \
     "cd '$JIT_ROOT' && bash minds/innova-life.sh listen; bash -i"
 
+  sleep 1
+
   echo -e "  ${CYAN}→ Window 2 'voice': running Bun voice server (port 3333)${RESET}"
   tmux new-window -t "$SESSION" -n "voice" \
     "export PATH='$HOME/.bun/bin:\$PATH' && cd '$JIT_ROOT' && bun run voice/server.ts; bash -i"
