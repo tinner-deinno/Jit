@@ -6,6 +6,14 @@
 PASS=0
 FAIL=0
 ORACLE_URL="${ORACLE_URL:-http://localhost:47778}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+JIT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+if [ -f "$JIT_ROOT/.env" ]; then
+  set -a
+  . "$JIT_ROOT/.env"
+  set +a
+fi
 
 check() {
   local DESC="$1"
@@ -38,7 +46,7 @@ echo ""
 echo "[ Ollama Connection ]"
 OLLAMA=$(curl -s --max-time 8 \
   --location 'https://ollama.mdes-innova.online/api/tags' \
-  --header 'Authorization: Bearer ${OLLAMA_TOKEN}' 2>/dev/null)
+  --header "Authorization: Bearer ${OLLAMA_TOKEN}" 2>/dev/null)
 check "MDES Ollama reachable" "$OLLAMA" 'models'
 
 echo ""
