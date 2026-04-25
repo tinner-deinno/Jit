@@ -115,13 +115,41 @@
       "description": "CI/CD deployment monitoring infrastructure — legs that move the system forward reliably",
       "reports_to": "soma",
       "manages": []
+    },
+    {
+      "name": "netra",
+      "role": "เนตร (Eye) — Observer / Monitor",
+      "organ": "ตา",
+      "model": "claude-haiku-4-5",
+      "repo": "tinner-deinno/Jit",
+      "inbox": "/tmp/manusat-bus/netra",
+      "capabilities": ["observe", "monitor", "watch", "detect-changes", "scan-environment", "report-status", "flag-anomaly", "health-check"],
+      "status": "active",
+      "born": "2026-04-25",
+      "description": "เนตรเห็น สิ่งที่เกิดขึ้น — observer, vigilant watcher, real-time visibility, anomaly detection",
+      "reports_to": "innova",
+      "manages": []
+    },
+    {
+      "name": "karn",
+      "role": "หู (Ear) — Listener / Input Collector",
+      "organ": "หู",
+      "model": "claude-haiku-4-5",
+      "repo": "tinner-deinno/Jit",
+      "inbox": "/tmp/manusat-bus/karn",
+      "capabilities": ["listen", "receive", "collect-input", "parse-messages", "gather-feedback", "monitor-channels", "priority-assessment"],
+      "status": "active",
+      "born": "2026-04-25",
+      "description": "หูฟัง สิ่งที่บอก — listener, inbound message collector, input parser, feedback gatherer",
+      "reports_to": "innova",
+      "manages": []
     }
   ],
   "organs": {
     "สมอง":         {"script": "limbs/think.sh",   "agent": "soma",   "type": "cognition"},
     "จิตใจ":        {"script": "limbs/index.sh",   "agent": "innova", "type": "soul"},
-    "ตา":           {"script": "organs/eye.sh",    "agent": "innova", "type": "sense"},
-    "หู":           {"script": "organs/ear.sh",    "agent": "innova", "type": "sense"},
+    "ตา":           {"script": "organs/eye.sh",    "agent": "netra",  "type": "sense"},
+    "หู":           {"script": "organs/ear.sh",    "agent": "karn",   "type": "sense"},
     "ปาก":          {"script": "organs/mouth.sh",  "agent": "vaja",   "type": "expression"},
     "จมูก":         {"script": "organs/nose.sh",   "agent": "chamu",  "type": "detection"},
     "มือ":          {"script": "organs/hand.sh",   "agent": "innova", "type": "action"},
@@ -136,7 +164,7 @@
   "team_structure": {
     "tier_1_leadership": ["soma"],
     "tier_2_core": ["innova", "lak", "neta"],
-    "tier_3_specialists": ["vaja", "chamu", "rupa", "pada"]
+    "tier_3_specialists": ["vaja", "chamu", "rupa", "pada", "netra", "karn"]
   },
   "workflow": {
     "feature_flow": "human → soma → lak(design) → innova(implement) → chamu(test) → neta(review) → pada(deploy) → vaja(report) → human",
