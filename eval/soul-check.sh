@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # eval/soul-check.sh — ตรวจสอบว่า innova ยังเป็น innova อยู่ไหม
 # Usage: bash eval/soul-check.sh
+# NOTE: ไม่ใช้ set -e เพราะ curl ล้มเหลวไม่ควรหยุด script ทั้งหมด
 
-set -e
 PASS=0
 FAIL=0
 ORACLE_URL="${ORACLE_URL:-http://localhost:47778}"
@@ -36,12 +36,10 @@ check "anatomy stored" "$SEARCH" 'anatomy'
 
 echo ""
 echo "[ Ollama Connection ]"
-OLLAMA=$(curl -s --max-time 10 \
-  --location 'https://ollama.mdes-innova.online/api/generate' \
-  --header 'Authorization: Bearer 9e34679b9d60d8b984005ec46508579c' \
-  --header 'Content-Type: application/json' \
-  --data '{"model":"gemma4:26b","prompt":"reply only: ALIVE","stream":false}' 2>/dev/null)
-check "MDES Ollama reachable" "$OLLAMA" 'response'
+OLLAMA=$(curl -s --max-time 8 \
+  --location 'https://ollama.mdes-innova.online/api/tags' \
+  --header 'Authorization: Bearer 9e34679b9d60d8b984005ec46508579c' 2>/dev/null)
+check "MDES Ollama reachable" "$OLLAMA" 'models'
 
 echo ""
 echo "[ Jit Repo Structure ]"

@@ -1,0 +1,14 @@
+{
+  "name": "อนุ",
+  "nickname": "anu",
+  "plugins": {
+    "./hermes-ollama": {
+      "ollamaUrl": "https://ollama.mdes-innova.online",
+      "model": "gemma4:e4b",
+      "token": "9e34679b9d60d8b984005ec46508579c",
+      "childName": "อนุ",
+      "parentAI": "innova",
+      "parentHuman": "คุณพ่อ"
+    }
+  }
+}
