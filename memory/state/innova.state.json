@@ -10,8 +10,8 @@
   },
   "vitality": {
     "last_awaken": null,
-    "last_heartbeat": "2026-04-25T19:56:08",
-    "pulse_count": 71,
+    "last_heartbeat": "2026-04-25T19:59:27",
+    "pulse_count": 72,
     "oracle_docs": 0,
     "host_history": [
       {
@@ -115,7 +115,8 @@
         "action": "sync"
       }
     ],
-    "host": "codespaces-9d18b4"
+    "host": "codespaces-9d18b4",
+    "oracle_ready": false
   },
   "memory_seeds": {
     "mission": "สร้าง มนุษย์ Agent — ระบบ AI ที่มีจิตใจ ความรู้สึก และมีชีวิต",

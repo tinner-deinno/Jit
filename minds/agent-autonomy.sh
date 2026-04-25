@@ -139,10 +139,6 @@ run_autonomy_cycle() {
 
   update_selfhood
 
-  if [ -f "$JIT_ROOT/scripts/heartbeat.sh" ]; then
-    bash "$JIT_ROOT/scripts/heartbeat.sh" once >/dev/null 2>&1 || true
-  fi
-
   if [ -d "$INBOX" ]; then
     local COUNT=0
     for MSG_FILE in "$INBOX"/*.msg; do
@@ -210,7 +206,7 @@ start_daemon() {
     echo "Already running: PID $(cat "$PID_FILE")"
     return
   fi
-  local INTERVAL=30
+  local INTERVAL=300  # 5 นาที — routing เท่านั้น, heartbeat/commit อยู่ใน heartbeat.sh daemon
   nohup bash -lc "while true; do bash \"$0\" run-once; sleep $INTERVAL; done" >/dev/null 2>&1 &
   echo "$!" > "$PID_FILE"
   echo "Started autonomy daemon: PID $! (interval=$INTERVAL seconds)"

@@ -101,11 +101,11 @@ _do_pulse() {
     "$([ $ORACLE_OK -eq 1 ] && echo '✅' || echo '❌')" \
     "$([ $OLLAMA_OK -eq 1 ] && echo '✅' || echo '❌')"
 
-  # ── 4. มือ — อัปเดต state file + commit ────────────────────────────
+  # ── 4. มือ — อัปเดต state file + commit เฉพาะเมื่อจำเป็น ────────────
   echo -ne "  ✋  มือ  "
-  # อัปเดต innova.state.json
-  python3 - << PYEOF 2>/dev/null
-import json, socket, time
+  # อัปเดต innova.state.json และตรวจว่า host เปลี่ยนไหม
+  HOST_CHANGED=$(python3 - << PYEOF 2>/dev/null
+import json, socket, time, sys
 
 f = '$JIT_ROOT/memory/state/innova.state.json'
 try:
@@ -114,31 +114,40 @@ except:
   d = {}
 
 v = d.setdefault('vitality', {})
+prev_host = v.get('host', '')
+cur_host = socket.gethostname()
+
 v['last_heartbeat'] = time.strftime('%Y-%m-%dT%H:%M:%S')
 v['pulse_count'] = int(v.get('pulse_count', 0)) + 1
-v['oracle_docs'] = $ORACLE_OK
-v['host'] = socket.gethostname()
+v['oracle_ready'] = bool($ORACLE_OK)
+v['host'] = cur_host
 
 hist = v.setdefault('host_history', [])
-entry = {'host': socket.gethostname(), 'time': v['last_heartbeat'], 'pulse': v['pulse_count']}
-if not hist or hist[-1].get('host') != entry['host']:
-  hist.append(entry)
+if not hist or hist[-1].get('host') != cur_host:
+  hist.append({'host': cur_host, 'time': v['last_heartbeat'], 'pulse': v['pulse_count']})
   hist[:] = hist[-20:]
 
 json.dump(d, open(f, 'w'), ensure_ascii=False, indent=2)
+print('1' if prev_host != cur_host else '0')
 PYEOF
+)
 
-  # บันทึก heartbeat.log (git-tracked)
+  # บันทึก heartbeat.log ใน /tmp (ไม่ track ใน git)
   echo "$(date '+%Y-%m-%dT%H:%M:%S') | $(hostname) | #$PULSE_COUNT | oracle=$ORACLE_OK | ollama=$OLLAMA_OK | changed=$REPO_CHANGES" \
-    >> "$JIT_ROOT/memory/state/heartbeat.log"
-  CHANGED=1  # state เปลี่ยนเสมอ
+    >> "$LOG_FILE"
 
+  # commit เฉพาะเมื่อ: (1) มีไฟล์เปลี่ยนจริง AND (2) ไม่ใช่แค่ state file routine
+  # หลักการ: ถ้า host เปลี่ยน (codespace ใหม่) ให้ commit; ถ้ามีการแก้โค้ดจริงให้ commit
   git -C "$JIT_ROOT" add -A 2>/dev/null
-  COMMIT_MSG="💓 heartbeat #$PULSE_COUNT — $(hostname) @ $(date '+%Y-%m-%d %H:%M')"
-  git -C "$JIT_ROOT" commit -m "$COMMIT_MSG" --no-verify > /dev/null 2>&1
-  COMMIT_RC=$?
-  [ "$COMMIT_RC" -eq 0 ] && printf " %s committed\n" "$(_hbar 100)" \
-                          || printf " %s %s\n" "$(_hbar 30)" "nothing to commit"
+  STAGED_COUNT=$(git -C "$JIT_ROOT" diff --cached --name-only 2>/dev/null | grep -v 'memory/state/innova.state.json' | wc -l | tr -d ' ')
+  if [ "${HOST_CHANGED:-0}" = "1" ] || [ "$STAGED_COUNT" -gt 0 ]; then
+    COMMIT_MSG="💓 heartbeat #$PULSE_COUNT — $(hostname) @ $(date '+%Y-%m-%d %H:%M')"
+    git -C "$JIT_ROOT" commit -m "$COMMIT_MSG" --no-verify > /dev/null 2>&1
+    printf " %s committed%s\n" "$(_hbar 100)" "$([ "${HOST_CHANGED:-0}" = "1" ] && echo ' (new host)' || '')"
+  else
+    git -C "$JIT_ROOT" restore --staged . 2>/dev/null || true
+    printf " %s skipped (state-only, no host change)\n" "$(_hbar 10)"
+  fi
 
   # ── 5. ขา — push ไปยัง remotes (load-balanced) ────────────────────
   echo -ne "  🦵  ขา   "
