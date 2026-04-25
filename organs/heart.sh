@@ -14,6 +14,7 @@
 #   ./heart.sh stop               — หยุด heartbeat
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+JIT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$SCRIPT_DIR/../limbs/lib.sh"
 
 CMD="${1:-rhythm}"
@@ -60,7 +61,7 @@ collect_blood_payload() {
     payload+="\"$agent\": { \"pending\": $pending }, "
   done
 
-  total_files=$(find . -maxdepth 2 -type f | wc -l | tr -d ' ')
+  total_files=$(find "$JIT_ROOT" -maxdepth 3 -type f | wc -l | tr -d ' ')
   local ts="$(date '+%Y-%m-%dT%H:%M:%S')"
   echo "{ \"timestamp\": \"$ts\", \"total_pending\": $total_pending, \"file_count\": $total_files, $payload \"note\": \"context blood from agents\" }"
 }
@@ -89,11 +90,10 @@ case "$CMD" in
 
   # ── ส่ง heartbeat ────────────────────────────────────────────────
   beat)
-    local phase="${1:-cycle}"
-    local ts="$(date '+%Y-%m-%dT%H:%M:%S')"
+    phase="${1:-cycle}"
+    ts="$(date '+%Y-%m-%dT%H:%M:%S')"
 
     if [ "$phase" = "in" ] || [ "$phase" = "cycle" ]; then
-      local blood_payload
       blood_payload=$(collect_blood_payload)
       send_to_lung "$blood_payload"
       echo "{\"heartbeat\":\"$ts\",\"from\":\"heart\",\"phase\":\"IN\",\"status\":\"alive\"}" \

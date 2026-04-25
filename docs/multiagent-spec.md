@@ -84,7 +84,7 @@ correlation-id: <uuid>
 
 ```
 STARTUP:
-  heart.sh beat → reflex.sh check → shared.sh set ready=true → ear.sh listen
+  heart.sh beat → lung.sh filter → reflex.sh check → shared.sh set ready=true → ear.sh listen
 
 RECEIVE TASK (innova):
   ear.sh receive → working.sh focus → heart.sh pump task → organs execute
