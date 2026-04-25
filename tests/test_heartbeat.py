@@ -8,6 +8,7 @@ import unittest
 class HeartbeatScriptTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.TemporaryDirectory()
+        self.runtime_dir = tempfile.TemporaryDirectory()
         self.root = self.tmpdir.name
         os.makedirs(os.path.join(self.root, 'scripts'), exist_ok=True)
         os.makedirs(os.path.join(self.root, 'limbs'), exist_ok=True)
@@ -74,10 +75,18 @@ class HeartbeatScriptTest(unittest.TestCase):
 
     def tearDown(self):
         self.tmpdir.cleanup()
+        self.runtime_dir.cleanup()
 
     def run_heartbeat(self, args=None):
         args = args or ['once']
-        env = {**os.environ, 'PATH': os.environ.get('PATH', ''), 'BUS_ROOT': os.path.join(self.root, 'tmp', 'manusat-bus')}
+        env = {
+            **os.environ,
+            'PATH': os.environ.get('PATH', ''),
+            'BUS_ROOT': os.path.join(self.runtime_dir.name, 'manusat-bus'),
+            'PID_FILE': os.path.join(self.runtime_dir.name, 'heartbeat.pid'),
+            'LOG_FILE': os.path.join(self.runtime_dir.name, 'heartbeat.log'),
+            'LAST_ACTIVITY_FILE': os.path.join(self.runtime_dir.name, 'heartbeat.lastactive'),
+        }
         os.makedirs(env['BUS_ROOT'], exist_ok=True)
         result = subprocess.run(
             ['bash', 'scripts/heartbeat.sh'] + args,
@@ -102,6 +111,10 @@ class HeartbeatScriptTest(unittest.TestCase):
         self.assertIn('committed', result.stdout)
         log = subprocess.run(['git', 'log', '--oneline', '-1'], cwd=self.root, stdout=subprocess.PIPE, text=True)
         self.assertIn('💓 heartbeat', log.stdout)
+
+    def test_status_shows_stopped_when_no_daemon(self):
+        result = self.run_heartbeat(['status'])
+        self.assertIn('Heartbeat ไม่ได้รัน', result.stdout)
 
 if __name__ == '__main__':
     unittest.main()

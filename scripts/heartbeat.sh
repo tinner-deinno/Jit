@@ -32,8 +32,8 @@ OLLAMA_URL="${OLLAMA_URL:-https://ollama.mdes-innova.online}"
 BUS_ROOT="${BUS_ROOT:-/tmp/manusat-bus}"
 HEARTBEAT_AGENT="${HEARTBEAT_AGENT:-heartbeat}"
 LAST_ACTIVITY_FILE="${LAST_ACTIVITY_FILE:-/tmp/heartbeat-last-active.timestamp}"
-PID_FILE="/tmp/innova-heartbeat.pid"
-LOG_FILE="/tmp/innova-heartbeat.log"
+PID_FILE="${PID_FILE:-/tmp/innova-heartbeat.pid}"
+LOG_FILE="${LOG_FILE:-/tmp/innova-heartbeat.log}"
 PULSE_INTERVAL=900  # default normal interval
 PULSE_COUNT=0
 
@@ -310,8 +310,10 @@ case "$CMD" in
   status)
     if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
       PID=$(cat "$PID_FILE")
+      STATUS_MODE=$(heartbeat_mode)
+      STATUS_INTERVAL=$(heartbeat_interval "$STATUS_MODE")
       echo -e "${GREEN}💓 Heartbeat กำลังรัน (PID $PID)${RESET}"
-      echo -e "  interval: ${PULSE_INTERVAL}s (15 นาที)"
+      echo -e "  interval: ${STATUS_INTERVAL}s ($STATUS_MODE)"
       echo -e "  log: $LOG_FILE"
       echo -e "  $(tail -5 "$LOG_FILE" 2>/dev/null || echo '(no log)')"
     else
