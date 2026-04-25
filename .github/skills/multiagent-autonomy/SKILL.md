@@ -138,6 +138,13 @@ bash minds/agent-autonomy.sh run-once
 bash minds/agent-autonomy.sh stop
 ```
 
+Also use these helper scripts:
+
+```bash
+bash scripts/innova-bot-setup.sh <git-url>
+bash scripts/selfhood-checklist.sh
+```
+
 ---
 
 ## When to ask for help

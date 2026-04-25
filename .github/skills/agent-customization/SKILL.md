@@ -35,6 +35,8 @@
 - ตรวจสอบว่า `mcp_innovabot_*` tools พร้อมใช้
 - ถ้ายังไม่มี ให้ติดตั้ง/เชื่อมต่อตามขั้นตอนที่มีใน repo หรือเอกสาร
 - ถ้าต้องใช้ repo เพิ่มเติม เช่น `innova-bot` ให้ clone / setup ใน workspace
+- ใช้ `scripts/innova-bot-setup.sh` เพื่อ provision repo และอ่าน README อัตโนมัติ
+- ใช้ `scripts/selfhood-checklist.sh` เพื่อตรวจสุขภาพระบบก่อน/หลังทำงาน
 
 ### 3. ตรวจ repo และอ่าน `README.md`
 
