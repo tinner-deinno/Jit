@@ -118,10 +118,12 @@ for a in d.get('agents', []):
   pulse)
     CONTEXT="$*"
     log_action "MOUTH_PULSE" "$CONTEXT"
+    PENDING=$(ls "$BUS_DIR"/*/*.msg 2>/dev/null | grep -v "/read_" | wc -l)
     echo "Mouth receives clean energy and prepares to communicate"
+    echo "  pending messages: ${PENDING:-0}"
     ;;
 
-  # ── สถานะ ────────────────────────────────────────────────────────
+  # ── สถานะ ──────────────────────────────────────────────────────────
   status)
     PENDING=$(ls "$BUS_DIR"/*/*.msg 2>/dev/null | grep -v "/read_" | wc -l)
     ok "ปาก (mouth) พร้อม | bus: $BUS_DIR | messages pending: $PENDING"

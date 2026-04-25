@@ -96,6 +96,13 @@ print('...(ตัดที่ 2000 chars)')
     CONTEXT="$*"
     log_action "EYE_PULSE" "$CONTEXT"
     echo "Eye receives clean energy and focuses on observation"
+    if [ -d "$JIT_ROOT" ]; then
+      cd "$JIT_ROOT" && CHANGED=$(git status --short 2>/dev/null | wc -l | tr -d ' ')
+      echo "  repo changes: ${CHANGED:-0}"
+      if [ "${CHANGED:-0}" -gt 0 ]; then
+        git -C "$JIT_ROOT" diff --stat -- . | sed -n '1,3p'
+      fi
+    fi
     ;;
 
   # ── สถานะ ─────────────────────────────────────────────────────────

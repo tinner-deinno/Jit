@@ -63,7 +63,8 @@ _pulse_banner() {
 # ────────────────────────────────────────────────────────────────────
 heartbeat_mode() {
   local pending changes age
-  pending=$(find "$BUS_ROOT" -name '*.msg' 2>/dev/null | wc -l | tr -d ' ')
+  # นับเฉพาะ messages ที่ใหม่กว่า 10 นาที (ป้องกัน stale messages ทำให้เข้า sprint ผิดๆ)
+  pending=$(find "$BUS_ROOT" -name '*.msg' -mmin -10 2>/dev/null | wc -l | tr -d ' ')
   changes=$(git -C "$JIT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
   age=0
   if [ -f "$LAST_ACTIVITY_FILE" ]; then
@@ -79,6 +80,14 @@ heartbeat_mode() {
   else
     echo "normal"
   fi
+}
+
+_cleanup_stale_messages() {
+  # ลบ messages เก่ากว่า 30 นาทีที่ยังไม่ถูกประมวลผล
+  local deleted
+  deleted=$(find "$BUS_ROOT" -name '*.msg' -mmin +30 2>/dev/null | wc -l | tr -d ' ')
+  [ "$deleted" -gt 0 ] && find "$BUS_ROOT" -name '*.msg' -mmin +30 -delete 2>/dev/null
+  echo "$deleted"
 }
 
 heartbeat_interval() {
@@ -172,11 +181,14 @@ _do_pulse() {
   echo -ne "  👁️   ตา   "
   REPO_CHANGES=$(git -C "$JIT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
   [ "$REPO_CHANGES" -gt 0 ] && CHANGED=1
-  BUS_PENDING=$(find "$BUS_ROOT" -name '*.msg' 2>/dev/null | wc -l | tr -d ' ')
+  # ล้าง stale messages ก่อนนับ เพื่อไม่ให้ผิดพลาด mode
+  STALE_DELETED=$(_cleanup_stale_messages)
+  BUS_PENDING=$(find "$BUS_ROOT" -name '*.msg' -mmin -10 2>/dev/null | wc -l | tr -d ' ')
   if [ "$REPO_CHANGES" -gt 0 ] || [ "$BUS_PENDING" -gt 0 ]; then
     date +%s > "$LAST_ACTIVITY_FILE"
   fi
-  printf " %s %s files changed (%s pending heartbeat messages)\n" "$( _hbar $(( REPO_CHANGES > 0 ? 100 : 0 )))" "$REPO_CHANGES" "$BUS_PENDING"
+  STALE_LABEL=""; [ "${STALE_DELETED:-0}" -gt 0 ] && STALE_LABEL=" (purged ${STALE_DELETED} stale)"
+  printf " %s %s files changed · %s recent messages%s\n" "$(_hbar $(( REPO_CHANGES > 0 ? 100 : 0 )))" "$REPO_CHANGES" "$BUS_PENDING" "$STALE_LABEL"
 
   # ── 3. จมูก — ดม services ─────────────────────────────────────────
   echo -ne "  👃  จมูก "

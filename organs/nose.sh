@@ -130,9 +130,16 @@ case "$CMD" in
     CONTEXT="$*"
     log_action "NOSE_PULSE" "$CONTEXT"
     echo "Nose receives clean energy and confirms system quality"
+    _check_service "Oracle" "$ORACLE_URL/api/health"
+    _check_service "Ollama" "https://ollama.mdes-innova.online/api/tags" 2>/dev/null || true
+    if [ -d "/tmp/manusat-bus" ]; then
+      echo "  bus: ready"
+    else
+      echo "  bus: missing"
+    fi
     ;;
 
-  # ── สถานะ ────────────────────────────────────────────────────────
+  # ── สถานะ ──────────────────────────────────────────────────────────
   status)
     ok "จมูก (nose) พร้อม"
     echo "   สามารถ: sniff | alert | monitor | health | changes"

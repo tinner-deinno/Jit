@@ -117,7 +117,9 @@ case "$CMD" in
   pulse)
     CONTEXT="$*"
     log_action "EAR_PULSE" "$CONTEXT"
+    MSGS=$(ls "$MY_INBOX"/*.msg 2>/dev/null | wc -l)
     echo "Ear receives clean energy and listens for new signals"
+    echo "  inbox pending: ${MSGS:-0}"
     ;;
 
   # ── สถานะ ────────────────────────────────────────────────────────

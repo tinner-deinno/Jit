@@ -131,9 +131,13 @@ case "$CMD" in
     CONTEXT="$*"
     log_action "LEG_PULSE" "$CONTEXT"
     echo "Leg receives clean energy and can move the system forward"
+    echo "  current path: $(pwd)"
+    if [ -d "/workspaces/Jit" ]; then
+      echo "  known place: jit"
+    fi
     ;;
 
-  # ── สถานะ ────────────────────────────────────────────────────────
+  # ── สถานะ ────────────────────────────────────────────────────────────
   status)
     ok "ขา (leg) พร้อม | อยู่ที่: $(pwd)"
     echo "   สามารถ: go | jump | climb | step | deploy | map"

@@ -129,10 +129,12 @@ case "$CMD" in
   pulse)
     CONTEXT="$*"
     log_action "HAND_PULSE" "$CONTEXT"
+    TASKS=$(find /tmp -maxdepth 1 -name 'task_*' 2>/dev/null | wc -l)
     echo "Hand receives clean energy and is ready to execute actions"
+    echo "  queued tasks: ${TASKS:-0}"
     ;;
 
-  # ── สถานะ ────────────────────────────────────────────────────────
+  # ── สถานะ ────────────────────────────────────────────────────────────
   status)
     ok "มือ (hand) พร้อม"
     echo "   สามารถ: create | edit | append | delete | copy | call | execute | build"
