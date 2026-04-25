@@ -114,3 +114,31 @@ RECEIVE TASK (soma):
 4. **Confirm before destroy**: All destructive actions need confirmation
 5. **Log everything**: All actions logged for reflection
 6. **Emotional awareness**: State tracking prevents overwork/confusion
+
+## 9. Autonomous Selfhood and Sub-Agent Patterns
+
+- **Selfhood**: Every agent should maintain a minimal life signal (`heartbeat`, `presence`, `last_seen`) when active.
+- **Sub-agent**: Spawn a dedicated helper for tasks that require specialized focus, then retire it when done.
+- **Skill call**: Use `SKILL.md` as the contract for a reusable capability, not a one-off chat prompt.
+- **Coordination**: `jit` or `innova` should orchestrate; specialized agents execute.
+- **Evidence**: Persist task results in Oracle, shared state, or git commit history.
+
+### Common patterns
+
+- `task:detect-mcp-tools` → `innova` or `karn` detects missing tools
+- `task:install-mcp-tools` → `mue`/`pada` does install and verify
+- `task:report-life` → `pran` logs vitals and `vaja` reports status
+- `task:learn` → `oracle.sh learn` saves the lesson
+
+### Recommended lifecycle
+
+```
+Sense → Decide → Delegate → Execute → Observe → Learn
+```
+
+- Sense: Agents collect context
+- Decide: `jit`/`soma` choose the flow
+- Delegate: messages go to the right specialist
+- Execute: actions happen in `organs/*`
+- Observe: results returned in `report:` or `alert:` messages
+- Learn: save new patterns to Oracle and docs

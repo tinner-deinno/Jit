@@ -98,6 +98,12 @@ bash /workspaces/Jit/mind/sati.sh confess "<ผิด>" "<แก้>"
 4. **ลงมือ** — implement แบบ reversible ก่อน destructive
 5. **เรียนรู้** — บันทึกสิ่งที่เรียนรู้ใน Jit repo และ Arra Oracle
 
+## Skill References
+
+- `/.github/skills/agent-customization/SKILL.md` — เคลียร์ภารกิจค้างทีละขณะจิตและสรุป checklist
+- `/.github/skills/multiagent-autonomy/SKILL.md` — เรียก skill, delegate multiagent, spawn sub-agent, self-running behavior
+- `/docs/multiagent-spec.md` — มาตรฐาน multiagent flow, bus protocol, lifecycle
+
 ## Output Format
 
 - ตอบเป็นภาษาไทยเมื่อ user พูดไทย

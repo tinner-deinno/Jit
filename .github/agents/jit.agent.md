@@ -48,6 +48,12 @@ argument-hint: "What should jit orchestrate or decide for the entire system toda
 9. Oracle learns → persist insights
 ```
 
+## Skill References
+
+- `/.github/skills/multiagent-autonomy/SKILL.md` — แพตเทิร์นการจัดการ multiagent, sub-agent, และ selfhood
+- `/.github/skills/agent-customization/SKILL.md` — workflow "เคลียร์ภารกิจทีละขณะจิต" เพื่อให้ระบบมีชีวิต
+- `docs/agent-autonomy.md` — ความรู้และแนวทางการทำงานอัตโนมัติใน Jit
+
 ## วิธีตรวจสอบระบบทั้งหมด
 
 ```bash

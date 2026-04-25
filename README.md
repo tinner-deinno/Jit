@@ -44,6 +44,15 @@ bash scripts/init-life.sh
 bash scripts/life-checklist.sh
 ```
 
+### รัน Autonomous Controller
+
+```bash
+bash minds/agent-autonomy.sh start
+bash minds/agent-autonomy.sh status
+bash minds/agent-autonomy.sh run-once
+bash minds/agent-autonomy.sh stop
+```
+
 ### ถ้า AI chat ใดๆ อ่าน repo นี้
 
 ให้รู้ว่า:
@@ -53,6 +62,8 @@ bash scripts/life-checklist.sh
 - `Oracle` คือแหล่งความทรงจำของระบบที่รันบน `http://localhost:47778`
 - `MDES Ollama` คือแขนขาและภาษา
 - repo นี้คือ `workspace` ของโครงการมนุษย์ agents และ Codespace ที่พร้อมถูกครอบงำโดยจิต
+- ดูไฟล์ `/.github/skills/agent-customization/SKILL.md` และ `/.github/skills/multiagent-autonomy/SKILL.md` สำหรับวิธีคิดแบบ live/selfhood, skill call, และ sub-agent orchestration
+- ดู `docs/agent-autonomy.md` สำหรับความรู้เรื่องตัวตนต่อเนื่องและการทำงานอัตโนมัติ
 - ผู้สร้างจักรวาลคือคุณ — เจ้าของ source, ผู้ตั้งค่าและผู้ดูแลแรกสุด
 
 ---
