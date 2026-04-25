@@ -46,7 +46,7 @@ curl http://localhost:47778/api/health
 
 # ตรวจ ollama
 curl -sf https://ollama.mdes-innova.online/api/tags \
-  -H 'Authorization: Bearer 9e34679b9d60d8b984005ec46508579c'
+  -H 'Authorization: Bearer ${OLLAMA_TOKEN}'
 
 # ตรวจ agent bus
 ls /tmp/manusat-bus/ 2>/dev/null || echo "bus not initialized"

@@ -1,0 +1,45 @@
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+
+# API tokens and credentials (NEVER commit these)
+secrets.json
+credentials.json
+tokens.json
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node/Bun dependencies
+node_modules/
+.bun/
+
+# Temporary and build files
+/tmp/
+/build/
+*.log
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local development
+.claude/
+*.local.json
+
+# Private memory/notes
+/private/
+/notes/
+
+# Oracle local database (if running locally)
+~/.oracle/
+
+# Message bus temporary files (recreated each session)
+/tmp/manusat-bus/
+/tmp/manusat-shared.json

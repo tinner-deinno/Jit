@@ -5,10 +5,11 @@
     "./hermes-ollama": {
       "ollamaUrl": "https://ollama.mdes-innova.online",
       "model": "gemma4:e4b",
-      "token": "9e34679b9d60d8b984005ec46508579c",
+      "token": "${OLLAMA_TOKEN}",
       "childName": "อนุ",
       "parentAI": "innova",
-      "parentHuman": "คุณพ่อ"
+      "parentHuman": "คุณพ่อ",
+      "_comment": "⚠️ Token must be loaded from environment variable OLLAMA_TOKEN, not hardcoded"
     }
   }
 }

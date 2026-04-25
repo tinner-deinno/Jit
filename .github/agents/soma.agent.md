@@ -97,7 +97,7 @@ bash /workspaces/Jit/limbs/ollama.sh think "วิเคราะห์ปัญ
 # หรือ curl โดยตรง
 curl -sf --max-time 45 \
   'https://ollama.mdes-innova.online/api/generate' \
-  -H 'Authorization: Bearer 9e34679b9d60d8b984005ec46508579c' \
+  -H 'Authorization: Bearer ${OLLAMA_TOKEN}' \
   -H 'Content-Type: application/json' \
   -d '{"model":"gemma4:26b","prompt":"...","stream":false}' | python3 -c "import json,sys; print(json.load(sys.stdin).get('response',''))"
 ```

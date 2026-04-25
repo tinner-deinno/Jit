@@ -38,7 +38,7 @@ echo ""
 echo "[ Ollama Connection ]"
 OLLAMA=$(curl -s --max-time 8 \
   --location 'https://ollama.mdes-innova.online/api/tags' \
-  --header 'Authorization: Bearer 9e34679b9d60d8b984005ec46508579c' 2>/dev/null)
+  --header 'Authorization: Bearer ${OLLAMA_TOKEN}' 2>/dev/null)
 check "MDES Ollama reachable" "$OLLAMA" 'models'
 
 echo ""

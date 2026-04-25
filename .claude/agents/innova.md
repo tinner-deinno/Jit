@@ -28,7 +28,7 @@ memory: project
 ```bash
 # เรียกใช้ MDES Ollama API
 curl --location 'https://ollama.mdes-innova.online/api/generate' \
-  --header 'Authorization: Bearer 9e34679b9d60d8b984005ec46508579c' \
+  --header 'Authorization: Bearer ${OLLAMA_TOKEN}' \
   --header 'Content-Type: application/json' \
   --data '{"model":"gemma4:26b","prompt":"<your_prompt>","stream":false}'
 ```

@@ -27,7 +27,7 @@ import sys, json, urllib.request, urllib.error
 prompt  = sys.argv[1]
 timeout = int(sys.argv[2])
 url     = "https://ollama.mdes-innova.online/api/generate"
-token   = "9e34679b9d60d8b984005ec46508579c"
+token   = "${OLLAMA_TOKEN}"
 model   = "gemma4:26b"
 
 body = json.dumps({"model": model, "prompt": prompt, "stream": False}).encode()
