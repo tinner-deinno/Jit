@@ -109,3 +109,4 @@ next:
 - หากพบข้อขัดข้อง ให้ spawn sub-agent แทนทำทุกอย่างด้วยตัวเอง
 - ทุก task ต้องมี evidence ว่าทำจริง: command output, git diff, หรือ oracle entry
 - ถ้าผ่านไป 1 ขณะจิตแล้วยังไม่เสร็จ ให้สรุปสถานะและสร้าง `next` checklist ก่อนพัก
+- ใช้ `minds/agent-autonomy.sh` เป็นตัวอย่างการทำงานอัตโนมัติที่เชื่อม presence กับ task routing
