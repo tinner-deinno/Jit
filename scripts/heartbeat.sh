@@ -143,7 +143,8 @@ PYEOF
   if [ "${HOST_CHANGED:-0}" = "1" ] || [ "$STAGED_COUNT" -gt 0 ]; then
     COMMIT_MSG="💓 heartbeat #$PULSE_COUNT — $(hostname) @ $(date '+%Y-%m-%d %H:%M')"
     git -C "$JIT_ROOT" commit -m "$COMMIT_MSG" --no-verify > /dev/null 2>&1
-    printf " %s committed%s\n" "$(_hbar 100)" "$([ "${HOST_CHANGED:-0}" = "1" ] && echo ' (new host)' || '')"
+    NEW_HOST_LABEL=""; [ "${HOST_CHANGED:-0}" = "1" ] && NEW_HOST_LABEL=" (new host)"
+    printf " %s committed%s\n" "$(_hbar 100)" "$NEW_HOST_LABEL"
   else
     git -C "$JIT_ROOT" restore --staged . 2>/dev/null || true
     printf " %s skipped (state-only, no host change)\n" "$(_hbar 10)"
