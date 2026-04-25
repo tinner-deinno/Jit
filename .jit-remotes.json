@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "strategy": "round-robin",
+  "remotes": {
+    "origin": {
+      "url": "https://github.com/tinner-deinno/Jit",
+      "push_count": 0,
+      "last_push": null,
+      "enabled": true
+    }
+  }
+}

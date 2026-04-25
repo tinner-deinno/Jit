@@ -38,34 +38,23 @@ _check_oracle() {
 # ────────────────────────────────────────────────────────────────────
 _sync_file() {
   local FILE="$1" PATTERN="$2" TAGS="$3"
-  local CONTENT; CONTENT=$(cat "$FILE" 2>/dev/null)
-  [ -z "$CONTENT" ] && { SKIPPED=$(( SKIPPED + 1 )); return; }
-
-  # ตัดให้ไม่เกิน 3000 ตัวอักษร (Oracle limit friendly)
-  CONTENT=$(echo "$CONTENT" | head -100)
+  [ ! -f "$FILE" ] && { SKIPPED=$(( SKIPPED + 1 )); return; }
+  [ ! -s "$FILE" ] && { SKIPPED=$(( SKIPPED + 1 )); return; }
 
   if [ "$DRY" -eq 1 ]; then
     _log "  ${CYAN}[DRY] ${RESET}$(basename "$FILE") → Oracle pattern: $PATTERN"
     return
   fi
 
-  HTTP_CODE=$(curl -s -o /tmp/oracle-sync-resp.json -w '%{http_code}' \
-    -X POST "$ORACLE_URL/api/learn" \
-    -H "Content-Type: application/json" \
-    -d "$(python3 -c "
-import json, sys
-print(json.dumps({
-  'pattern': '$PATTERN',
-  'content': sys.stdin.read(),
-  'concepts': '$TAGS'
-}))" <<< "$CONTENT" 2>/dev/null)" 2>/dev/null || echo "000")
+  # ใช้ Python script ที่รับ args — หลีกเลี่ยง heredoc+stdin ขัดกัน
+  HTTP_STATUS=$(python3 "$JIT_ROOT/scripts/oracle-learn.py" "$FILE" "$PATTERN" "$TAGS" "$ORACLE_URL" 2>/dev/null || echo "000")
 
-  if [[ "$HTTP_CODE" == "200" || "$HTTP_CODE" == "201" ]]; then
+  if [[ "$HTTP_STATUS" == "200" || "$HTTP_STATUS" == "201" ]]; then
     SYNCED=$(( SYNCED + 1 ))
     _log "  ${GREEN}✅ $(basename "$FILE")${RESET}"
   else
     FAILED=$(( FAILED + 1 ))
-    _log "  ${RED}❌ $(basename "$FILE") (HTTP $HTTP_CODE)${RESET}"
+    _log "  ${RED}❌ $(basename "$FILE") (HTTP $HTTP_STATUS)${RESET}"
   fi
 }
 

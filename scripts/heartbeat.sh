@@ -63,9 +63,10 @@ _do_pulse() {
   echo -ne "  🌐  sync "
   if [ -f "$JIT_ROOT/scripts/sync-cross-machine.sh" ]; then
     PULL_OUT=$(bash "$JIT_ROOT/scripts/sync-cross-machine.sh" pull 2>&1)
-    PULL_OK=$(echo "$PULL_OUT" | grep -c '✅\|up-to-date\|up to date' || echo 0)
-    printf " %s %s\n" "$(_hbar $([ $PULL_OK -gt 0 ] && echo 100 || echo 30))" \
-      "$([ $PULL_OK -gt 0 ] && echo 'pulled latest memory' || echo 'pull skipped')"
+    PULL_OK=0
+    echo "$PULL_OUT" | grep -qE '✅|up-to-date|up to date' && PULL_OK=1
+    printf " %s %s\n" "$(_hbar $(( PULL_OK * 100 )))" \
+      "$([ "$PULL_OK" -eq 1 ] && echo 'pulled latest memory' || echo 'pull skipped')"
   else
     printf " %s %s\n" "$(_hbar 50 10)" "skip"
   fi
