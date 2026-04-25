@@ -185,12 +185,14 @@ _do_pulse() {
   [ "$REPO_CHANGES" -gt 0 ] && CHANGED=1
   # ล้าง stale messages ก่อนนับ เพื่อไม่ให้ผิดพลาด mode
   STALE_DELETED=$(_cleanup_stale_messages)
-  BUS_PENDING=$(find "$BUS_ROOT" -name '*.msg' -mmin -10 2>/dev/null | wc -l | tr -d ' ')
+  # นับเฉพาะ task messages (ไม่นับ broadcast ของ heartbeat เอง)
+  BUS_PENDING=$(find "$BUS_ROOT" -name '*.msg' -mmin -10 2>/dev/null \
+                | grep -v '_broadcast\.msg$' | wc -l | tr -d ' ')
   if [ "$REPO_CHANGES" -gt 0 ] || [ "$BUS_PENDING" -gt 0 ]; then
     date +%s > "$LAST_ACTIVITY_FILE"
   fi
   STALE_LABEL=""; [ "${STALE_DELETED:-0}" -gt 0 ] && STALE_LABEL=" (purged ${STALE_DELETED} stale)"
-  printf " %s %s files changed · %s recent messages%s\n" "$(_hbar $(( REPO_CHANGES > 0 ? 100 : 0 )))" "$REPO_CHANGES" "$BUS_PENDING" "$STALE_LABEL"
+  printf " %s %s files changed · %s task messages%s\n" "$(_hbar $(( REPO_CHANGES > 0 ? 100 : 0 )))" "$REPO_CHANGES" "$BUS_PENDING" "$STALE_LABEL"
 
   # ── 3. จมูก — ดม services ─────────────────────────────────────────
   echo -ne "  👃  จมูก "
