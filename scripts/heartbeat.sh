@@ -63,8 +63,10 @@ _pulse_banner() {
 # ────────────────────────────────────────────────────────────────────
 heartbeat_mode() {
   local pending changes age
-  # นับเฉพาะ messages ที่ใหม่กว่า 10 นาที (ป้องกัน stale messages ทำให้เข้า sprint ผิดๆ)
-  pending=$(find "$BUS_ROOT" -name '*.msg' -mmin -10 2>/dev/null | wc -l | tr -d ' ')
+  # นับเฉพาะ task messages ใหม่ (< 10 นาที) ไม่นับ broadcast ของ heartbeat เอง
+  # เพื่อไม่ให้ heartbeat สร้าง messages แล้วคิดว่าระบบยุ่ง
+  pending=$(find "$BUS_ROOT" -name '*.msg' -mmin -10 2>/dev/null \
+            | grep -v '_broadcast\.msg$' | wc -l | tr -d ' ')
   changes=$(git -C "$JIT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
   age=0
   if [ -f "$LAST_ACTIVITY_FILE" ]; then
