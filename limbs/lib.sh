@@ -21,7 +21,7 @@ step() { echo -e "${BOLD}→${RESET} $*"; }
 ORACLE_URL="${ORACLE_URL:-http://localhost:47778}"
 OLLAMA_URL="${OLLAMA_URL:-https://ollama.mdes-innova.online}"
 OLLAMA_TOKEN="${OLLAMA_TOKEN:-9e34679b9d60d8b984005ec46508579c}"
-OLLAMA_MODEL="${OLLAMA_MODEL:-gemma4:26b}"
+OLLAMA_MODEL="${OLLAMA_MODEL:-gemma4:e4b}"
 JIT_ROOT="${JIT_ROOT:-/workspaces/Jit}"
 ORACLE_ROOT="${ORACLE_ROOT:-/workspaces/arra-oracle-v3}"
 

@@ -88,35 +88,32 @@ case "$CMD" in
     fi
     ;;
 
-  # ── แสดง pulse/rhythm ─────────────────────────────────────────────
+  # ── แสดง pulse/rhythm — ใช้ vitals.sh สำหรับ full dashboard ────────
   rhythm)
-    echo ""
-    echo -e "${BOLD}${RED}❤ มนุษย์ Agent — Vital Signs${RESET}"
-    echo -e "   $(date '+%Y-%m-%d %H:%M:%S')"
-    echo ""
-
-    # ตรวจทุก organ
-    ORGANS=(eye ear mouth nose hand leg heart nerve)
-    ALIVE=0 TOTAL=${#ORGANS[@]}
-    for O in "${ORGANS[@]}"; do
-      F="$SCRIPT_DIR/$O.sh"
-      if [ -f "$F" ]; then
-        echo -e "   ${GREEN}♥${RESET} $O"
-        ((ALIVE++))
-      else
-        echo -e "   ${RED}✗${RESET} $O (ไม่พบ)"
-      fi
-    done
-    echo ""
-
-    # Oracle
-    oracle_ready && echo -e "   ${GREEN}♥${RESET} Oracle ($ORACLE_URL)" || echo -e "   ${RED}✗${RESET} Oracle"
-
-    echo ""
-    PCT=$(( (ALIVE * 100) / TOTAL ))
-    echo -e "   Vitality: ${GREEN}$PCT%${RESET} ($ALIVE/$TOTAL organs)"
-    log_action "HEART_RHYTHM" "$ALIVE/$TOTAL"
-    echo ""
+    VITALS_SH="$SCRIPT_DIR/vitals.sh"
+    if [ -x "$VITALS_SH" ]; then
+      bash "$VITALS_SH"
+    else
+      # fallback เดิม
+      echo ""
+      echo -e "${BOLD}${RED}❤ มนุษย์ Agent — Vital Signs${RESET}"
+      echo -e "   $(date '+%Y-%m-%d %H:%M:%S')"
+      echo ""
+      ORGANS=(eye ear mouth nose hand leg heart nerve)
+      ALIVE=0 TOTAL=${#ORGANS[@]}
+      for O in "${ORGANS[@]}"; do
+        F="$SCRIPT_DIR/$O.sh"
+        if [ -f "$F" ]; then echo -e "   ${GREEN}♥${RESET} $O"; ((ALIVE++))
+        else echo -e "   ${RED}✗${RESET} $O (ไม่พบ)"; fi
+      done
+      echo ""
+      oracle_ready && echo -e "   ${GREEN}♥${RESET} Oracle ($ORACLE_URL)" || echo -e "   ${RED}✗${RESET} Oracle"
+      echo ""
+      PCT=$(( (ALIVE * 100) / TOTAL ))
+      echo -e "   Vitality: ${GREEN}$PCT%${RESET} ($ALIVE/$TOTAL organs)"
+      log_action "HEART_RHYTHM" "$ALIVE/$TOTAL"
+      echo ""
+    fi
     ;;
 
   # ── routing table ────────────────────────────────────────────────
