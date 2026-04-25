@@ -54,7 +54,13 @@ class HeartLungIntegrationTest(unittest.TestCase):
         )
         self.assertIn('->💓', result.stdout)
         self.assertIn('❤️‍🔥->', result.stdout)
+        self.assertIn('Lung receives clean energy', result.stdout)
         self.assertIn('Eye receives clean energy', result.stdout)
+        self.assertIn('Ear receives clean energy', result.stdout)
+        self.assertIn('Nose receives clean energy', result.stdout)
+        self.assertIn('Mouth receives clean energy', result.stdout)
+        self.assertIn('Hand receives clean energy', result.stdout)
+        self.assertIn('Leg receives clean energy', result.stdout)
         self.assertIn('Nerve receives clean energy', result.stdout)
 
     def test_lung_filter_output(self):

@@ -129,6 +129,8 @@ print('channel created:', '$CHANNEL_FILE')
     CONTEXT="$*"
     log_action "NERVE_PULSE" "$CONTEXT"
     echo "Nerve receives clean energy and propagates the signal across the system"
+    local stale=$(find "$NERVE_DIR" -name '*.evt' -type f -mmin +60 2>/dev/null | wc -l | tr -d ' ')
+    echo "  stale events remaining: ${stale:-0}"
     ;;
 
   # ── สถานะ ────────────────────────────────────────────────────────

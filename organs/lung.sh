@@ -41,7 +41,7 @@ case "${1:-help}" in
   pulse)
     CONTEXT="$*"
     log_action "LUNG_PULSE" "$CONTEXT"
-    local total_pending="$(python3 -c 'import json,sys; d=json.loads(sys.stdin.read()); print(d.get("total_pending", 0))' <<<'$CONTEXT' 2>/dev/null || echo 0)"
+    total_pending=$(python3 -c 'import json,sys; d=json.loads(sys.stdin.read()); print(d.get("total_pending", 0))' <<<"$CONTEXT" 2>/dev/null || echo 0)
     echo "Lung receives clean energy and keeps the blood pure"
     echo "  total_pending: ${total_pending:-0}"
     ;;
