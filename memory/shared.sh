@@ -39,19 +39,27 @@ case "$CMD" in
 
   # ── บันทึก shared state ──────────────────────────────────────────
   set)
-    KEY="$1" VALUE="$2"
+    KEY="$1"
+    shift || true
+    VALUE="$*"
     if [ -z "$KEY" ]; then err "ต้องระบุ key"; exit 1; fi
     CURRENT=$(_load)
-    UPDATED=$(python3 -c "
+    UPDATED=$(python3 - <<'PYEOF'
 import json, sys
-d = json.loads(sys.argv[1])
-d['$KEY'] = {
-  'value': '$VALUE',
-  'set_by': '$AGENT',
-  'timestamp': '$(date +%Y-%m-%dT%H:%M:%S)'
+current = json.loads(sys.argv[1])
+key = sys.argv[2]
+value = sys.stdin.read()
+current[key] = {
+  'value': value,
+  'set_by': sys.argv[3],
+  'timestamp': sys.argv[4]
 }
-print(json.dumps(d, ensure_ascii=False, indent=2))
-" "$CURRENT")
+print(json.dumps(current, ensure_ascii=False, indent=2))
+PYEOF
+ "$CURRENT" "$KEY" "$AGENT" "$(date +%Y-%m-%dT%H:%M:%S)" <<'VALUE'
+$VALUE
+VALUE
+)
     _save "$UPDATED"
     log_action "SHARED_SET" "$KEY=$VALUE by $AGENT"
     ok "shared: $KEY = $VALUE"
