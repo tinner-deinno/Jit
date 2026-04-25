@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎧 karn Voice Listener — Thai Speech to Text</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .ear-icon {
+      font-size: 60px;
+      margin-bottom: 10px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+
+    h1 {
+      color: #1e3c72;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    #startBtn {
+      background: #4CAF50;
+      color: white;
+    }
+
+    #startBtn:hover {
+      background: #45a049;
+      transform: scale(1.05);
+    }
+
+    #startBtn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    #stopBtn {
+      background: #f44336;
+      color: white;
+    }
+
+    #stopBtn:hover {
+      background: #da190b;
+    }
+
+    #stopBtn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .status {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #2196F3;
+    }
+
+    .status-text {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    .status-indicator.recording {
+      background: #f44336;
+      animation: blink 1s infinite;
+    }
+
+    .status-indicator.idle {
+      background: #4CAF50;
+    }
+
+    @keyframes blink {
+      0%, 49%, 100% { opacity: 1; }
+      50%, 99% { opacity: 0.5; }
+    }
+
+    .transcript-section {
+      margin-bottom: 20px;
+    }
+
+    .transcript-label {
+      font-weight: bold;
+      color: #1e3c72;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .transcript-box {
+      background: #f9f9f9;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      min-height: 100px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .transcript-box.empty {
+      color: #999;
+      font-style: italic;
+    }
+
+    .timestamp {
+      color: #999;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .confidence {
+      color: #666;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .alert-error {
+      background: #ffebee;
+      color: #c62828;
+      border-left: 4px solid #c62828;
+    }
+
+    .alert-info {
+      background: #e3f2fd;
+      color: #1565c0;
+      border-left: 4px solid #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="ear-icon">🎧</div>
+      <h1>karn Voice Listener</h1>
+      <p class="subtitle">Thai Speech-to-Text • Real-time Transcription</p>
+    </div>
+
+    <div id="alertContainer"></div>
+
+    <div class="status">
+      <div class="status-text">
+        <span class="status-indicator idle" id="indicator"></span>
+        <span id="statusText">Ready to listen...</span>
+      </div>
+      <div style="font-size: 12px; color: #666; margin-top: 5px;">
+        Browser: <span id="browserInfo">Detecting...</span> |
+        Microphone: <span id="micInfo">Checking...</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="startBtn">🎙️ Start Listening</button>
+      <button id="stopBtn" disabled>⏹️ Stop Recording</button>
+      <button id="saveBtn" disabled>💾 Save Transcript</button>
+      <button id="clearBtn">🗑️ Clear</button>
+    </div>
+
+    <div class="transcript-section">
+      <div class="transcript-label">📝 Real-time Transcript (Thai)</div>
+      <div class="transcript-box empty" id="transcriptBox">
+        (Transcript will appear here when you start recording...)
+      </div>
+      <div class="timestamp" id="transcriptTime"></div>
+      <div class="confidence" id="confidence"></div>
+    </div>
+  </div>
+
+  <script>
+    // ────── Configuration ──────────
+    const STATUS = {
+      IDLE: 'idle',
+      RECORDING: 'recording',
+      PROCESSING: 'processing',
+      ERROR: 'error'
+    };
+
+    let currentStatus = STATUS.IDLE;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let transcript = '';
+    let recognitionSupported = false;
+
+    // ────── DOM Elements ──────────
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const transcriptBox = document.getElementById('transcriptBox');
+    const statusText = document.getElementById('statusText');
+    const indicator = document.getElementById('indicator');
+    const alertContainer = document.getElementById('alertContainer');
+    const browserInfo = document.getElementById('browserInfo');
+    const micInfo = document.getElementById('micInfo');
+    const transcriptTime = document.getElementById('transcriptTime');
+    const confidence = document.getElementById('confidence');
+
+    // ────── Initialize ──────────
+    document.addEventListener('DOMContentLoaded', () => {
+      detectBrowser();
+      checkMicrophone();
+      setupWebSpeechAPI();
+      setupEventListeners();
+    });
+
+    function detectBrowser() {
+      const ua = navigator.userAgent;
+      let browserName = 'Unknown';
+      if (ua.indexOf('Chrome') > -1) browserName = 'Chrome';
+      else if (ua.indexOf('Safari') > -1) browserName = 'Safari';
+      else if (ua.indexOf('Firefox') > -1) browserName = 'Firefox';
+      else if (ua.indexOf('Edge') > -1) browserName = 'Edge';
+      browserInfo.textContent = browserName;
+    }
+
+    async function checkMicrophone() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+        micInfo.textContent = '✅ Available';
+      } catch (err) {
+        micInfo.textContent = '❌ Not Available';
+        showAlert('Microphone not available. Please check permissions.', 'error');
+      }
+    }
+
+    function setupWebSpeechAPI() {
+      // Check for Web Speech API support
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (SpeechRecognition) {
+        recognitionSupported = true;
+        window.recognition = new SpeechRecognition();
+        window.recognition.continuous = true;
+        window.recognition.interimResults = true;
+        window.recognition.lang = 'th-TH'; // Thai language
+
+        window.recognition.onstart = () => {
+          updateStatus(STATUS.RECORDING, 'Listening... 🎙️');
+        };
+
+        window.recognition.onresult = (event) => {
+          let interimTranscript = '';
+          let finalTranscript = '';
+
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcriptSegment = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcriptSegment + ' ';
+            } else {
+              interimTranscript += transcriptSegment;
+            }
+          }
+
+          transcript += finalTranscript;
+
+          // Display live transcript
+          if (transcript.trim() || interimTranscript.trim()) {
+            transcriptBox.classList.remove('empty');
+            transcriptBox.textContent = transcript + (interimTranscript ? ' (' + interimTranscript + ')' : '');
+            transcriptTime.textContent = `⏱️ ${new Date().toLocaleTimeString('th-TH')}`;
+          }
+        };
+
+        window.recognition.onerror = (event) => {
+          updateStatus(STATUS.ERROR, `Error: ${event.error}`);
+          showAlert(`Speech Recognition Error: ${event.error}`, 'error');
+        };
+
+        window.recognition.onend = () => {
+          updateStatus(STATUS.IDLE, 'Recording stopped');
+        };
+      } else {
+        showAlert('Web Speech API not supported in this browser. Use Chrome, Edge, or Safari.', 'error');
+      }
+    }
+
+    function setupEventListeners() {
+      startBtn.addEventListener('click', startListening);
+      stopBtn.addEventListener('click', stopListening);
+      saveBtn.addEventListener('click', saveTranscript);
+      clearBtn.addEventListener('click', () => {
+        transcript = '';
+        transcriptBox.textContent = '(Transcript cleared)';
+        transcriptBox.classList.add('empty');
+        transcriptTime.textContent = '';
+        confidence.textContent = '';
+      });
+    }
+
+    function startListening() {
+      if (!recognitionSupported) {
+        showAlert('Web Speech API not supported', 'error');
+        return;
+      }
+
+      transcript = '';
+      audioChunks = [];
+      transcriptBox.classList.add('empty');
+      transcriptBox.textContent = 'Listening...';
+
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      saveBtn.disabled = true;
+
+      try {
+        window.recognition.start();
+      } catch (err) {
+        console.log('Recognition already started');
+      }
+    }
+
+    function stopListening() {
+      if (window.recognition) {
+        window.recognition.stop();
+      }
+
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      saveBtn.disabled = transcript.trim() === '';
+
+      updateStatus(STATUS.IDLE, 'Ready to listen...');
+    }
+
+    async function saveTranscript() {
+      if (!transcript.trim()) {
+        showAlert('No transcript to save', 'error');
+        return;
+      }
+
+      const timestamp = new Date().toISOString();
+      const filename = `karn-${new Date().getTime()}.md`;
+
+      const data = {
+        filename: filename,
+        timestamp: timestamp,
+        language: 'th-TH',
+        transcript: transcript.trim(),
+        wordCount: transcript.trim().split(' ').length
+      };
+
+      try {
+        // Send to server (you'll need a backend to handle this)
+        const response = await fetch('/api/save-transcript', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          showAlert(`✅ Saved: ${filename}`, 'info');
+        } else {
+          // Fallback: Show transcript for manual saving
+          const textToSave = `# karn Voice Transcript\n\n**Time**: ${timestamp}\n**Language**: Thai (th-TH)\n**Words**: ${data.wordCount}\n\n---\n\n${transcript.trim()}\n`;
+          downloadFile(textToSave, filename);
+        }
+      } catch (err) {
+        console.error('Save error:', err);
+        showAlert('Could not save to server. Download option will be available.', 'info');
+      }
+    }
+
+    function downloadFile(content, filename) {
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/markdown;charset=utf-8,' + encodeURIComponent(content));
+      element.setAttribute('download', filename);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+
+    function updateStatus(status, message) {
+      currentStatus = status;
+      statusText.textContent = message;
+
+      if (status === STATUS.RECORDING) {
+        indicator.className = 'status-indicator recording';
+      } else if (status === STATUS.ERROR) {
+        indicator.className = 'status-indicator error';
+        indicator.style.background = '#f44336';
+      } else {
+        indicator.className = 'status-indicator idle';
+      }
+    }
+
+    function showAlert(message, type) {
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      alertContainer.appendChild(alert);
+
+      setTimeout(() => {
+        alert.remove();
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
