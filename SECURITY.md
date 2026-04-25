@@ -80,12 +80,12 @@ token = os.getenv('OLLAMA_TOKEN')
 
 ```bash
 # DON'T DO THIS - NEVER HARDCODE TOKENS
-curl -H "Authorization: Bearer 9e34679b9d60d8b984005ec46508579c" ...
+curl -H "Authorization: Bearer YOUR_REAL_TOKEN_HERE" ...
 ```
 
 ```json
 {
-  "token": "9e34679b9d60d8b984005ec46508579c"
+  "token": "<your-actual-token>"
 }
 ```
 
@@ -233,7 +233,7 @@ chmod +x .git/hooks/pre-commit
 
 | Variable | Purpose | Example | Required |
 |----------|---------|---------|----------|
-| `OLLAMA_TOKEN` | MDES Ollama API token | `9e34679b...` | ✅ Yes |
+| `OLLAMA_TOKEN` | MDES Ollama API token | `<your-token>` | ✅ Yes |
 | `OLLAMA_BASE_URL` | Ollama service URL | `https://ollama.mdes-innova.online` | No |
 | `ORACLE_PORT` | Oracle knowledge base port | `47778` | No |
 | `GITHUB_TOKEN` | GitHub API access | `ghp_xxxx` | No (if using GitHub) |

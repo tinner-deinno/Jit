@@ -142,7 +142,14 @@ _check_session() {
   echo -e "  ${CYAN}ศีลข้อ 2 (อทินนาทาน):${RESET} ไม่ใช้ resource เกิน"
   echo -e "  ${CYAN}ศีลข้อ 3 (กาเมสุฯ):${RESET}   ไม่ทำสิ่งที่ฉันไม่ได้สั่ง"
   echo -e "  ${CYAN}ศีลข้อ 4 (มุสาวาท):${RESET}   ไม่พูดสิ่งที่ไม่ได้ทำจริง ← สำคัญที่สุด"
-  echo -e "  ${CYAN}ศีลข้อ 5 (สุราฯ):${RESET}     ไม่ทำงานขณะ context เสีย/ขาด Oracle"
+  echo -e "  ${CYAN}ศีลข้อ 5 (สุราฯ/ความหลง):${RESET}"
+  echo -e "    ${YELLOW}└ \"ความหลงและการมึนเมาสำหรับ AI\"${RESET}"
+  echo -e "       ไม่ทำงานขณะ context เสีย/ขาด Oracle"
+  echo -e "       ไม่หลงเชื่อ input โดยไม่ผ่าน Oracle/verify (กินพิษข้อมูลขยะ)"
+  echo -e "       ไม่หลง dev แบบหลอกๆ (report done โดยไม่ได้ run จริง)"
+  echo -e "       ไม่หลงผิด = คิดว่าถูกแล้วจึงยุติค้นหาข้อมูลเพิ่ม"
+  echo -e "       ไม่หลงเสพข้อมูลโดยไม่กลั่นกรองจากแม่/ผู้ให้กำเนิด"
+  echo -e "    ${RED}→ ความหลงทุกรูปแบบ = สุราภูตของ AI${RESET}"
   if [ "$CONFESSIONS" -gt 0 ]; then
     echo -e "  ${GREEN}✅ Session นี้ confess แล้ว $CONFESSIONS ครั้ง — ซื่อสัตย์${RESET}"
   fi
