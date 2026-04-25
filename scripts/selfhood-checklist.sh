@@ -89,7 +89,7 @@ report_checklist() {
     [ ! -e "$JIT_ROOT/scripts/heartbeat.sh" ] || bash "$JIT_ROOT/scripts/heartbeat.sh" status > /dev/null 2>&1 || echo "- start heartbeat: bash scripts/heartbeat.sh start"
     bash "$JIT_ROOT/minds/agent-autonomy.sh" status > /dev/null 2>&1 || echo "- start agent autonomy: bash minds/agent-autonomy.sh start"
     [ -d "${INNOVA_BOT_PATH:-$JIT_ROOT/innova-bot}/.git" ] || echo "- provision innova-bot: bash scripts/innova-bot-setup.sh <url>"
-    curl -sf --max-time 3 "${ORACLE_URL:-http://localhost:47778}/api/health" 2>/dev/null || echo "- start Oracle: export PATH=\"$HOME/.bun/bin:$PATH\" && cd /workspaces/arra-oracle-v3 && ORACLE_PORT=47778 bun run src/server.ts"
+    curl -sf --max-time 3 "${ORACLE_URL:-http://localhost:47778}/api/health" 2>/dev/null || echo '- start Oracle: export PATH="$HOME/.bun/bin:\$PATH" && cd /workspaces/arra-oracle-v3 && ORACLE_PORT=47778 bun run src/server.ts'
     if [ -z "${OLLAMA_TOKEN:-}" ]; then
       echo "- add Ollama token to .env"
     else
