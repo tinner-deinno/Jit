@@ -12,7 +12,13 @@
 #   ./ollama.sh status                   — ทดสอบ connection
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+JIT_ROOT="${SCRIPT_DIR}/.."
 source "$SCRIPT_DIR/lib.sh"
+
+# Load .env if it exists (for OLLAMA_TOKEN and other config)
+if [ -f "$JIT_ROOT/.env" ]; then
+  set -a; source "$JIT_ROOT/.env"; set +a
+fi
 
 CMD="${1:-ask}"
 shift || true
@@ -21,28 +27,20 @@ _call_ollama() {
   local PROMPT="$1"
   local TIMEOUT="${2:-45}"
   log_action "OLLAMA_CALL" "${PROMPT:0:80}..."
-  python3 - "$PROMPT" "$TIMEOUT" <<'PYEOF'
-import sys, json, urllib.request, urllib.error
 
-prompt  = sys.argv[1]
-timeout = int(sys.argv[2])
-url     = "https://ollama.mdes-innova.online/api/generate"
-token   = "${OLLAMA_TOKEN}"
-model   = "gemma4:26b"
+  local JSON_BODY=$(printf '%s' "$PROMPT" | python3 -c "import sys, json; print(json.dumps({'model':'gemma4:26b', 'prompt':sys.stdin.read(), 'stream':False}))")
 
-body = json.dumps({"model": model, "prompt": prompt, "stream": False}).encode()
-req  = urllib.request.Request(url, data=body, headers={
-    "Content-Type": "application/json",
-    "Authorization": f"Bearer {token}"
-})
-try:
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        data = json.loads(r.read())
-        print(data.get("response", ""))
-except urllib.error.URLError as e:
-    print(f"ERROR: {e}", file=sys.stderr)
-    sys.exit(1)
-PYEOF
+  local RESPONSE=$(curl -s --max-time "$TIMEOUT" "https://ollama.mdes-innova.online/api/generate" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $OLLAMA_TOKEN" \
+    --data "$JSON_BODY" 2>/dev/null)
+
+  if [ -z "$RESPONSE" ]; then
+    echo "ERROR: Ollama timeout or no response" >&2
+    return 1
+  fi
+
+  echo "$RESPONSE" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('response', ''))" 2>/dev/null
 }
 
 case "$CMD" in
