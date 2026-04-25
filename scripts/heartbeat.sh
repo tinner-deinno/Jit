@@ -26,6 +26,9 @@ source "$JIT_ROOT/limbs/lib.sh"
 # โหลด env
 if [ -f "$JIT_ROOT/.env" ]; then set -a; . "$JIT_ROOT/.env"; set +a; fi
 
+ORACLE_URL="${ORACLE_URL:-http://localhost:47778}"
+OLLAMA_URL="${OLLAMA_URL:-https://ollama.mdes-innova.online}"
+
 PID_FILE="/tmp/innova-heartbeat.pid"
 LOG_FILE="/tmp/innova-heartbeat.log"
 PULSE_INTERVAL=900  # 15 นาที = 900 วินาที
