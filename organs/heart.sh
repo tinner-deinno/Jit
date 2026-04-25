@@ -48,19 +48,72 @@ declare -A ROUTE_TABLE=(
   ["search"]="oracle"
 )
 
+collect_blood_payload() {
+  local payload=""
+  local total_pending=0
+  local total_files=0
+  local agents="$(find /tmp/manusat-bus -maxdepth 1 -mindepth 1 -type d -printf '%f\n' 2>/dev/null | sort)"
+
+  for agent in $agents; do
+    local pending=$(find "/tmp/manusat-bus/$agent" -name '*.msg' 2>/dev/null | wc -l | tr -d ' ')
+    total_pending=$(( total_pending + pending ))
+    payload+="\"$agent\": { \"pending\": $pending }, "
+  done
+
+  total_files=$(find . -maxdepth 2 -type f | wc -l | tr -d ' ')
+  local ts="$(date '+%Y-%m-%dT%H:%M:%S')"
+  echo "{ \"timestamp\": \"$ts\", \"total_pending\": $total_pending, \"file_count\": $total_files, $payload \"note\": \"context blood from agents\" }"
+}
+
+send_to_lung() {
+  local payload="$1"
+  local lung_script="$SCRIPT_DIR/lung.sh"
+
+  if [ ! -x "$lung_script" ]; then
+    warn "ปอดยังไม่พร้อม: สร้าง $lung_script ก่อน"
+    return 1
+  fi
+
+  log_action "HEART_IN" "$payload"
+  bash "$lung_script" filter "$payload" >/dev/null 2>&1 || true
+  bash "$SCRIPT_DIR/../network/bus.sh" broadcast "heartbeat:lung:in" "$payload" >/dev/null 2>&1 || true
+}
+
+broadcast_clean_blood() {
+  local energy_payload="$1"
+  log_action "HEART_OUT" "$energy_payload"
+  bash "$SCRIPT_DIR/../network/bus.sh" broadcast "heartbeat:OUT" "$energy_payload" >/dev/null 2>&1 || true
+}
+
 case "$CMD" in
 
   # ── ส่ง heartbeat ────────────────────────────────────────────────
   beat)
-    TS=$(date '+%Y-%m-%dT%H:%M:%S')
-    echo "{\"heartbeat\":\"$TS\",\"from\":\"heart\",\"status\":\"alive\"}" \
-      > /tmp/manusat-bus/heartbeat.json 2>/dev/null || true
-    log_action "HEART_BEAT" "$TS"
+    local phase="${1:-cycle}"
+    local ts="$(date '+%Y-%m-%dT%H:%M:%S')"
 
-    # แจ้งทุก agent ผ่าน nerve
-    NERVE="$SCRIPT_DIR/nerve.sh"
-    [ -x "$NERVE" ] && bash "$NERVE" signal "heartbeat" "$TS" "heart"
-    echo -ne "💓 "
+    if [ "$phase" = "in" ] || [ "$phase" = "cycle" ]; then
+      local blood_payload
+      blood_payload=$(collect_blood_payload)
+      send_to_lung "$blood_payload"
+      echo "{\"heartbeat\":\"$ts\",\"from\":\"heart\",\"phase\":\"IN\",\"status\":\"alive\"}" \
+        > /tmp/manusat-bus/heartbeat-in.json 2>/dev/null || true
+      log_action "HEART_IN" "$ts"
+      NERVE="$SCRIPT_DIR/nerve.sh"
+      [ -x "$NERVE" ] && bash "$NERVE" signal "heartbeat:IN" "$ts" "heart"
+      echo -ne "->💓 "
+    fi
+
+    if [ "$phase" = "out" ] || [ "$phase" = "cycle" ]; then
+      local energy_payload="{ \"timestamp\": \"$ts\", \"energy\": \"clean\", \"note\": \"blood out to all agents\" }"
+      broadcast_clean_blood "$energy_payload"
+      echo "{\"heartbeat\":\"$ts\",\"from\":\"heart\",\"phase\":\"OUT\",\"status\":\"alive\"}" \
+        > /tmp/manusat-bus/heartbeat-out.json 2>/dev/null || true
+      log_action "HEART_OUT" "$ts"
+      NERVE="$SCRIPT_DIR/nerve.sh"
+      [ -x "$NERVE" ] && bash "$NERVE" signal "heartbeat:OUT" "$ts" "heart"
+      echo -ne "❤️‍🔥-> "
+    fi
     ;;
 
   # ── ส่งงานไปยัง organ ที่เหมาะสม ─────────────────────────────────

@@ -110,7 +110,8 @@ class HeartbeatScriptTest(unittest.TestCase):
         result = self.run_heartbeat(['once'])
         self.assertIn('committed', result.stdout)
         log = subprocess.run(['git', 'log', '--oneline', '-1'], cwd=self.root, stdout=subprocess.PIPE, text=True)
-        self.assertIn('💓 heartbeat', log.stdout)
+        self.assertIn('->💓 heartbeat (IN)', log.stdout)
+        self.assertIn('❤️‍🔥 heartbeat (OUT)', log.stdout)
 
     def test_status_shows_stopped_when_no_daemon(self):
         result = self.run_heartbeat(['status'])

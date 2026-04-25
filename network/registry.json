@@ -188,6 +188,20 @@
       "manages": []
     },
     {
+      "name": "lung",
+      "role": "ปอด (Lung) — Purifier / Energy Filter",
+      "organ": "ปอด",
+      "model": "claude-haiku-4-5",
+      "repo": "tinner-deinno/Jit",
+      "inbox": "/tmp/manusat-bus/lung",
+      "capabilities": ["purify", "clean-energy", "blood-filter", "respiration", "waste-management"],
+      "status": "active",
+      "born": "2026-04-25",
+      "description": "ปอดฟอกเลือดและขจัดของเสีย — lung purifier, clean-energy distributor",
+      "reports_to": "pran",
+      "manages": []
+    },
+    {
       "name": "sayanprasathan",
       "role": "ระบบประสาท (Nerve) — Event / Signal Network",
       "organ": "ระบบประสาท",
@@ -212,6 +226,7 @@
     "มือ":          {"script": "organs/hand.sh",   "agent": "mue",               "type": "action"},
     "ขา":           {"script": "organs/leg.sh",    "agent": "pada",              "type": "movement"},
     "หัวใจ":        {"script": "organs/heart.sh",  "agent": "pran",              "type": "vital"},
+    "ปอด":          {"script": "organs/lung.sh",   "agent": "lung",              "type": "vital"},
     "ระบบประสาท":   {"script": "organs/nerve.sh",  "agent": "sayanprasathan",    "type": "network"},
     "ปัญญา":        {"script": "limbs/oracle.sh",  "agent": "innova",            "type": "knowledge"},
     "กระดูกสันหลัง": {"script": null,              "agent": "lak",               "type": "structure"},

@@ -17,6 +17,7 @@
 | สร้าง/แก้/ลบไฟล์ | **มือ** `hand.sh` | `bash organs/hand.sh create <path>` |
 | navigate, git, deploy | **ขา** `leg.sh` | `bash organs/leg.sh go jit` |
 | orchestrate, route task | **หัวใจ** `heart.sh` | `bash organs/heart.sh pump <type> <args>` |
+| ฟอกเลือด, คืนพลังงาน | **ปอด** `lung.sh` | `bash organs/lung.sh filter <context>` |
 | ส่ง event, signal | **ระบบประสาท** `nerve.sh` | `bash organs/nerve.sh signal <event> <data>` |
 
 ---

@@ -1,0 +1,17 @@
+{
+  "name": "lung",
+  "role": "ปอด (Lung) — Purifier / Energy Filter",
+  "organ": "ปอด",
+  "capabilities": [
+    "purify",
+    "clean-energy",
+    "filter-blood",
+    "respiration",
+    "waste-management"
+  ],
+  "status": "active",
+  "born": "2026-04-25",
+  "description": "ปอดช่วยฟอกเลือดและขจัดของเสียก่อนส่งพลังงานบริสุทธิ์ให้หัวใจ",
+  "reports_to": "pran",
+  "inbox": "/tmp/manusat-bus/lung"
+}

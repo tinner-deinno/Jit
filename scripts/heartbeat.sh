@@ -128,7 +128,7 @@ _do_pulse() {
   TIMEOUT=$(heartbeat_response_timeout "$MODE")
 
   _pulse_banner "$PULSE_COUNT" "$MODE" "IN"
-  bash "$JIT_ROOT/organs/heart.sh" beat >/dev/null 2>&1 || true
+  bash "$JIT_ROOT/organs/heart.sh" beat in >/dev/null 2>&1 || true
   _send_heartbeat_message "heartbeat:${MODE}:in" "pulse #$PULSE_COUNT in"
 
   local ack_count
@@ -140,6 +140,7 @@ _do_pulse() {
   fi
 
   _pulse_banner "$PULSE_COUNT" "$MODE" "OUT"
+  bash "$JIT_ROOT/organs/heart.sh" beat out >/dev/null 2>&1 || true
   _send_heartbeat_message "heartbeat:${MODE}:out" "pulse #$PULSE_COUNT out"
 
   local CHANGED=0
@@ -227,7 +228,7 @@ PYEOF
   git -C "$JIT_ROOT" add -A 2>/dev/null
   STAGED_COUNT=$(git -C "$JIT_ROOT" diff --cached --name-only 2>/dev/null | grep -v 'memory/state/innova.state.json' | wc -l | tr -d ' ')
   if [ "${HOST_CHANGED:-0}" = "1" ] || [ "$STAGED_COUNT" -gt 0 ]; then
-    COMMIT_MSG="💓 heartbeat #$PULSE_COUNT — $(hostname) @ $(date '+%Y-%m-%d %H:%M')"
+    COMMIT_MSG="->💓 heartbeat (IN) ->❤️‍🔥 heartbeat (OUT) #$PULSE_COUNT — $(hostname) @ $(date '+%Y-%m-%d %H:%M')"
     git -C "$JIT_ROOT" commit -m "$COMMIT_MSG" --no-verify > /dev/null 2>&1
     NEW_HOST_LABEL=""; [ "${HOST_CHANGED:-0}" = "1" ] && NEW_HOST_LABEL=" (new host)"
     printf " %s committed%s\n" "$(_hbar 100)" "$NEW_HOST_LABEL"
