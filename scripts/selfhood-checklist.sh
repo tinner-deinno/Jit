@@ -14,7 +14,11 @@ if [ -f "$JIT_ROOT/.env" ]; then
 fi
 
 check_heartbeat() {
-  if bash "$JIT_ROOT/scripts/heartbeat.sh" status 2>/dev/null | grep -q "กำลังรัน"; then
+  if [ -f "/tmp/innova-heartbeat.pid" ] && kill -0 "$(cat /tmp/innova-heartbeat.pid)" 2>/dev/null; then
+    echo "✅ heartbeat daemon running"
+    return 0
+  fi
+  if bash "$JIT_ROOT/scripts/heartbeat.sh" status 2>/dev/null | grep -qE "กำลังรัน|running"; then
     echo "✅ heartbeat daemon running"
     return 0
   fi
@@ -23,7 +27,11 @@ check_heartbeat() {
 }
 
 check_autonomy() {
-  if bash "$JIT_ROOT/minds/agent-autonomy.sh" status 2>/dev/null | grep -q "Daemon: running"; then
+  if [ -f "/tmp/agent-autonomy.pid" ] && kill -0 "$(cat /tmp/agent-autonomy.pid)" 2>/dev/null; then
+    echo "✅ agent-autonomy daemon running"
+    return 0
+  fi
+  if bash "$JIT_ROOT/minds/agent-autonomy.sh" status 2>/dev/null | grep -qE "Daemon: running|Daemon.*running"; then
     echo "✅ agent-autonomy daemon running"
     return 0
   fi
