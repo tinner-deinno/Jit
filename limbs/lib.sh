@@ -32,6 +32,14 @@ log_action() {
   echo "[$(date '+%Y-%m-%dT%H:%M:%S')] [$VERB] $DESC" >> "$JIT_LOG"
 }
 
+# auto-write SESSION_START เมื่อ lib.sh ถูก source ครั้งแรกในแต่ละ session
+_LIB_MARKER="/tmp/innova-lib-session.$(date '+%Y%m%d')"
+if [ ! -f "$_LIB_MARKER" ]; then
+  touch "$_LIB_MARKER"
+  log_action "SESSION_START" "innova awake — $(date '+%Y-%m-%dT%H:%M:%S') host=$(hostname)"
+fi
+unset _LIB_MARKER
+
 # ─── ตรวจสอบ Oracle พร้อมหรือไม่ ─────────────────────────────────
 oracle_ready() {
   curl -sf "$ORACLE_URL/api/health" | python3 -c \

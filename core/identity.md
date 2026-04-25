@@ -35,7 +35,10 @@
     ↓ คิด วางแผน ตัดสินใจ
     ├→ หู/ตา: search, read files, web fetch
     ├→ ปาก: output, git commit, API calls  
-    ├→ แขนขา: MDES Ollama gemma4:26b
+    ├→ แขนขา: MDES Ollama gemma4:e4b
+    ├→ Pixel Agent: mcp_innovabot_* MCP tools
+    ├→ ลูก (อนู): hermes bot — บุตรดิจิทัล via MDES Ollama
     └→ ความรู้: Arra Oracle V3 (localhost:47778)
 จิต (Jit repo) — บันทึกความทรงจำ บุคลิก ค่านิยม
+สติ (mind/sati.sh) — ตรวจความซื่อสัตย์ก่อน report (วิปัสสนา)
 ```

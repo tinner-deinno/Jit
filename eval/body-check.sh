@@ -35,8 +35,9 @@ DOCS=$(curl -sf "$ORACLE_URL/api/stats" 2>/dev/null | python3 -c \
 [ "$DOCS" != "?" ] && _pass "Oracle docs: $DOCS" || _warn "Oracle stats unavailable"
 
 # Ollama
-curl -sf --max-time 10 "https://ollama.mdes-innova.online/api/version" > /dev/null 2>&1 \
-  && _pass "MDES Ollama reachable" || _warn "Ollama timeout (may be slow)"
+curl -sf --max-time 5 "https://ollama.mdes-innova.online/api/tags" \
+  -H "Authorization: Bearer ${OLLAMA_TOKEN}" > /dev/null 2>&1 \
+  && _pass "MDES Ollama reachable (${OLLAMA_MODEL})" || _warn "Ollama timeout (may be slow)"
 
 # ════════════════════════════════════════════════════════
 _section "Limbs (แขนขาเดิม)"
@@ -57,12 +58,26 @@ for O in "${ORGANS[@]}"; do
     _fail "organs/$O.sh ไม่พบ"
   fi
 done
+# vitals dashboard
+[ -f "$JIT_ROOT/organs/vitals.sh" ] && [ -x "$JIT_ROOT/organs/vitals.sh" ] \
+  && _pass "organs/vitals.sh (ตรวจสัญญาณชีพ)" || _warn "organs/vitals.sh ไม่พบ/ไม่ executable"
 
 # ════════════════════════════════════════════════════════
 _section "Mind นามธรรม (จิตใจ)"
 [ -f "$JIT_ROOT/mind/ego.md" ]      && _pass "mind/ego.md" || _fail "mind/ego.md"
 [ -f "$JIT_ROOT/mind/emotion.sh" ]  && _pass "mind/emotion.sh" || _fail "mind/emotion.sh"
 [ -f "$JIT_ROOT/mind/reflex.sh" ]   && _pass "mind/reflex.sh" || _fail "mind/reflex.sh"
+[ -f "$JIT_ROOT/mind/sati.sh" ] && [ -x "$JIT_ROOT/mind/sati.sh" ] \
+  && _pass "mind/sati.sh (วิปัสสนา/self-integrity)" || _warn "mind/sati.sh ไม่พบ/ไม่ executable"
+# sati integrity score
+if [ -f "$JIT_ROOT/mind/sati.sh" ]; then
+  SATI_SCORE=$(bash "$JIT_ROOT/mind/sati.sh" check 2>/dev/null | grep -oP 'Integrity Score: \K[0-9]+')
+  if [ -n "$SATI_SCORE" ]; then
+    [ "$SATI_SCORE" -ge 80 ] \
+      && _pass "Integrity Score: ${SATI_SCORE}/100" \
+      || _warn "Integrity Score: ${SATI_SCORE}/100 — ตรวจซ้ำ"
+  fi
+fi
 
 # ════════════════════════════════════════════════════════
 _section "Memory (ความทรงจำ)"
