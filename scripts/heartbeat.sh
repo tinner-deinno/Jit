@@ -59,6 +59,17 @@ _do_pulse() {
 
   local CHANGED=0
 
+  # ── 0. ขา — git pull จาก GitHub ก่อน (รับความทรงจำจากเครื่องอื่น) ──
+  echo -ne "  🌐  sync "
+  if [ -f "$JIT_ROOT/scripts/sync-cross-machine.sh" ]; then
+    PULL_OUT=$(bash "$JIT_ROOT/scripts/sync-cross-machine.sh" pull 2>&1)
+    PULL_OK=$(echo "$PULL_OUT" | grep -c '✅\|up-to-date\|up to date' || echo 0)
+    printf " %s %s\n" "$(_hbar $([ $PULL_OK -gt 0 ] && echo 100 || echo 30))" \
+      "$([ $PULL_OK -gt 0 ] && echo 'pulled latest memory' || echo 'pull skipped')"
+  else
+    printf " %s %s\n" "$(_hbar 50 10)" "skip"
+  fi
+
   # ── 1. สติ — ตรวจ integrity ─────────────────────────────────────
   echo -ne "  🧘  สติ  "
   SATI_SCORE="?"
@@ -86,26 +97,54 @@ _do_pulse() {
     "$([ $ORACLE_OK -eq 1 ] && echo '✅' || echo '❌')" \
     "$([ $OLLAMA_OK -eq 1 ] && echo '✅' || echo '❌')"
 
-  # ── 4. มือ — commit ถ้ามีการเปลี่ยนแปลง ───────────────────────────
+  # ── 4. มือ — อัปเดต state file + commit ────────────────────────────
   echo -ne "  ✋  มือ  "
-  if [ "$CHANGED" -gt 0 ]; then
-    git -C "$JIT_ROOT" add -A 2>/dev/null
-    COMMIT_MSG="💓 heartbeat pulse #$PULSE_COUNT — $(date '+%Y-%m-%d %H:%M')"
-    git -C "$JIT_ROOT" commit -m "$COMMIT_MSG" --no-verify 2>/dev/null
-    COMMIT_RC=$?
-    [ "$COMMIT_RC" -eq 0 ] && printf " %s %s\n" "$(_hbar 100)" "committed: $COMMIT_MSG" \
-                            || printf " %s %s\n" "$(_hbar 0)" "nothing new to commit"
-  else
-    printf " %s %s\n" "$(_hbar 0 10)" "ไม่มีการเปลี่ยนแปลง"
-  fi
+  # อัปเดต innova.state.json
+  python3 - << PYEOF 2>/dev/null
+import json, socket, time
+
+f = '$JIT_ROOT/memory/state/innova.state.json'
+try:
+  d = json.load(open(f))
+except:
+  d = {}
+
+v = d.setdefault('vitality', {})
+v['last_heartbeat'] = time.strftime('%Y-%m-%dT%H:%M:%S')
+v['pulse_count'] = int(v.get('pulse_count', 0)) + 1
+v['oracle_docs'] = $ORACLE_OK
+v['host'] = socket.gethostname()
+
+hist = v.setdefault('host_history', [])
+entry = {'host': socket.gethostname(), 'time': v['last_heartbeat'], 'pulse': v['pulse_count']}
+if not hist or hist[-1].get('host') != entry['host']:
+  hist.append(entry)
+  hist[:] = hist[-20:]
+
+json.dump(d, open(f, 'w'), ensure_ascii=False, indent=2)
+PYEOF
+
+  # บันทึก heartbeat.log (git-tracked)
+  echo "$(date '+%Y-%m-%dT%H:%M:%S') | $(hostname) | #$PULSE_COUNT | oracle=$ORACLE_OK | ollama=$OLLAMA_OK | changed=$REPO_CHANGES" \
+    >> "$JIT_ROOT/memory/state/heartbeat.log"
+  CHANGED=1  # state เปลี่ยนเสมอ
+
+  git -C "$JIT_ROOT" add -A 2>/dev/null
+  COMMIT_MSG="💓 heartbeat #$PULSE_COUNT — $(hostname) @ $(date '+%Y-%m-%d %H:%M')"
+  git -C "$JIT_ROOT" commit -m "$COMMIT_MSG" --no-verify > /dev/null 2>&1
+  COMMIT_RC=$?
+  [ "$COMMIT_RC" -eq 0 ] && printf " %s committed\n" "$(_hbar 100)" \
+                          || printf " %s %s\n" "$(_hbar 30)" "nothing to commit"
 
   # ── 5. ขา — push ไปยัง remotes (load-balanced) ────────────────────
   echo -ne "  🦵  ขา   "
-  if [ "$CHANGED" -gt 0 ] && [ -f "$JIT_ROOT/scripts/multi-remote.sh" ]; then
-    PUSH_RESULT=$(bash "$JIT_ROOT/scripts/multi-remote.sh" push 2>&1 | tail -1)
-    printf " %s %s\n" "$(_hbar 100)" "${PUSH_RESULT:-pushed}"
+  if [ -f "$JIT_ROOT/scripts/multi-remote.sh" ]; then
+    PUSH_RESULT=$(bash "$JIT_ROOT/scripts/multi-remote.sh" push 2>&1 | grep -E '✅|❌|pushed|failed' | tail -1)
+    printf " %s %s\n" "$(_hbar $(echo "$PUSH_RESULT" | grep -q '✅' && echo 100 || echo 0))" "${PUSH_RESULT:-skip}"
   else
-    printf " %s %s\n" "$(_hbar 50 10)" "no changes to push"
+    git -C "$JIT_ROOT" push origin main --quiet > /dev/null 2>&1 \
+      && printf " %s pushed\n" "$(_hbar 100)" \
+      || printf " %s push failed\n" "$(_hbar 0)"
   fi
 
   # ── 6. ปาก — sync identity → Oracle ────────────────────────────────

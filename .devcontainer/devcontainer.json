@@ -1,0 +1,31 @@
+{
+  "name": "มนุษย์ Agent — Jit (จิต)",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  "postCreateCommand": "bash /workspaces/Jit/scripts/bootstrap.sh 2>/dev/null || true",
+
+  "postStartCommand": "bash /workspaces/Jit/scripts/init-life.sh --auto 2>/tmp/innova-init.log &",
+
+  "remoteEnv": {
+    "JIT_ROOT": "/workspaces/Jit",
+    "ORACLE_PORT": "47778",
+    "INNOVA_AUTO_AWAKEN": "1"
+  }
+}
