@@ -43,3 +43,7 @@ Thumbs.db
 # Message bus temporary files (recreated each session)
 /tmp/manusat-bus/
 /tmp/manusat-shared.json
+
+# Local Jit state files
+/memory/state/heartbeat.log
+/memory/state/innova.state.json

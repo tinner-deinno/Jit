@@ -29,9 +29,12 @@ if [ -f "$JIT_ROOT/.env" ]; then set -a; . "$JIT_ROOT/.env"; set +a; fi
 ORACLE_URL="${ORACLE_URL:-http://localhost:47778}"
 OLLAMA_URL="${OLLAMA_URL:-https://ollama.mdes-innova.online}"
 
+BUS_ROOT="${BUS_ROOT:-/tmp/manusat-bus}"
+HEARTBEAT_AGENT="${HEARTBEAT_AGENT:-heartbeat}"
+LAST_ACTIVITY_FILE="${LAST_ACTIVITY_FILE:-/tmp/heartbeat-last-active.timestamp}"
 PID_FILE="/tmp/innova-heartbeat.pid"
 LOG_FILE="/tmp/innova-heartbeat.log"
-PULSE_INTERVAL=900  # 15 นาที = 900 วินาที
+PULSE_INTERVAL=900  # default normal interval
 PULSE_COUNT=0
 
 # ────────────────────────────────────────────────────────────────────
@@ -44,21 +47,100 @@ _hbar() {
 }
 
 _pulse_banner() {
-  local COUNT="$1"
+  local COUNT="$1" MODE="$2" PHASE="$3"
+  local PHASE_LABEL=""
+  [ -n "$PHASE" ] && PHASE_LABEL=" ($PHASE)"
   echo ""
   echo -e "${CYAN}  💓 ═══════════════════════════════════════ 💓${RESET}"
-  echo -e "${CYAN}  ║   innova Heartbeat  · Pulse #$COUNT           ║${RESET}"
+  echo -e "${CYAN}  ║   innova Heartbeat  · Pulse #$COUNT $MODE$PHASE_LABEL   ║${RESET}"
   echo -e "${CYAN}  ║   $(date '+%Y-%m-%d %H:%M:%S') · ${PULSE_INTERVAL}s interval  ║${RESET}"
   echo -e "${CYAN}  💓 ═══════════════════════════════════════ 💓${RESET}"
   echo ""
 }
 
 # ────────────────────────────────────────────────────────────────────
-# ชีพจรหนึ่งครั้ง (one pulse)
+# Heartbeat mode selection
 # ────────────────────────────────────────────────────────────────────
+heartbeat_mode() {
+  local pending changes age
+  pending=$(find "$BUS_ROOT" -name '*.msg' 2>/dev/null | wc -l | tr -d ' ')
+  changes=$(git -C "$JIT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+  age=0
+  if [ -f "$LAST_ACTIVITY_FILE" ]; then
+    age=$(( $(date +%s) - $(cat "$LAST_ACTIVITY_FILE") ))
+  fi
+
+  if [ "$pending" -ge 10 ] || [ "$changes" -ge 5 ]; then
+    echo "sprint"
+  elif [ "$pending" -ge 3 ] || [ "$changes" -ge 1 ]; then
+    echo "fast"
+  elif [ "$age" -ge 3600 ]; then
+    echo "slow"
+  else
+    echo "normal"
+  fi
+}
+
+heartbeat_interval() {
+  case "$1" in
+    slow) echo 3600 ;;    # 1 hour
+    normal) echo 900 ;;   # 15 minutes
+    fast) echo 300 ;;     # 5 minutes
+    sprint) echo 60 ;;    # 1 minute
+    *) echo 900 ;;
+  esac
+}
+
+heartbeat_response_timeout() {
+  case "$1" in
+    slow) echo 10 ;;    # allow longer but fewer checks
+    normal) echo 8 ;;
+    fast) echo 5 ;;
+    sprint) echo 3 ;;
+    *) echo 8 ;;
+  esac
+}
+
+_send_heartbeat_message() {
+  local SUBJECT="$1" BODY="$2"
+  mkdir -p "$BUS_ROOT/$HEARTBEAT_AGENT"
+  bash "$JIT_ROOT/network/bus.sh" broadcast "$SUBJECT" "$BODY" >/dev/null 2>&1 || true
+}
+
+_wait_for_acks() {
+  local timeout="$1" start count
+  start=$(date +%s)
+  count=0
+  while [ $(( $(date +%s) - start )) -lt "$timeout" ]; do
+    count=$(grep -l -R '^subject:heartbeat:ack' "$BUS_ROOT/$HEARTBEAT_AGENT" 2>/dev/null | wc -l | tr -d ' ')
+    [ "$count" -gt 0 ] && break
+    sleep 1
+  done
+  echo "$count"
+}
+
 _do_pulse() {
   PULSE_COUNT=$(( PULSE_COUNT + 1 ))
-  _pulse_banner "$PULSE_COUNT"
+  local MODE
+  MODE=$(heartbeat_mode)
+  PULSE_INTERVAL=$(heartbeat_interval "$MODE")
+  local TIMEOUT
+  TIMEOUT=$(heartbeat_response_timeout "$MODE")
+
+  _pulse_banner "$PULSE_COUNT" "$MODE" "IN"
+  bash "$JIT_ROOT/organs/heart.sh" beat >/dev/null 2>&1 || true
+  _send_heartbeat_message "heartbeat:${MODE}:in" "pulse #$PULSE_COUNT in"
+
+  local ack_count
+  ack_count=$(_wait_for_acks "$TIMEOUT")
+  if [ "$ack_count" -gt 0 ]; then
+    echo "  🧠  received $ack_count heartbeat ack(s)"
+  else
+    echo "  🧠  no heartbeat ack within ${TIMEOUT}s"
+  fi
+
+  _pulse_banner "$PULSE_COUNT" "$MODE" "OUT"
+  _send_heartbeat_message "heartbeat:${MODE}:out" "pulse #$PULSE_COUNT out"
 
   local CHANGED=0
 
@@ -89,7 +171,11 @@ _do_pulse() {
   echo -ne "  👁️   ตา   "
   REPO_CHANGES=$(git -C "$JIT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
   [ "$REPO_CHANGES" -gt 0 ] && CHANGED=1
-  printf " %s %s files changed\n" "$(_hbar $(( REPO_CHANGES > 0 ? 100 : 0 )))" "$REPO_CHANGES"
+  BUS_PENDING=$(find "$BUS_ROOT" -name '*.msg' 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$REPO_CHANGES" -gt 0 ] || [ "$BUS_PENDING" -gt 0 ]; then
+    date +%s > "$LAST_ACTIVITY_FILE"
+  fi
+  printf " %s %s files changed (%s pending heartbeat messages)\n" "$( _hbar $(( REPO_CHANGES > 0 ? 100 : 0 )))" "$REPO_CHANGES" "$BUS_PENDING"
 
   # ── 3. จมูก — ดม services ─────────────────────────────────────────
   echo -ne "  👃  จมูก "
