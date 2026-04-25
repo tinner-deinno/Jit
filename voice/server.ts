@@ -16,10 +16,10 @@ const PUBLIC_DIR = join(JIT_ROOT, "voice", "public")
 const PANE_FILE = "/tmp/claude-pane.txt"
 
 // ─── Read claude pane target ────────────────────────────────────────────
-function readPane(): string | null {
+async function readPane(): Promise<string | null> {
   try {
-    const content = Bun.readFileSync(PANE_FILE)
-    const pane = new TextDecoder().decode(content).trim()
+    const content = await Bun.file(PANE_FILE).text()
+    const pane = content.trim()
     return pane || null
   } catch {
     return null
@@ -72,7 +72,7 @@ const server = Bun.serve({
 
     // GET /status → current pane info
     if (req.method === "GET" && url.pathname === "/status") {
-      const pane = readPane()
+      const pane = await readPane()
       return Response.json(
         {
           ok: true,
@@ -106,7 +106,7 @@ const server = Bun.serve({
         )
       }
 
-      const pane = readPane()
+      const pane = await readPane()
       if (!pane) {
         return Response.json(
           {
@@ -142,11 +142,14 @@ const server = Bun.serve({
   },
 })
 
-console.log(`🎤 innova Voice Server`)
-console.log(`   Port:     ${server.port}`)
-console.log(`   Public:   ${PUBLIC_DIR}`)
-console.log(`   Pane:     ${readPane() || "(not set — run innova-startup.sh)"}`)
-console.log(`   Routes:   GET / | POST /speak | GET /status`)
-console.log(``)
-console.log(`   Open browser at: http://localhost:${server.port}`)
-console.log(`   (Codespace: forward port ${server.port} then open PORTS tab URL)`)
+;(async () => {
+  const pane = await readPane()
+  console.log(`🎤 innova Voice Server`)
+  console.log(`   Port:     ${server.port}`)
+  console.log(`   Public:   ${PUBLIC_DIR}`)
+  console.log(`   Pane:     ${pane || "(not set — run innova-startup.sh)"}`)
+  console.log(`   Routes:   GET / | POST /speak | GET /status`)
+  console.log(``)
+  console.log(`   Open browser at: http://localhost:${server.port}`)
+  console.log(`   (Codespace: forward port ${server.port} then open PORTS tab URL)`)
+})()
