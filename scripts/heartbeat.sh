@@ -181,7 +181,6 @@ case "$CMD" in
     fi
     echo -e "${GREEN}💓 เริ่ม innova Heartbeat daemon (interval=${PULSE_INTERVAL}s)...${RESET}"
     (
-      echo $$ > "$PID_FILE"
       PULSE_COUNT=0
       while true; do
         _do_pulse >> "$LOG_FILE" 2>&1
