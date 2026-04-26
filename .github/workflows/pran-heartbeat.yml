@@ -1,0 +1,66 @@
+name: 💓 Pran Heartbeat — Auto Loop
+
+# หัวใจเต้นทุก 15 นาที (minimum ที่ GitHub Actions อนุญาต คือ 5 นาที)
+# Mode ที่เลือกโดย heartbeat_mode() อาจทำให้เร็ว/ช้ากว่านี้ใน local daemon
+# GitHub Actions นี้คือ "backup heartbeat" เมื่อ Codespace ปิด
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # ทุก 15 นาที (normal mode)
+  workflow_dispatch:           # สั่งรัน manual ได้ทุกเมื่อ
+    inputs:
+      mode:
+        description: 'Heartbeat mode (sprint/fast/normal/slow/rest)'
+        required: false
+        default: 'normal'
+
+permissions:
+  contents: write   # อนุญาต push commit
+
+jobs:
+  heartbeat:
+    name: 💓 Pulse (${{ github.event.inputs.mode || 'scheduled' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "pran-heartbeat[bot]"
+          git config user.email "pran@manusat-agent.local"
+
+      - name: Setup environment
+        run: |
+          mkdir -p /tmp/manusat-bus memory/state
+          # สร้างไฟล์ state ถ้ายังไม่มี
+          [ -f memory/state/heart.in.json  ] || echo '{"beat":"IN","pulse":0}' > memory/state/heart.in.json
+          [ -f memory/state/heart.out.json ] || echo '{"beat":"OUT","pulse":0}' > memory/state/heart.out.json
+
+      - name: Set rate request (manual dispatch)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode != 'normal'
+        run: echo "${{ github.event.inputs.mode }}" > /tmp/heart-rate-request.txt
+
+      - name: Run heartbeat pulse (IN + OUT)
+        run: |
+          bash scripts/heartbeat.sh once
+        env:
+          ORACLE_URL: ${{ vars.ORACLE_URL || 'http://localhost:47778' }}
+          OLLAMA_URL: ${{ vars.OLLAMA_URL || 'https://ollama.mdes-innova.online' }}
+
+      - name: Push committed changes
+        run: |
+          # push ถ้ามี commit ใหม่ที่ยังไม่ได้ push
+          if git status --porcelain | grep -q . || \
+             git log --oneline origin/main..HEAD 2>/dev/null | grep -q .; then
+            git push origin main
+          else
+            echo "Nothing to push"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
