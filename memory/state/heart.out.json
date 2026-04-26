@@ -1,1 +1,10 @@
-{"beat":"OUT","pulse":0,"timestamp":"init","host":"init","note":"systole — pumping clean blood to all organs"}
+{
+  "beat": "OUT",
+  "pulse": 1,
+  "timestamp": "2026-04-26T08:20:13",
+  "host": "codespaces-9d18b4",
+  "mode": "sprint",
+  "wake": [],
+  "command": "alive",
+  "note": "systole — pumping clean blood to all organs"
+}
