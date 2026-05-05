@@ -1,0 +1,12 @@
+{
+  "created_at": "2026-04-25T16:55:44",
+  "source": "scripts/codespace-presence.sh",
+  "description": "Context index for Jit startup reporting",
+  "core_context": [
+    "core/identity.md",
+    "mind/ego.md",
+    "brain/reasoning.md",
+    "network/protocol.md",
+    "memory/architecture.md"
+  ]
+}

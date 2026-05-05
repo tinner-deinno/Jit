@@ -1,6 +1,17 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "strategy": "round-robin",
+  "nodes": {
+    "PC3-Jit": {
+      "host": "codespaces-a07d24",
+      "role": "worker/orchestrator",
+      "bootstrapped": "2026-05-05",
+      "python": "3.12.1",
+      "oracle_url": "http://127.0.0.1:47778",
+      "mcp_port": 7010,
+      "status": "active"
+    }
+  },
   "remotes": {
     "origin": {
       "url": "https://github.com/tinner-deinno/Jit",

@@ -1,0 +1,13 @@
+{
+  "branch": "main",
+  "node_id": "PC3-Jit",
+  "host": "codespaces-a07d24",
+  "bootstrapped": "2026-05-05",
+  "role": "Jit worker/orchestrator",
+  "status": "bootstrapped",
+  "python": "3.12.1",
+  "oracle": "offline",
+  "mcp_port": 7010,
+  "innova_bot": "not-present",
+  "repo": "tinner-deinno/Jit"
+}

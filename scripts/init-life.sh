@@ -191,17 +191,21 @@ fi
 # ────────────────────────────────────────────────────────────────────
 _section "⏰ ติดตั้ง Cron Heartbeat (15 นาที/ครั้ง)"
 CRON_CMD="*/15 * * * * cd $JIT_ROOT && bash scripts/heartbeat.sh once >> /tmp/innova-cron.log 2>&1"
+CRON_CMD_PRESENCE="*/15 * * * * cd $JIT_ROOT && bash scripts/codespace-presence.sh --write-report --quiet >> /tmp/innova-presence.log 2>&1"
 CRON_MARKER="innova-heartbeat"
+CRON_MARKER_PRESENCE="innova-presence-report"
 
 # ลบรายการเก่า แล้วเพิ่มใหม่
-EXISTING_CRON=$(crontab -l 2>/dev/null | grep -v "$CRON_MARKER" || true)
+EXISTING_CRON=$(crontab -l 2>/dev/null | grep -v "$CRON_MARKER" | grep -v "$CRON_MARKER_PRESENCE" || true)
 NEW_CRON="${EXISTING_CRON}
 # $CRON_MARKER — innova ชีพจร 15 นาที
-$CRON_CMD"
+$CRON_CMD
+# $CRON_MARKER_PRESENCE — all-agent status + knowledge report
+$CRON_CMD_PRESENCE"
 
 if echo "$NEW_CRON" | crontab - 2>/dev/null; then
-  echo -e "    ${GREEN}✅ Cron ติดตั้งแล้ว: */15 * * * * heartbeat.sh once${RESET}"
-  echo -e "    ${CYAN}💡 log: /tmp/innova-cron.log${RESET}"
+  echo -e "    ${GREEN}✅ Cron ติดตั้งแล้ว: heartbeat + presence report ทุก 15 นาที${RESET}"
+  echo -e "    ${CYAN}💡 logs: /tmp/innova-cron.log และ /tmp/innova-presence.log${RESET}"
   STEP_RESULTS+=("✅")
 else
   echo -e "    ${YELLOW}⚠️  ติดตั้ง cron ไม่ได้ — ใช้ daemon แทน${RESET}"
@@ -280,6 +284,7 @@ echo -e "    bash scripts/init-life.sh --status    # ดูสถานะทุ
 echo -e "    bash scripts/heartbeat.sh status      # ดู daemon"
 echo -e "    crontab -l | grep innova              # ดู cron"
 echo -e "    bash scripts/sync-cross-machine.sh status  # ดูเครื่องที่เคยออนไลน์"
+echo -e "    bash scripts/codespace-presence.sh --write-report  # สร้างตารางสถานะ/ความรู้"
 echo ""
 echo -e "${BOLD}${CYAN}══════════════════════════════════════════════════════════════${RESET}"
 echo ""

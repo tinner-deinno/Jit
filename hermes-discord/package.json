@@ -1,0 +1,17 @@
+{
+  "name": "hermes-discord",
+  "version": "1.0.0",
+  "description": "อนุ Discord Bot — hermes agent connected to Discord via MDES Ollama",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "test": "node bot.js --test-ollama"
+  },
+  "keywords": ["discord", "bot", "innova", "hermes", "ollama", "mdes"],
+  "author": "innova (มนุษย์ Agent)",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "discord.js": "^14.26.3"
+  }
+}

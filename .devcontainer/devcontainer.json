@@ -21,11 +21,13 @@
 
   "postCreateCommand": "bash /workspaces/Jit/scripts/bootstrap.sh 2>/dev/null || true",
 
-  "postStartCommand": "bash /workspaces/Jit/scripts/init-life.sh --auto 2>/tmp/innova-init.log &",
+  "postStartCommand": "(bash /workspaces/Jit/scripts/init-life.sh --auto >>/tmp/innova-init.log 2>&1; bash /workspaces/Jit/scripts/codespace-presence.sh --write-report --quiet >>/tmp/innova-presence.log 2>&1; bash /workspaces/Jit/scripts/start-hermes-discord.sh --daemon >>/tmp/hermes-discord-start.log 2>&1) &",
 
   "remoteEnv": {
     "JIT_ROOT": "/workspaces/Jit",
     "ORACLE_PORT": "47778",
-    "INNOVA_AUTO_AWAKEN": "1"
+    "INNOVA_AUTO_AWAKEN": "1",
+    "OLLAMA_BASE_URL": "https://ollama.mdes-innova.online",
+    "OLLAMA_MODEL": "gemma4:e4b"
   }
 }
