@@ -1,9 +1,9 @@
 {
   "beat": "OUT",
-  "pulse": 1,
-  "timestamp": "2026-05-05T04:32:02",
+  "pulse": 2,
+  "timestamp": "2026-05-05T04:37:12",
   "host": "codespaces-27a9fd",
-  "mode": "sprint",
+  "mode": "fast",
   "wake": [],
   "command": "alive",
   "note": "systole — pumping clean blood to all organs"
