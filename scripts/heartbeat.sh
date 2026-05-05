@@ -94,31 +94,19 @@ _cleanup_stale_messages() {
   echo "$deleted"
 }
 
-# ── git: stage all → commit if changed (excluding innova.state.json) ──
-_git_commit_if_changed() {
+# ── local state write (heartbeat writes runtime state only, never git commits) ──
+# Architecture rule: git is for source/docs/identity checkpoints only.
+# Heartbeat → local files only. Explicit milestone commands handle source commits.
+_log_pulse_locally() {
   local MSG="$1"
-  git -C "$JIT_ROOT" add -A 2>/dev/null
-  local staged
-  staged=$(git -C "$JIT_ROOT" diff --cached --name-only 2>/dev/null \
-           | grep -v 'memory/state/innova\.state\.json' | wc -l | tr -d ' ')
-  if [ "$staged" -gt 0 ]; then
-    git -C "$JIT_ROOT" commit -m "$MSG" --no-verify > /dev/null 2>&1
-    echo "committed"
-  else
-    git -C "$JIT_ROOT" restore --staged . 2>/dev/null || true
-    echo "skipped"
-  fi
+  echo "$(date '+%Y-%m-%dT%H:%M:%S') | $(hostname) | $MSG" \
+    >> "/tmp/innova-heartbeat-local.log" 2>/dev/null || true
+  echo "local-only"
 }
 
-# ── git push ──────────────────────────────────────────────────────────
-_git_push() {
-  if [ -f "$JIT_ROOT/scripts/multi-remote.sh" ]; then
-    bash "$JIT_ROOT/scripts/multi-remote.sh" push 2>&1 \
-      | grep -E '✅|❌|pushed|failed' | tail -1
-  else
-    git -C "$JIT_ROOT" push origin main --quiet 2>&1 && echo "✅ pushed" || echo "❌ push failed"
-  fi
-}
+# Kept as named stub so callers compile — always a no-op for git.
+_git_commit_if_changed() { _log_pulse_locally "pulse: $1"; }
+_git_push()              { echo "no-push (runtime)"; }
 
 # ══════════════════════════════════════════════════════════════════════
 # _do_pulse: หัวใจเต้น 1 รอบ (IN → OUT)
@@ -172,14 +160,7 @@ _do_pulse() {
   printf " %s %s task msgs · %s repo changes\n" \
     "$(_hbar $(( PENDING > 0 ? 100 : 30 )))" "$PENDING" "$CHANGES"
 
-  echo -ne "  📝  commit "
-  IN_MSG="->💓 heartbeat (IN) ->#$PULSE_COUNT — $HOST @ $TS"
-  IN_RESULT=$(_git_commit_if_changed "$IN_MSG")
-  printf " %s %s\n" "$(_hbar $([ "$IN_RESULT" = "committed" ] && echo 100 || echo 10))" "$IN_RESULT"
-
-  echo -ne "  🚀  push   "
-  PUSH_IN=$(_git_push)
-  printf " %s %s\n" "$(_hbar $(echo "$PUSH_IN" | grep -q '✅' && echo 100 || echo 0))" "$PUSH_IN"
+  _log_pulse_locally "IN #$PULSE_COUNT pending=$PENDING changes=$CHANGES"
 
   # ═══════════════════════════════════════════════════════════════
   # BEAT 2 — OUT (systole): ฉีด energy/commands ไปทุกอวัยวะ
@@ -191,25 +172,19 @@ _do_pulse() {
   bash "$JIT_ROOT/organs/heart.sh" beat out 2>/dev/null > /dev/null
   printf " %s broadcast to all agents\n" "$(_hbar 100)"
 
-  echo -ne "  📝  commit "
-  OUT_MSG="❤️‍🔥-> heartbeat (OUT) #$PULSE_COUNT — $HOST @ $TS"
-  OUT_RESULT=$(_git_commit_if_changed "$OUT_MSG")
-  printf " %s %s\n" "$(_hbar $([ "$OUT_RESULT" = "committed" ] && echo 100 || echo 10))" "$OUT_RESULT"
-
-  echo -ne "  🚀  push   "
-  PUSH_OUT=$(_git_push)
-  printf " %s %s\n" "$(_hbar $(echo "$PUSH_OUT" | grep -q '✅' && echo 100 || echo 0))" "$PUSH_OUT"
+  _log_pulse_locally "OUT #$PULSE_COUNT mode=$MODE"
 
   # ═══════════════════════════════════════════════════════════════
-  # สรุป Pulse
+  # สรุป Pulse (local state only — no git commit, no push)
   # ═══════════════════════════════════════════════════════════════
   echo ""
   echo -e "  ────────────────────────────────────────────────"
   echo -e "  ✅ Pulse #$PULSE_COUNT เสร็จ · mode=$MODE · next in ${PULSE_INTERVAL}s · $(date '+%H:%M:%S')"
+  echo -e "  📁  state written locally · no git commit (use milestone-commit for source checkpoints)"
   echo ""
 
   log_action "HEARTBEAT_PULSE" \
-    "pulse=$PULSE_COUNT mode=$MODE in=$IN_RESULT out=$OUT_RESULT pending=$PENDING changes=$CHANGES"
+    "pulse=$PULSE_COUNT mode=$MODE pending=$PENDING changes=$CHANGES"
 }
 
 # ══════════════════════════════════════════════════════════════════════

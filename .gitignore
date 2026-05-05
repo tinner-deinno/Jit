@@ -19,6 +19,13 @@ tokens.json
 node_modules/
 .bun/
 
+# Python bytecode — never commit compiled artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
 # Temporary and build files
 /tmp/
 /build/
@@ -44,6 +51,10 @@ Thumbs.db
 /tmp/manusat-bus/
 /tmp/manusat-shared.json
 
-# Local Jit state files
+# Runtime state — local to each node, never commit
 /memory/state/heartbeat.log
 /memory/state/innova.state.json
+/memory/state/heart.in.json
+/memory/state/heart.out.json
+/memory/state/context.index.json
+/memory/state/jit-presence-report.md
