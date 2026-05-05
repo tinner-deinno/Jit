@@ -1,0 +1,66 @@
+{
+  "_comment": "Topology binding for this specific Jit mind instance. Do not copy verbatim to other Jit repos — each has its own identity.",
+  "_doc": "See docs/JIT_ARCHITECTURE.md and docs/JIT_INNOVA_BODY_BINDING.md",
+
+  "jit_id": "jit-innova-tinner",
+  "git_account": "tinner-deinno",
+  "repo_url": "https://github.com/tinner-deinno/Jit",
+  "role": "Mind/Lead Developer (innova)",
+  "tier": 2,
+  "agent_name": "innova",
+
+  "memory_scope": {
+    "private": "memory/",
+    "shared_runtime": "/tmp/manusat-bus/",
+    "persistent": "oracle://localhost:47778",
+    "rule": "innova-bot must not write to memory/ of this repo"
+  },
+
+  "body_repo_path": "/workspaces/innova-bot",
+  "body_repo_url": "",
+  "body_backend_cmd": "python -m innova_bot.main",
+  "body_gui_url": "http://127.0.0.1:7010/gui",
+  "body_tui_cmd": "python -m innova_bot.gui.rpg_tui",
+  "body_mcp_port": 7010,
+  "body_status": "not-present",
+
+  "oracle_url": "http://127.0.0.1:47778",
+  "oracle_health": "http://127.0.0.1:47778/api/health",
+  "oracle_repo": "/workspaces/arra-oracle-v3",
+
+  "ollama_url": "https://ollama.mdes-innova.online",
+  "ollama_model": "gemma4:26b",
+
+  "federation_url": "",
+  "federation_status": "not-configured",
+
+  "allowed_sync_modes": [
+    "git-checkpoint",
+    "git-milestone",
+    "oracle-learn",
+    "oracle-search",
+    "bus-message"
+  ],
+  "forbidden_sync_modes": [
+    "git-heartbeat-commit",
+    "git-add-A-cron",
+    "git-realtime-push",
+    "env-file-commit"
+  ],
+
+  "node_bindings": {
+    "codespace": {
+      "host_pattern": "codespaces-*",
+      "environment": "github-codespace",
+      "note": "Ephemeral — state in /tmp does not persist across stops"
+    },
+    "pc3": {
+      "host_pattern": "PC3-*",
+      "environment": "local-machine",
+      "note": "Target permanent node — persistent /tmp and local Oracle"
+    }
+  },
+
+  "last_updated": "2026-05-05",
+  "updated_by": "pc3-bootstrap"
+}
