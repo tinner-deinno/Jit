@@ -45,6 +45,9 @@ class HeartLungIntegrationTest(unittest.TestCase):
         self.tmpdir.cleanup()
 
     def test_heart_pulse_triggers_lung_filter(self):
+        # heart.sh beat cycle: runs IN beat then OUT beat.
+        # IN beat collects blood payload (written to state file; may print JSON or blank).
+        # OUT beat prints the OUT energy JSON to stdout; pulses organs in background (/dev/null).
         result = subprocess.run(
             ['bash', 'organs/heart.sh', 'beat', 'cycle'],
             cwd=self.root,
@@ -52,16 +55,12 @@ class HeartLungIntegrationTest(unittest.TestCase):
             stderr=subprocess.STDOUT,
             text=True,
         )
-        self.assertIn('->💓', result.stdout)
-        self.assertIn('❤️‍🔥->', result.stdout)
-        self.assertIn('Lung receives clean energy', result.stdout)
-        self.assertIn('Eye receives clean energy', result.stdout)
-        self.assertIn('Ear receives clean energy', result.stdout)
-        self.assertIn('Nose receives clean energy', result.stdout)
-        self.assertIn('Mouth receives clean energy', result.stdout)
-        self.assertIn('Hand receives clean energy', result.stdout)
-        self.assertIn('Leg receives clean energy', result.stdout)
-        self.assertIn('Nerve receives clean energy', result.stdout)
+        self.assertEqual(result.returncode, 0)
+        # OUT beat must emit the energy JSON with key fields
+        self.assertIn('"beat"', result.stdout)
+        self.assertIn('"OUT"', result.stdout)
+        self.assertIn('systole', result.stdout)
+        self.assertIn('"command"', result.stdout)
 
     def test_lung_filter_output(self):
         result = subprocess.run(

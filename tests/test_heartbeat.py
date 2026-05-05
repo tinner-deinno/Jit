@@ -98,20 +98,27 @@ class HeartbeatScriptTest(unittest.TestCase):
         )
         return result
 
-    def test_skip_commit_on_state_only(self):
+    def test_local_only_on_no_changes(self):
+        # Heartbeat writes local state only — no git commit, even when nothing changed.
         result = self.run_heartbeat(['once'])
-        self.assertIn('skipped (state-only', result.stdout)
+        self.assertIn('local-only', result.stdout)
+        self.assertIn('no git commit', result.stdout)
         status = subprocess.run(['git', 'status', '--porcelain'], cwd=self.root, stdout=subprocess.PIPE, text=True)
-        self.assertEqual(status.stdout.strip(), '')
+        self.assertEqual(status.stdout.strip(), '')  # git tree stays clean
 
-    def test_commit_when_code_changed(self):
+    def test_no_commit_when_code_changed(self):
+        # Architecture rule: heartbeat never commits to git.
+        # Source commits require explicit milestone commands.
         with open(os.path.join(self.root, 'dummy.txt'), 'a') as f:
             f.write('change\n')
         result = self.run_heartbeat(['once'])
-        self.assertIn('committed', result.stdout)
-        log = subprocess.run(['git', 'log', '--oneline', '-1'], cwd=self.root, stdout=subprocess.PIPE, text=True)
-        self.assertIn('->💓 heartbeat (IN)', log.stdout)
-        self.assertIn('❤️‍🔥 heartbeat (OUT)', log.stdout)
+        self.assertIn('local-only', result.stdout)
+        # git log must still show only the initial commit (no heartbeat commit added)
+        log = subprocess.run(['git', 'log', '--oneline'], cwd=self.root, stdout=subprocess.PIPE, text=True)
+        self.assertEqual(len(log.stdout.strip().splitlines()), 1, 'heartbeat must not add git commits')
+        # the change must still be pending (not staged or committed)
+        status = subprocess.run(['git', 'status', '--porcelain'], cwd=self.root, stdout=subprocess.PIPE, text=True)
+        self.assertIn('dummy.txt', status.stdout)
 
     def test_status_shows_stopped_when_no_daemon(self):
         result = self.run_heartbeat(['status'])

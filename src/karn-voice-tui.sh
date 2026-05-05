@@ -6,7 +6,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JIT_ROOT="$SCRIPT_DIR/.."
 VOICES_DIR="$JIT_ROOT/voices"
-API_SCRIPT="$SCRIPT_DIR/karn-voice-api.py"
+API_SCRIPT="$SCRIPT_DIR/karn_voice_api.py"
 
 # Colors
 RED='\033[0;31m'

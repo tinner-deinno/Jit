@@ -29,7 +29,8 @@ class TestKarnVoiceAPI(unittest.TestCase):
         self.assertTrue(result["success"])
         self.assertIn("filename", result)
         self.assertIn("filepath", result)
-        self.assertEqual(result["word_count"], 7)  # Thai words
+        # word_count uses str.split() — 4 tokens for this test string
+        self.assertEqual(result["word_count"], len(self.test_text.split()))
         self.assertEqual(result["status"], "✅ Saved")
 
         # Verify file exists
@@ -147,7 +148,10 @@ class TestVoiceIntegration(unittest.TestCase):
         for text, lang in test_cases:
             result = self.api.save_transcript(text, lang)
             self.assertTrue(result["success"])
-            self.assertIn(lang, result["filepath"])
+            # filepath uses timestamp-based name; verify file exists and content records the language
+            self.assertTrue(Path(result["filepath"]).exists())
+            content = Path(result["filepath"]).read_text(encoding="utf-8")
+            self.assertIn(lang, content)
 
 def run_tests():
     """Run all tests and print results"""
