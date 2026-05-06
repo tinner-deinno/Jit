@@ -30,6 +30,7 @@ __pycache__/
 /tmp/
 /build/
 *.log
+!memory/state/heartbeat.log
 *.tmp
 
 # OS files
@@ -52,7 +53,6 @@ Thumbs.db
 /tmp/manusat-shared.json
 
 # Runtime state — local to each node, never commit
-/memory/state/heartbeat.log
 /memory/state/innova.state.json
 /memory/state/heart.in.json
 /memory/state/heart.out.json
