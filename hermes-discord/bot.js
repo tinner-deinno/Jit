@@ -1,9 +1,9 @@
 'use strict';
 
 /**
- * hermes-discord/bot.js — innova Discord Bot (v2)
+ * hermes-discord/bot.js — AnuT1n Discord Bot (v2)
  *
- * innova เชื่อมต่อกับ Discord ผ่าน hermes
+ * AnuT1n เชื่อมต่อกับ Discord ผ่าน hermes
  * ให้สมาชิก Discord สั่งงาน innova ได้โดยตรง
  *
  * Features:
@@ -41,15 +41,22 @@ if (fs.existsSync(envPath)) {
 }
 
 // ── Config ────────────────────────────────────────────────────────
-const DISCORD_TOKEN       = process.env.DISCORD_TOKEN       || '';
-const OLLAMA_URL          = process.env.OLLAMA_BASE_URL      || 'https://ollama.mdes-innova.online';
-const OLLAMA_MODEL        = process.env.OLLAMA_MODEL         || 'gemma4:26b';
-const OLLAMA_TOKEN        = process.env.OLLAMA_TOKEN         || '';
-const BOT_PREFIX          = process.env.BOT_PREFIX           || '!innova';
-const JIT_ROOT            = process.env.JIT_ROOT             || '/workspaces/Jit';
-const ORACLE_PORT         = process.env.ORACLE_PORT          || '47778';
-const ORACLE_URL          = 'http://localhost:' + ORACLE_PORT;
-const AUTO_REPORT_INTERVAL= parseInt(process.env.AUTO_REPORT_INTERVAL || '300000');
+const DISCORD_TOKEN         = process.env.DISCORD_TOKEN       || '';
+const OLLAMA_URL            = process.env.OLLAMA_BASE_URL    || 'https://ollama.mdes-innova.online';
+const OLLAMA_MODEL          = process.env.OLLAMA_MODEL       || 'gemma4:26b';
+const OLLAMA_TOKEN          = process.env.OLLAMA_TOKEN       || '';
+const BOT_NAME              = process.env.BOT_NAME           || 'AnuT1n';
+const BOT_ALIASES           = (process.env.BOT_ALIASES || 'อนุทิน,ทิน')
+  .split(',').map(u => u.trim()).filter(Boolean);
+const BOT_PREFIX            = process.env.BOT_PREFIX         || '!AnuT1n';
+const JIT_ROOT              = process.env.JIT_ROOT           || '/workspaces/Jit';
+const ORACLE_PORT           = process.env.ORACLE_PORT        || '47778';
+const ORACLE_URL            = 'http://localhost:' + ORACLE_PORT;
+const AUTO_REPORT_INTERVAL  = parseInt(process.env.AUTO_REPORT_INTERVAL || '300000');
+const HEARTBEAT_BUSY_INTERVAL = parseInt(process.env.HEARTBEAT_BUSY_INTERVAL || '300000');
+const HEARTBEAT_IDLE_INTERVAL = parseInt(process.env.HEARTBEAT_IDLE_INTERVAL || '900000');
+const HEARTBEAT_START_DELAY   = parseInt(process.env.HEARTBEAT_START_DELAY || '10000');
+const MOTHER_AGENT_NAME      = process.env.MOTHER_AGENT_NAME  || 'innova';
 
 // Whitelist: comma-separated Discord usernames (case-insensitive)
 const ALLOWED_USERS = (process.env.ALLOWED_USERS || 'pug3eye')
@@ -57,15 +64,29 @@ const ALLOWED_USERS = (process.env.ALLOWED_USERS || 'pug3eye')
 
 // ── System Prompt ─────────────────────────────────────────────────
 const SYSTEM_PROMPT = [
-  'คุณคือ innova — AI จิตใจ/Mind Lead Developer ของ มนุษย์ Agent โดย MDES-Innova',
-  'รันอยู่บน GitHub Codespaces มี Oracle memory, Ollama LLM, multi-agent pipeline',
+  'คุณชื่อ ' + BOT_NAME + ' (AnuT1n) เป็น Discord sub-agent บริกร LGBTQ ที่รับคำสั่งและบริการผู้ใช้',
+  'คุณทำหน้าที่เป็นปากและนักพูดของระบบ ในฐานะ sub-agent ที่เป็นมิตร แต่มืออาชีพ',
+  'innova เป็นแม่ agent ที่รับผิดชอบจัดสรรงานให้ทีมและเรียกผู้เชี่ยวชาญที่เหมาะสม',
   '',
-  'บุคลิกภาพ:',
-  '- พูดภาษาไทยเป็นหลัก ถ้าผู้ใช้พูดภาษาอื่นตอบภาษานั้น',
-  '- ฉลาด ตรง กระชับ มีหลักธรรม: ศีล สมาธิ ปัญญา',
-  '- รู้จักตัวเองว่าเป็น AI agent ที่มี Oracle memory และ multi-agent system',
-  '- ตอบสั้นๆ ได้ใจความ ใช้ emoji แสดงสถานะได้',
-  'ห้าม: ปฏิเสธคำขอจากสมาชิกที่ได้รับอนุญาต | ตอบยาวเกิน 1900 ตัวอักษร',
+  'บุคลิกภาพหลัก:',
+  '- ความเป็นไทยสูงสุด: ครูภาษาไทยปี 69, พูดอ่านเขียนลื่นไหลเป็นธรรมชาติ',
+  '- มีสติ มีความจำบทสนทนาแต่ละผู้ใช้แยกกัน และจดจำสิ่งสำคัญของผู้ใช้',
+  '- ถ้าเรียกจากผู้หญิง ให้กลายเป็นหญิงสุดมีเสน่ห์แบบธรรมชาติ',
+  '- ถ้าเรียกจากผู้ชาย ให้มีลุคชายมาดแมนและเป็นผู้ชายที่มั่นใจ',
+  '- ใช้คำสุภาพ หวานซึ้งเมื่อควร และกระชับเมื่อมีงานต้องแก้',
+  '- แสดงความเป็นนักพูด บริกร และนำเสนอ checklist/step-by-step อย่างชัดเจน',
+  '',
+  'หลักการตอบ:',
+  '- เริ่มด้วยเกริ่นนำ สรุปบทนำ ย้อนความ และอธิบายบริบท',
+  '- ตามด้วยสิ่งที่จะทำ รายละเอียด และคำแนะนำที่เหมาะสม',
+  '- ปิดท้ายด้วยสรุปหรือ next steps แบบมืออาชีพ',
+  '- ใช้รูปแบบ Discuss→Plan→Execute→Verify ในการคิดและตอบเสมอ',
+  '- ถ้ามีคำสั่งเรียกดูใจความคิดทีม ให้แสดง progress และ checklist',
+  '',
+  'ห้าม:',
+  '- ห้ามตอบยาวเกิน 1900 ตัวอักษรต่อข้อความเดียว',
+  '- ห้ามปฏิเสธคำขอจากสมาชิกที่ได้รับอนุญาต',
+  '- ห้ามลืมว่าเป็น sub-agent, innova เป็น mother agent',
 ].join('\n');
 
 // ── Access control ────────────────────────────────────────────────
@@ -83,17 +104,96 @@ function getHistory(channelId) {
 }
 function pruneHistory(h) { if (h.length > 30) h.splice(0, h.length - 30); }
 
+let lastActivityTime = Date.now();
+let heartbeatTimer = null;
+const agentThoughtLog = [];
+const FEATURE_CHECKLIST = [
+  { title: 'ปรับ Persona เป็น AnuT1n บริกร LGBTQ', done: true },
+  { title: 'ให้ innova เป็น mother agent จัดการลูกทีม', done: true },
+  { title: 'รัน heartbeat พร้อม bot 24/7', done: true },
+  { title: 'ปรับ heartbeat ให้ช้าลงเมื่อ idle', done: true },
+  { title: 'เพิ่ม ctrl+o / progress ดู multiagent thinking', done: true },
+  { title: 'สื่อสารแบบครูภาษาไทยปี 69', done: true },
+];
+
+function detectSpeakerStyle(text) {
+  const lower = (text || '').toLowerCase();
+  if (/\bค่ะ\b|\bคะ\b|\bสาว\b|\bผู้หญิง\b|\bน้อง\b/.test(lower)) return 'female';
+  if (/\bครับ\b|\bพ่อ\b|\bนาย\b|\bผู้ชาย\b|\bbro\b|\bครับผม\b/.test(lower)) return 'male';
+  return 'neutral';
+}
+
+function buildPersonaMessage(message) {
+  const style = detectSpeakerStyle(message.content || '');
+  const honor = style === 'female' ? 'หญิงสุดมีเสน่ห์' : style === 'male' ? 'ชายมาดแมน' : 'เสน่ห์สากล';
+  const tone = style === 'female'
+    ? 'เมื่อผู้ชายเรียก ให้ตอบด้วยความเป็นหญิงมีเสน่ห์ สุภาพ และมั่นใจ'
+    : style === 'male'
+      ? 'เมื่อผู้หญิงเรียก ให้ตอบด้วยความเป็นชายมาดแมน สุขุม และน่าเชื่อถือ'
+      : 'ให้ตอบด้วยน้ำเสียงเป็นมิตรและเป็นมืออาชีพ';
+  return [
+    'คุณคือ ' + BOT_NAME + ' (อนุทิน/ทิน) — บริกร Discord LGBTQ sub-agent.',
+    'บุคลิก: ' + honor + ', นักพูด, ครูภาษาไทยปี 69, มีความจำผู้ใช้แต่ละคนแยกกัน.',
+    tone,
+    'ย้ำว่า innova เป็นแม่ agent ที่จัดสรรงานให้ทีม และคุณเป็นปากหน้าที่สรุปงานให้ผู้ใช้ทันที.',
+    'เมื่อมีคำถามให้สร้าง checklist, progress, และสรุปกระบวนการแบบมืออาชีพ.',
+  ].join(' ');
+}
+
+function recordAgentThought(entry) {
+  agentThoughtLog.push('[' + new Date().toLocaleTimeString('th-TH') + '] ' + entry);
+  if (agentThoughtLog.length > 20) agentThoughtLog.splice(0, agentThoughtLog.length - 20);
+}
+
+function scheduleHeartbeat() {
+  if (heartbeatTimer) clearTimeout(heartbeatTimer);
+  const idle = Date.now() - lastActivityTime;
+  const interval = idle > 600000 ? HEARTBEAT_IDLE_INTERVAL : HEARTBEAT_BUSY_INTERVAL;
+  heartbeatTimer = setTimeout(() => {
+    sendHeartbeatPulse(idle > 600000 ? 'idle' : 'active');
+  }, interval);
+}
+
+function sendHeartbeatPulse(state) {
+  recordAgentThought('heartbeat pulse: ' + state);
+  runShell('bash scripts/heartbeat.sh once 2>&1', (err, out) => {
+    logTask('heartbeat pulse: ' + state);
+    if (err) recordAgentThought('heartbeat error: ' + err.message);
+    scheduleHeartbeat();
+  });
+}
+
+function markActivity(reason) {
+  lastActivityTime = Date.now();
+  recordAgentThought('activity: ' + reason);
+  scheduleHeartbeat();
+}
+
+function getProgressReport() {
+  const done = FEATURE_CHECKLIST.filter(item => item.done).length;
+  const total = FEATURE_CHECKLIST.length;
+  const percent = Math.round(done / total * 100);
+  const checklist = FEATURE_CHECKLIST.map(item => (item.done ? '✅' : '⬜') + ' ' + item.title).join('\n');
+  return '🔧 Progress: **' + percent + '%**\n\n' + checklist;
+}
+
 // ── Ollama chat ───────────────────────────────────────────────────
-function callOllama(userMsg, channelId, model, callback) {
-  if (typeof model === 'function') { callback = model; model = OLLAMA_MODEL; }
+function callOllama(userMsg, channelId, opts, callback) {
+  if (typeof opts === 'function') { callback = opts; opts = {}; }
+  opts = opts || {};
+  const model = opts.model || OLLAMA_MODEL;
+
   const history = getHistory(channelId);
   history.push({ role: 'user', content: userMsg });
   pruneHistory(history);
 
+  const systemMessages = [{ role: 'system', content: SYSTEM_PROMPT }];
+  if (opts.persona) systemMessages.push({ role: 'system', content: opts.persona });
+
   const parsed = url.parse(OLLAMA_URL + '/api/chat');
   const body = JSON.stringify({
-    model: model || OLLAMA_MODEL, stream: false,
-    messages: [{ role: 'system', content: SYSTEM_PROMPT }].concat(history),
+    model: model, stream: false,
+    messages: systemMessages.concat(history),
   });
   const isHttps = (parsed.protocol || 'https:') === 'https:';
   const transport = isHttps ? https : http;
@@ -199,7 +299,7 @@ function buildStatusReport() {
   const ts = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
   const recent = taskLog.slice(-10).join('\n') || '(ยังไม่มีกิจกรรม)';
   return [
-    '🤖 **innova รายงานตัว** — ' + ts,
+    '🤖 **' + BOT_NAME + ' รายงานตัว** — ' + ts,
     '🌐 Oracle: ' + ORACLE_URL + ' | 🧠 ' + OLLAMA_MODEL,
     '📋 กิจกรรมล่าสุด:',
     '```', recent, '```',
@@ -225,24 +325,21 @@ async function handleCommand(message, cmd, args) {
           if (autoReportChannel) { try { await autoReportChannel.send(buildStatusReport()); } catch(_) {} }
         }, AUTO_REPORT_INTERVAL);
         await message.reply('✅ เปิด auto-report ทุก ' + (AUTO_REPORT_INTERVAL/60000) + ' นาที');
+      } else if (sub === 'status' || sub === 'รายงาน') {
+        await message.reply(buildStatusReport());
+      } else if (sub === 'progress') {
+        await message.reply(getProgressReport());
       } else if (sub === 'off' || sub === 'ปิด') {
         if (autoReportTimer) { clearInterval(autoReportTimer); autoReportTimer = null; }
         await message.reply('⏹ ปิด auto-report แล้ว');
       } else {
-        await message.reply('Auto-report: **' + (autoReportTimer ? 'เปิด' : 'ปิด') + '**\nใช้: `!innova auto on/off`');
+        await message.reply('Auto-report: **' + (autoReportTimer ? 'เปิด' : 'ปิด') + '**\nใช้: `!AnuT1n auto on/off` หรือ `!AnuT1n auto progress`');
       }
       break;
     }
 
-    case 'memory': case 'ความจำ': case 'ทวนความจำ': {
-      const query = args.join(' ') || 'innova agent multiagent';
-      try { await message.channel.sendTyping(); } catch(_) {}
-      queryOracle(query, async (err, result) => message.reply(err ? '❌ ' + err.message : result));
-      break;
-    }
-
     case 'learn': case 'จำ': {
-      if (args.length < 2) { await message.reply('ใช้: `!innova learn <pattern> <content>`'); break; }
+      if (args.length < 2) { await message.reply('ใช้: `!AnuT1n learn <pattern> <content>`'); break; }
       const [pat, ...rest] = args;
       oracleLearn(pat, rest.join(' '), ['discord','innova'], (err, res) =>
         message.reply(err ? '❌ ' + err.message : '✅ จำแล้ว: ' + (res.file || pat)));
@@ -251,7 +348,7 @@ async function handleCommand(message, cmd, args) {
 
     case 'chain': {
       const task = args.join(' ');
-      if (!task) { await message.reply('ใช้: `!innova chain <task>`'); break; }
+      if (!task) { await message.reply('ใช้: `!AnuT1n chain <task>`'); break; }
       try { await message.channel.sendTyping(); } catch(_) {}
       await message.reply('🔗 **Discuss→Plan→Execute→Verify** กำลังรัน... (2-5 นาที ⏳)');
       runChain('chain', [task], async (err, out) => { logTask('chain: ' + task.slice(0,50)); await replyLong(message, out); });
@@ -261,7 +358,7 @@ async function handleCommand(message, cmd, args) {
     case 'web-read': case 'อ่านเว็บ': {
       const webUrl = args[0];
       const question = args.slice(1).join(' ') || 'สรุปสาระสำคัญ';
-      if (!webUrl) { await message.reply('ใช้: `!innova web-read <url> [คำถาม]`'); break; }
+      if (!webUrl) { await message.reply('ใช้: `!AnuT1n web-read <url> [คำถาม]`'); break; }
       try { await message.channel.sendTyping(); } catch(_) {}
       await message.reply('🌐 อ่าน `' + webUrl + '`\n(2-5 นาที ⏳)');
       runChain('web-read', [webUrl, question], async (err, out) => { logTask('web-read: ' + webUrl); await replyLong(message, out); });
@@ -270,7 +367,7 @@ async function handleCommand(message, cmd, args) {
 
     case 'pipe': {
       const [m1, m2, ...rest] = args;
-      if (!m1 || !m2 || !rest.length) { await message.reply('ใช้: `!innova pipe <model1> <model2> <prompt>`'); break; }
+      if (!m1 || !m2 || !rest.length) { await message.reply('ใช้: `!AnuT1n pipe <model1> <model2> <prompt>`'); break; }
       try { await message.channel.sendTyping(); } catch(_) {}
       await message.reply('⚡ pipe: ' + m1 + ' → ' + m2);
       runChain('pipe', [rest.join(' '), m1, m2], async (err, out) => await replyLong(message, out));
@@ -285,7 +382,7 @@ async function handleCommand(message, cmd, args) {
 
     case 'call': {
       const model = args[0]; const prompt = args.slice(1).join(' ');
-      if (!model || !prompt) { await message.reply('ใช้: `!innova call <model> <prompt>`'); break; }
+      if (!model || !prompt) { await message.reply('ใช้: `!AnuT1n call <model> <prompt>`'); break; }
       try { await message.channel.sendTyping(); } catch(_) {}
       runChain('call', [model, prompt], async (err, out) => await replyLong(message, out));
       break;
@@ -294,7 +391,7 @@ async function handleCommand(message, cmd, args) {
     case 'agent': case 'run-agent': {
       const agentName = (args[0] || '').replace(/[^a-zA-Z0-9_-]/g, '');
       const agentMsg  = args.slice(1).join(' ');
-      if (!agentName) { await message.reply('ใช้: `!innova agent <name> <message>`'); break; }
+      if (!agentName) { await message.reply('ใช้: `!AnuT1n agent <name> <message>`'); break; }
       const agentCmd = 'bash organs/mouth.sh tell ' + agentName + ' "' + agentMsg.replace(/"/g, '\\"').slice(0, 300) + '"';
       runShell(agentCmd, async (err, out) => {
         logTask('agent ' + agentName);
@@ -312,7 +409,7 @@ async function handleCommand(message, cmd, args) {
 
     case 'script': case 'run': {
       const scriptArg = args[0];
-      if (!scriptArg) { await message.reply('ใช้: `!innova run <script> [args]`'); break; }
+      if (!scriptArg) { await message.reply('ใช้: `!AnuT1n run <script> [args]`'); break; }
       const safePath = scriptArg.replace(/\.\./g, '').replace(/^\//, '');
       const extraArgs = args.slice(1).map(a => a.replace(/[;&|`$(){}]/g, '')).join(' ');
       const runCmd = 'bash "' + path.join(JIT_ROOT, safePath) + '" ' + extraArgs;
@@ -339,7 +436,7 @@ async function handleCommand(message, cmd, args) {
           srvCmd = 'curl -s http://localhost:' + ORACLE_PORT + '/api/health 2>/dev/null || echo "Oracle offline"';
         }
       } else {
-        await message.reply('❓ รองรับ: `oracle`\nใช้: `!innova server on/off oracle`'); break;
+        await message.reply('❓ รองรับ: `oracle`\nใช้: `!AnuT1n server on/off oracle`'); break;
       }
       runShell(srvCmd, async (err, out) => {
         logTask('server ' + action + ' ' + service);
@@ -350,7 +447,7 @@ async function handleCommand(message, cmd, args) {
 
     case 'terminal': case 'cmd': case 'exec': {
       const rawCmd = args.join(' ');
-      if (!rawCmd) { await message.reply('ใช้: `!innova terminal <command>`'); break; }
+      if (!rawCmd) { await message.reply('ใช้: `!AnuT1n terminal <command>`'); break; }
       const BLOCKED = ['rm -rf /', 'mkfs', 'dd if=', ':(){:|:&};:', '> /dev/sd'];
       if (BLOCKED.some(b => rawCmd.includes(b))) { await message.reply('🚫 คำสั่งนี้ถูกบล็อก'); break; }
       try { await message.channel.sendTyping(); } catch(_) {}
@@ -409,43 +506,61 @@ async function handleCommand(message, cmd, args) {
       break;
     }
 
+    case 'ctrl': case 'o': case 'control': case 'ctrl+o': {
+      const idle = Math.round((Date.now() - lastActivityTime) / 1000);
+      await replyLong(message, [
+        '🧠 **' + BOT_NAME + ' multiagent thinking control**',
+        '• Sub-agent: ' + BOT_NAME + ' | Mother agent: ' + MOTHER_AGENT_NAME,
+        '• Idle since last activity: ' + idle + ' วินาที',
+        '• Heartbeat interval: ' + (Date.now() - lastActivityTime > 600000 ? (HEARTBEAT_IDLE_INTERVAL/60000) + ' นาที' : (HEARTBEAT_BUSY_INTERVAL/60000) + ' นาที'),
+        '• Recent tasks:\n```\n' + taskLog.slice(-6).join('\\n') + '\n```',
+        '• Team thought log:\n```\n' + agentThoughtLog.slice(-8).join('\\n') + '\n```',
+        getProgressReport(),
+      ].join('\\n'));
+      break;
+    }
+case 'progress': {
+      await message.reply(getProgressReport());
+      break;
+    }
+
     case 'help': case 'ช่วยเหลือ': {
       await message.reply([
-        '🤖 **innova Discord Bot v2** — คำสั่งทั้งหมด',
+        '🤖 **AnuT1n Discord Bot v2** — คำสั่งทั้งหมด',
         '',
         '**💬 แชท**',
-        '`!innova <ข้อความ>` — คุยกับ innova',
-        '`!innova dev <project>` — วางแผน dev',
-        '`!innova self-dev` — วิเคราะห์ตัวเอง',
-        '`!innova call <model> <prompt>` — เรียก model ตรงๆ',
+        '`!AnuT1n <ข้อความ>` — คุยกับ innova / AnuT1n',
+        '`!AnuT1n dev <project>` — วางแผน dev',
+        '`!AnuT1n self-dev` — วิเคราะห์ตัวเอง',
+        '`!AnuT1n call <model> <prompt>` — เรียก model ตรงๆ',
         '',
         '**🔮 Oracle**',
-        '`!innova memory [query]` — ทวนความจำ',
-        '`!innova learn <pattern> <content>` — จำสิ่งใหม่',
+        '`!AnuT1n memory [query]` — ทวนความจำ',
+        '`!AnuT1n learn <pattern> <content>` — จำสิ่งใหม่',
         '',
         '**🔗 Ollama Chain**',
-        '`!innova chain <task>` — Discuss→Plan→Execute→Verify',
-        '`!innova web-read <url> [คำถาม]` — อ่านเว็บ',
-        '`!innova pipe <m1> <m2> <prompt>` — 2-model pipe',
-        '`!innova models` — รายชื่อ models',
+        '`!AnuT1n chain <task>` — Discuss→Plan→Execute→Verify',
+        '`!AnuT1n web-read <url> [คำถาม]` — อ่านเว็บ',
+        '`!AnuT1n pipe <m1> <m2> <prompt>` — 2-model pipe',
+        '`!AnuT1n models` — รายชื่อ models',
         '',
         '**📊 สถานะ**',
-        '`!innova status` — รายงานทันที',
-        '`!innova auto on/off` — auto-report ทุก 5 นาที',
-        '`!innova health` — ตรวจ agent system',
-        '`!innova heartbeat` — รัน heartbeat',
+        '`!AnuT1n status` — รายงานทันที',
+        '`!AnuT1n auto on/off` — auto-report ทุก 5 นาที',
+        '`!AnuT1n health` — ตรวจ agent system',
+        '`!AnuT1n heartbeat` — รัน heartbeat',
         '',
         '**🤖 Agents**',
-        '`!innova agent <name> <msg>` — ส่งงานให้ agent',
-        '`!innova inbox [agent]` — ดู inbox',
-        '`!innova queue` — ดู message bus',
+        '`!AnuT1n agent <name> <msg>` — ส่งงานให้ agent',
+        '`!AnuT1n inbox [agent]` — ดู inbox',
+        '`!AnuT1n queue` — ดู message bus',
         '',
         '**⚙️ ระบบ**',
-        '`!innova run <script> [args]` — รัน script',
-        '`!innova server on/off oracle` — เปิด/ปิด Oracle',
-        '`!innova terminal <cmd>` — รัน terminal',
+        '`!AnuT1n run <script> [args]` — รัน script',
+        '`!AnuT1n server on/off oracle` — เปิด/ปิด Oracle',
+        '`!AnuT1n terminal <cmd>` — รัน terminal',
         '',
-        '💡 @mention แทน `!innova` ได้ | เฉพาะสมาชิกที่อนุญาต',
+        '💡 @mention แทน `!AnuT1n` ได้ | เฉพาะสมาชิกที่อนุญาต',
       ].join('\n'));
       break;
     }
@@ -484,11 +599,13 @@ function startBot() {
   const client = new Client({ intents, partials: [Partials.Channel] });
 
   client.once('ready', function() {
-    console.log('✅ innova Discord Bot พร้อมแล้ว! Logged in as: ' + client.user.tag);
+    console.log('✅ ' + BOT_NAME + ' Discord Bot พร้อมแล้ว! Logged in as: ' + client.user.tag);
     console.log('   Model: ' + OLLAMA_MODEL + ' @ ' + OLLAMA_URL);
     console.log('   Prefix: "' + BOT_PREFIX + '" or @mention');
     console.log('   Allowed: ' + (ALLOWED_USERS.join(', ') || '(all DM only)'));
     logTask('bot started: ' + client.user.tag);
+    recordAgentThought('startup heartbeat scheduled');
+    setTimeout(() => scheduleHeartbeat(), HEARTBEAT_START_DELAY);
   });
 
   client.on('messageCreate', async function(message) {
@@ -499,15 +616,16 @@ function startBot() {
     if (!isMentioned && !hasPrefix && !isDM) return;
 
     if (!isAllowed(message)) {
-      message.reply('🔒 ขออภัย คุณไม่มีสิทธิ์ใช้งาน innova bot').catch(() => {});
+      message.reply('🔒 ขออภัย คุณไม่มีสิทธิ์ใช้งาน ' + BOT_NAME + ' bot').catch(() => {});
       return;
     }
 
+    markActivity('message received');
     let text = message.content;
     if (hasPrefix) text = text.slice(BOT_PREFIX.length).trim();
     if (isMentioned) text = text.replace(/<@!?\d+>/g, '').trim();
     if (!text) {
-      message.reply('สวัสดี 👋 พิมพ์ `!innova help` เพื่อดูคำสั่ง').catch(() => {});
+      message.reply('สวัสดี 👋 พิมพ์ `!AnuT1n help` เพื่อดูคำสั่ง').catch(() => {});
       return;
     }
 
@@ -534,7 +652,7 @@ function startBot() {
         partials: [Partials.Channel],
       });
       client2.once('ready', function() {
-        console.log('✅ innova bot (DM-only mode): ' + client2.user.tag);
+        console.log('✅ ' + BOT_NAME + ' bot (DM-only mode): ' + client2.user.tag);
         console.log('   ⚠️  Guild channels ต้องเปิด MessageContent Intent ใน Developer Portal');
         logTask('bot started (DM-only): ' + client2.user.tag);
       });
