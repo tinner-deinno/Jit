@@ -1,0 +1,154 @@
+#!/usr/bin/env node
+'use strict';
+/**
+ * skills/vaja-thai-tts/listener.js
+ * Real-time Jit Bus Listener for Thai TTS
+ * Continuously monitors agent outputs and generates Thai audio summaries
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { spawn } = require('child_process');
+
+const INBOX_DIR = '/tmp/manusat-bus/vaja';
+const CACHE_DIR = '/tmp/vaja-tts';
+const LOG_FILE = '/tmp/vaja-tts.log';
+
+// Ensure directories exist
+[INBOX_DIR, CACHE_DIR].forEach(dir => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+});
+
+const log = (msg) => {
+  const timestamp = new Date().toISOString();
+  const logMsg = `[${timestamp}] ${msg}\n`;
+  process.stdout.write(logMsg);
+  fs.appendFileSync(LOG_FILE, logMsg);
+};
+
+log('🎤 Vaja Thai TTS Listener Started');
+
+/**
+ * Process a message: summarize in Thai + generate audio
+ */
+async function processMessage(msgFile) {
+  try {
+    const content = fs.readFileSync(msgFile, 'utf8');
+    const msg = JSON.parse(content);
+    
+    log(`📨 Received from ${msg.from || 'unknown'}: ${msg.subject || 'message'}`);
+    
+    // Extract text to summarize
+    const textToSummarize = msg.body || msg.content || msg.output || '';
+    if (!textToSummarize) {
+      log('  ⚠ No content to summarize');
+      return;
+    }
+    
+    // Summarize in Thai
+    log('  🌐 Generating Thai summary...');
+    const summary = await generateThaiSummary(textToSummarize);
+    
+    // Generate speech
+    log('  🔊 Generating Thai speech...');
+    const audioFile = await generateThaiSpeech(summary);
+    
+    if (audioFile) {
+      log(`  ✓ Audio generated: ${path.basename(audioFile)}`);
+      
+      // Clean up message file
+      try { fs.unlinkSync(msgFile); } catch (e) {}
+    }
+  } catch (err) {
+    log(`  ✗ Error: ${err.message}`);
+  }
+}
+
+/**
+ * Thai summarization using Ollama
+ */
+async function generateThaiSummary(text) {
+  return new Promise((resolve) => {
+    // Mock implementation - in production, would call Ollama
+    // This demonstrates the flow
+    const sentences = text.split(/[.!?]+/).slice(0, 3).join('.');
+    const thai = `สรุป: ${sentences.slice(0, 100)}...`;
+    resolve(thai);
+  });
+}
+
+/**
+ * Thai speech generation
+ */
+async function generateThaiSpeech(thaiText) {
+  return new Promise((resolve) => {
+    // Mock implementation - would call actual TTS service
+    const filename = `vaja-tts-${Date.now()}.mp3`;
+    const filepath = path.join(CACHE_DIR, filename);
+    
+    // Create dummy file (in production: actual audio)
+    fs.writeFileSync(filepath, Buffer.from('mock audio data'));
+    resolve(filepath);
+  });
+}
+
+/**
+ * Watch for new messages in inbox
+ */
+function watchInbox() {
+  const processedFiles = new Set();
+  
+  const checkMessages = () => {
+    try {
+      const files = fs.readdirSync(INBOX_DIR);
+      
+      files.forEach(file => {
+        if (processedFiles.has(file)) return;
+        
+        const filepath = path.join(INBOX_DIR, file);
+        processedFiles.add(file);
+        
+        processMessage(filepath);
+      });
+    } catch (err) {
+      log(`Inbox watch error: ${err.message}`);
+    }
+  };
+  
+  // Check every 5 seconds
+  setInterval(checkMessages, 5000);
+  checkMessages(); // Check immediately
+}
+
+/**
+ * Status reporting
+ */
+function reportStatus() {
+  setInterval(() => {
+    try {
+      const files = fs.readdirSync(INBOX_DIR).length;
+      const audioFiles = fs.readdirSync(CACHE_DIR).length;
+      log(`Status: ${files} pending, ${audioFiles} generated audio files`);
+    } catch (err) {
+      // silently ignore
+    }
+  }, 60000); // Every 60 seconds
+}
+
+// Start listening
+watchInbox();
+reportStatus();
+
+// Handle shutdown
+process.on('SIGINT', () => {
+  log('🛑 Vaja TTS Listener Shutting Down');
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  log('🛑 Vaja TTS Listener Terminated');
+  process.exit(0);
+});
+
+// Keep process alive
+setInterval(() => {}, 3600000);

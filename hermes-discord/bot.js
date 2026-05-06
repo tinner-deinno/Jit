@@ -614,7 +614,158 @@ case 'progress': {
       await message.reply(getProgressReport());
       break;
     }
+    // ── Skills (10 new) ───────────────────────────────────────────
+    case 'brainstorm': case 'brainstorming': case 'ระดมสมอง': {
+      const topic = args.join(' ');
+      if (!topic) { await message.reply('ใช้: `!AnuT1n brainstorm <หัวข้อ>`'); break; }
+      try { await message.channel.sendTyping(); } catch(_) {}
+      logTask('brainstorm: ' + topic);
+      const { execFile } = require('child_process');
+      const JIT_ROOT = require('path').resolve(__dirname, '..');
+      execFile('bash', [JIT_ROOT + '/.github/skills/brainstorming/run.sh', topic], { cwd: JIT_ROOT, timeout: 120000 },
+        async (err, stdout) => {
+          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
+          await replyLong(message, '🧠 **Brainstorm**: ' + topic + '\n\n' + out.slice(0, 3500));
+        });
+      break;
+    }
 
+    case 'skill-creator': case 'create-skill': case 'new-skill': {
+      const skillReq = args.join(' ');
+      if (!skillReq) { await message.reply('ใช้: `!AnuT1n skill-creator <ชื่อ skill — คำอธิบาย>`'); break; }
+      try { await message.channel.sendTyping(); } catch(_) {}
+      logTask('skill-creator: ' + skillReq);
+      const { execFile: execFile2 } = require('child_process');
+      const JIT_ROOT2 = require('path').resolve(__dirname, '..');
+      execFile2('bash', [JIT_ROOT2 + '/.github/skills/skill-creator/run.sh', skillReq], { cwd: JIT_ROOT2, timeout: 180000 },
+        async (err, stdout) => {
+          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
+          await replyLong(message, '🛠️ **Skill Creator**: ' + skillReq + '\n\n' + out.slice(0, 3500));
+        });
+      break;
+    }
+
+    case 'writing-plans': case 'write-plan': case 'plan': case 'วางแผน': {
+      const planTask = args.join(' ');
+      if (!planTask) { await message.reply('ใช้: `!AnuT1n plan <งานที่ต้องวางแผน>`'); break; }
+      try { await message.channel.sendTyping(); } catch(_) {}
+      logTask('writing-plans: ' + planTask);
+      const { execFile: ef3 } = require('child_process');
+      const JR3 = require('path').resolve(__dirname, '..');
+      ef3('bash', [JR3 + '/.github/skills/writing-plans/run.sh', planTask], { cwd: JR3, timeout: 120000 },
+        async (err, stdout) => {
+          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
+          await replyLong(message, '📝 **Plan**: ' + planTask + '\n\n' + out.slice(0, 3500));
+        });
+      break;
+    }
+
+    case 'executing-plans': case 'execute-plan': case 'run-plan': case 'ลงมือทำ': {
+      const planRef = args.join(' ');
+      if (!planRef) { await message.reply('ใช้: `!AnuT1n run-plan <plan file หรือ keyword>`'); break; }
+      try { await message.channel.sendTyping(); } catch(_) {}
+      logTask('executing-plans: ' + planRef);
+      const { execFile: ef4 } = require('child_process');
+      const JR4 = require('path').resolve(__dirname, '..');
+      ef4('bash', [JR4 + '/.github/skills/executing-plans/run.sh', planRef], { cwd: JR4, timeout: 300000 },
+        async (err, stdout) => {
+          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
+          await replyLong(message, '⚡ **Execute Plan**: ' + planRef + '\n\n' + out.slice(0, 3500));
+        });
+      break;
+    }
+
+    case 'ui-ux': case 'ui-ux-pro-max': case 'ux': case 'วิเคราะห์-ui': {
+      const uiUrl = args[0] || '';
+      const uiFocus = args.slice(1).join(' ') || 'all';
+      if (!uiUrl) { await message.reply('ใช้: `!AnuT1n ui-ux <url> [focus]`'); break; }
+      try { await message.channel.sendTyping(); } catch(_) {}
+      logTask('ui-ux: ' + uiUrl);
+      const { execFile: ef5 } = require('child_process');
+      const JR5 = require('path').resolve(__dirname, '..');
+      ef5('bash', [JR5 + '/.github/skills/ui-ux-pro-max/run.sh', uiUrl, uiFocus], { cwd: JR5, timeout: 120000 },
+        async (err, stdout) => {
+          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
+          await replyLong(message, '🎨 **UI/UX Analysis**: ' + uiUrl + '\n\n' + out.slice(0, 3500));
+        });
+      break;
+    }
+
+    case 'frontend': case 'frontend-design': case 'design-ui': case 'สร้าง-ui': {
+      const feBrief = args.join(' ');
+      if (!feBrief) { await message.reply('ใช้: `!AnuT1n frontend <design brief>`'); break; }
+      try { await message.channel.sendTyping(); } catch(_) {}
+      logTask('frontend-design: ' + feBrief);
+      const { execFile: ef6 } = require('child_process');
+      const JR6 = require('path').resolve(__dirname, '..');
+      ef6('bash', [JR6 + '/.github/skills/frontend-design/run.sh', feBrief], { cwd: JR6, timeout: 120000 },
+        async (err, stdout) => {
+          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
+          await replyLong(message, '🖥️ **Frontend Design**: ' + feBrief + '\n\n' + out.slice(0, 3500));
+        });
+      break;
+    }
+
+    case 'brave-search': case 'search': case 'ค้นหา': {
+      const searchQ = args.join(' ');
+      if (!searchQ) { await message.reply('ใช้: `!AnuT1n search <query>`'); break; }
+      try { await message.channel.sendTyping(); } catch(_) {}
+      logTask('brave-search: ' + searchQ);
+      const { execFile: ef7 } = require('child_process');
+      const JR7 = require('path').resolve(__dirname, '..');
+      ef7('bash', [JR7 + '/.github/skills/brave-search/run.sh', searchQ], { cwd: JR7, timeout: 60000 },
+        async (err, stdout) => {
+          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
+          await replyLong(message, '🔍 **Brave Search**: ' + searchQ + '\n\n' + out.slice(0, 3500));
+        });
+      break;
+    }
+
+    case 'socialcrawl': case 'social': case 'social-crawl': {
+      const socialQ = args.join(' ');
+      if (!socialQ) { await message.reply('ใช้: `!AnuT1n social <platform> <query>` — platforms: github, reddit, hn'); break; }
+      try { await message.channel.sendTyping(); } catch(_) {}
+      logTask('socialcrawl: ' + socialQ);
+      const { execFile: ef8 } = require('child_process');
+      const JR8 = require('path').resolve(__dirname, '..');
+      ef8('bash', [JR8 + '/.github/skills/socialcrawl/run.sh', socialQ], { cwd: JR8, timeout: 60000 },
+        async (err, stdout) => {
+          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
+          await replyLong(message, '📡 **Social Crawl**: ' + socialQ + '\n\n' + out.slice(0, 3500));
+        });
+      break;
+    }
+
+    case 'firecrawl': case 'crawl': case 'scrape': case 'อ่านเว็บ': {
+      const crawlUrl = args[0] || '';
+      const crawlTask = args.slice(1).join(' ') || 'สรุปสาระสำคัญ';
+      if (!crawlUrl) { await message.reply('ใช้: `!AnuT1n crawl <url> [task]`'); break; }
+      try { await message.channel.sendTyping(); } catch(_) {}
+      logTask('firecrawl: ' + crawlUrl);
+      const { execFile: ef9 } = require('child_process');
+      const JR9 = require('path').resolve(__dirname, '..');
+      ef9('bash', [JR9 + '/.github/skills/firecrawl/run.sh', crawlUrl, crawlTask], { cwd: JR9, timeout: 90000 },
+        async (err, stdout) => {
+          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
+          await replyLong(message, '🕷️ **Firecrawl**: ' + crawlUrl + '\n\n' + out.slice(0, 3500));
+        });
+      break;
+    }
+
+    case 'feature-dev': case 'feature': case 'implement': case 'พัฒนา': {
+      const featReq = args.join(' ');
+      if (!featReq) { await message.reply('ใช้: `!AnuT1n feature <feature description>`'); break; }
+      try { await message.channel.sendTyping(); } catch(_) {}
+      logTask('feature-dev: ' + featReq);
+      const { execFile: ef10 } = require('child_process');
+      const JR10 = require('path').resolve(__dirname, '..');
+      ef10('bash', [JR10 + '/.github/skills/feature-dev/run.sh', featReq], { cwd: JR10, timeout: 300000 },
+        async (err, stdout) => {
+          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
+          await replyLong(message, '🚀 **Feature Dev**: ' + featReq + '\n\n' + out.slice(0, 3500));
+        });
+      break;
+    }
     case 'chrome': case 'inspect': case 'ui-check': {
       const sub = (args[0] || '').toLowerCase();
       const targetUrl = args[1] || '';
@@ -732,6 +883,18 @@ case 'progress': {
         '`!AnuT1n chrome inspect <url> <sel>` — inspect element',
         '`!AnuT1n chrome css <url> <sel>` — CSS styles',
         '`!AnuT1n chrome ui <url>` — UI analysis',
+        '',
+        '**🧠 AI Skills (MDES Ollama)**',
+        '`!AnuT1n brainstorm <หัวข้อ>` — ระดมสมอง 3 มุมมอง',
+        '`!AnuT1n plan <งาน>` — วางแผนด้วย AI',
+        '`!AnuT1n run-plan <plan>` — ลงมือทำตาม plan',
+        '`!AnuT1n ui-ux <url>` — วิเคราะห์ UI/UX',
+        '`!AnuT1n frontend <brief>` — สร้าง HTML/CSS',
+        '`!AnuT1n search <query>` — Brave Search + MDES',
+        '`!AnuT1n social <platform> <query>` — Social crawl',
+        '`!AnuT1n crawl <url> [task]` — Extract web content',
+        '`!AnuT1n feature <description>` — Full feature dev',
+        '`!AnuT1n skill-creator <name — desc>` — สร้าง skill ใหม่',
         '',
         '**⚙️ ระบบ**',
         '`!AnuT1n run <script> [args]` — รัน script',
