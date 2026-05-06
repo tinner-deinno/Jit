@@ -59,7 +59,7 @@ const HEARTBEAT_START_DELAY   = parseInt(process.env.HEARTBEAT_START_DELAY || '1
 const MOTHER_AGENT_NAME      = process.env.MOTHER_AGENT_NAME  || 'innova';
 
 // Whitelist: comma-separated Discord usernames (case-insensitive)
-const ALLOWED_USERS = (process.env.ALLOWED_USERS || 'pug3eye')
+const ALLOWED_USERS = (process.env.ALLOWED_USERS || 'pug3eye1828')
   .split(',').map(u => u.trim().toLowerCase()).filter(Boolean);
 
 // ── System Prompt ─────────────────────────────────────────────────
@@ -92,7 +92,6 @@ const SYSTEM_PROMPT = [
 // ── Access control ────────────────────────────────────────────────
 function isAllowed(message) {
   const username = (message.author.username || '').toLowerCase();
-  if (message.channel.type === 1) return true; // DM = trusted
   return ALLOWED_USERS.includes(username);
 }
 
@@ -464,7 +463,9 @@ async function handleCommand(message, cmd, args) {
       try { await message.channel.sendTyping(); } catch(_) {}
       callOllama(
         'วิเคราะห์ project: ' + project + '\nบอก next steps ในฐานะ Lead Developer (innova) bullet points ไม่เกิน 8 ข้อ',
-        message.channelId, async (err, reply) => {
+        message.channelId,
+        { persona: buildPersonaMessage(message) },
+        async (err, reply) => {
           logTask('dev: ' + project);
           await replyLong(message, err ? '❌ ' + err.message : '💻 **Dev plan: ' + project + '**\n\n' + reply);
         });
@@ -476,7 +477,9 @@ async function handleCommand(message, cmd, args) {
       callOllama(
         'คุณคือ innova AI ใน Codespaces มี Oracle, multi-agent, Discord bot\n' +
         'วิเคราะห์: 1) ความสามารถปัจจุบัน 2) สิ่งที่ขาด 3) Next steps\nตอบ bullet points กระชับ',
-        message.channelId, async (err, reply) => {
+        message.channelId,
+        { persona: buildPersonaMessage(message) },
+        async (err, reply) => {
           logTask('self-dev');
           await replyLong(message, err ? '❌ ' + err.message : '🧠 **innova self-analysis**\n\n' + reply);
         });
@@ -568,7 +571,7 @@ case 'progress': {
     default: {
       const fullMsg = cmd + (args.length ? ' ' + args.join(' ') : '');
       try { await message.channel.sendTyping(); } catch(_) {}
-      callOllama(fullMsg, message.channelId, async (err, reply) => {
+      callOllama(fullMsg, message.channelId, { persona: buildPersonaMessage(message) }, async (err, reply) => {
         if (err) { await message.reply('⚠️ ' + err.message); return; }
         await replyLong(message, reply);
       });
