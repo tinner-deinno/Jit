@@ -1,6 +1,6 @@
 {
-  "name": "อนุ",
-  "nickname": "anu",
+  "name": "อนุทิน",
+  "nickname": "AnuT1n",
   "plugins": {
     "./hermes-ollama": {
       "ollamaUrl": "https://ollama.mdes-innova.online",
