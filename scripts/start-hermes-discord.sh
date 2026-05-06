@@ -37,12 +37,26 @@ if [ -f "$JIT_ROOT/.env" ]; then
   set -u
 fi
 
+# Normalize Discord token formats
+DISCORD_TOKEN="${DISCORD_TOKEN:-}"
+if [[ "$DISCORD_TOKEN" == Bot\ * ]]; then
+  DISCORD_TOKEN="${DISCORD_TOKEN#Bot }"
+fi
+
+# Validate Discord token shape before startup
+if [ -n "$DISCORD_TOKEN" ] && [[ "$DISCORD_TOKEN" != *.* ]]; then
+  echo -e "  ${YELLOW}⚠️  Suspicious DISCORD_TOKEN format detected.${RESET}"
+  echo -e "    Discord bot tokens normally contain '.' separators."
+  echo -e "    Please ensure you copied the bot token from the Bot page, not the application client secret.${RESET}"
+fi
+
+MODEL="${OLLAMA_MODEL:-gemma4:e4b}"
 MODE="${1:-start}"
 
 echo ""
 echo -e "${BOLD}${CYAN}  ╔══════════════════════════════════════════╗${RESET}"
 echo -e "${BOLD}${CYAN}  ║  อนุ — ลูกของ innova + คุณพ่อ          ║${RESET}"
-echo -e "${BOLD}${CYAN}  ║  Discord Bot · MDES Ollama gemma4:e4b    ║${RESET}"
+echo -e "${BOLD}${CYAN}  ║  Discord Bot · MDES Ollama ${MODEL}    ║${RESET}"
 echo -e "${BOLD}${CYAN}  ╚══════════════════════════════════════════╝${RESET}"
 echo ""
 
@@ -92,6 +106,13 @@ fi
 if [ "$MODE" = "--daemon" ] || [ "$MODE" = "daemon" ]; then
   echo -e "  ${CYAN}🚀 Starting อนุ Discord bot in background...${RESET}"
 
+  # Start heartbeat daemon automatically when launching bot
+  HB_STATUS=$(bash "$JIT_ROOT/scripts/heartbeat.sh" status 2>/dev/null || true)
+  if ! echo "$HB_STATUS" | grep -qE 'Heartbeat daemon กำลังรัน|Heartbeat daemon is running'; then
+    echo -e "  ${CYAN}💓 Heartbeat daemon ไม่ได้รัน — เริ่มระบบชีพจรขณะเปิด bot...${RESET}"
+    bash "$JIT_ROOT/scripts/heartbeat.sh" start
+  fi
+
   # Kill existing instance if running
   if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE" 2>/dev/null)" 2>/dev/null; then
     echo -e "  ${YELLOW}⚠️  Stopping previous instance (PID $(cat "$PID_FILE"))${RESET}"
@@ -99,16 +120,27 @@ if [ "$MODE" = "--daemon" ] || [ "$MODE" = "daemon" ]; then
     sleep 1
   fi
 
+  rm -f "$LOG_FILE"
   OLLAMA_TOKEN="${OLLAMA_TOKEN:-}" \
-  OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-https://ollama.mdes-innova.online}" \
-  OLLAMA_MODEL="${OLLAMA_MODEL:-gemma4:e4b}" \
+  OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-https://ollama.mdes-ollama.online}" \
+  OLLAMA_MODEL="${MODEL:-gemma4:e4b}" \
   DISCORD_TOKEN="$DISCORD_TOKEN" \
-    node bot.js >> "$LOG_FILE" 2>&1 &
+    node bot.js > "$LOG_FILE" 2>&1 &
 
-  echo $! > "$PID_FILE"
-  echo -e "  ${GREEN}✅ อนุ started (PID $!) — logs: $LOG_FILE${RESET}"
-  echo ""
-  exit 0
+  CHILD_PID=$!
+  echo "$CHILD_PID" > "$PID_FILE"
+  sleep 2
+  if kill -0 "$CHILD_PID" 2>/dev/null; then
+    echo -e "  ${GREEN}✅ อนุ started (PID $CHILD_PID) — logs: $LOG_FILE${RESET}"
+    echo ""
+    exit 0
+  else
+    echo -e "  ${RED}❌ อนุ failed to stay alive after startup.${RESET}"
+    echo -e "  ${YELLOW}ดู log ล่าสุดเพื่อวิเคราะห์ปัญหา:${RESET}"
+    tail -n 20 "$LOG_FILE" | sed 's/^/    /'
+    rm -f "$PID_FILE"
+    exit 1
+  fi
 fi
 
 # ── Foreground mode (default) ────────────────────────────────────

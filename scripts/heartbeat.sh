@@ -32,6 +32,8 @@ ORACLE_URL="${ORACLE_URL:-http://localhost:47778}"
 OLLAMA_URL="${OLLAMA_URL:-https://ollama.mdes-innova.online}"
 BUS_ROOT="${BUS_ROOT:-/tmp/manusat-bus}"
 LAST_ACTIVITY_FILE="/tmp/heartbeat-last-active.timestamp"
+DISCORD_ACTIVITY_FILE="${DISCORD_ACTIVITY_FILE:-/tmp/discord-bot-last-active.timestamp}"
+HEARTBEAT_STATUS_FILE="${HEARTBEAT_STATUS_FILE:-/tmp/innova-discord-heartbeat.status}"
 HEART_RATE_REQUEST="/tmp/heart-rate-request.txt"
 PID_FILE="/tmp/innova-heartbeat.pid"
 LOG_FILE="/tmp/innova-heartbeat.log"
@@ -50,19 +52,24 @@ heartbeat_mode() {
   fi
 
   # นับเฉพาะ task messages ใหม่ (< 10 นาที, ไม่นับ broadcast ของตัวเอง)
-  local pending changes age=0
+  local pending changes age=0 discord_age=0
   pending=$(find "$BUS_ROOT" -name '*.msg' -mmin -10 2>/dev/null \
             | grep -v '_broadcast\.msg$' | wc -l | tr -d ' ')
   changes=$(git -C "$JIT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
   if [ -f "$LAST_ACTIVITY_FILE" ]; then
     age=$(( $(date +%s) - $(cat "$LAST_ACTIVITY_FILE") ))
   fi
+  if [ -f "$DISCORD_ACTIVITY_FILE" ]; then
+    discord_age=$(( $(date +%s) - $(cat "$DISCORD_ACTIVITY_FILE") ))
+  fi
 
   if   [ "$pending" -ge 10 ] || [ "$changes" -ge 5 ]; then echo "sprint"
   elif [ "$pending" -ge 3  ] || [ "$changes" -ge 1 ]; then echo "fast"
-  elif [ "$age" -ge 7200   ];                          then echo "rest"
-  elif [ "$age" -ge 3600   ];                          then echo "slow"
-  else                                                       echo "normal"
+  elif [ "$discord_age" -ge 3600 ];                        then echo "rest"
+  elif [ "$discord_age" -ge 1800 ];                        then echo "slow"
+  elif [ "$age" -ge 7200   ];                             then echo "rest"
+  elif [ "$age" -ge 3600   ];                             then echo "slow"
+  else                                                         echo "normal"
   fi
 }
 
@@ -92,6 +99,32 @@ _cleanup_stale_messages() {
   deleted=$(find "$BUS_ROOT" -name '*.msg' -mmin +30 2>/dev/null | wc -l | tr -d ' ')
   [ "$deleted" -gt 0 ] && find "$BUS_ROOT" -name '*.msg' -mmin +30 -delete 2>/dev/null
   echo "$deleted"
+}
+
+_append_heartbeat_log() {
+  local phase="$1"
+  local ts="$2"
+  local file="$JIT_ROOT/memory/state/heartbeat.log"
+  mkdir -p "$(dirname "$file")"
+  if [ "$phase" = "IN" ]; then
+    echo "$(date '+%Y-%m-%dT%H:%M:%S') | $(hostname) | #$PULSE_COUNT | phase=IN | mode=$MODE | changed=$CHANGES" >> "$file"
+  else
+    echo "$(date '+%Y-%m-%dT%H:%M:%S') | $(hostname) | #$PULSE_COUNT | phase=OUT | mode=$MODE | changed=$CHANGES" >> "$file"
+  fi
+}
+
+_commit_heartbeat() {
+  local phase="$1"
+  local ts="$2"
+  local file="$JIT_ROOT/memory/state/heartbeat.log"
+  local msg
+  if [ "$phase" = "IN" ]; then
+    msg="->💓 heartbeat (IN) ->#$PULSE_COUNT — $(hostname) @ $ts"
+  else
+    msg="❤️‍🔥-> heartbeat (OUT) #$PULSE_COUNT — $(hostname) @ $ts"
+  fi
+  git -C "$JIT_ROOT" add "$file" >/dev/null 2>&1 || true
+  git -C "$JIT_ROOT" commit -m "$msg" >/dev/null 2>&1 || true
 }
 
 # ── local state write (heartbeat writes runtime state only, never git commits) ──
@@ -160,6 +193,8 @@ _do_pulse() {
   printf " %s %s task msgs · %s repo changes\n" \
     "$(_hbar $(( PENDING > 0 ? 100 : 30 )))" "$PENDING" "$CHANGES"
 
+  _append_heartbeat_log "IN" "$(date '+%Y-%m-%dT%H:%M:%S')"
+  _commit_heartbeat "IN" "$(date '+%Y-%m-%dT%H:%M:%S')"
   _log_pulse_locally "IN #$PULSE_COUNT pending=$PENDING changes=$CHANGES"
 
   # ═══════════════════════════════════════════════════════════════
@@ -172,6 +207,8 @@ _do_pulse() {
   bash "$JIT_ROOT/organs/heart.sh" beat out 2>/dev/null > /dev/null
   printf " %s broadcast to all agents\n" "$(_hbar 100)"
 
+  _append_heartbeat_log "OUT" "$(date '+%Y-%m-%dT%H:%M:%S')"
+  _commit_heartbeat "OUT" "$(date '+%Y-%m-%dT%H:%M:%S')"
   _log_pulse_locally "OUT #$PULSE_COUNT mode=$MODE"
 
   # ═══════════════════════════════════════════════════════════════
@@ -180,8 +217,17 @@ _do_pulse() {
   echo ""
   echo -e "  ────────────────────────────────────────────────"
   echo -e "  ✅ Pulse #$PULSE_COUNT เสร็จ · mode=$MODE · next in ${PULSE_INTERVAL}s · $(date '+%H:%M:%S')"
-  echo -e "  📁  state written locally · no git commit (use milestone-commit for source checkpoints)"
+  echo -e "  📁  state written locally · heartbeat status updated"
   echo ""
+
+  cat <<EOF > "$HEARTBEAT_STATUS_FILE"
+Timestamp: $(date '+%Y-%m-%d %H:%M:%S')
+Pulse: #$PULSE_COUNT
+Mode: $MODE
+Pending task msgs: $PENDING
+Repo changes: $CHANGES
+Next interval: ${PULSE_INTERVAL}s
+EOF
 
   log_action "HEARTBEAT_PULSE" \
     "pulse=$PULSE_COUNT mode=$MODE pending=$PENDING changes=$CHANGES"
