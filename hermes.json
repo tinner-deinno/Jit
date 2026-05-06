@@ -4,7 +4,7 @@
   "plugins": {
     "./hermes-ollama": {
       "ollamaUrl": "https://ollama.mdes-innova.online",
-      "model": "gemma4:e4b",
+      "model": "gemma4:26b",
       "token": "${OLLAMA_TOKEN}",
       "childName": "อนุ",
       "parentAI": "innova",
