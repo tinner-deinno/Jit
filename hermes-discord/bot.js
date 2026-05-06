@@ -470,13 +470,18 @@ function startBot() {
   }
   if (!OLLAMA_TOKEN) console.warn('⚠️  OLLAMA_TOKEN not set');
 
-  const client = new Client({
-    intents: [
-      GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
-      GatewayIntentBits.MessageContent, GatewayIntentBits.DirectMessages,
-    ],
-    partials: [Partials.Channel],
-  });
+  // NOTE: MessageContent is a Privileged Intent.
+  // Without it: bot works in DMs only (message.content empty in guilds).
+  // To enable guild channels: Discord Developer Portal → Your Bot → Bot → Privileged Gateway Intents → MESSAGE CONTENT INTENT ✓
+  const intents = [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.DirectMessages,
+  ];
+  // Try adding MessageContent — if rejected, bot will restart with DM-only mode
+  intents.push(GatewayIntentBits.MessageContent);
+
+  const client = new Client({ intents, partials: [Partials.Channel] });
 
   client.once('ready', function() {
     console.log('✅ innova Discord Bot พร้อมแล้ว! Logged in as: ' + client.user.tag);
@@ -518,8 +523,38 @@ function startBot() {
   });
 
   client.login(DISCORD_TOKEN).catch(function(err) {
-    console.error('❌ Discord login failed:', err.message);
-    process.exit(1);
+    if (err.message && err.message.includes('disallowed intents')) {
+      console.error('❌ MessageContent intent ไม่ได้เปิด!');
+      console.error('   ➡ เปิดที่: https://discord.com/developers/applications');
+      console.error('   ➡ เลือก Bot → Privileged Gateway Intents → เปิด "MESSAGE CONTENT INTENT"');
+      console.error('   Bot จะทำงานแบบ DM-only โดยไม่มี MessageContent...');
+      // Restart without MessageContent intent
+      const client2 = new Client({
+        intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.DirectMessages],
+        partials: [Partials.Channel],
+      });
+      client2.once('ready', function() {
+        console.log('✅ innova bot (DM-only mode): ' + client2.user.tag);
+        console.log('   ⚠️  Guild channels ต้องเปิด MessageContent Intent ใน Developer Portal');
+        logTask('bot started (DM-only): ' + client2.user.tag);
+      });
+      client2.on('messageCreate', async function(message) {
+        if (message.author.bot) return;
+        if (message.channel.type !== 1) return; // DM only in this mode
+        if (!isAllowed(message)) { message.reply('🔒 ไม่มีสิทธิ์').catch(()=>{}); return; }
+        const text = (message.content || '').trim();
+        if (!text) { message.reply('สวัสดี 👋 พิมพ์ `help` เพื่อดูคำสั่ง').catch(()=>{}); return; }
+        const parts = text.split(/\s+/);
+        const cmd = (parts[0] || '').toLowerCase();
+        const args = parts.slice(1);
+        try { await handleCommand(message, cmd, args); }
+        catch(err) { message.reply('❌ ' + err.message).catch(()=>{}); }
+      });
+      client2.login(DISCORD_TOKEN).catch(e => { console.error('❌ Login failed:', e.message); process.exit(1); });
+    } else {
+      console.error('❌ Discord login failed:', err.message);
+      process.exit(1);
+    }
   });
 }
 
