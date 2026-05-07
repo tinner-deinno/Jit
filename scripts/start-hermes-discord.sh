@@ -5,7 +5,8 @@
 #
 # Usage:
 #   bash scripts/start-hermes-discord.sh           # start bot (requires DISCORD_TOKEN)
-#   bash scripts/start-hermes-discord.sh --test    # test Ollama only (no token needed)
+#   bash scripts/start-hermes-discord.sh --test    # diagnostic test: Jit/body/oracle/ollama bridge
+#   bash scripts/start-hermes-discord.sh --status  # show bot + bridge status
 #   bash scripts/start-hermes-discord.sh --daemon  # run in background
 #
 # Env vars:
@@ -13,6 +14,12 @@
 #   OLLAMA_TOKEN        — required for Ollama AI
 #   OLLAMA_MODEL        — optional, default: gemma4:e4b
 #   OLLAMA_BASE_URL     — optional, default: https://ollama.mdes-innova.online
+#   JIT_COMMAND_PREFIX  — optional, default: !jit
+#   JIT_REPORT_CHANNEL_ID — optional, auto-send startup report to this channel
+#   INNOVA_BOT_PATH     — optional, supports Linux and Windows/WSL paths
+#   INNOVA_BOT_BRIDGE_DIR / INNOVA_BOT_BRIDGE_URL — optional body bridge targets
+#   JIT_BODY_BRIDGE_HEALTH_URL — optional body bridge health endpoint
+#   JIT_THOUGHT_LOOP_*  — optional controls for Hermes autonomous reply loop
 
 set -euo pipefail
 
@@ -69,13 +76,67 @@ fi
 
 cd "$BOT_DIR"
 
-# ── Test mode: verify Ollama only ───────────────────────────────
-if [ "$MODE" = "--test" ] || [ "$MODE" = "test" ]; then
-  echo -e "  ${CYAN}🧪 Running Ollama connectivity test...${RESET}"
+# ── Status mode: inspect current bridge/config without logging in ─────
+if [ "$MODE" = "--status" ] || [ "$MODE" = "status" ]; then
+  if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE" 2>/dev/null)" 2>/dev/null; then
+    echo -e "  ${GREEN}✅ อนุ Discord bot running (PID $(cat "$PID_FILE"))${RESET}"
+    echo -e "  ${CYAN}   log: $LOG_FILE${RESET}"
+  else
+    echo -e "  ${YELLOW}⚠️  อนุ Discord bot not running${RESET}"
+  fi
+  echo ""
+  JIT_ROOT="$JIT_ROOT" \
   OLLAMA_TOKEN="${OLLAMA_TOKEN:-}" \
   OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-https://ollama.mdes-innova.online}" \
   OLLAMA_MODEL="${OLLAMA_MODEL:-gemma4:e4b}" \
-    node bot.js --test-ollama
+  ORACLE_URL="${ORACLE_URL:-http://127.0.0.1:${ORACLE_PORT:-47778}}" \
+  JIT_COMMAND_PREFIX="${JIT_COMMAND_PREFIX:-!jit}" \
+  JIT_BUS_DIR="${JIT_BUS_DIR:-/tmp/manusat-bus}" \
+  JIT_TOPOLOGY_FILE="${JIT_TOPOLOGY_FILE:-$JIT_ROOT/config/jit-topology.json}" \
+  JIT_DISCORD_DEV_RECIPIENTS="${JIT_DISCORD_DEV_RECIPIENTS:-jit,soma,innova}" \
+  JIT_REPORT_CHANNEL_ID="${JIT_REPORT_CHANNEL_ID:-}" \
+  INNOVA_BOT_PATH="${INNOVA_BOT_PATH:-}" \
+  INNOVA_BOT_BRIDGE_DIR="${INNOVA_BOT_BRIDGE_DIR:-}" \
+  INNOVA_BOT_BRIDGE_FILE="${INNOVA_BOT_BRIDGE_FILE:-}" \
+  INNOVA_BOT_BRIDGE_URL="${INNOVA_BOT_BRIDGE_URL:-}" \
+  INNOVA_BOT_HEALTH_URL="${INNOVA_BOT_HEALTH_URL:-}" \
+  JIT_BODY_BRIDGE_HEALTH_URL="${JIT_BODY_BRIDGE_HEALTH_URL:-}" \
+  JIT_THOUGHT_LOOP_ENABLED="${JIT_THOUGHT_LOOP_ENABLED:-true}" \
+  JIT_THOUGHT_LOOP_CHANNELS="${JIT_THOUGHT_LOOP_CHANNELS:-}" \
+  JIT_THOUGHT_LOOP_INTERVAL_MS="${JIT_THOUGHT_LOOP_INTERVAL_MS:-300000}" \
+  JIT_THOUGHT_LOOP_ACTIVE_WINDOW_MS="${JIT_THOUGHT_LOOP_ACTIVE_WINDOW_MS:-900000}" \
+  JIT_THOUGHT_LOOP_MIN_MESSAGES="${JIT_THOUGHT_LOOP_MIN_MESSAGES:-4}" \
+  JIT_THOUGHT_LOOP_MIN_PARTICIPANTS="${JIT_THOUGHT_LOOP_MIN_PARTICIPANTS:-2}" \
+    node bot.js --test-jit-control
+  exit $?
+fi
+
+# ── Test mode: verify Jit control plane + connectivity ──────────
+if [ "$MODE" = "--test" ] || [ "$MODE" = "test" ]; then
+  echo -e "  ${CYAN}🧪 Running Jit/Hermes control-plane test...${RESET}"
+  JIT_ROOT="$JIT_ROOT" \
+  OLLAMA_TOKEN="${OLLAMA_TOKEN:-}" \
+  OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-https://ollama.mdes-innova.online}" \
+  OLLAMA_MODEL="${OLLAMA_MODEL:-gemma4:e4b}" \
+  ORACLE_URL="${ORACLE_URL:-http://127.0.0.1:${ORACLE_PORT:-47778}}" \
+  JIT_COMMAND_PREFIX="${JIT_COMMAND_PREFIX:-!jit}" \
+  JIT_BUS_DIR="${JIT_BUS_DIR:-/tmp/manusat-bus}" \
+  JIT_TOPOLOGY_FILE="${JIT_TOPOLOGY_FILE:-$JIT_ROOT/config/jit-topology.json}" \
+  JIT_DISCORD_DEV_RECIPIENTS="${JIT_DISCORD_DEV_RECIPIENTS:-jit,soma,innova}" \
+  JIT_REPORT_CHANNEL_ID="${JIT_REPORT_CHANNEL_ID:-}" \
+  INNOVA_BOT_PATH="${INNOVA_BOT_PATH:-}" \
+  INNOVA_BOT_BRIDGE_DIR="${INNOVA_BOT_BRIDGE_DIR:-}" \
+  INNOVA_BOT_BRIDGE_FILE="${INNOVA_BOT_BRIDGE_FILE:-}" \
+  INNOVA_BOT_BRIDGE_URL="${INNOVA_BOT_BRIDGE_URL:-}" \
+  INNOVA_BOT_HEALTH_URL="${INNOVA_BOT_HEALTH_URL:-}" \
+  JIT_BODY_BRIDGE_HEALTH_URL="${JIT_BODY_BRIDGE_HEALTH_URL:-}" \
+  JIT_THOUGHT_LOOP_ENABLED="${JIT_THOUGHT_LOOP_ENABLED:-true}" \
+  JIT_THOUGHT_LOOP_CHANNELS="${JIT_THOUGHT_LOOP_CHANNELS:-}" \
+  JIT_THOUGHT_LOOP_INTERVAL_MS="${JIT_THOUGHT_LOOP_INTERVAL_MS:-300000}" \
+  JIT_THOUGHT_LOOP_ACTIVE_WINDOW_MS="${JIT_THOUGHT_LOOP_ACTIVE_WINDOW_MS:-900000}" \
+  JIT_THOUGHT_LOOP_MIN_MESSAGES="${JIT_THOUGHT_LOOP_MIN_MESSAGES:-4}" \
+  JIT_THOUGHT_LOOP_MIN_PARTICIPANTS="${JIT_THOUGHT_LOOP_MIN_PARTICIPANTS:-2}" \
+    node bot.js --test-jit-control
   exit $?
 fi
 
@@ -122,10 +183,30 @@ if [ "$MODE" = "--daemon" ] || [ "$MODE" = "daemon" ]; then
 
   rm -f "$LOG_FILE"
   OLLAMA_TOKEN="${OLLAMA_TOKEN:-}" \
-  OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-https://ollama.mdes-ollama.online}" \
-  OLLAMA_MODEL="${MODEL:-gemma4:e4b}" \
+  OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-https://ollama.mdes-innova.online}" \
+  OLLAMA_MODEL="${OLLAMA_MODEL:-gemma4:e4b}" \
+  ORACLE_URL="${ORACLE_URL:-http://127.0.0.1:${ORACLE_PORT:-47778}}" \
   DISCORD_TOKEN="$DISCORD_TOKEN" \
-    node bot.js > "$LOG_FILE" 2>&1 &
+  DISCORD_USE_MESSAGE_CONTENT_INTENT="${DISCORD_USE_MESSAGE_CONTENT_INTENT:-true}" \
+  JIT_ROOT="$JIT_ROOT" \
+  JIT_COMMAND_PREFIX="${JIT_COMMAND_PREFIX:-!jit}" \
+  JIT_BUS_DIR="${JIT_BUS_DIR:-/tmp/manusat-bus}" \
+  JIT_TOPOLOGY_FILE="${JIT_TOPOLOGY_FILE:-$JIT_ROOT/config/jit-topology.json}" \
+  JIT_DISCORD_DEV_RECIPIENTS="${JIT_DISCORD_DEV_RECIPIENTS:-jit,soma,innova}" \
+  JIT_REPORT_CHANNEL_ID="${JIT_REPORT_CHANNEL_ID:-}" \
+  INNOVA_BOT_PATH="${INNOVA_BOT_PATH:-}" \
+  INNOVA_BOT_BRIDGE_DIR="${INNOVA_BOT_BRIDGE_DIR:-}" \
+  INNOVA_BOT_BRIDGE_FILE="${INNOVA_BOT_BRIDGE_FILE:-}" \
+  INNOVA_BOT_BRIDGE_URL="${INNOVA_BOT_BRIDGE_URL:-}" \
+  INNOVA_BOT_HEALTH_URL="${INNOVA_BOT_HEALTH_URL:-}" \
+  JIT_BODY_BRIDGE_HEALTH_URL="${JIT_BODY_BRIDGE_HEALTH_URL:-}" \
+  JIT_THOUGHT_LOOP_ENABLED="${JIT_THOUGHT_LOOP_ENABLED:-true}" \
+  JIT_THOUGHT_LOOP_CHANNELS="${JIT_THOUGHT_LOOP_CHANNELS:-}" \
+  JIT_THOUGHT_LOOP_INTERVAL_MS="${JIT_THOUGHT_LOOP_INTERVAL_MS:-300000}" \
+  JIT_THOUGHT_LOOP_ACTIVE_WINDOW_MS="${JIT_THOUGHT_LOOP_ACTIVE_WINDOW_MS:-900000}" \
+  JIT_THOUGHT_LOOP_MIN_MESSAGES="${JIT_THOUGHT_LOOP_MIN_MESSAGES:-4}" \
+  JIT_THOUGHT_LOOP_MIN_PARTICIPANTS="${JIT_THOUGHT_LOOP_MIN_PARTICIPANTS:-2}" \
+    node bot.js >> "$LOG_FILE" 2>&1 &
 
   CHILD_PID=$!
   echo "$CHILD_PID" > "$PID_FILE"
@@ -152,5 +233,25 @@ exec env \
   OLLAMA_TOKEN="${OLLAMA_TOKEN:-}" \
   OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-https://ollama.mdes-innova.online}" \
   OLLAMA_MODEL="${OLLAMA_MODEL:-gemma4:e4b}" \
+  ORACLE_URL="${ORACLE_URL:-http://127.0.0.1:${ORACLE_PORT:-47778}}" \
   DISCORD_TOKEN="$DISCORD_TOKEN" \
+  DISCORD_USE_MESSAGE_CONTENT_INTENT="${DISCORD_USE_MESSAGE_CONTENT_INTENT:-true}" \
+  JIT_ROOT="$JIT_ROOT" \
+  JIT_COMMAND_PREFIX="${JIT_COMMAND_PREFIX:-!jit}" \
+  JIT_BUS_DIR="${JIT_BUS_DIR:-/tmp/manusat-bus}" \
+  JIT_TOPOLOGY_FILE="${JIT_TOPOLOGY_FILE:-$JIT_ROOT/config/jit-topology.json}" \
+  JIT_DISCORD_DEV_RECIPIENTS="${JIT_DISCORD_DEV_RECIPIENTS:-jit,soma,innova}" \
+  JIT_REPORT_CHANNEL_ID="${JIT_REPORT_CHANNEL_ID:-}" \
+  INNOVA_BOT_PATH="${INNOVA_BOT_PATH:-}" \
+  INNOVA_BOT_BRIDGE_DIR="${INNOVA_BOT_BRIDGE_DIR:-}" \
+  INNOVA_BOT_BRIDGE_FILE="${INNOVA_BOT_BRIDGE_FILE:-}" \
+  INNOVA_BOT_BRIDGE_URL="${INNOVA_BOT_BRIDGE_URL:-}" \
+  INNOVA_BOT_HEALTH_URL="${INNOVA_BOT_HEALTH_URL:-}" \
+  JIT_BODY_BRIDGE_HEALTH_URL="${JIT_BODY_BRIDGE_HEALTH_URL:-}" \
+  JIT_THOUGHT_LOOP_ENABLED="${JIT_THOUGHT_LOOP_ENABLED:-true}" \
+  JIT_THOUGHT_LOOP_CHANNELS="${JIT_THOUGHT_LOOP_CHANNELS:-}" \
+  JIT_THOUGHT_LOOP_INTERVAL_MS="${JIT_THOUGHT_LOOP_INTERVAL_MS:-300000}" \
+  JIT_THOUGHT_LOOP_ACTIVE_WINDOW_MS="${JIT_THOUGHT_LOOP_ACTIVE_WINDOW_MS:-900000}" \
+  JIT_THOUGHT_LOOP_MIN_MESSAGES="${JIT_THOUGHT_LOOP_MIN_MESSAGES:-4}" \
+  JIT_THOUGHT_LOOP_MIN_PARTICIPANTS="${JIT_THOUGHT_LOOP_MIN_PARTICIPANTS:-2}" \
   node bot.js

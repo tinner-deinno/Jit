@@ -15,7 +15,7 @@ if [ -f "$JIT_ROOT/.env" ]; then
 fi
 
 REPO_URL="${1:-${INNOVA_BOT_REPO:-}}"
-DEST_DIR="${INNOVA_BOT_PATH:-$JIT_ROOT/innova-bot}"
+DEST_DIR="$(resolve_innova_bot_path)"
 
 if [ -z "$REPO_URL" ] && [ ! -d "$DEST_DIR/.git" ]; then
   err "ไม่พบ INNOVA_BOT_REPO และไม่มี innova-bot repo ใน workspace"
@@ -25,6 +25,7 @@ if [ -z "$REPO_URL" ] && [ ! -d "$DEST_DIR/.git" ]; then
 fi
 
 step "innova-bot path: $DEST_DIR"
+[ -n "${INNOVA_BOT_PATH:-}" ] && [ "$DEST_DIR" != "${INNOVA_BOT_PATH}" ] && info "normalized INNOVA_BOT_PATH → $DEST_DIR"
 
 if [ -d "$DEST_DIR/.git" ]; then
   ok "พบ innova-bot repository แล้ว ที่ $DEST_DIR"

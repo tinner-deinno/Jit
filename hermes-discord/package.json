@@ -5,7 +5,11 @@
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
-    "test": "node bot.js --test-ollama"
+    "bridge:start": "node body-bridge.js --daemon",
+    "bridge:status": "node body-bridge.js --status",
+    "test": "node bot.js --test-jit-control",
+    "test:bridge": "node body-bridge.js --test-payload",
+    "test:ollama": "node bot.js --test-ollama"
   },
   "keywords": ["discord", "bot", "innova", "hermes", "ollama", "mdes"],
   "author": "innova (มนุษย์ Agent)",

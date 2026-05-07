@@ -17,12 +17,32 @@
   },
 
   "body_repo_path": "/workspaces/innova-bot",
+  "body_repo_candidates": [
+    "/workspaces/innova-bot",
+    "/mnt/c/Users/USER-NT/DEV/innova-bot-template",
+    "C:\\Users\\USER-NT\\DEV\\innova-bot-template"
+  ],
   "body_repo_url": "",
   "body_backend_cmd": "python -m innova_bot.main",
   "body_gui_url": "http://127.0.0.1:7010/gui",
   "body_tui_cmd": "python -m innova_bot.gui.rpg_tui",
   "body_mcp_port": 7010,
+  "body_bridge_dir": ".jit-bridge/inbox",
+  "body_bridge_url": "",
   "body_status": "not-present",
+
+  "discord_control": {
+    "enabled": true,
+    "chat_prefix": "!อนุ",
+    "command_prefix": "!jit",
+    "dev_recipients": ["jit", "soma", "innova"],
+    "startup_report_channel_env": "JIT_REPORT_CHANNEL_ID",
+    "thought_loop": {
+      "enabled_env": "JIT_THOUGHT_LOOP_ENABLED",
+      "channels_env": "JIT_THOUGHT_LOOP_CHANNELS",
+      "interval_env": "JIT_THOUGHT_LOOP_INTERVAL_MS"
+    }
+  },
 
   "oracle_url": "http://127.0.0.1:47778",
   "oracle_health": "http://127.0.0.1:47778/api/health",

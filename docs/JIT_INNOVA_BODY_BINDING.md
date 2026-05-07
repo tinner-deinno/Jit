@@ -33,10 +33,16 @@ Defined in `config/jit-topology.json`:
 ```json
 {
   "body_repo_path": "/workspaces/innova-bot",
+   "body_repo_candidates": [
+      "/workspaces/innova-bot",
+      "/mnt/c/Users/USER-NT/DEV/innova-bot-template",
+      "C:\\Users\\USER-NT\\DEV\\innova-bot-template"
+   ],
   "body_backend_cmd": "python -m innova_bot.main",
   "body_gui_url": "http://127.0.0.1:7010/gui",
   "body_tui_cmd": "python -m innova_bot.gui.rpg_tui",
-  "body_mcp_port": 7010
+   "body_mcp_port": 7010,
+   "body_bridge_dir": ".jit-bridge/inbox"
 }
 ```
 
@@ -44,6 +50,7 @@ Set `INNOVA_BOT_REPO` in `.env` to enable auto-setup:
 ```bash
 INNOVA_BOT_REPO=https://github.com/<owner>/innova-bot.git
 INNOVA_BOT_PATH=/workspaces/innova-bot   # optional override
+# or Windows/WSL: C:\Users\USER-NT\DEV\innova-bot-template
 ```
 
 ---
@@ -82,6 +89,58 @@ On startup (`scripts/init-life.sh`), the Jit mind:
 4. Checks if innova-bot body is running at port 7010
 5. If body is running: registers with it via `/api/register` or MCP init
 6. If body is not running: operates in shell-only mode (heartbeat, Oracle, Ollama still work)
+
+---
+
+## Hermes Discord Control Plane
+
+Hermes สามารถเป็น front-end ของ Jit บน Discord ได้โดยตรง:
+
+- `!อนุ` = chat mode ไปที่ MDES Ollama ตามเดิม
+- `!jit` = control mode สำหรับ Jit / bus / innova-bot body
+- รองรับ mention mode เช่น `@bot jit status`
+
+คำสั่งหลัก:
+
+- `!jit status` — ดูสถานะรวมของ Jit, Oracle, Ollama, body, bus
+- `!jit body` — ดู path binding และ bridge ไปยัง innova-bot
+- `!jit queue innova` — ดู inbox ของ agent บน bus
+- `!jit dev <task>` — ส่ง dev task เข้า `jit,soma,innova` และ mirror ไป body bridge
+- `!jit tell <agent> <subject> <body>` — ส่ง message ตรงเข้า bus
+- `!jit report` — ส่ง startup/status report ไป channel ที่กำหนด
+
+Env เพิ่มเติม:
+
+```bash
+JIT_COMMAND_PREFIX=!jit
+JIT_REPORT_CHANNEL_ID=<discord-channel-id>
+JIT_DISCORD_DEV_RECIPIENTS=jit,soma,innova
+INNOVA_BOT_BRIDGE_DIR=/workspaces/innova-bot/.jit-bridge/inbox
+INNOVA_BOT_BRIDGE_URL=http://127.0.0.1:7010/api/jit/discord
+INNOVA_BOT_HEALTH_URL=http://127.0.0.1:7010/mcp/health
+JIT_BODY_BRIDGE_HEALTH_URL=http://127.0.0.1:7011/health
+JIT_BODY_EXECUTOR_COMMAND="bash /workspaces/Jit/scripts/discord-dev-executor.sh"
+JIT_BODY_EXECUTOR_FORWARD="bash /mnt/c/Users/USER-NT/DEV/innova-bot-template/scripts/dev-dispatch.sh"
+JIT_THOUGHT_LOOP_ENABLED=true
+JIT_THOUGHT_LOOP_CHANNELS=<discord-channel-id>
+JIT_THOUGHT_LOOP_INTERVAL_MS=300000
+```
+
+หมายเหตุ:
+
+- ถ้า `INNOVA_BOT_PATH` เป็น Windows path บน Linux/WSL ระบบจะ normalize เป็น `/mnt/<drive>/...`
+- ถ้าไม่ทราบ API ของ body ล่วงหน้า ให้ใช้ file bridge (`.jit-bridge/inbox`) ได้ก่อน
+- startup report จะถูกส่งอัตโนมัติเมื่อกำหนด `JIT_REPORT_CHANNEL_ID`
+- body side สามารถรัน `bash scripts/start-innova-body-bridge.sh --daemon` เพื่ออ่าน `.jit-bridge/inbox` และเปิด webhook ที่ `127.0.0.1:7011/api/jit/discord`
+- executor ฝั่งเครื่องปลายทางเริ่มจาก `bash scripts/discord-dev-executor.sh <payload.json>` และจะ forward ต่อถ้าตั้ง `JIT_BODY_EXECUTOR_FORWARD`
+- Hermes thought loop ใช้ transcript ล่าสุดใน channel เพื่อสร้างข้อความใหม่ทุก 5 นาที และตอบ `[[NO_REPLY]]` เองเมื่อยังไม่ควรพูด
+
+คำสั่ง loop เพิ่มเติม:
+
+- `!jit loop on` — เปิด grounded thought loop ใน channel ปัจจุบัน
+- `!jit loop off` — ปิด loop ใน channel ปัจจุบัน
+- `!jit loop status` — ดูสถานะ loop ของ channel ปัจจุบัน
+- `!jit loop now` — บังคับให้วิเคราะห์ข้อความล่าสุดและลองโพสต์ทันทีหนึ่งครั้ง
 
 ---
 

@@ -25,6 +25,35 @@ OLLAMA_MODEL="${OLLAMA_MODEL:-gemma4:e4b}"
 JIT_ROOT="${JIT_ROOT:-/workspaces/Jit}"
 ORACLE_ROOT="${ORACLE_ROOT:-/workspaces/arra-oracle-v3}"
 
+# ─── Path normalization ───────────────────────────────────────────────
+# รองรับ path จาก Windows/WSL เช่น C:\Users\name\repo → /mnt/c/Users/name/repo
+normalize_host_path() {
+  local RAW="${1:-}"
+  [ -z "$RAW" ] && return 0
+
+  RAW="${RAW%\"}"
+  RAW="${RAW#\"}"
+
+  if [[ "$RAW" == ~/* ]]; then
+    printf '%s/%s' "$HOME" "${RAW#~/}"
+    return 0
+  fi
+
+  if [[ "$RAW" =~ ^[A-Za-z]:\\ ]]; then
+    local DRIVE="${RAW:0:1}"
+    local REST="${RAW:2}"
+    REST="${REST//\\//}"
+    printf '/mnt/%s/%s' "$(printf '%s' "$DRIVE" | tr 'A-Z' 'a-z')" "${REST#/}"
+    return 0
+  fi
+
+  printf '%s' "$RAW"
+}
+
+resolve_innova_bot_path() {
+  normalize_host_path "${INNOVA_BOT_PATH:-$JIT_ROOT/innova-bot}"
+}
+
 # ─── สติ: log ทุกการกระทำ (mindfulness journal) ────────────────────
 JIT_LOG="${JIT_LOG:-/tmp/innova-actions.log}"
 log_action() {
