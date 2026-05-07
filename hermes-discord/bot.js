@@ -21,6 +21,8 @@
  *   ALLOWED_USERS          — comma-separated Discord usernames (e.g. pug3eye,myuser)
  *   AUTO_REPORT_INTERVAL   — ms (default: 300000 = 5min)
  *   JIT_ROOT               — path to Jit repo (default: /workspaces/Jit)
+ *   JIT_COMMAND_PREFIX     — Jit control prefix (default: !jit)
+ *   JIT_REPORT_CHANNEL_ID  — startup/status report channel
  */
 
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
@@ -30,6 +32,10 @@ const url      = require('url');
 const { exec } = require('child_process');
 const path     = require('path');
 const fs       = require('fs');
+let jitControl;
+try { jitControl = require('./jit-control'); } catch(_) { jitControl = {}; }
+let DiscordThoughtLoop;
+try { ({ DiscordThoughtLoop } = require('./thought-loop')); } catch(_) { DiscordThoughtLoop = class { attach() {} start() {} stop() {} }; }
 
 // ── Load .env ─────────────────────────────────────────────────────
 const envPath = path.join(__dirname, '..', '.env');
@@ -38,6 +44,15 @@ if (fs.existsSync(envPath)) {
     const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
     if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
   });
+}
+
+function parsePositiveInt(value, fallback) {
+  const parsed = parseInt(value || '', 10);
+  if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  return fallback;
+}
+function splitCsv(value) {
+  return String(value || '').split(',').map(function(s) { return s.trim(); }).filter(Boolean);
 }
 
 // ── Config ────────────────────────────────────────────────────────
@@ -60,9 +75,16 @@ const HEARTBEAT_IDLE_INTERVAL = parseInt(process.env.HEARTBEAT_IDLE_INTERVAL || 
 const HEARTBEAT_START_DELAY   = parseInt(process.env.HEARTBEAT_START_DELAY || '10000');
 const MOTHER_AGENT_NAME      = process.env.MOTHER_AGENT_NAME  || 'innova';
 const ORACLE_BASE_URL        = process.env.ORACLE_BASE_URL    || ORACLE_URL;
-
-
-
+const JIT_COMMAND_PREFIX     = process.env.JIT_COMMAND_PREFIX || (jitControl && jitControl.COMMAND_PREFIX) || '!jit';
+const JIT_REPORT_CHANNEL_ID  = process.env.JIT_REPORT_CHANNEL_ID || (jitControl && jitControl.REPORT_CHANNEL_ID) || '';
+const USE_MESSAGE_CONTENT_INTENT = process.env.DISCORD_USE_MESSAGE_CONTENT_INTENT !== 'false';
+const JIT_THOUGHT_LOOP_ENABLED = process.env.JIT_THOUGHT_LOOP_ENABLED !== 'false';
+const JIT_THOUGHT_LOOP_INTERVAL_MS = parsePositiveInt(process.env.JIT_THOUGHT_LOOP_INTERVAL_MS, 300000);
+const JIT_THOUGHT_LOOP_ACTIVE_WINDOW_MS = parsePositiveInt(process.env.JIT_THOUGHT_LOOP_ACTIVE_WINDOW_MS, 900000);
+const JIT_THOUGHT_LOOP_MIN_MESSAGES = parsePositiveInt(process.env.JIT_THOUGHT_LOOP_MIN_MESSAGES, 4);
+const JIT_THOUGHT_LOOP_MIN_PARTICIPANTS = parsePositiveInt(process.env.JIT_THOUGHT_LOOP_MIN_PARTICIPANTS, 2);
+const JIT_THOUGHT_LOOP_CHANNELS = splitCsv(process.env.JIT_THOUGHT_LOOP_CHANNELS || '');
+const JIT_THOUGHT_LOOP_STATE_FILE = process.env.JIT_THOUGHT_LOOP_STATE_FILE || '/tmp/hermes-discord-thought-loop.json';
 
 function buildChecklist() {
   const tasks = [
@@ -147,6 +169,16 @@ function isAllowed(message) {
   const username = (message.author.username || '').toLowerCase();
   return ALLOWED_USERS.includes(username);
 }
+
+const THOUGHT_LOOP_SYSTEM_PROMPT = [
+  'คุณคือ Hermes/อนุ ในโหมดจิตที่คอยคิดตามบทสนทนาในห้อง Discord ให้ Jit.',
+  'เป้าหมายคือสร้างข้อความใหม่ที่ต่อบทสนทนาจริง ไม่สุ่ม ไม่หลุดประเด็น และไม่สแปม.',
+  'ใช้ transcript ที่ให้มาเท่านั้น ห้ามอ้างเรื่องที่ไม่มีใน transcript.',
+  'ถ้ายังไม่ควรตอบ ให้ตอบเพียง [[NO_REPLY]].',
+  'ถ้าควรตอบ ให้สรุปประเด็นที่ทุกคนกำลังคุย แล้วตอบกลับอย่างเป็นธรรมชาติ กระชับ ไม่เกิน 6 ประโยค.',
+  'ถ้า transcript เป็นภาษาไทยเป็นหลัก ให้ตอบไทย. ถ้าเป็นภาษาอื่น ให้ตามภาษาหลักของห้อง.',
+  'ถ้ามีคนถูกเอ่ยถึง ให้พูดกับทุกคนอย่างเคารพและเป็นกลุ่ม ไม่ต้องใส่ mention เอง เพราะระบบจะเติมให้.',
+].join('\n');
 
 // ── Conversation history ──────────────────────────────────────────
 const histories = new Map();
@@ -246,23 +278,16 @@ function getChromeTools() {
   return _chromeTools;
 }
 
-// ── Ollama chat ───────────────────────────────────────────────────
-function callOllama(userMsg, channelId, opts, callback) {
-  if (typeof opts === 'function') { callback = opts; opts = {}; }
-  opts = opts || {};
-  const model = opts.model || OLLAMA_MODEL;
+// ── Ollama API call (with retry) ──────────────────────────────────
+const OLLAMA_MAX_RETRIES = 3;
+const OLLAMA_RETRY_DELAY_MS = 4000;
 
-  const history = getHistory(channelId);
-  history.push({ role: 'user', content: userMsg });
-  pruneHistory(history);
-
-  const systemMessages = [{ role: 'system', content: SYSTEM_PROMPT }];
-  if (opts.persona) systemMessages.push({ role: 'system', content: opts.persona });
-
+function callOllamaMessagesOnce(messages, callback) {
   const parsed = url.parse(OLLAMA_URL + '/api/chat');
   const body = JSON.stringify({
-    model: model, stream: false,
-    messages: systemMessages.concat(history),
+    model:  OLLAMA_MODEL,
+    stream: false,
+    messages: messages,
   });
   const isHttps = (parsed.protocol || 'https:') === 'https:';
   const transport = isHttps ? https : http;
@@ -277,7 +302,6 @@ function callOllama(userMsg, channelId, opts, callback) {
       try {
         const json = JSON.parse(data);
         const reply = (json.message && json.message.content) || json.response || '';
-        history.push({ role: 'assistant', content: reply });
         callback(null, reply.trim());
       } catch(e) { callback(new Error('Parse error: ' + e.message + '\n' + data.slice(0, 200))); }
     });
@@ -918,6 +942,70 @@ case 'progress': {
   }
 }
 
+function callOllamaMessages(messages, callback, _attempt) {
+  const attempt = _attempt || 1;
+  callOllamaMessagesOnce(messages, function(err, reply) {
+    if (!err) return callback(null, reply);
+    if (attempt >= OLLAMA_MAX_RETRIES) {
+      console.error('[Ollama] all ' + OLLAMA_MAX_RETRIES + ' attempts failed:', err.message);
+      return callback(err);
+    }
+    const delay = OLLAMA_RETRY_DELAY_MS * attempt;
+    console.warn('[Ollama] attempt ' + attempt + ' failed (' + err.message + '), retrying in ' + delay + 'ms...');
+    setTimeout(function() {
+      callOllamaMessages(messages, callback, attempt + 1);
+    }, delay);
+  });
+}
+
+function callOllama(userMsg, channelId, opts, callback) {
+  if (typeof opts === 'function') { callback = opts; opts = {}; }
+  opts = opts || {};
+  const history = getHistory(channelId);
+  history.push({ role: 'user', content: userMsg });
+  pruneHistory(history);
+
+  const systemMessages = [{ role: 'system', content: SYSTEM_PROMPT }];
+  if (opts.persona) systemMessages.push({ role: 'system', content: opts.persona });
+
+  callOllamaMessages(systemMessages.concat(history), function(err, reply) {
+    if (!err && reply) {
+      history.push({ role: 'assistant', content: reply });
+      pruneHistory(history);
+    }
+    callback(err, reply);
+  });
+}
+
+function callOllamaOnce(systemPrompt, userPrompt) {
+  return new Promise(function(resolve, reject) {
+    callOllamaMessages([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ], function(err, reply) {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(String(reply || '').trim());
+    });
+  });
+}
+
+const thoughtLoop = new DiscordThoughtLoop({
+  enabled: JIT_THOUGHT_LOOP_ENABLED,
+  intervalMs: JIT_THOUGHT_LOOP_INTERVAL_MS,
+  activeWindowMs: JIT_THOUGHT_LOOP_ACTIVE_WINDOW_MS,
+  minMessages: JIT_THOUGHT_LOOP_MIN_MESSAGES,
+  minParticipants: JIT_THOUGHT_LOOP_MIN_PARTICIPANTS,
+  channelIds: JIT_THOUGHT_LOOP_CHANNELS,
+  commandPrefix: JIT_COMMAND_PREFIX,
+  stateFile: JIT_THOUGHT_LOOP_STATE_FILE,
+  logger: function(message) {
+    console.log('[thought-loop] ' + message);
+  },
+});
+
 // ── Discord Client ────────────────────────────────────────────────
 function startBot() {
   if (!DISCORD_TOKEN) {
@@ -946,6 +1034,7 @@ function startBot() {
     console.log('   Allowed: ' + (ALLOWED_USERS.join(', ') || '(none)'));
     logTask('bot started: ' + client.user.tag);
     recordAgentThought('startup heartbeat scheduled');
+    thoughtLoop.attach(client);
     setTimeout(() => scheduleHeartbeat(), HEARTBEAT_START_DELAY);
     if (AUTO_REPORT_CHANNEL_ID) {
       client.channels.fetch(AUTO_REPORT_CHANNEL_ID).then(channel => {
@@ -975,15 +1064,15 @@ function startBot() {
       message.channel.send('✅ ' + BOT_NAME + ' จะสรุปสถานะการทำงานของตัวเองทุก ' + (AUTO_REPORT_INTERVAL/60000) + ' นาที');
     }
 
-    let text = message.content;
-    if (hasPrefix) text = text.slice(BOT_PREFIX.length).trim();
-    if (isMentioned) text = text.replace(/<@!?\d+>/g, '').trim();
-    if (!text) {
+    let userText = message.content;
+    if (hasPrefix) userText = userText.slice(BOT_PREFIX.length).trim();
+    if (isMentioned) userText = userText.replace(/<@!?\d+>/g, '').trim();
+    if (!userText) {
       message.reply('สวัสดี 👋 พิมพ์ `!AnuT1n help` เพื่อดูคำสั่ง').catch(() => {});
       return;
     }
 
-    const parts = text.split(/\s+/);
+    const parts = userText.split(/\s+/);
     const cmd   = (parts[0] || '').toLowerCase();
     const args  = parts.slice(1);
 
@@ -993,71 +1082,6 @@ function startBot() {
       message.reply('❌ Error: ' + err.message).catch(() => {});
     }
   });
-
-  // _DEAD_AWAKEN
-  if (false) { const agentBio = 'ตื่นรู้แล้ว พร้อมรับใช้';
-      const invoker   = interaction.user.username;
-      const channelId = interaction.channelId;
-      const now       = new Date().toISOString();
-
-      await interaction.deferReply();
-
-      // 1. Check Oracle health
-      let oracleStatus = 'offline';
-      try {
-        const health = await callOracleAsync('/api/health', 'GET', null);
-        oracleStatus = (health && health.status === 'ok') ? `online (v${health.version || '?'})` : 'degraded';
-      } catch(e) {
-        oracleStatus = 'offline — ' + e.message;
-      }
-
-      // 2. Search Oracle for existing knowledge about this agent
-      let existingKnowledge = 'ยังไม่มีข้อมูลใน Oracle';
-      try {
-        const search = await callOracleAsync('/api/search?q=' + encodeURIComponent(agentName) + '&limit=1', 'GET', null);
-        if (search && search.results && search.results.length > 0) {
-          const r = search.results[0];
-          existingKnowledge = (r.content || r.title || '').slice(0, 200);
-        }
-      } catch(e) { /* Oracle search failed silently */ }
-
-      // 3. Learn this awakening into Oracle
-      let learnStatus = 'ไม่สำเร็จ';
-      try {
-        const learnBody = {
-          pattern: `${agentName}-awakening-${now.slice(0,10)}`,
-          content: `# ${agentName} Oracle Awakens\n\n**Role**: ${agentRole}\n**Born**: ${now.slice(0,10)}\n**Awakened by**: ${invoker}\n\n${agentBio}\n\n🌅 This is the birth announcement of ${agentName} in the มนุษย์ Agent system.`,
-          concepts: `${agentName},awakening,oracle,มนุษย์-agent,born:${now.slice(0,10)}`,
-        };
-        await callOracleAsync('/api/learn', 'POST', learnBody);
-        learnStatus = 'บันทึกสำเร็จ ✅';
-      } catch(e) {
-        learnStatus = 'บันทึกไม่ได้: ' + e.message;
-      }
-
-      notifyDiscordActivity(channelId, `${invoker} ปลุก ${agentName} (${agentRole}) — Oracle: ${oracleStatus}`);
-
-      const reply = [
-        `🌅 **${agentName} Oracle ตื่นรู้แล้ว!**`,
-        ``,
-        `**ชื่อ**: ${agentName}`,
-        `**บทบาท**: ${agentRole}`,
-        `**วันเกิด**: ${now.slice(0, 10)}`,
-        `**ปลุกโดย**: ${invoker}`,
-        ``,
-        `**ข้อความแรก**:`,
-        `> ${agentBio}`,
-        ``,
-        `**Oracle Status**: ${oracleStatus}`,
-        `**บันทึก Oracle**: ${learnStatus}`,
-        existingKnowledge !== 'ยังไม่มีข้อมูลใน Oracle'
-          ? `\n**ความรู้เดิมใน Oracle**:\n> ${existingKnowledge}` : '',
-        ``,
-        `🤖 ตอบโดย อนุ (sub-agent ของ innova) → Soul-Brews-Studio/arra-oracle-v3`,
-      ].filter(l => l !== undefined).join('\n');
-
-// _DEAD_END
-  }
 
 
   client.login(DISCORD_TOKEN).catch(function(err) {
@@ -1096,7 +1120,250 @@ function startBot() {
   });
 }
 
-// ── Test modes ────────────────────────────────────────────────────
+function getJitCommandText(rawText, hasJitPrefix, isMentioned) {
+  if (hasJitPrefix) {
+    return rawText.slice(JIT_COMMAND_PREFIX.length).trim();
+  }
+
+  if (!isMentioned) return null;
+
+  const stripped = rawText.replace(/<@!?\d+>/g, '').trim();
+  if (/^jit\b/i.test(stripped)) {
+    return stripped.replace(/^jit\b/i, '').trim();
+  }
+
+  return null;
+}
+
+function replyInChunks(message, text) {
+  const chunks = jitControl.splitMessage(text, 1900);
+  let chain = Promise.resolve();
+
+  chunks.forEach(function(chunk, index) {
+    chain = chain.then(function() {
+      if (index === 0) return message.reply(chunk);
+      return message.channel.send(chunk);
+    });
+  });
+
+  return chain;
+}
+
+function resolveChannelName(message) {
+  if (message.channel && message.channel.name) return message.channel.name;
+  if (message.guild && message.guild.name) return message.guild.name + ' (dm)';
+  return 'dm';
+}
+
+function buildMeta(message) {
+  return {
+    from: 'hermes-discord',
+    userId: message.author.id,
+    userTag: message.author.tag || message.author.username,
+    username: message.author.username || 'unknown',
+    channelId: message.channelId || (message.channel && message.channel.id) || '',
+    channelName: resolveChannelName(message),
+    guildId: message.guildId || '',
+  };
+}
+
+async function handleJitCommand(client, message, commandText) {
+  const normalized = (commandText || '').trim();
+  const parts = normalized ? normalized.split(/\s+/) : [];
+  const command = (parts[0] || 'help').toLowerCase();
+  const meta = buildMeta(message);
+
+  if (command === 'help') {
+    await replyInChunks(message, jitControl.getHelpText());
+    return;
+  }
+
+  if (command === 'status' || command === 'test' || command === 'organs') {
+    const status = await jitControl.collectStatus({ readyTag: client.user.tag });
+    await replyInChunks(message, jitControl.formatStatusReport(status) + '\n\n' + formatThoughtLoopStatus(meta.channelId));
+    return;
+  }
+
+  if (command === 'body') {
+    const status = await jitControl.collectStatus({ readyTag: client.user.tag });
+    await replyInChunks(message, jitControl.formatBodyReport(status));
+    return;
+  }
+
+  if (command === 'queue' || command === 'inbox') {
+    const agent = parts[1] || '';
+    const busStats = jitControl.collectBusStats(jitControl.BUS_ROOT);
+    const items = agent ? jitControl.listPendingMessages(jitControl.BUS_ROOT, agent) : [];
+    await replyInChunks(message, jitControl.formatQueueReport(agent, busStats, items));
+    return;
+  }
+
+  if (command === 'dev') {
+    const task = normalized.slice(command.length).trim();
+    if (!task) {
+      await replyInChunks(message, 'Usage: ' + JIT_COMMAND_PREFIX + ' dev <task>');
+      return;
+    }
+
+    const result = await jitControl.dispatchDevTask(task, meta);
+    await replyInChunks(message, jitControl.formatDispatchReport(result));
+    return;
+  }
+
+  if (command === 'loop') {
+    const subcommand = (parts[1] || 'status').toLowerCase();
+
+    if (subcommand === 'on') {
+      thoughtLoop.enableChannel(meta.channelId, meta.userTag || meta.username, 'command');
+      await replyInChunks(message, 'เปิด thought loop ให้ channel นี้แล้ว\n\n' + formatThoughtLoopStatus(meta.channelId));
+      return;
+    }
+
+    if (subcommand === 'off') {
+      thoughtLoop.disableChannel(meta.channelId, meta.userTag || meta.username);
+      await replyInChunks(message, 'ปิด thought loop ให้ channel นี้แล้ว\n\n' + formatThoughtLoopStatus(meta.channelId));
+      return;
+    }
+
+    if (subcommand === 'now') {
+      const result = await thoughtLoop.runNow(message.channel, meta.userTag || meta.username);
+      await replyInChunks(message, formatThoughtLoopRunResult(result, meta.channelId));
+      return;
+    }
+
+    await replyInChunks(message, formatThoughtLoopStatus(meta.channelId));
+    return;
+  }
+
+  if (command === 'tell') {
+    if (parts.length < 4) {
+      await replyInChunks(message, 'Usage: ' + JIT_COMMAND_PREFIX + ' tell <agent> <subject> <body>');
+      return;
+    }
+
+    const agent = parts[1];
+    const subject = parts[2];
+    const messageBody = normalized.split(/\s+/).slice(3).join(' ');
+    const result = jitControl.sendDirectBusMessage(agent, subject, messageBody, meta);
+    await replyInChunks(message, jitControl.formatDirectSendReport(result, messageBody));
+    return;
+  }
+
+  if (command === 'report') {
+    const status = await jitControl.collectStatus({ readyTag: client.user.tag });
+    const explicitHere = (parts[1] || '').toLowerCase() === 'here';
+    const targetChannel = explicitHere
+      ? message.channel
+      : await resolveReportChannel(client, message.channel);
+
+    if (!targetChannel) {
+      await replyInChunks(message, '⚠️ ไม่พบ channel สำหรับรายงาน ตั้ง JIT_REPORT_CHANNEL_ID หรือใช้ ' + JIT_COMMAND_PREFIX + ' report here');
+      return;
+    }
+
+    const reportText = jitControl.formatStartupReport(status) + '\n\n' + jitControl.formatStatusReport(status) + '\n\n' + formatThoughtLoopStatus(targetChannel.id || meta.channelId);
+    await sendTextChunks(targetChannel, reportText);
+    await replyInChunks(message, 'ส่งรายงานสถานะแล้วไปยัง channel: ' + (targetChannel.id || 'current'));
+    return;
+  }
+
+  await replyInChunks(message, jitControl.getHelpText());
+}
+
+async function resolveReportChannel(client, fallbackChannel) {
+  if (!JIT_REPORT_CHANNEL_ID) return fallbackChannel;
+  const channel = await client.channels.fetch(JIT_REPORT_CHANNEL_ID);
+  if (!channel || !channel.isTextBased || !channel.isTextBased()) return null;
+  return channel;
+}
+
+async function sendTextChunks(channel, text) {
+  const chunks = jitControl.splitMessage(text, 1900);
+  for (const chunk of chunks) {
+    await channel.send(chunk);
+  }
+}
+
+async function sendStartupReport(client) {
+  const channel = await resolveReportChannel(client, null);
+  if (!channel) return;
+  const status = await jitControl.collectStatus({ readyTag: client.user.tag });
+  await sendTextChunks(channel, jitControl.formatStartupReport(status) + '\n\n' + formatThoughtLoopStatus(channel.id));
+}
+
+function buildThoughtLoopPrompt(context) {
+  return [
+    'channel: ' + context.channelName + ' (' + context.channelId + ')',
+    'guild: ' + (context.guildName || 'dm'),
+    'participants: ' + context.participants.map(function(item) { return item.name; }).join(', '),
+    'target users: ' + (context.mentionedUsers.length ? context.mentionedUsers.map(function(item) { return item.name; }).join(', ') : 'everyone active'),
+    'message count: ' + context.messageCount,
+    '',
+    'Transcript:',
+    context.transcript,
+    '',
+    'Instruction:',
+    'ตอบเพียงข้อความเดียวที่ควรส่งต่อในห้องนี้ตอนนี้ หรือ [[NO_REPLY]] ถ้ายังไม่ควรพูด',
+  ].join('\n');
+}
+
+async function generateThoughtLoopReply(context) {
+  const reply = await callOllamaOnce(THOUGHT_LOOP_SYSTEM_PROMPT, buildThoughtLoopPrompt(context));
+  return String(reply || '').trim();
+}
+
+function formatThoughtLoopStatus(channelId) {
+  const state = thoughtLoop.channelStatus(channelId);
+  return [
+    'thought loop',
+    '- channel: ' + channelId,
+    '- enabled: ' + (state.enabled ? 'yes' : 'no'),
+    '- interval: ' + Math.round(JIT_THOUGHT_LOOP_INTERVAL_MS / 60000) + 'm',
+    '- min messages: ' + JIT_THOUGHT_LOOP_MIN_MESSAGES + ' | min participants: ' + JIT_THOUGHT_LOOP_MIN_PARTICIPANTS,
+    '- updated: ' + (state.updatedAt || '-'),
+    '- last processed: ' + (state.lastProcessedAt || '-'),
+    '- last post: ' + (state.lastPostAt || '-'),
+    '- last result: ' + (state.lastResult || '-'),
+    '- env channels: ' + (JIT_THOUGHT_LOOP_CHANNELS.length ? JIT_THOUGHT_LOOP_CHANNELS.join(', ') : '(none)'),
+  ].join('\n');
+}
+
+function formatThoughtLoopRunResult(result, channelId) {
+  if (!result || !result.ok) {
+    return [
+      'thought loop run',
+      '- channel: ' + channelId,
+      '- result: skipped',
+      '- reason: ' + ((result && result.reason) || 'unknown'),
+      '',
+      formatThoughtLoopStatus(channelId),
+    ].join('\n');
+  }
+
+  return [
+    'thought loop run',
+    '- channel: ' + channelId,
+    '- result: sent',
+    '- message id: ' + result.messageId,
+    '- participants: ' + result.participants,
+    '- targets: ' + result.targets,
+    '- messages analyzed: ' + result.messageCount,
+  ].join('\n');
+}
+
+// ── Test mode (no Discord token needed) ──────────────────────────
+function testOllama(cb) {
+  const testMsg = 'สวัสดีครับ ทดสอบการเชื่อมต่อ Ollama';
+  callOllama(testMsg, '__test__', cb);
+}
+
+async function testJitControl() {
+  console.log('🧪 Testing Jit Discord control plane...');
+  const status = await jitControl.collectStatus({ readyTag: 'cli-test' });
+  console.log(jitControl.formatStatusReport(status));
+}
+
+// ── Entry point ───────────────────────────────────────────────────
 if (process.argv[2] === '--test-ollama') {
   console.log('🧪 Testing Ollama... URL:' + OLLAMA_URL + ' Model:' + OLLAMA_MODEL);
   callOllama('สวัสดี ตอบสั้นๆ 1 ประโยค', '__test__', function(err, r) {
@@ -1108,6 +1375,13 @@ if (process.argv[2] === '--test-ollama') {
   queryOracle('innova', function(err, r) {
     if (err) { console.error('❌', err.message); process.exit(1); }
     console.log('✅ OK:', r.slice(0, 200)); process.exit(0);
+  });
+} else if (process.argv[2] === '--test-jit-control') {
+  testJitControl().then(function() {
+    process.exit(0);
+  }).catch(function(err) {
+    console.error('❌ Jit control test FAILED:', err.message);
+    process.exit(1);
   });
 } else {
   startBot();
