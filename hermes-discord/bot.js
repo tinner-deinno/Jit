@@ -53,13 +53,15 @@ const JIT_ROOT              = process.env.JIT_ROOT           || '/workspaces/Jit
 const ORACLE_PORT           = process.env.ORACLE_PORT        || '47778';
 const ORACLE_URL            = 'http://localhost:' + ORACLE_PORT;
 const AUTO_REPORT_INTERVAL  = parseInt(process.env.AUTO_REPORT_INTERVAL || '300000');
+const AUTO_REPORT_ON_FIRST_CHAT = process.env.AUTO_REPORT_ON_FIRST_CHAT !== 'false';
+const AUTO_REPORT_CHANNEL_ID = process.env.AUTO_REPORT_CHANNEL_ID || '';
 const HEARTBEAT_BUSY_INTERVAL = parseInt(process.env.HEARTBEAT_BUSY_INTERVAL || '300000');
 const HEARTBEAT_IDLE_INTERVAL = parseInt(process.env.HEARTBEAT_IDLE_INTERVAL || '900000');
 const HEARTBEAT_START_DELAY   = parseInt(process.env.HEARTBEAT_START_DELAY || '10000');
 const MOTHER_AGENT_NAME      = process.env.MOTHER_AGENT_NAME  || 'innova';
 
 // Whitelist: comma-separated Discord usernames (case-insensitive)
-const ALLOWED_USERS = (process.env.ALLOWED_USERS || 'pug3eye1828')
+const ALLOWED_USERS = (process.env.ALLOWED_USERS || 'pug3eye1828,pug3eye')
   .split(',').map(u => u.trim().toLowerCase()).filter(Boolean);
 
 // ── System Prompt ─────────────────────────────────────────────────
@@ -288,6 +290,18 @@ let autoReportTimer   = null;
 let autoReportChannel = null;
 const taskLog         = [];
 
+function enableAutoReport(channel) {
+  if (!channel) return;
+  autoReportChannel = channel;
+  if (autoReportTimer) clearInterval(autoReportTimer);
+  autoReportTimer = setInterval(async function() {
+    if (!autoReportChannel) return;
+    try { await autoReportChannel.send(buildStatusReport()); }
+    catch(err) { recordAgentThought('auto-report error: ' + (err.message || err)); }
+  }, AUTO_REPORT_INTERVAL);
+  recordAgentThought('auto-report enabled for channel ' + channel.id);
+}
+
 function logTask(msg) {
   const ts = new Date().toLocaleTimeString('th-TH');
   taskLog.push('[' + ts + '] ' + msg);
@@ -296,12 +310,18 @@ function logTask(msg) {
 
 function buildStatusReport() {
   const ts = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
-  const recent = taskLog.slice(-10).join('\n') || '(ยังไม่มีกิจกรรม)';
+  const recent = taskLog.slice(-8).join('\n') || '(ยังไม่มีกิจกรรม)';
+  const thoughts = agentThoughtLog.slice(-6).join('\n') || '(ไม่มีความคิดล่าสุด)';
+  const idle = Math.round((Date.now() - lastActivityTime) / 1000);
   return [
     '🤖 **' + BOT_NAME + ' รายงานตัว** — ' + ts,
+    '🩸 Heartbeat: ' + (idle > 600 ? 'idle ' + idle + ' วินาที' : 'active ' + idle + ' วินาที'),
     '🌐 Oracle: ' + ORACLE_URL + ' | 🧠 ' + OLLAMA_MODEL,
+    '📊 Progress: ' + getProgressReport().replace(/\n/g, ' | '),
     '📋 กิจกรรมล่าสุด:',
     '```', recent, '```',
+    '💭 ความคิดทีม:',
+    '```', thoughts, '```',
     '✅ ออนไลน์ | JIT: ' + JIT_ROOT,
   ].join('\n');
 }
@@ -605,10 +625,18 @@ function startBot() {
     console.log('✅ ' + BOT_NAME + ' Discord Bot พร้อมแล้ว! Logged in as: ' + client.user.tag);
     console.log('   Model: ' + OLLAMA_MODEL + ' @ ' + OLLAMA_URL);
     console.log('   Prefix: "' + BOT_PREFIX + '" or @mention');
-    console.log('   Allowed: ' + (ALLOWED_USERS.join(', ') || '(all DM only)'));
+    console.log('   Allowed: ' + (ALLOWED_USERS.join(', ') || '(none)'));
     logTask('bot started: ' + client.user.tag);
     recordAgentThought('startup heartbeat scheduled');
     setTimeout(() => scheduleHeartbeat(), HEARTBEAT_START_DELAY);
+    if (AUTO_REPORT_CHANNEL_ID) {
+      client.channels.fetch(AUTO_REPORT_CHANNEL_ID).then(channel => {
+        if (channel) {
+          enableAutoReport(channel);
+          channel.send('✅ ' + BOT_NAME + ' เริ่มสรุปสถานะทุก ' + (AUTO_REPORT_INTERVAL/60000) + ' นาที');
+        }
+      }).catch(() => {});
+    }
   });
 
   client.on('messageCreate', async function(message) {
@@ -624,6 +652,11 @@ function startBot() {
     }
 
     markActivity('message received');
+    if (AUTO_REPORT_ON_FIRST_CHAT && !autoReportChannel) {
+      enableAutoReport(message.channel);
+      message.channel.send('✅ ' + BOT_NAME + ' จะสรุปสถานะการทำงานของตัวเองทุก ' + (AUTO_REPORT_INTERVAL/60000) + ' นาที');
+    }
+
     let text = message.content;
     if (hasPrefix) text = text.slice(BOT_PREFIX.length).trim();
     if (isMentioned) text = text.replace(/<@!?\d+>/g, '').trim();
