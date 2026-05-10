@@ -23,8 +23,24 @@
     "schedule", "report", "communicate",
     "summarize", "translate", "document",
     "coordinate-meetings", "draft-messages", "track-tasks",
-    "human-interface", "status-update", "remind"
+    "human-interface", "status-update", "remind",
+    "thai-summarize", "text-to-speech", "thai-voice-output",
+    "agent-bus-listen", "audio-generation", "voice-customization"
   ],
+  
+  "skills": {
+    "vaja-thai-tts": {
+      "version": "1.0.0",
+      "path": "skills/vaja-thai-tts",
+      "enabled": true,
+      "features": [
+        "thai-summarization",
+        "multi-backend-tts",
+        "real-time-listening",
+        "automatic-audio-generation"
+      ]
+    }
+  },
 
   "organs": {
     "ปาก": "organs/mouth.sh",

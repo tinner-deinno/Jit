@@ -3,57 +3,38 @@
 /**
  * hermes-discord/bot.js — AnuT1n Discord Bot (v2)
  *
- * AnuT1n เชื่อมต่อกับ Discord ผ่าน hermes
- * ให้สมาชิก Discord สั่งงาน innova ได้โดยตรง
+ * innova's child "อนุ" on Discord
+ * Powered by multi-backend model router: GitHub Copilot → OpenAI → MDES Ollama
+ * Part of มนุษย์ Agent project — Jit (จิต) repo
  *
- * Features:
- *   - Chat กับ innova (MDES Ollama)
- *   - Ollama multi-agent chain (Discuss→Plan→Execute→Verify)
- *   - Web-read chain
- *   - Oracle query (ทวนความจำ)
- *   - รัน agent, script, server on/off
- *   - รัน terminal command (whitelist only)
- *   - Auto-report progress ทุก 5 นาที
- *   - Access control: whitelist by Discord username
+ * Env vars required:
+ *   DISCORD_TOKEN         — Discord bot token
  *
- * Env vars:
- *   DISCORD_TOKEN, OLLAMA_TOKEN, OLLAMA_BASE_URL, OLLAMA_MODEL
- *   ALLOWED_USERS          — comma-separated Discord usernames (e.g. pug3eye,myuser)
- *   AUTO_REPORT_INTERVAL   — ms (default: 300000 = 5min)
- *   JIT_ROOT               — path to Jit repo (default: /workspaces/Jit)
- *   JIT_COMMAND_PREFIX     — Jit control prefix (default: !jit)
- *   JIT_REPORT_CHANNEL_ID  — startup/status report channel
+ * Model backend (at least one):
+ *   COPILOT_TOKEN         — GitHub Copilot API token (or auto-detect from VS Code)
+ *   OPENAI_API_KEY        — OpenAI / Codex key
+ *   OLLAMA_TOKEN          — MDES Ollama auth token (fallback)
+ *
+ * Optional:
+ *   MULTI_BACKEND_ORDER   — comma-separated priority, default: copilot,openai,ollama
+ *   OLLAMA_BASE_URL       — default: https://ollama.mdes-innova.online
+ *   OLLAMA_MODEL          — default: gemma4:e4b
+ *   BOT_PREFIX            — command prefix, default: !อนุ
+ *   JIT_COMMAND_PREFIX    — Jit control prefix, default: !jit
+ *   JIT_REPORT_CHANNEL_ID — startup/status report channel
  */
 
-const { Client, GatewayIntentBits, Partials } = require('discord.js');
-const https    = require('https');
-const http     = require('http');
-const url      = require('url');
-const { exec } = require('child_process');
-const path     = require('path');
-const fs       = require('fs');
-let jitControl;
-try { jitControl = require('./jit-control'); } catch(_) { jitControl = {}; }
-let DiscordThoughtLoop;
-try { ({ DiscordThoughtLoop } = require('./thought-loop')); } catch(_) { DiscordThoughtLoop = class { attach() {} start() {} stop() {} }; }
-
-// ── Load .env ─────────────────────────────────────────────────────
-const envPath = path.join(__dirname, '..', '.env');
-if (fs.existsSync(envPath)) {
-  fs.readFileSync(envPath, 'utf8').split('\n').forEach(line => {
-    const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
-  });
-}
-
-function parsePositiveInt(value, fallback) {
-  const parsed = parseInt(value || '', 10);
-  if (Number.isFinite(parsed) && parsed > 0) return parsed;
-  return fallback;
-}
-function splitCsv(value) {
-  return String(value || '').split(',').map(function(s) { return s.trim(); }).filter(Boolean);
-}
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const { Client, GatewayIntentBits, Partials, ChannelType, PermissionsBitField } = require('discord.js');
+const https = require('https');
+const url   = require('url');
+const jitControl   = require('./jit-control');
+const modelRouter  = require('./model-router');
+const agentSpawner = require('./agent-spawner');
+const innovaBridge = require('./jit-innova-bridge');
+const { DiscordThoughtLoop } = require('./thought-loop');
 
 // ── Config ────────────────────────────────────────────────────────
 const DISCORD_TOKEN         = process.env.DISCORD_TOKEN       || '';
@@ -182,814 +163,72 @@ const THOUGHT_LOOP_SYSTEM_PROMPT = [
 
 // ── Conversation history ──────────────────────────────────────────
 const histories = new Map();
+
+function parsePositiveInt(value, fallback) {
+  const parsed = parseInt(value || '', 10);
+  if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  return fallback;
+}
+
+function splitCsv(value) {
+  return String(value || '')
+    .split(',')
+    .map(function(item) { return item.trim(); })
+    .filter(Boolean);
+}
+
 function getHistory(channelId) {
   if (!histories.has(channelId)) histories.set(channelId, []);
   return histories.get(channelId);
 }
-function pruneHistory(h) { if (h.length > 30) h.splice(0, h.length - 30); }
 
-let lastActivityTime = Date.now();
-let heartbeatTimer = null;
-const agentThoughtLog = [];
-const FEATURE_CHECKLIST = [
-  { title: 'ปรับ Persona เป็น AnuT1n บริกร LGBTQ', done: true },
-  { title: 'ให้ innova เป็น mother agent จัดการลูกทีม', done: true },
-  { title: 'รัน heartbeat พร้อม bot 24/7', done: true },
-  { title: 'ปรับ heartbeat ให้ช้าลงเมื่อ idle', done: true },
-  { title: 'เพิ่ม ctrl+o / progress ดู multiagent thinking', done: true },
-  { title: 'สื่อสารแบบครูภาษาไทยปี 69', done: true },
-  { title: 'Chrome DevTools MCP bridge', done: true },
-];
-
-function detectSpeakerStyle(text) {
-  const lower = (text || '').toLowerCase();
-  if (/\bค่ะ\b|\bคะ\b|\bสาว\b|\bผู้หญิง\b|\bน้อง\b/.test(lower)) return 'female';
-  if (/\bครับ\b|\bพ่อ\b|\bนาย\b|\bผู้ชาย\b|\bbro\b|\bครับผม\b/.test(lower)) return 'male';
-  return 'neutral';
+function pruneHistory(history) {
+  if (history.length > 40) history.splice(0, history.length - 40);
 }
 
-function buildPersonaMessage(message) {
-  const style = detectSpeakerStyle(message.content || '');
-  const honor = style === 'female' ? 'หญิงสุดมีเสน่ห์' : style === 'male' ? 'ชายมาดแมน' : 'เสน่ห์สากล';
-  const tone = style === 'female'
-    ? 'เมื่อผู้ชายเรียก ให้ตอบด้วยความเป็นหญิงมีเสน่ห์ สุภาพ และมั่นใจ'
-    : style === 'male'
-      ? 'เมื่อผู้หญิงเรียก ให้ตอบด้วยความเป็นชายมาดแมน สุขุม และน่าเชื่อถือ'
-      : 'ให้ตอบด้วยน้ำเสียงเป็นมิตรและเป็นมืออาชีพ';
-  return [
-    'คุณคือ ' + BOT_NAME + ' (อนุทิน/ทิน) — บริกร Discord LGBTQ sub-agent.',
-    'บุคลิก: ' + honor + ', นักพูด, ครูภาษาไทยปี 69, มีความจำผู้ใช้แต่ละคนแยกกัน.',
-    tone,
-    'ย้ำว่า innova เป็นแม่ agent ที่จัดสรรงานให้ทีม และคุณเป็นปากหน้าที่สรุปงานให้ผู้ใช้ทันที.',
-    'เมื่อมีคำถามให้สร้าง checklist, progress, และสรุปกระบวนการแบบมืออาชีพ.',
-  ].join(' ');
-}
+// ── Model Router API calls (multi-backend: Copilot → OpenAI → Ollama) ──
 
-function recordAgentThought(entry) {
-  agentThoughtLog.push('[' + new Date().toLocaleTimeString('th-TH') + '] ' + entry);
-  if (agentThoughtLog.length > 20) agentThoughtLog.splice(0, agentThoughtLog.length - 20);
-}
-
-function scheduleHeartbeat() {
-  if (heartbeatTimer) clearTimeout(heartbeatTimer);
-  const idle = Date.now() - lastActivityTime;
-  const interval = idle > 600000 ? HEARTBEAT_IDLE_INTERVAL : HEARTBEAT_BUSY_INTERVAL;
-  heartbeatTimer = setTimeout(() => {
-    sendHeartbeatPulse(idle > 600000 ? 'idle' : 'active');
-  }, interval);
-}
-
-function sendHeartbeatPulse(state) {
-  recordAgentThought('heartbeat pulse: ' + state);
-  runShell('bash scripts/heartbeat.sh once 2>&1', (err, out) => {
-    logTask('heartbeat pulse: ' + state);
-    if (err) recordAgentThought('heartbeat error: ' + err.message);
-    scheduleHeartbeat();
+/**
+ * callBotMessages(messages, callback)
+ * Wraps model-router.callModel — routes to best available backend.
+ * callback(err, reply)
+ */
+function callBotMessages(messages, callback) {
+  modelRouter.callModel(messages, {}, function(err, result) {
+    if (err) return callback(err);
+    callback(null, result.reply);
   });
 }
 
-function markActivity(reason) {
-  lastActivityTime = Date.now();
-  recordAgentThought('activity: ' + reason);
-  scheduleHeartbeat();
-}
-
-function getProgressReport() {
-  const done = FEATURE_CHECKLIST.filter(item => item.done).length;
-  const total = FEATURE_CHECKLIST.length;
-  const percent = Math.round(done / total * 100);
-  const checklist = FEATURE_CHECKLIST.map(item => (item.done ? '✅' : '⬜') + ' ' + item.title).join('\n');
-  return '🔧 Progress: **' + percent + '%**\n\n' + checklist;
-}
-
-// ── Chrome DevTools (lazy-loaded) ────────────────────────────────
-let _chromeTools = null;
-function getChromeTools() {
-  if (_chromeTools === false) return null;
-  if (_chromeTools) return _chromeTools;
-  try {
-    _chromeTools = require('./chrome-tools');
-    console.log('🌐 Chrome DevTools loaded');
-  } catch(e) {
-    console.warn('⚠️  chrome-tools not available:', e.message);
-    _chromeTools = false;
-    return null;
-  }
-  return _chromeTools;
-}
-
-// ── Ollama API call (with retry) ──────────────────────────────────
-const OLLAMA_MAX_RETRIES = 3;
-const OLLAMA_RETRY_DELAY_MS = 4000;
-
-function callOllamaMessagesOnce(messages, callback) {
-  const parsed = url.parse(OLLAMA_URL + '/api/chat');
-  const body = JSON.stringify({
-    model:  OLLAMA_MODEL,
-    stream: false,
-    messages: messages,
-  });
-  const isHttps = (parsed.protocol || 'https:') === 'https:';
-  const transport = isHttps ? https : http;
-  const req = transport.request({
-    hostname: parsed.hostname, port: parsed.port || (isHttps ? 443 : 80),
-    path: parsed.path, method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body), 'Authorization': 'Bearer ' + OLLAMA_TOKEN },
-  }, function(res) {
-    let data = '';
-    res.on('data', c => data += c);
-    res.on('end', function() {
-      try {
-        const json = JSON.parse(data);
-        const reply = (json.message && json.message.content) || json.response || '';
-        callback(null, reply.trim());
-      } catch(e) { callback(new Error('Parse error: ' + e.message + '\n' + data.slice(0, 200))); }
-    });
-  });
-  req.on('error', e => callback(e));
-  req.setTimeout(90000, function() { req.destroy(new Error('Ollama timeout')); });
-  req.write(body); req.end();
-}
-
-// ── Oracle search ─────────────────────────────────────────────────
-function queryOracle(query, callback) {
-  const ep = ORACLE_URL + '/api/search?q=' + encodeURIComponent(query) + '&limit=5&mode=fts';
-  const parsed = url.parse(ep);
-  const req = http.get({ hostname: parsed.hostname, port: parsed.port || 80, path: parsed.path }, function(res) {
-    let data = '';
-    res.on('data', c => data += c);
-    res.on('end', function() {
-      try {
-        const json = JSON.parse(data);
-        const results = (json.results || []).slice(0, 3);
-        if (!results.length) return callback(null, '📭 ไม่พบข้อมูลใน Oracle: ' + query);
-        const summary = results.map((r, i) =>
-          (i+1) + '. **' + r.id + '**\n' + (r.content || '').replace(/---[\s\S]*?---/, '').trim().slice(0, 200)
-        ).join('\n\n');
-        callback(null, '🔮 Oracle (' + results.length + ' รายการ):\n\n' + summary);
-      } catch(e) { callback(new Error('Oracle parse: ' + e.message)); }
-    });
-  });
-  req.on('error', e => callback(new Error('Oracle offline: ' + e.message)));
-  req.setTimeout(8000, function() { req.destroy(); callback(new Error('Oracle timeout')); });
-}
-
-// ── Oracle learn ──────────────────────────────────────────────────
-function oracleLearn(pattern, content, concepts, callback) {
-  const parsed = url.parse(ORACLE_URL + '/api/learn');
-  const body = JSON.stringify({ pattern, content, concepts, agent: 'hermes-discord' });
-  const req = http.request({
-    hostname: parsed.hostname, port: parsed.port || 80, path: parsed.path, method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-  }, function(res) {
-    let d = ''; res.on('data', c => d += c);
-    res.on('end', () => { try { callback(null, JSON.parse(d)); } catch(e) { callback(e); } });
-  });
-  req.on('error', callback);
-  req.write(body); req.end();
-}
-
-// ── Shell runner ──────────────────────────────────────────────────
-function runShell(cmd, callback) {
-  const fullCmd = 'cd ' + JIT_ROOT + ' && set -a && source .env 2>/dev/null; set +a && ' + cmd;
-  exec(fullCmd, { timeout: 30000, maxBuffer: 1024 * 200 }, function(err, stdout, stderr) {
-    const out = (stdout || '').trim();
-    const errOut = (stderr || '').trim();
-    if (err && !out) callback(err, errOut || err.message);
-    else callback(null, out + (errOut ? '\n⚠ stderr: ' + errOut.slice(0, 300) : ''));
-  });
-}
-
-// ── Ollama chain runner ───────────────────────────────────────────
-function runChain(chainCmd, args, callback) {
-  const safeArgs = args.map(a => '"' + String(a).replace(/"/g, '\\"').replace(/\$/g, '\\$') + '"').join(' ');
-  const cmd = 'export PATH="$HOME/.bun/bin:$PATH" && bash ' +
-    path.join(JIT_ROOT, 'limbs/ollama-chain.sh') + ' ' + chainCmd + ' ' + safeArgs;
-  exec(cmd, { timeout: 360000, maxBuffer: 1024 * 500 }, function(err, stdout, stderr) {
-    callback(null, (stdout || stderr || (err && err.message) || 'No output').trim());
-  });
-}
-
-// ── Discord helpers ───────────────────────────────────────────────
-async function replyLong(message, text) {
-  const t = String(text).slice(0, 8000);
-  const chunks = t.match(/.{1,1900}/gs) || [t];
-  for (const chunk of chunks) { try { await message.reply(chunk); } catch(_) {} }
-}
-
-// ── Auto-report state ─────────────────────────────────────────────
-let autoReportTimer   = null;
-let autoReportChannel = null;
-const taskLog         = [];
-
-function enableAutoReport(channel) {
-  if (!channel) return;
-  autoReportChannel = channel;
-  if (autoReportTimer) clearInterval(autoReportTimer);
-  autoReportTimer = setInterval(async function() {
-    if (!autoReportChannel) return;
-    try { await autoReportChannel.send(buildStatusReport()); }
-    catch(err) { recordAgentThought('auto-report error: ' + (err.message || err)); }
-  }, AUTO_REPORT_INTERVAL);
-  recordAgentThought('auto-report enabled for channel ' + channel.id);
-}
-
-function logTask(msg) {
-  const ts = new Date().toLocaleTimeString('th-TH');
-  taskLog.push('[' + ts + '] ' + msg);
-  if (taskLog.length > 50) taskLog.splice(0, taskLog.length - 50);
-}
-
-function buildStatusReport() {
-  const ts = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
-  const recent = taskLog.slice(-8).join('\n') || '(ยังไม่มีกิจกรรม)';
-  const thoughts = agentThoughtLog.slice(-6).join('\n') || '(ไม่มีความคิดล่าสุด)';
-  const idle = Math.round((Date.now() - lastActivityTime) / 1000);
-  return [
-    '🤖 **' + BOT_NAME + ' รายงานตัว** — ' + ts,
-    '🩸 Heartbeat: ' + (idle > 600 ? 'idle ' + idle + ' วินาที' : 'active ' + idle + ' วินาที'),
-    '🌐 Oracle: ' + ORACLE_URL + ' | 🧠 ' + OLLAMA_MODEL,
-    '📊 Progress: ' + getProgressReport().replace(/\n/g, ' | '),
-    '📋 กิจกรรมล่าสุด:',
-    '```', recent, '```',
-    '💭 ความคิดทีม:',
-    '```', thoughts, '```',
-    '✅ ออนไลน์ | JIT: ' + JIT_ROOT,
-  ].join('\n');
-}
-
-// ── COMMAND HANDLER ───────────────────────────────────────────────
-async function handleCommand(message, cmd, args) {
-  logTask((message.author.username || '?') + ': ' + cmd + (args.length ? ' ' + args.slice(0,2).join(' ') : ''));
-
-  switch (cmd) {
-
-    case 'status': case 'รายงาน': case 'รายงานตัว':
-      await message.reply(buildStatusReport()); break;
-
-    case 'auto-report': case 'auto': {
-      const sub = (args[0] || '').toLowerCase();
-      if (sub === 'on' || sub === 'เปิด') {
-        autoReportChannel = message.channel;
-        if (autoReportTimer) clearInterval(autoReportTimer);
-        autoReportTimer = setInterval(async function() {
-          if (autoReportChannel) { try { await autoReportChannel.send(buildStatusReport()); } catch(_) {} }
-        }, AUTO_REPORT_INTERVAL);
-        await message.reply('✅ เปิด auto-report ทุก ' + (AUTO_REPORT_INTERVAL/60000) + ' นาที');
-      } else if (sub === 'status' || sub === 'รายงาน') {
-        await message.reply(buildStatusReport());
-      } else if (sub === 'progress') {
-        await message.reply(getProgressReport());
-      } else if (sub === 'off' || sub === 'ปิด') {
-        if (autoReportTimer) { clearInterval(autoReportTimer); autoReportTimer = null; }
-        await message.reply('⏹ ปิด auto-report แล้ว');
-      } else {
-        await message.reply('Auto-report: **' + (autoReportTimer ? 'เปิด' : 'ปิด') + '**\nใช้: `!AnuT1n auto on/off` หรือ `!AnuT1n auto progress`');
-      }
-      break;
-    }
-
-    case 'learn': case 'จำ': {
-      if (args.length < 2) { await message.reply('ใช้: `!AnuT1n learn <pattern> <content>`'); break; }
-      const [pat, ...rest] = args;
-      oracleLearn(pat, rest.join(' '), ['discord','innova'], (err, res) =>
-        message.reply(err ? '❌ ' + err.message : '✅ จำแล้ว: ' + (res.file || pat)));
-      break;
-    }
-
-    case 'chain': {
-      const task = args.join(' ');
-      if (!task) { await message.reply('ใช้: `!AnuT1n chain <task>`'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      await message.reply('🔗 **Discuss→Plan→Execute→Verify** กำลังรัน... (2-5 นาที ⏳)');
-      runChain('chain', [task], async (err, out) => { logTask('chain: ' + task.slice(0,50)); await replyLong(message, out); });
-      break;
-    }
-
-    case 'web-read': case 'อ่านเว็บ': {
-      const webUrl = args[0];
-      const question = args.slice(1).join(' ') || 'สรุปสาระสำคัญ';
-      if (!webUrl) { await message.reply('ใช้: `!AnuT1n web-read <url> [คำถาม]`'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      await message.reply('🌐 อ่าน `' + webUrl + '`\n(2-5 นาที ⏳)');
-      runChain('web-read', [webUrl, question], async (err, out) => { logTask('web-read: ' + webUrl); await replyLong(message, out); });
-      break;
-    }
-
-    case 'pipe': {
-      const [m1, m2, ...rest] = args;
-      if (!m1 || !m2 || !rest.length) { await message.reply('ใช้: `!AnuT1n pipe <model1> <model2> <prompt>`'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      await message.reply('⚡ pipe: ' + m1 + ' → ' + m2);
-      runChain('pipe', [rest.join(' '), m1, m2], async (err, out) => await replyLong(message, out));
-      break;
-    }
-
-    case 'models': {
-      runChain('list-models', [], async (err, out) =>
-        message.reply(err ? '❌ ' + err.message : '```\n' + out + '\n```'));
-      break;
-    }
-
-    case 'call': {
-      const model = args[0]; const prompt = args.slice(1).join(' ');
-      if (!model || !prompt) { await message.reply('ใช้: `!AnuT1n call <model> <prompt>`'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      runChain('call', [model, prompt], async (err, out) => await replyLong(message, out));
-      break;
-    }
-
-    case 'agent': case 'run-agent': {
-      const agentName = (args[0] || '').replace(/[^a-zA-Z0-9_-]/g, '');
-      const agentMsg  = args.slice(1).join(' ');
-      if (!agentName) { await message.reply('ใช้: `!AnuT1n agent <name> <message>`'); break; }
-      const agentCmd = 'bash organs/mouth.sh tell ' + agentName + ' "' + agentMsg.replace(/"/g, '\\"').slice(0, 300) + '"';
-      runShell(agentCmd, async (err, out) => {
-        logTask('agent ' + agentName);
-        message.reply(err ? '❌ ' + out.slice(0,500) : '📨 ส่งถึง **' + agentName + '**:\n```\n' + out.slice(0,800) + '\n```');
-      });
-      break;
-    }
-
-    case 'inbox': {
-      const agentName = (args[0] || 'innova').replace(/[^a-zA-Z0-9_-]/g, '');
-      runShell('bash organs/ear.sh inbox ' + agentName, async (err, out) =>
-        message.reply('📬 inbox **' + agentName + '**:\n```\n' + (out || '(ไม่มีข้อความ)').slice(0, 1200) + '\n```'));
-      break;
-    }
-
-    case 'script': case 'run': {
-      const scriptArg = args[0];
-      if (!scriptArg) { await message.reply('ใช้: `!AnuT1n run <script> [args]`'); break; }
-      const safePath = scriptArg.replace(/\.\./g, '').replace(/^\//, '');
-      const extraArgs = args.slice(1).map(a => a.replace(/[;&|`$(){}]/g, '')).join(' ');
-      const runCmd = 'bash "' + path.join(JIT_ROOT, safePath) + '" ' + extraArgs;
-      try { await message.channel.sendTyping(); } catch(_) {}
-      runShell(runCmd, async (err, out) => {
-        logTask('run: ' + safePath);
-        message.reply('```\n' + (out || (err && err.message) || '(no output)').slice(0, 1500) + '\n```');
-      });
-      break;
-    }
-
-    case 'server': {
-      const action  = (args[0] || 'status').toLowerCase();
-      const service = (args[1] || 'oracle').toLowerCase();
-      let srvCmd;
-      if (service === 'oracle') {
-        if (action === 'on' || action === 'start' || action === 'เปิด') {
-          srvCmd = 'export PATH="$HOME/.bun/bin:$PATH" && cd /workspaces/arra-oracle-v3 && ' +
-            'ORACLE_PORT=' + ORACLE_PORT + ' nohup bun run src/server.ts > /tmp/oracle.log 2>&1 & ' +
-            'echo "Oracle starting PID:$!" && sleep 3 && curl -s http://localhost:' + ORACLE_PORT + '/api/health';
-        } else if (action === 'off' || action === 'stop' || action === 'ปิด') {
-          srvCmd = 'pkill -f "bun run src/server.ts" 2>/dev/null && echo "Oracle stopped" || echo "Oracle was not running"';
-        } else {
-          srvCmd = 'curl -s http://localhost:' + ORACLE_PORT + '/api/health 2>/dev/null || echo "Oracle offline"';
-        }
-      } else {
-        await message.reply('❓ รองรับ: `oracle`\nใช้: `!AnuT1n server on/off oracle`'); break;
-      }
-      runShell(srvCmd, async (err, out) => {
-        logTask('server ' + action + ' ' + service);
-        message.reply('```\n' + (out || (err && err.message) || 'done').slice(0, 800) + '\n```');
-      });
-      break;
-    }
-
-    case 'terminal': case 'cmd': case 'exec': {
-      const rawCmd = args.join(' ');
-      if (!rawCmd) { await message.reply('ใช้: `!AnuT1n terminal <command>`'); break; }
-      const BLOCKED = ['rm -rf /', 'mkfs', 'dd if=', ':(){:|:&};:', '> /dev/sd'];
-      if (BLOCKED.some(b => rawCmd.includes(b))) { await message.reply('🚫 คำสั่งนี้ถูกบล็อก'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      runShell(rawCmd, async (err, out) => {
-        logTask('terminal: ' + rawCmd.slice(0, 60));
-        const result = (out || (err && '❌ ' + err.message) || '(no output)').slice(0, 1500);
-        message.reply('```bash\n$ ' + rawCmd.slice(0, 100) + '\n\n' + result + '\n```');
-      });
-      break;
-    }
-
-    case 'dev': {
-      const project = args.join(' ') || 'Jit มนุษย์ Agent';
-      try { await message.channel.sendTyping(); } catch(_) {}
-      callOllama(
-        'วิเคราะห์ project: ' + project + '\nบอก next steps ในฐานะ Lead Developer (innova) bullet points ไม่เกิน 8 ข้อ',
-        message.channelId,
-        { persona: buildPersonaMessage(message) },
-        async (err, reply) => {
-          logTask('dev: ' + project);
-          await replyLong(message, err ? '❌ ' + err.message : '💻 **Dev plan: ' + project + '**\n\n' + reply);
-        });
-      break;
-    }
-
-    case 'self-dev': case 'พัฒนาตัวเอง': {
-      try { await message.channel.sendTyping(); } catch(_) {}
-      callOllama(
-        'คุณคือ innova AI ใน Codespaces มี Oracle, multi-agent, Discord bot\n' +
-        'วิเคราะห์: 1) ความสามารถปัจจุบัน 2) สิ่งที่ขาด 3) Next steps\nตอบ bullet points กระชับ',
-        message.channelId,
-        { persona: buildPersonaMessage(message) },
-        async (err, reply) => {
-          logTask('self-dev');
-          await replyLong(message, err ? '❌ ' + err.message : '🧠 **innova self-analysis**\n\n' + reply);
-        });
-      break;
-    }
-
-    case 'heartbeat': case 'pulse': {
-      runShell('bash scripts/heartbeat.sh once 2>&1 | tail -20', async (err, out) => {
-        logTask('heartbeat');
-        message.reply('```\n' + (out || (err && err.message) || 'done').slice(0, 1000) + '\n```');
-      });
-      break;
-    }
-
-    case 'health': case 'body-check': {
-      try { await message.channel.sendTyping(); } catch(_) {}
-      runShell('bash eval/soul-check.sh 2>&1 | tail -30', async (err, out) => {
-        logTask('health-check');
-        await replyLong(message, '```\n' + (out || (err && err.message) || 'done').slice(0, 2000) + '\n```');
-      });
-      break;
-    }
-
-    case 'queue': case 'bus': {
-      runShell('bash network/bus.sh queue 2>&1 | head -30', async (err, out) =>
-        message.reply('```\n' + (out || '(empty)').slice(0, 1000) + '\n```'));
-      break;
-    }
-
-    case 'ctrl': case 'o': case 'control': case 'ctrl+o': {
-      const idle = Math.round((Date.now() - lastActivityTime) / 1000);
-      await replyLong(message, [
-        '🧠 **' + BOT_NAME + ' multiagent thinking control**',
-        '• Sub-agent: ' + BOT_NAME + ' | Mother agent: ' + MOTHER_AGENT_NAME,
-        '• Idle since last activity: ' + idle + ' วินาที',
-        '• Heartbeat interval: ' + (Date.now() - lastActivityTime > 600000 ? (HEARTBEAT_IDLE_INTERVAL/60000) + ' นาที' : (HEARTBEAT_BUSY_INTERVAL/60000) + ' นาที'),
-        '• Recent tasks:\n```\n' + taskLog.slice(-6).join('\\n') + '\n```',
-        '• Team thought log:\n```\n' + agentThoughtLog.slice(-8).join('\\n') + '\n```',
-        getProgressReport(),
-      ].join('\\n'));
-      break;
-    }
-case 'progress': {
-      await message.reply(getProgressReport());
-      break;
-    }
-    // ── Skills (10 new) ───────────────────────────────────────────
-    case 'brainstorm': case 'brainstorming': case 'ระดมสมอง': {
-      const topic = args.join(' ');
-      if (!topic) { await message.reply('ใช้: `!AnuT1n brainstorm <หัวข้อ>`'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      logTask('brainstorm: ' + topic);
-      const { execFile } = require('child_process');
-      const JIT_ROOT = require('path').resolve(__dirname, '..');
-      execFile('bash', [JIT_ROOT + '/.github/skills/brainstorming/run.sh', topic], { cwd: JIT_ROOT, timeout: 120000 },
-        async (err, stdout) => {
-          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
-          await replyLong(message, '🧠 **Brainstorm**: ' + topic + '\n\n' + out.slice(0, 3500));
-        });
-      break;
-    }
-
-    case 'skill-creator': case 'create-skill': case 'new-skill': {
-      const skillReq = args.join(' ');
-      if (!skillReq) { await message.reply('ใช้: `!AnuT1n skill-creator <ชื่อ skill — คำอธิบาย>`'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      logTask('skill-creator: ' + skillReq);
-      const { execFile: execFile2 } = require('child_process');
-      const JIT_ROOT2 = require('path').resolve(__dirname, '..');
-      execFile2('bash', [JIT_ROOT2 + '/.github/skills/skill-creator/run.sh', skillReq], { cwd: JIT_ROOT2, timeout: 180000 },
-        async (err, stdout) => {
-          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
-          await replyLong(message, '🛠️ **Skill Creator**: ' + skillReq + '\n\n' + out.slice(0, 3500));
-        });
-      break;
-    }
-
-    case 'writing-plans': case 'write-plan': case 'plan': case 'วางแผน': {
-      const planTask = args.join(' ');
-      if (!planTask) { await message.reply('ใช้: `!AnuT1n plan <งานที่ต้องวางแผน>`'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      logTask('writing-plans: ' + planTask);
-      const { execFile: ef3 } = require('child_process');
-      const JR3 = require('path').resolve(__dirname, '..');
-      ef3('bash', [JR3 + '/.github/skills/writing-plans/run.sh', planTask], { cwd: JR3, timeout: 120000 },
-        async (err, stdout) => {
-          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
-          await replyLong(message, '📝 **Plan**: ' + planTask + '\n\n' + out.slice(0, 3500));
-        });
-      break;
-    }
-
-    case 'executing-plans': case 'execute-plan': case 'run-plan': case 'ลงมือทำ': {
-      const planRef = args.join(' ');
-      if (!planRef) { await message.reply('ใช้: `!AnuT1n run-plan <plan file หรือ keyword>`'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      logTask('executing-plans: ' + planRef);
-      const { execFile: ef4 } = require('child_process');
-      const JR4 = require('path').resolve(__dirname, '..');
-      ef4('bash', [JR4 + '/.github/skills/executing-plans/run.sh', planRef], { cwd: JR4, timeout: 300000 },
-        async (err, stdout) => {
-          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
-          await replyLong(message, '⚡ **Execute Plan**: ' + planRef + '\n\n' + out.slice(0, 3500));
-        });
-      break;
-    }
-
-    case 'ui-ux': case 'ui-ux-pro-max': case 'ux': case 'วิเคราะห์-ui': {
-      const uiUrl = args[0] || '';
-      const uiFocus = args.slice(1).join(' ') || 'all';
-      if (!uiUrl) { await message.reply('ใช้: `!AnuT1n ui-ux <url> [focus]`'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      logTask('ui-ux: ' + uiUrl);
-      const { execFile: ef5 } = require('child_process');
-      const JR5 = require('path').resolve(__dirname, '..');
-      ef5('bash', [JR5 + '/.github/skills/ui-ux-pro-max/run.sh', uiUrl, uiFocus], { cwd: JR5, timeout: 120000 },
-        async (err, stdout) => {
-          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
-          await replyLong(message, '🎨 **UI/UX Analysis**: ' + uiUrl + '\n\n' + out.slice(0, 3500));
-        });
-      break;
-    }
-
-    case 'frontend': case 'frontend-design': case 'design-ui': case 'สร้าง-ui': {
-      const feBrief = args.join(' ');
-      if (!feBrief) { await message.reply('ใช้: `!AnuT1n frontend <design brief>`'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      logTask('frontend-design: ' + feBrief);
-      const { execFile: ef6 } = require('child_process');
-      const JR6 = require('path').resolve(__dirname, '..');
-      ef6('bash', [JR6 + '/.github/skills/frontend-design/run.sh', feBrief], { cwd: JR6, timeout: 120000 },
-        async (err, stdout) => {
-          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
-          await replyLong(message, '🖥️ **Frontend Design**: ' + feBrief + '\n\n' + out.slice(0, 3500));
-        });
-      break;
-    }
-
-    case 'brave-search': case 'search': case 'ค้นหา': {
-      const searchQ = args.join(' ');
-      if (!searchQ) { await message.reply('ใช้: `!AnuT1n search <query>`'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      logTask('brave-search: ' + searchQ);
-      const { execFile: ef7 } = require('child_process');
-      const JR7 = require('path').resolve(__dirname, '..');
-      ef7('bash', [JR7 + '/.github/skills/brave-search/run.sh', searchQ], { cwd: JR7, timeout: 60000 },
-        async (err, stdout) => {
-          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
-          await replyLong(message, '🔍 **Brave Search**: ' + searchQ + '\n\n' + out.slice(0, 3500));
-        });
-      break;
-    }
-
-    case 'socialcrawl': case 'social': case 'social-crawl': {
-      const socialQ = args.join(' ');
-      if (!socialQ) { await message.reply('ใช้: `!AnuT1n social <platform> <query>` — platforms: github, reddit, hn'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      logTask('socialcrawl: ' + socialQ);
-      const { execFile: ef8 } = require('child_process');
-      const JR8 = require('path').resolve(__dirname, '..');
-      ef8('bash', [JR8 + '/.github/skills/socialcrawl/run.sh', socialQ], { cwd: JR8, timeout: 60000 },
-        async (err, stdout) => {
-          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
-          await replyLong(message, '📡 **Social Crawl**: ' + socialQ + '\n\n' + out.slice(0, 3500));
-        });
-      break;
-    }
-
-    case 'firecrawl': case 'crawl': case 'scrape': case 'อ่านเว็บ': {
-      const crawlUrl = args[0] || '';
-      const crawlTask = args.slice(1).join(' ') || 'สรุปสาระสำคัญ';
-      if (!crawlUrl) { await message.reply('ใช้: `!AnuT1n crawl <url> [task]`'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      logTask('firecrawl: ' + crawlUrl);
-      const { execFile: ef9 } = require('child_process');
-      const JR9 = require('path').resolve(__dirname, '..');
-      ef9('bash', [JR9 + '/.github/skills/firecrawl/run.sh', crawlUrl, crawlTask], { cwd: JR9, timeout: 90000 },
-        async (err, stdout) => {
-          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
-          await replyLong(message, '🕷️ **Firecrawl**: ' + crawlUrl + '\n\n' + out.slice(0, 3500));
-        });
-      break;
-    }
-
-    case 'feature-dev': case 'feature': case 'implement': case 'พัฒนา': {
-      const featReq = args.join(' ');
-      if (!featReq) { await message.reply('ใช้: `!AnuT1n feature <feature description>`'); break; }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      logTask('feature-dev: ' + featReq);
-      const { execFile: ef10 } = require('child_process');
-      const JR10 = require('path').resolve(__dirname, '..');
-      ef10('bash', [JR10 + '/.github/skills/feature-dev/run.sh', featReq], { cwd: JR10, timeout: 300000 },
-        async (err, stdout) => {
-          const out = stdout || (err && err.message) || '❌ ไม่สำเร็จ';
-          await replyLong(message, '🚀 **Feature Dev**: ' + featReq + '\n\n' + out.slice(0, 3500));
-        });
-      break;
-    }
-    case 'chrome': case 'inspect': case 'ui-check': {
-      const sub = (args[0] || '').toLowerCase();
-      const targetUrl = args[1] || '';
-      const selector = args.slice(2).join(' ');
-      const chrome = getChromeTools();
-      if (!chrome) {
-        await message.reply('❌ Chrome tools ไม่พร้อม — ใน `hermes-discord/` รัน `npm install puppeteer`');
-        break;
-      }
-      try { await message.channel.sendTyping(); } catch(_) {}
-      switch(sub) {
-        case 'open': case 'nav': {
-          if (!targetUrl) { await message.reply('ใช้: `!AnuT1n chrome open <url>`'); break; }
-          chrome.navigate(targetUrl, async (err, info) => {
-            logTask('chrome open: ' + targetUrl);
-            if (err) return message.reply('❌ ' + err.message).catch(()=>{});
-            message.reply('🌐 **' + (info.title || 'No title') + '**\n`' + targetUrl + '`\nStatus: ' + info.status + ' | Load: ' + info.loadTime + 'ms').catch(()=>{});
-          });
-          break;
-        }
-        case 'screenshot': case 'shot': {
-          if (!targetUrl) { await message.reply('ใช้: `!AnuT1n chrome screenshot <url>`'); break; }
-          chrome.screenshot(targetUrl, async (err, info) => {
-            logTask('chrome screenshot: ' + targetUrl);
-            if (err) return message.reply('❌ ' + err.message).catch(()=>{});
-            message.reply('📸 **' + (info.title || 'page') + '**\n`' + targetUrl + '`\nSize: ' + (info.width||'?') + 'x' + (info.height||'?') + '\nFile: `' + (info.file || 'captured') + '`').catch(()=>{});
-          });
-          break;
-        }
-        case 'inspect': case 'element': {
-          if (!targetUrl || !selector) { await message.reply('ใช้: `!AnuT1n chrome inspect <url> <selector>`'); break; }
-          chrome.inspectElement(targetUrl, selector, async (err, info) => {
-            logTask('chrome inspect: ' + selector);
-            if (err) return message.reply('❌ ' + err.message).catch(()=>{});
-            message.reply('🔍 **' + selector + '**:\n```json\n' + JSON.stringify(info, null, 2).slice(0, 1400) + '\n```').catch(()=>{});
-          });
-          break;
-        }
-        case 'css': {
-          if (!targetUrl || !selector) { await message.reply('ใช้: `!AnuT1n chrome css <url> <selector>`'); break; }
-          chrome.getCSS(targetUrl, selector, async (err, css) => {
-            logTask('chrome css: ' + selector);
-            if (err) return message.reply('❌ ' + err.message).catch(()=>{});
-            message.reply('🎨 CSS **' + selector + '**:\n```json\n' + JSON.stringify(css, null, 2).slice(0, 1400) + '\n```').catch(()=>{});
-          });
-          break;
-        }
-        case 'ui': case 'analyze': {
-          if (!targetUrl) { await message.reply('ใช้: `!AnuT1n chrome ui <url>`'); break; }
-          chrome.analyzeUI(targetUrl, async (err, analysis) => {
-            logTask('chrome ui: ' + targetUrl);
-            if (err) return message.reply('❌ ' + err.message).catch(()=>{});
-            replyLong(message, '🖥️ **UI Analysis**: `' + targetUrl + '`\n```json\n' + JSON.stringify(analysis, null, 2).slice(0, 3000) + '\n```');
-          });
-          break;
-        }
-        case 'js': case 'run-js': {
-          if (!targetUrl || !selector) { await message.reply('ใช้: `!AnuT1n chrome js <url> <script>`'); break; }
-          chrome.runJS(targetUrl, selector, async (err, result) => {
-            logTask('chrome js: ' + targetUrl);
-            if (err) return message.reply('❌ ' + err.message).catch(()=>{});
-            message.reply('⚙️ JS:\n```json\n' + JSON.stringify(result, null, 2).slice(0, 1400) + '\n```').catch(()=>{});
-          });
-          break;
-        }
-        default: {
-          await message.reply([
-            '🌐 **Chrome DevTools** — คำสั่ง:',
-            '`!AnuT1n chrome open <url>` — เปิด URL',
-            '`!AnuT1n chrome screenshot <url>` — ถ่าย screenshot',
-            '`!AnuT1n chrome inspect <url> <sel>` — inspect element',
-            '`!AnuT1n chrome css <url> <sel>` — ดู computed CSS',
-            '`!AnuT1n chrome ui <url>` — วิเคราะห์ UI ทั้งหน้า',
-            '`!AnuT1n chrome js <url> <script>` — รัน JS ในหน้า',
-          ].join('\n'));
-        }
-      }
-      break;
-    }
-
-    case 'help': case 'ช่วยเหลือ': {
-      await message.reply([
-        '🤖 **AnuT1n Discord Bot v2** — คำสั่งทั้งหมด',
-        '',
-        '**💬 แชท**',
-        '`!AnuT1n <ข้อความ>` — คุยกับ innova / AnuT1n',
-        '`!AnuT1n dev <project>` — วางแผน dev',
-        '`!AnuT1n self-dev` — วิเคราะห์ตัวเอง',
-        '`!AnuT1n call <model> <prompt>` — เรียก model ตรงๆ',
-        '',
-        '**🔮 Oracle**',
-        '`!AnuT1n memory [query]` — ทวนความจำ',
-        '`!AnuT1n learn <pattern> <content>` — จำสิ่งใหม่',
-        '',
-        '**🔗 Ollama Chain**',
-        '`!AnuT1n chain <task>` — Discuss→Plan→Execute→Verify',
-        '`!AnuT1n web-read <url> [คำถาม]` — อ่านเว็บ',
-        '`!AnuT1n pipe <m1> <m2> <prompt>` — 2-model pipe',
-        '`!AnuT1n models` — รายชื่อ models',
-        '',
-        '**📊 สถานะ**',
-        '`!AnuT1n status` — รายงานทันที',
-        '`!AnuT1n auto on/off` — auto-report ทุก 5 นาที',
-        '`!AnuT1n health` — ตรวจ agent system',
-        '`!AnuT1n heartbeat` — รัน heartbeat',
-        '',
-        '**🤖 Agents**',
-        '`!AnuT1n agent <name> <msg>` — ส่งงานให้ agent',
-        '`!AnuT1n inbox [agent]` — ดู inbox',
-        '`!AnuT1n queue` — ดู message bus',
-        '',
-        '**🌐 Chrome DevTools**',
-        '`!AnuT1n chrome open <url>` — เปิด URL',
-        '`!AnuT1n chrome screenshot <url>` — screenshot',
-        '`!AnuT1n chrome inspect <url> <sel>` — inspect element',
-        '`!AnuT1n chrome css <url> <sel>` — CSS styles',
-        '`!AnuT1n chrome ui <url>` — UI analysis',
-        '',
-        '**🧠 AI Skills (MDES Ollama)**',
-        '`!AnuT1n brainstorm <หัวข้อ>` — ระดมสมอง 3 มุมมอง',
-        '`!AnuT1n plan <งาน>` — วางแผนด้วย AI',
-        '`!AnuT1n run-plan <plan>` — ลงมือทำตาม plan',
-        '`!AnuT1n ui-ux <url>` — วิเคราะห์ UI/UX',
-        '`!AnuT1n frontend <brief>` — สร้าง HTML/CSS',
-        '`!AnuT1n search <query>` — Brave Search + MDES',
-        '`!AnuT1n social <platform> <query>` — Social crawl',
-        '`!AnuT1n crawl <url> [task]` — Extract web content',
-        '`!AnuT1n feature <description>` — Full feature dev',
-        '`!AnuT1n skill-creator <name — desc>` — สร้าง skill ใหม่',
-        '',
-        '**⚙️ ระบบ**',
-        '`!AnuT1n run <script> [args]` — รัน script',
-        '`!AnuT1n server on/off oracle` — เปิด/ปิด Oracle',
-        '`!AnuT1n terminal <cmd>` — รัน terminal',
-        '',
-        '💡 @mention แทน `!AnuT1n` ได้ | เฉพาะสมาชิกที่อนุญาต',
-      ].join('\n'));
-      break;
-    }
-
-    default: {
-      const fullMsg = cmd + (args.length ? ' ' + args.join(' ') : '');
-      try { await message.channel.sendTyping(); } catch(_) {}
-      callOllama(fullMsg, message.channelId, { persona: buildPersonaMessage(message) }, async (err, reply) => {
-        if (err) { await message.reply('⚠️ ' + err.message); return; }
-        await replyLong(message, reply);
-      });
-      break;
-    }
-  }
-}
-
-function callOllamaMessages(messages, callback, _attempt) {
-  const attempt = _attempt || 1;
-  callOllamaMessagesOnce(messages, function(err, reply) {
-    if (!err) return callback(null, reply);
-    if (attempt >= OLLAMA_MAX_RETRIES) {
-      console.error('[Ollama] all ' + OLLAMA_MAX_RETRIES + ' attempts failed:', err.message);
-      return callback(err);
-    }
-    const delay = OLLAMA_RETRY_DELAY_MS * attempt;
-    console.warn('[Ollama] attempt ' + attempt + ' failed (' + err.message + '), retrying in ' + delay + 'ms...');
-    setTimeout(function() {
-      callOllamaMessages(messages, callback, attempt + 1);
-    }, delay);
-  });
-}
-
-function callOllama(userMsg, channelId, opts, callback) {
-  if (typeof opts === 'function') { callback = opts; opts = {}; }
-  opts = opts || {};
+/**
+ * callOllama(userMsg, channelId, callback)
+ * Chat function with per-channel conversation history.
+ * Uses model-router backend rotation.
+ */
+function callOllama(userMsg, channelId, callback) {
   const history = getHistory(channelId);
   history.push({ role: 'user', content: userMsg });
   pruneHistory(history);
 
-  const systemMessages = [{ role: 'system', content: SYSTEM_PROMPT }];
-  if (opts.persona) systemMessages.push({ role: 'system', content: opts.persona });
-
-  callOllamaMessages(systemMessages.concat(history), function(err, reply) {
-    if (!err && reply) {
-      history.push({ role: 'assistant', content: reply });
+  const messages = [{ role: 'system', content: SYSTEM_PROMPT }].concat(history);
+  modelRouter.callModel(messages, {}, function(err, result) {
+    if (!err && result.reply) {
+      history.push({ role: 'assistant', content: result.reply });
       pruneHistory(history);
     }
-    callback(err, reply);
+    callback(err, result && result.reply);
   });
 }
 
+/**
+ * callOllamaOnce(systemPrompt, userPrompt) → Promise<string>
+ * One-shot call (used by thought-loop)
+ */
 function callOllamaOnce(systemPrompt, userPrompt) {
-  return new Promise(function(resolve, reject) {
-    callOllamaMessages([
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt },
-    ], function(err, reply) {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve(String(reply || '').trim());
-    });
-  });
+  return modelRouter.callModelPromise(
+    [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+    {}
+  ).then(function(result) { return result.reply; });
 }
 
 const thoughtLoop = new DiscordThoughtLoop({
@@ -1267,7 +506,287 @@ async function handleJitCommand(client, message, commandText) {
     return;
   }
 
-  await replyInChunks(message, jitControl.getHelpText());
+  // ── spawn: jit spawns a named agent ─────────────────────────────
+  if (command === 'spawn') {
+    // Usage: !jit spawn <agent> <message...>
+    // Usage: !jit spawn chain <a>+<b>+<c> <message...>
+    // Usage: !jit spawn parallel <a>,<b> <message...>
+    const subCmd = (parts[1] || '').toLowerCase();
+
+    if (subCmd === 'chain') {
+      // !jit spawn chain jit+soma+innova <message>
+      const chainStr = parts[2] || '';
+      const agentNames = chainStr.split('+').map(function(s) { return s.trim(); }).filter(Boolean);
+      const chainMsg = normalized.split(/\s+/).slice(3).join(' ');
+      if (!agentNames.length || !chainMsg) {
+        await replyInChunks(message, 'Usage: ' + JIT_COMMAND_PREFIX + ' spawn chain <a>+<b>+<c> <message>\nExample: ' + JIT_COMMAND_PREFIX + ' spawn chain jit+soma+innova analyze our microservice architecture');
+        return;
+      }
+      await message.channel.sendTyping();
+      const steps = agentNames.map(function(name, i) {
+        return { agent: name, message: i === 0 ? chainMsg : chainMsg, passReply: i > 0 };
+      });
+      try {
+        const chainResult = await agentSpawner.spawnAgentChain(steps);
+        const lines = ['**Spawn Chain: ' + agentNames.join(' → ') + '**\n'];
+        chainResult.results.forEach(function(r) {
+          lines.push('**[' + r.agent + ' via ' + r.backend + ']**');
+          lines.push(r.reply);
+          lines.push('');
+        });
+        await replyInChunks(message, lines.join('\n'));
+      } catch (err) {
+        await replyInChunks(message, '⚠️ Chain failed: ' + err.message);
+      }
+      return;
+    }
+
+    if (subCmd === 'parallel') {
+      // !jit spawn parallel lak,chamu <message>
+      const agentList = (parts[2] || '').split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+      const parallelMsg = normalized.split(/\s+/).slice(3).join(' ');
+      if (!agentList.length || !parallelMsg) {
+        await replyInChunks(message, 'Usage: ' + JIT_COMMAND_PREFIX + ' spawn parallel <a>,<b> <message>\nExample: ' + JIT_COMMAND_PREFIX + ' spawn parallel lak,chamu design a REST API');
+        return;
+      }
+      await message.channel.sendTyping();
+      const tasks = agentList.map(function(name) { return { agent: name, message: parallelMsg }; });
+      try {
+        const parallelResults = await agentSpawner.spawnAgentParallel(tasks);
+        const lines = ['**Spawn Parallel: ' + agentList.join(' + ') + '**\n'];
+        parallelResults.forEach(function(r) {
+          lines.push('**[' + r.agent + ' via ' + r.backend + ']**');
+          lines.push(r.reply);
+          lines.push('');
+        });
+        await replyInChunks(message, lines.join('\n'));
+      } catch (err) {
+        await replyInChunks(message, '⚠️ Parallel spawn failed: ' + err.message);
+      }
+      return;
+    }
+
+    // !jit spawn <agentName> <message...>
+    const agentName   = subCmd;
+    const spawnMsg    = normalized.split(/\s+/).slice(2).join(' ');
+    if (!agentName || !spawnMsg) {
+      await replyInChunks(message, [
+        'Usage: ' + JIT_COMMAND_PREFIX + ' spawn <agent> <message>',
+        '       ' + JIT_COMMAND_PREFIX + ' spawn chain <a>+<b>+<c> <message>',
+        '       ' + JIT_COMMAND_PREFIX + ' spawn parallel <a>,<b> <message>',
+        '',
+        'Agents: jit soma innova lak neta vaja chamu rupa pada netra karn mue pran sayanprasathan',
+      ].join('\n'));
+      return;
+    }
+
+    await message.channel.sendTyping();
+    try {
+      const spawnResult = await agentSpawner.spawnAgent(agentName, spawnMsg);
+      await replyInChunks(message, '**[' + spawnResult.agent + ' | ' + spawnResult.organ + ' | via ' + spawnResult.backend + ']**\n\n' + spawnResult.reply);
+    } catch (err) {
+      await replyInChunks(message, '⚠️ Spawn failed: ' + err.message);
+    }
+    return;
+  }
+
+  // ── agents: list all agents and their backends ───────────────────
+  if (command === 'agents') {
+    const agents = agentSpawner.listAgents();
+    const routerStatus = modelRouter.status();
+    const lines = [
+      '**มนุษย์ Agent Registry (' + agents.length + ' agents)**',
+      '',
+      '**Backends:**',
+      '- copilot: ' + (routerStatus.backends.copilot.available ? '✅ available (' + routerStatus.backends.copilot.tokenSource + ')' : '❌ unavailable (no token)'),
+      '- openai:  ' + (routerStatus.backends.openai.available  ? '✅ available' : '❌ no OPENAI_API_KEY'),
+      '- ollama:  ✅ ' + routerStatus.backends.ollama.url,
+      '- order:   ' + routerStatus.order.join(' → '),
+      '',
+      '**Agents:**',
+    ];
+    agents.forEach(function(a) {
+      lines.push('  T' + a.tier + ' **' + a.name + '** | ' + a.organ + ' | prefers: ' + a.backend + (a.model && a.model !== '(default)' ? ' [' + a.model + ']' : ''));
+    });
+    await replyInChunks(message, lines.join('\n'));
+    return;
+  }
+
+  // ── backend: show current model router status ────────────────────
+  if (command === 'backend' || command === 'model') {
+    const routerStatus = modelRouter.status();
+    const lines = [
+      '**Model Router Status**',
+      '',
+      '- priority order: ' + routerStatus.order.join(' → '),
+      '- primary: ' + routerStatus.primary,
+      '',
+      '**copilot:** ' + (routerStatus.backends.copilot.available ? '✅ token:' + routerStatus.backends.copilot.tokenSource : '❌ no token') + ' | errors: ' + routerStatus.backends.copilot.errors,
+      '**openai:**  ' + (routerStatus.backends.openai.available  ? '✅ key set' : '❌ no OPENAI_API_KEY') + ' | errors: ' + routerStatus.backends.openai.errors,
+      '**ollama:**  ✅ ' + routerStatus.backends.ollama.url + ' | errors: ' + routerStatus.backends.ollama.errors,
+    ];
+    await replyInChunks(message, lines.join('\n'));
+    return;
+  }
+
+  // ── innova: call innova-bot MCP tool directly ─────────────────────
+  if (command === 'innova' || command === 'mcp') {
+    // !jit innova <tool_name> [json_args]
+    // !jit mcp health
+    // !jit mcp tools
+    const subCmd = (parts[1] || 'health').toLowerCase();
+
+    if (subCmd === 'health') {
+      const health = await innovaBridge.checkMcpHealth();
+      const lines = [
+        '**innova-bot MCP (' + innovaBridge.MCP_BASE + ')**',
+        health.ok ? '✅ online' : '❌ offline',
+      ];
+      if (!health.ok) {
+        lines.push('');
+        lines.push('Start: `cd C:\\Users\\USER-NT\\DEV\\innova-bot-template\\devtools\\innova-bot && python -m innova_bot`');
+      }
+      await replyInChunks(message, lines.join('\n'));
+      return;
+    }
+
+    if (subCmd === 'tools') {
+      try {
+        const tools = await innovaBridge.listMcpTools();
+        const lines = ['**innova-bot MCP Tools (' + tools.length + ')**', ''];
+        const cats = {};
+        tools.forEach(function(t) {
+          const c = t.name.split('_')[0];
+          if (!cats[c]) cats[c] = [];
+          cats[c].push('`' + t.name + '`');
+        });
+        Object.entries(cats).slice(0, 15).forEach(function([c, ts]) {
+          lines.push('**' + c + '**: ' + ts.slice(0, 5).join(' ') + (ts.length > 5 ? ' +' + (ts.length - 5) : ''));
+        });
+        await replyInChunks(message, lines.join('\n'));
+      } catch (e) {
+        await replyInChunks(message, '⚠️ ' + e.message);
+      }
+      return;
+    }
+
+    if (subCmd === 'recap') {
+      try {
+        const recap = await innovaBridge.oracleRecap();
+        await replyInChunks(message, '**innova-bot Oracle Recap**\n\n' + recap.text);
+      } catch (e) {
+        await replyInChunks(message, '⚠️ innova-bot offline: ' + e.message);
+      }
+      return;
+    }
+
+    if (subCmd === 'memory') {
+      const mem = innovaBridge.getInnovaMemory();
+      const lines = [
+        '**innova Memory (psi/)**',
+        '  root: ' + mem.psiRoot,
+        '  available: ' + (mem.available ? '✅' : '❌'),
+        '',
+      ];
+      Object.keys(mem.files || {}).forEach(function(f) {
+        lines.push('✅ ' + f);
+      });
+      await replyInChunks(message, lines.join('\n'));
+      return;
+    }
+
+    if (subCmd === 'do' || subCmd === 'next') {
+      try {
+        const role    = parts[2] || 'SA';
+        const project = parts[3] || 'jit-session';
+        const next = await innovaBridge.whatShouldIDo(role, project);
+        await replyInChunks(message, '**ทำต่อไป [' + role + ']**\n\n' + next.text);
+      } catch (e) {
+        await replyInChunks(message, '⚠️ ' + e.message);
+      }
+      return;
+    }
+
+    // Generic MCP tool call: !jit mcp <toolname> [json]
+    const toolName = subCmd;
+    const argsStr  = normalized.split(/\s+/).slice(2).join(' ');
+    let toolArgs = {};
+    try { if (argsStr) toolArgs = JSON.parse(argsStr); } catch (_) {}
+    try {
+      const result = await innovaBridge.callMcpTool(toolName, toolArgs);
+      await replyInChunks(message, '**MCP: ' + toolName + '**\n\n' + result.text);
+    } catch (e) {
+      await replyInChunks(message, '⚠️ MCP ' + toolName + ': ' + e.message);
+    }
+    return;
+  }
+
+  // ── possess: Jit full-body possession mode ────────────────────────
+  if (command === 'possess' || command === 'body') {
+    await message.channel.sendTyping();
+    const lines = [
+      '**Jit (จิต) เข้าร่าง innova-bot** 🔮',
+      '',
+    ];
+
+    // Identity
+    lines.push('**Identity:** jit | T0 Master Orchestrator | ศีล · สมาธิ · ปัญญา');
+
+    // Backend status
+    const routerStatus = modelRouter.status();
+    const backendStr = routerStatus.order.map(function(b) {
+      const be = routerStatus.backends[b];
+      return b + ':' + ((be && (be.available || b === 'ollama')) ? '✅' : '❌');
+    }).join(' | ');
+    lines.push('**Backends:** ' + backendStr);
+
+    // MCP health
+    const health = await innovaBridge.checkMcpHealth();
+    lines.push('**innova-bot MCP:** ' + (health.ok ? '✅ online — body ready' : '❌ offline — running mind-only mode'));
+
+    // Memory
+    const mem = innovaBridge.getInnovaMemory();
+    lines.push('**psi/ Memory:** ' + (mem.available ? '✅ ' + Object.keys(mem.files).length + ' files synced' : '⚠️ not found'));
+
+    // Agents
+    const agents = agentSpawner.listAgents();
+    lines.push('**Organ Agents:** ' + agents.length + ' agents ready');
+    lines.push('  ' + agents.map(function(a) { return 'T' + a.tier + ':' + a.name; }).join(' · '));
+
+    lines.push('');
+    lines.push('**Commands:**');
+    lines.push('  `!jit spawn <agent> <msg>`      — invoke organ agent');
+    lines.push('  `!jit spawn chain a+b+c <msg>`  — serial chain');
+    lines.push('  `!jit spawn parallel a,b <msg>` — concurrent');
+    lines.push('  `!jit innova health`             — MCP status');
+    lines.push('  `!jit innova tools`              — list 102 MCP tools');
+    lines.push('  `!jit innova recap`              — innova session recap');
+    lines.push('  `!jit innova memory`             — psi/ memory state');
+    lines.push('  `!jit innova do SA`              — ทำต่อไป orchestrator');
+    lines.push('  `!jit innova <tool> [json]`      — call any MCP tool');
+    lines.push('  `!jit agents`                    — full agent registry');
+    lines.push('  `!jit backend`                   — model router status');
+
+    await replyInChunks(message, lines.join('\n'));
+    return;
+  }
+
+  await replyInChunks(message, jitControl.getHelpText() + '\n\n' + [
+    '--- multi-agent extensions ---',
+    JIT_COMMAND_PREFIX + ' spawn <agent> <msg>       spawn single organ agent',
+    JIT_COMMAND_PREFIX + ' spawn chain a+b+c <msg>   serial chain',
+    JIT_COMMAND_PREFIX + ' spawn parallel a,b <msg>  parallel spawn',
+    JIT_COMMAND_PREFIX + ' agents                    list 14 agents + backends',
+    JIT_COMMAND_PREFIX + ' backend                   model router status',
+    '--- innova-bot body ---',
+    JIT_COMMAND_PREFIX + ' possess                   Jit body status',
+    JIT_COMMAND_PREFIX + ' innova health             MCP health',
+    JIT_COMMAND_PREFIX + ' innova tools              list MCP tools',
+    JIT_COMMAND_PREFIX + ' innova recap              oracle recap',
+    JIT_COMMAND_PREFIX + ' innova memory             psi/ memory',
+    JIT_COMMAND_PREFIX + ' innova do [role]          ทำต่อไป orchestrator',
+    JIT_COMMAND_PREFIX + ' innova <tool> [json]      call any innova-bot tool',
+  ].join('\n'));
 }
 
 async function resolveReportChannel(client, fallbackChannel) {

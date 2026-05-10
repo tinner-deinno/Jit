@@ -9,7 +9,9 @@
     "bridge:status": "node body-bridge.js --status",
     "test": "node bot.js --test-jit-control",
     "test:bridge": "node body-bridge.js --test-payload",
-    "test:ollama": "node bot.js --test-ollama"
+    "test:ollama": "node bot.js --test-ollama",
+    "test:multiagent": "node test-multiagent.js",
+    "test:backend": "node -e \"const r=require('./model-router');console.log(JSON.stringify(r.status(),null,2))\""
   },
   "keywords": ["discord", "bot", "innova", "hermes", "ollama", "mdes"],
   "author": "innova (มนุษย์ Agent)",

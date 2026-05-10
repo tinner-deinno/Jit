@@ -10,6 +10,8 @@
 #   ./mouth.sh broadcast <msg>        — broadcast ทุก agent
 #   ./mouth.sh reply <msg-id> <msg>   — ตอบกลับ message
 #   ./mouth.sh report <title> <body>  — รายงานผล
+#   ./mouth.sh vaja-summary <text>    — สรุปข้อความเป็นภาษาไทยและพูดออกมา
+#   ./mouth.sh vaja-tts <text>        — อักษรย่อของ vaja-summary
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../limbs/lib.sh"
@@ -129,13 +131,27 @@ for a in d.get('agents', []):
     ok "ปาก (mouth) พร้อม | bus: $BUS_DIR | messages pending: $PENDING"
     ;;
 
+  # ── วาจาไทย TTS ─────────────────────────────────────────────────
+  vaja-summary|vaja-tts)
+    # Delegate to vaja-thai-tts skill wrapper
+    if [ -z "$1" ]; then
+      err "Usage: mouth.sh $CMD <text>"
+      exit 1
+    fi
+    TEXT="$*"
+    SKILL_DIR="/c/Users/USER-NT/DEV/Jit/skills/vaja-thai-tts"
+    bash "$SKILL_DIR/vaja-tts-wrapper.sh" summary "$TEXT"
+    ;;
+
   *)
-    echo "Usage: mouth.sh {say|tell|broadcast|reply|report|status}"
+    echo "Usage: mouth.sh {say|tell|broadcast|reply|report|status|vaja-summary|vaja-tts}"
     echo ""
     echo "  say       <msg>                 — พูดออกมา"
     echo "  tell      <agent> <subj> <msg>  — ส่ง message"
     echo "  broadcast <subject> <msg>       — broadcast ทุก agent"
     echo "  reply     <ref-id> <agent> <m>  — ตอบกลับ"
     echo "  report    <title> <body>        — รายงานผล"
+    echo "  vaja-summary <text>             — สรุปข้อความเป็นภาษาไทยและพูดออกมา"
+    echo "  vaja-tts <text>                 — อักษรย่อของ vaja-summary"
     ;;
 esac
