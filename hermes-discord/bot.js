@@ -251,6 +251,14 @@ function startBot() {
     console.error('❌ DISCORD_TOKEN not set. Add to .env: DISCORD_TOKEN=your_token');
     process.exit(1);
   }
+
+  if (!DISCORD_TOKEN.includes('.')) {
+    console.error('❌ Suspicious DISCORD_TOKEN format detected.');
+    console.error('   Discord bot tokens usually include dot separators, e.g. xxxxx.yyyyy.zzzzz');
+    console.error('   Copy the token from the Bot page, not the application client secret.');
+    process.exit(1);
+  }
+
   if (!OLLAMA_TOKEN) console.warn('⚠️  OLLAMA_TOKEN not set');
 
   // NOTE: MessageContent is a Privileged Intent.
