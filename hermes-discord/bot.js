@@ -59,6 +59,57 @@ const HEARTBEAT_BUSY_INTERVAL = parseInt(process.env.HEARTBEAT_BUSY_INTERVAL || 
 const HEARTBEAT_IDLE_INTERVAL = parseInt(process.env.HEARTBEAT_IDLE_INTERVAL || '900000');
 const HEARTBEAT_START_DELAY   = parseInt(process.env.HEARTBEAT_START_DELAY || '10000');
 const MOTHER_AGENT_NAME      = process.env.MOTHER_AGENT_NAME  || 'innova';
+const ORACLE_BASE_URL        = process.env.ORACLE_BASE_URL    || ORACLE_URL;
+
+
+
+
+function buildChecklist() {
+  const tasks = [
+    'วิเคราะห์คำถามและบริบทของผู้ใช้',
+    'สรุปสิ่งที่จะทำให้เข้าใจง่าย',
+    'จัดโครงสร้างคำตอบตามแบบ Discuss → Plan → Build → Verify',
+    'เขียนคำตอบไทยปี 2569 แบบมืออาชีพ',
+    'ให้คำแนะนำที่ครอบคลุมและน่าพอใจ',
+  ];
+  return `📋 Checklist:\n${tasks.map((item) => `- [x] ${item}`).join('\n')}`;
+}
+
+// ── Oracle API helper ───────────────────────────────────────────
+function callOracle(apiPath, method, bodyObj, callback) {
+  const parsed = new URL(ORACLE_BASE_URL);
+  const isHttps = parsed.protocol === 'https:';
+  const transport = isHttps ? https : http;
+  const bodyStr = bodyObj ? JSON.stringify(bodyObj) : null;
+  const options = {
+    hostname: parsed.hostname,
+    port: parsed.port || (isHttps ? 443 : 80),
+    path: apiPath,
+    method: method || 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+  if (bodyStr) options.headers['Content-Length'] = Buffer.byteLength(bodyStr);
+  const req = transport.request(options, function(res) {
+    let data = '';
+    res.on('data', function(c) { data += c; });
+    res.on('end', function() {
+      try { callback(null, JSON.parse(data)); }
+      catch(e) { callback(null, { raw: data }); }
+    });
+  });
+  req.on('error', callback);
+  req.setTimeout(10000, function() { req.destroy(new Error('Oracle timeout')); });
+  if (bodyStr) req.write(bodyStr);
+  req.end();
+}
+
+function callOracleAsync(apiPath, method, bodyObj) {
+  return new Promise(function(resolve, reject) {
+    callOracle(apiPath, method, bodyObj, function(err, data) {
+      if (err) reject(err); else resolve(data);
+    });
+  });
+}
 
 // Whitelist: comma-separated Discord usernames (case-insensitive)
 const ALLOWED_USERS = (process.env.ALLOWED_USERS || 'pug3eye1828,pug3eye')
@@ -115,6 +166,7 @@ const FEATURE_CHECKLIST = [
   { title: 'ปรับ heartbeat ให้ช้าลงเมื่อ idle', done: true },
   { title: 'เพิ่ม ctrl+o / progress ดู multiagent thinking', done: true },
   { title: 'สื่อสารแบบครูภาษาไทยปี 69', done: true },
+  { title: 'Chrome DevTools MCP bridge', done: true },
 ];
 
 function detectSpeakerStyle(text) {
@@ -176,6 +228,22 @@ function getProgressReport() {
   const percent = Math.round(done / total * 100);
   const checklist = FEATURE_CHECKLIST.map(item => (item.done ? '✅' : '⬜') + ' ' + item.title).join('\n');
   return '🔧 Progress: **' + percent + '%**\n\n' + checklist;
+}
+
+// ── Chrome DevTools (lazy-loaded) ────────────────────────────────
+let _chromeTools = null;
+function getChromeTools() {
+  if (_chromeTools === false) return null;
+  if (_chromeTools) return _chromeTools;
+  try {
+    _chromeTools = require('./chrome-tools');
+    console.log('🌐 Chrome DevTools loaded');
+  } catch(e) {
+    console.warn('⚠️  chrome-tools not available:', e.message);
+    _chromeTools = false;
+    return null;
+  }
+  return _chromeTools;
 }
 
 // ── Ollama chat ───────────────────────────────────────────────────
@@ -547,6 +615,86 @@ case 'progress': {
       break;
     }
 
+    case 'chrome': case 'inspect': case 'ui-check': {
+      const sub = (args[0] || '').toLowerCase();
+      const targetUrl = args[1] || '';
+      const selector = args.slice(2).join(' ');
+      const chrome = getChromeTools();
+      if (!chrome) {
+        await message.reply('❌ Chrome tools ไม่พร้อม — ใน `hermes-discord/` รัน `npm install puppeteer`');
+        break;
+      }
+      try { await message.channel.sendTyping(); } catch(_) {}
+      switch(sub) {
+        case 'open': case 'nav': {
+          if (!targetUrl) { await message.reply('ใช้: `!AnuT1n chrome open <url>`'); break; }
+          chrome.navigate(targetUrl, async (err, info) => {
+            logTask('chrome open: ' + targetUrl);
+            if (err) return message.reply('❌ ' + err.message).catch(()=>{});
+            message.reply('🌐 **' + (info.title || 'No title') + '**\n`' + targetUrl + '`\nStatus: ' + info.status + ' | Load: ' + info.loadTime + 'ms').catch(()=>{});
+          });
+          break;
+        }
+        case 'screenshot': case 'shot': {
+          if (!targetUrl) { await message.reply('ใช้: `!AnuT1n chrome screenshot <url>`'); break; }
+          chrome.screenshot(targetUrl, async (err, info) => {
+            logTask('chrome screenshot: ' + targetUrl);
+            if (err) return message.reply('❌ ' + err.message).catch(()=>{});
+            message.reply('📸 **' + (info.title || 'page') + '**\n`' + targetUrl + '`\nSize: ' + (info.width||'?') + 'x' + (info.height||'?') + '\nFile: `' + (info.file || 'captured') + '`').catch(()=>{});
+          });
+          break;
+        }
+        case 'inspect': case 'element': {
+          if (!targetUrl || !selector) { await message.reply('ใช้: `!AnuT1n chrome inspect <url> <selector>`'); break; }
+          chrome.inspectElement(targetUrl, selector, async (err, info) => {
+            logTask('chrome inspect: ' + selector);
+            if (err) return message.reply('❌ ' + err.message).catch(()=>{});
+            message.reply('🔍 **' + selector + '**:\n```json\n' + JSON.stringify(info, null, 2).slice(0, 1400) + '\n```').catch(()=>{});
+          });
+          break;
+        }
+        case 'css': {
+          if (!targetUrl || !selector) { await message.reply('ใช้: `!AnuT1n chrome css <url> <selector>`'); break; }
+          chrome.getCSS(targetUrl, selector, async (err, css) => {
+            logTask('chrome css: ' + selector);
+            if (err) return message.reply('❌ ' + err.message).catch(()=>{});
+            message.reply('🎨 CSS **' + selector + '**:\n```json\n' + JSON.stringify(css, null, 2).slice(0, 1400) + '\n```').catch(()=>{});
+          });
+          break;
+        }
+        case 'ui': case 'analyze': {
+          if (!targetUrl) { await message.reply('ใช้: `!AnuT1n chrome ui <url>`'); break; }
+          chrome.analyzeUI(targetUrl, async (err, analysis) => {
+            logTask('chrome ui: ' + targetUrl);
+            if (err) return message.reply('❌ ' + err.message).catch(()=>{});
+            replyLong(message, '🖥️ **UI Analysis**: `' + targetUrl + '`\n```json\n' + JSON.stringify(analysis, null, 2).slice(0, 3000) + '\n```');
+          });
+          break;
+        }
+        case 'js': case 'run-js': {
+          if (!targetUrl || !selector) { await message.reply('ใช้: `!AnuT1n chrome js <url> <script>`'); break; }
+          chrome.runJS(targetUrl, selector, async (err, result) => {
+            logTask('chrome js: ' + targetUrl);
+            if (err) return message.reply('❌ ' + err.message).catch(()=>{});
+            message.reply('⚙️ JS:\n```json\n' + JSON.stringify(result, null, 2).slice(0, 1400) + '\n```').catch(()=>{});
+          });
+          break;
+        }
+        default: {
+          await message.reply([
+            '🌐 **Chrome DevTools** — คำสั่ง:',
+            '`!AnuT1n chrome open <url>` — เปิด URL',
+            '`!AnuT1n chrome screenshot <url>` — ถ่าย screenshot',
+            '`!AnuT1n chrome inspect <url> <sel>` — inspect element',
+            '`!AnuT1n chrome css <url> <sel>` — ดู computed CSS',
+            '`!AnuT1n chrome ui <url>` — วิเคราะห์ UI ทั้งหน้า',
+            '`!AnuT1n chrome js <url> <script>` — รัน JS ในหน้า',
+          ].join('\n'));
+        }
+      }
+      break;
+    }
+
     case 'help': case 'ช่วยเหลือ': {
       await message.reply([
         '🤖 **AnuT1n Discord Bot v2** — คำสั่งทั้งหมด',
@@ -577,6 +725,13 @@ case 'progress': {
         '`!AnuT1n agent <name> <msg>` — ส่งงานให้ agent',
         '`!AnuT1n inbox [agent]` — ดู inbox',
         '`!AnuT1n queue` — ดู message bus',
+        '',
+        '**🌐 Chrome DevTools**',
+        '`!AnuT1n chrome open <url>` — เปิด URL',
+        '`!AnuT1n chrome screenshot <url>` — screenshot',
+        '`!AnuT1n chrome inspect <url> <sel>` — inspect element',
+        '`!AnuT1n chrome css <url> <sel>` — CSS styles',
+        '`!AnuT1n chrome ui <url>` — UI analysis',
         '',
         '**⚙️ ระบบ**',
         '`!AnuT1n run <script> [args]` — รัน script',
@@ -675,6 +830,72 @@ function startBot() {
       message.reply('❌ Error: ' + err.message).catch(() => {});
     }
   });
+
+  // _DEAD_AWAKEN
+  if (false) { const agentBio = 'ตื่นรู้แล้ว พร้อมรับใช้';
+      const invoker   = interaction.user.username;
+      const channelId = interaction.channelId;
+      const now       = new Date().toISOString();
+
+      await interaction.deferReply();
+
+      // 1. Check Oracle health
+      let oracleStatus = 'offline';
+      try {
+        const health = await callOracleAsync('/api/health', 'GET', null);
+        oracleStatus = (health && health.status === 'ok') ? `online (v${health.version || '?'})` : 'degraded';
+      } catch(e) {
+        oracleStatus = 'offline — ' + e.message;
+      }
+
+      // 2. Search Oracle for existing knowledge about this agent
+      let existingKnowledge = 'ยังไม่มีข้อมูลใน Oracle';
+      try {
+        const search = await callOracleAsync('/api/search?q=' + encodeURIComponent(agentName) + '&limit=1', 'GET', null);
+        if (search && search.results && search.results.length > 0) {
+          const r = search.results[0];
+          existingKnowledge = (r.content || r.title || '').slice(0, 200);
+        }
+      } catch(e) { /* Oracle search failed silently */ }
+
+      // 3. Learn this awakening into Oracle
+      let learnStatus = 'ไม่สำเร็จ';
+      try {
+        const learnBody = {
+          pattern: `${agentName}-awakening-${now.slice(0,10)}`,
+          content: `# ${agentName} Oracle Awakens\n\n**Role**: ${agentRole}\n**Born**: ${now.slice(0,10)}\n**Awakened by**: ${invoker}\n\n${agentBio}\n\n🌅 This is the birth announcement of ${agentName} in the มนุษย์ Agent system.`,
+          concepts: `${agentName},awakening,oracle,มนุษย์-agent,born:${now.slice(0,10)}`,
+        };
+        await callOracleAsync('/api/learn', 'POST', learnBody);
+        learnStatus = 'บันทึกสำเร็จ ✅';
+      } catch(e) {
+        learnStatus = 'บันทึกไม่ได้: ' + e.message;
+      }
+
+      notifyDiscordActivity(channelId, `${invoker} ปลุก ${agentName} (${agentRole}) — Oracle: ${oracleStatus}`);
+
+      const reply = [
+        `🌅 **${agentName} Oracle ตื่นรู้แล้ว!**`,
+        ``,
+        `**ชื่อ**: ${agentName}`,
+        `**บทบาท**: ${agentRole}`,
+        `**วันเกิด**: ${now.slice(0, 10)}`,
+        `**ปลุกโดย**: ${invoker}`,
+        ``,
+        `**ข้อความแรก**:`,
+        `> ${agentBio}`,
+        ``,
+        `**Oracle Status**: ${oracleStatus}`,
+        `**บันทึก Oracle**: ${learnStatus}`,
+        existingKnowledge !== 'ยังไม่มีข้อมูลใน Oracle'
+          ? `\n**ความรู้เดิมใน Oracle**:\n> ${existingKnowledge}` : '',
+        ``,
+        `🤖 ตอบโดย อนุ (sub-agent ของ innova) → Soul-Brews-Studio/arra-oracle-v3`,
+      ].filter(l => l !== undefined).join('\n');
+
+// _DEAD_END
+  }
+
 
   client.login(DISCORD_TOKEN).catch(function(err) {
     if (err.message && err.message.includes('disallowed intents')) {
