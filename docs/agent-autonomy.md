@@ -123,3 +123,92 @@ bash scripts/selfhood-checklist.sh
 - chamu ทดสอบ, netra สแกน, pran บันทึก heartbeat
 - vaja รายงาน "ระบบกลับสู่สถานะ ready"
 ```
+
+---
+
+## 5. Overnight Research (Sleep-Research Pattern)
+
+*Inspired by [Auto-claude-code-research-in-sleep](https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep)*
+
+innova สามารถ queue งานวิจัยก่อนนอน แล้วทำงานอัตโนมัติข้ามคืน:
+
+```bash
+# Queue topics ก่อนนอน
+bash .github/skills/sleep-research/run.sh --queue "Jit skill optimization"
+bash .github/skills/sleep-research/run.sh --queue "Thai LLM models 2026"
+
+# ตั้ง cron ตี 2 (Linux/Codespace)
+0 2 * * * cd /workspaces/Jit && bash .github/skills/sleep-research/run.sh --run-queue
+
+# ดู results เช้า
+bash .github/skills/sleep-research/run.sh --status
+```
+
+### Research Pipeline
+
+```
+Queue → MDES Ollama research → Oracle.learn() → Discord notify (Hermes)
+
+เครื่องมือที่ใช้ใน pipeline:
+├── brave-search   — หาข้อมูลเพิ่มเติมจากเว็บ
+├── firecrawl      — อ่านหน้าเว็บ
+├── socialcrawl    — ติดตาม GitHub/Reddit/HN trends
+└── brainstorming  — สังเคราะห์ insights
+
+Models: gemma4:26b (general) → qwen3.5:27b (deep) → qwen2.5-coder:32b (code)
+```
+
+---
+
+## 6. Multi-Engine AI Strategy
+
+Jit skills รองรับ 3 engine หลัก โดย MDES Ollama เป็น default:
+
+| Engine | ใช้เมื่อ | ตั้งค่า |
+|--------|---------|-------|
+| **MDES Ollama** (primary) | ทุกงาน, Thai, offline | `OLLAMA_TOKEN=...` |
+| **Claude CLI** | Deep reasoning, code review, autonomy | `claude` command available |
+| **OpenAI Codex** | gpt-4o code generation, API patterns | `OPENAI_API_KEY=...` |
+
+```bash
+# ตรวจสอบ engine ที่มี
+bash limbs/ollama.sh status          # MDES check
+command -v claude && echo "Claude CLI ready"
+[ -n "$OPENAI_API_KEY" ] && echo "Codex ready"
+```
+
+### Engine Fallback Chain
+
+```
+MDES Ollama  →  Claude CLI  →  OpenAI Codex  →  template fallback
+     │               │                │
+  primary         available        API key set
+  (always)       (optional)         (optional)
+```
+
+---
+
+## 7. Codex + innova Workflow
+
+สำหรับ code generation tasks ที่ต้องการ Codex:
+
+```bash
+# innova → Codex → ตรวจ → Oracle
+FEATURE="new Discord command"
+
+# Phase 1: MDES design
+DESIGN=$(bash limbs/ollama-chain.sh call gemma4:26b "Design $FEATURE for Jit")
+
+# Phase 2: Codex generate (ถ้ามี key)
+if [ -n "${OPENAI_API_KEY:-}" ]; then
+  CODE=$(curl -sf "https://api.openai.com/v1/chat/completions" \
+    -H "Authorization: Bearer $OPENAI_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d "{\"model\":\"gpt-4o\",\"messages\":[{\"role\":\"system\",\"content\":\"You are innova, coding for Jit CommonJS system.\"},{\"role\":\"user\",\"content\":\"Implement: $FEATURE\nDesign: $DESIGN\"}]}" \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['choices'][0]['message']['content'])")
+fi
+
+# Phase 3: Review via MDES + save Oracle
+bash limbs/ollama-chain.sh call qwen3.5:27b "Review code: $CODE"
+bash limbs/oracle.sh learn "feature:$FEATURE" "$CODE" "feature,codex,innova"
+```
