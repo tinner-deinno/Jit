@@ -1,0 +1,39 @@
+[Unit]
+Description=Hermes Discord Bot (อนุ) - 24/7 Agent
+After=network.target discord-notify.service
+Wants=network-online.target
+StartLimitInterval=300
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=codespace
+WorkingDirectory=/workspaces/Jit/hermes-discord
+Environment="PATH=/home/codespace/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="NODE_ENV=production"
+
+# Load Discord token from .env
+EnvironmentFile=/workspaces/Jit/.env
+
+# Main bot
+ExecStart=/usr/bin/node bot.js
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitAction=restart
+
+# Process management
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hermes-discord
+KillMode=process
+KillSignal=SIGTERM
+
+# Resource limits
+MemoryLimit=256M
+CPUQuota=50%
+Timeout=300
+
+[Install]
+WantedBy=multi-user.target
