@@ -1,0 +1,37 @@
+[Unit]
+Description=Jit 24/7 Heartbeat Monitor (จิต หัวใจ)
+After=network.target git-daemon.service
+Wants=network-online.target
+StartLimitInterval=300
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=codespace
+WorkingDirectory=/workspaces/Jit
+Environment="PATH=/home/codespace/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="OLLAMA_TOKEN=9e34679b9d60d8b984005ec46508579c"
+Environment="OLLAMA_BASE_URL=https://ollama.mdes-innova.online"
+
+# Main heartbeat loop
+ExecStart=/bin/bash -c 'cd /workspaces/Jit && bash scripts/heartbeat-24h-daemon.sh'
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitAction=reboot
+
+# Process management
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jit-heartbeat
+KillMode=process
+KillSignal=SIGTERM
+
+# Resource limits
+MemoryLimit=512M
+CPUQuota=50%
+Timeout=300
+
+[Install]
+WantedBy=multi-user.target

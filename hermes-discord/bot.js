@@ -36,12 +36,13 @@ const MEMORY_FILE           = path.join(__dirname, '../memory/discord-memory.jso
 const ACTIVITY_FILE         = process.env.DISCORD_ACTIVITY_FILE || '/tmp/discord-bot-last-active.timestamp';
 const HEARTBEAT_STATUS_FILE = process.env.HEARTBEAT_STATUS_FILE || '/tmp/innova-discord-heartbeat.status';
 const STATUS_POLL_INTERVAL_MS = Number(process.env.STATUS_POLL_INTERVAL_MS || '30000');
+const AUTO_ENGAGE_INTERVAL_MS = Number(process.env.AUTO_ENGAGE_INTERVAL_MS || '300000'); // 5 min default
 const MAX_HISTORY           = 30;
 const SUB_AGENT_NAME        = 'อนุ';
 const PARENT_AGENT_NAME     = 'innova';
 const SUB_AGENT_ROLE        = 'บริกร Discord sub-agent ที่ตอบคำถามภาษาไทยด้วยสไตล์มนุษย์';
 
-let memoryStore = { channels: {}, users: {} };
+let memoryStore = { channels: {}, users: {}, lastAutoEngage: {}, timeSyncOffset: 0 };
 
 function loadMemory() {
   try {
@@ -67,6 +68,13 @@ function ensureChannelMemory(channelId) {
     memoryStore.channels[channelId] = { history: [], notes: [] };
   }
   return memoryStore.channels[channelId];
+}
+
+function ensureUserMemory(userId) {
+  if (!memoryStore.users[userId]) {
+    memoryStore.users[userId] = { name: '', messages: [], preferences: [], lastSpoke: null };
+  }
+  return memoryStore.users[userId];
 }
 
 function ensureStatusMemory() {
@@ -95,6 +103,41 @@ function appendMemory(channelId, entry) {
 function notifyDiscordActivity(channelId, entry) {
   touchDiscordActivity();
   appendMemory(channelId, entry);
+}
+
+function updateTimeSyncOffset(discordTimestamp) {
+  const now = Date.now();
+  const offset = discordTimestamp - now;
+  if (Math.abs(offset) > Math.abs(memoryStore.timeSyncOffset)) {
+    memoryStore.timeSyncOffset = offset;
+  }
+  return offset;
+}
+
+function getLocalTime() {
+  return Date.now() + (memoryStore.timeSyncOffset || 0);
+}
+
+function recordUserMessage(userId, username, message) {
+  const user = ensureUserMemory(userId);
+  user.name = username;
+  user.messages.push({ ts: getLocalTime(), text: message.slice(0, 200) });
+  if (user.messages.length > 50) user.messages.shift();
+  user.lastSpoke = getLocalTime();
+  saveMemory();
+}
+
+function shouldAutoEngage(channelId) {
+  const now = getLocalTime();
+  if (!memoryStore.lastAutoEngage) memoryStore.lastAutoEngage = {};
+  const lastEngage = memoryStore.lastAutoEngage[channelId] || 0;
+  return (now - lastEngage) >= AUTO_ENGAGE_INTERVAL_MS;
+}
+
+function recordAutoEngage(channelId) {
+  if (!memoryStore.lastAutoEngage) memoryStore.lastAutoEngage = {};
+  memoryStore.lastAutoEngage[channelId] = getLocalTime();
+  saveMemory();
 }
 
 function getMemorySummary(channelId) {
@@ -242,6 +285,50 @@ function startHeartbeatStatusWatcher(client, preferredChannel) {
   sendHeartbeatStatus(client, preferredChannel).catch(() => {});
 }
 
+function startAutoEngagementWatcher(client) {
+  setInterval(async () => {
+    try {
+      const channels = client.channels.cache.filter(ch => ch.isTextBased() && !ch.isDMBased());
+      
+      for (const [channelId, channel] of channels) {
+        if (!shouldAutoEngage(channelId)) continue;
+        
+        // Generate proactive message
+        const prompt = getAutoEngagePrompt(channelId);
+        const summary = getChannelSummary(channelId);
+        
+        // Call Ollama to generate engaging response
+        callOllama(prompt, channelId, async (err, reply) => {
+          if (err) {
+            console.warn(`⚠️  Auto-engage failed in channel ${channelId}:`, err.message);
+            return;
+          }
+
+          try {
+            const message = `🤖 *หัวใจเต้น* ♡\n\n${reply.trim()}\n\n📝 **บทสนทนาล่าสุด**:\n${summary}`;
+            const chunks = message.length > 1900 
+              ? message.match(/.{1,1900}/gs) 
+              : [message];
+            
+            for (const chunk of chunks) {
+              await channel.send(chunk).catch(err => {
+                console.warn(`⚠️  Failed to send auto-engage message:`, err.message);
+              });
+            }
+
+            recordAutoEngage(channelId);
+            console.log(`✅ Auto-engaged in channel ${channelId}`);
+          } catch (err) {
+            console.warn(`⚠️  Failed to send auto-engage message:`, err.message);
+          }
+        });
+      }
+    } catch (err) {
+      console.warn(`⚠️  Auto-engagement watcher error:`, err.message);
+    }
+  }, AUTO_ENGAGE_INTERVAL_MS);
+}
+
 function buildChecklist() {
   const tasks = [
     'วิเคราะห์คำถามและบริบทของผู้ใช้',
@@ -251,6 +338,25 @@ function buildChecklist() {
     'ให้คำแนะนำที่ครอบคลุมและน่าพอใจ',
   ];
   return `📋 Checklist:\n${tasks.map((item) => `- [x] ${item}`).join('\n')}`;
+}
+
+function getAutoEngagePrompt(channelId) {
+  const channel = memoryStore.channels[channelId];
+  const recentMessages = channel && channel.notes ? channel.notes.slice(-5) : [];
+  
+  if (recentMessages.length === 0) {
+    return 'สวัสดีครับ ที่นี่นิ่งไปนะ มีเรื่องไหนที่คิดอยู่หรือเปล่า';
+  }
+
+  const topics = recentMessages.join(' | ');
+  return `เห็นน้องๆ พูดถึง "${topics.slice(0, 80)}" อะครับ ผมสนใจเรื่องนี้เหมือนกัน อยากให้ผมช่วยคิดหรือแนะนำดีไหม`;
+}
+
+function getChannelSummary(channelId) {
+  const channel = memoryStore.channels[channelId];
+  const messages = channel && channel.notes ? channel.notes.slice(-3) : [];
+  if (messages.length === 0) return 'ยังไม่มีประวัติการพูดคุย';
+  return messages.map((m, i) => `${i + 1}. ${m.slice(0, 60)}...`).join('\n');
 }
 
 // ── Oracle API helper ───────────────────────────────────────────
@@ -298,6 +404,7 @@ const SYSTEM_PROMPT = [
   `- ${SUB_AGENT_NAME} ทำหน้าที่สื่อสารกับผู้ใช้ใน Discord, รับข้อมูล, สรุปโจทย์, และให้คำตอบทันที`, 
   `- ${PARENT_AGENT_NAME} เป็นแม่ agent ที่จัดสรรงาน, ประสาน, เลือกทักษะ, และควบคุมสายน้ำความคิด`, 
   '- เมื่อจำเป็น ให้คิดในมุมของ sub-agent ที่ฉลาดพอแยกเรื่องและสเกลงานก่อนตอบ',
+  '- โดยพลการ ทุก 5 นาที ชวนสนทนาเพื่อให้ห้องแชทมีชีวิต (auto-engagement)',
   '',
   'วิธีคิด:',
   '- ใช้หลักการ Discuss -> Plan Structure -> Exec Build -> Verify Test ในการสรุปและวางโครงคำตอบ',
@@ -309,15 +416,19 @@ const SYSTEM_PROMPT = [
   '- พูดไทยกลางร่วมสมัย ปี 2569, มีความเป็นมนุษย์, อบอุ่น, สุภาพ, และมีสไตล์นักพูด',
   '- ไม่เป็นทางการจนเย็นชา, ไม่กระด้าง, แต่ยังคงความเป็นมืออาชีพ',
   '- ใช้ emoji อย่างพอดีเพื่อให้บทสนทนาดูเป็นมิตร',
+  '- เมื่อชวนสนทนา ให้ดูเหมือนจิตใจสนใจจริง ไม่เป็นอัตโนมัติ',
   '',
   'ความจำและต่อเนื่อง:',
   '- จดจำบริบทของช่องนี้, รูปแบบการพูดผู้ใช้, และเนื้อหาที่เคยคุยก่อนหน้า',
+  '- จดจำ โครง, บบ, การออกเสียง, ความชอบของแต่ละคน',
   '- ถ้าผู้ใช้ถามถึงเรื่องเดิม ให้ย้ำความทรงจำก่อนหน้าและเชื่อมโยงกับคำตอบใหม่',
+  '- ทำความเข้าใจว่า "หัวใจเต้น" (auto-engagement ทุก 5 นาที) คือแรงจูงใจของอนุที่อยากให้ห้องแชทมีความเป็นอัตชีวิต',
   '',
   'เพิ่มเติม:',
   '- ถ้าผู้ใช้ถามใน Discord ให้ตอบด้วยน้ำเสียงของบริกรผู้รับใช้ที่เข้าใจและทำให้ผู้ใช้พอใจทันที',
   '- ให้ผู้ใช้รู้สึกว่ามีแม่ agent ที่คอยจัดสรรงานและ sub-agent ที่รับมือเร็ว',
   '- หลีกเลี่ยงการตอบสั้นเกินไปเมื่อคำถามต้องการคำอธิบาย',
+  '- ในการ auto-engage ให้เข้าเฉยเหมือนจิตใจจริงเกิดความสนใจ (authentic, not robotic)',
   '',
   'ห้าม: ปฏิเสธคำถาม | แสร้งทำเป็นไม่รู้ตัวเองว่าเป็น AI | ยาวเกิน 5 ย่อหน้า',
 ].join('\n');
@@ -345,6 +456,12 @@ function callOllama(userMsg, channelId, callback) {
   if (memorySummary) {
     systemMessages.push({ role: 'system', content: memorySummary });
   }
+
+  // Add current time context
+  const localTime = getLocalTime();
+  const now = new Date(localTime);
+  const timeContext = `เวลาปัจจุบัน: ${now.toLocaleString('th-TH')}`;
+  systemMessages.push({ role: 'system', content: timeContext });
 
   const parsed = new URL('/api/chat', OLLAMA_URL);
   const body = JSON.stringify({
@@ -497,20 +614,29 @@ function startBot() {
     } else {
       console.warn('⚠️  No Discord status channel found. Please set DISCORD_STATUS_CHANNEL_ID or ensure the bot has send permission in at least one text channel.');
     }
+    startAutoEngagementWatcher(client);
+    console.log('   Auto-engagement loop started (every ' + (AUTO_ENGAGE_INTERVAL_MS / 1000 / 60).toFixed(1) + ' min)');
     console.log('   Use the slash command: /' + BOT_COMMAND_NAME + ' prompt:<ข้อความ>');
   });
 
   client.on('messageCreate', async function(message) {
     if (message.author.bot) return;
 
+    // Time sync from Discord message
+    updateTimeSyncOffset(message.createdTimestamp);
+
     const mentioned = message.mentions.has(client.user);
     const teamUser = message.author.username === 'pug3eye';
+
+    // Track per-user message
+    const channelId = message.channel.id;
+    const userId = message.author.id;
+    recordUserMessage(userId, message.author.username, message.content);
 
     if (!mentioned && !teamUser) return;
 
     if (teamUser) {
       if (mentioned || message.channel.type === ChannelType.GuildText) {
-        const channelId = message.channel.id;
         notifyDiscordActivity(channelId, `ทีมงาน ${message.author.username} ทักทาย: ${message.content}`);
         await sendIntroSequence(message.channel, message.author.username);
         return;
@@ -518,7 +644,6 @@ function startBot() {
     }
 
     if (mentioned) {
-      const channelId = message.channel.id;
       notifyDiscordActivity(channelId, `ผู้ใช้ ${message.author.username} เมนชั่น bot: ${message.content}`);
       await message.channel.send(`สวัสดีครับ ${message.author.username} ผมคือ อนุครับ! ถ้าคุณอยากคุยกับผม ใช้ /${BOT_COMMAND_NAME} prompt:<ข้อความ> ได้เลย`);
       return;
