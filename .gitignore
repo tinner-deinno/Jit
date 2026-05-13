@@ -38,7 +38,6 @@ __pycache__/
 Thumbs.db
 
 # Local development
-.claude/
 *.local.json
 
 # Private memory/notes
@@ -46,7 +45,7 @@ Thumbs.db
 /notes/
 
 # Oracle local database (if running locally)
-~/.oracle/
+# ~/.oracle/
 
 # Message bus temporary files (recreated each session)
 /tmp/manusat-bus/
