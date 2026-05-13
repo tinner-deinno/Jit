@@ -188,6 +188,16 @@ bash organs/mouth.sh tell innova "report:skill-created" "สร้าง skill '
 
 ---
 
+## Auto commit and health check
+
+`skill-creator/run.sh` now auto-commits the generated skill file by default after creation. Use `--push` to also push the commit to the configured Git remote, or `--no-commit` to skip commit.
+
+The runner also performs a system health verification after creation by default, including:
+- `bash scripts/heartbeat.sh status`
+- `bash organs/heart.sh rhythm`
+
+To disable the post-creation health check, pass `--no-health`.
+
 ## Skill Template Structure
 
 ```

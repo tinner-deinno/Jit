@@ -4,6 +4,39 @@ set -euo pipefail
 SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JIT_ROOT="$(cd "$SKILL_DIR/../.." && pwd)"
 source "$JIT_ROOT/limbs/lib.sh" 2>/dev/null || true
+
+AUTO_COMMIT=1
+AUTO_PUSH=0
+CHECK_HEALTH=1
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --no-commit)
+      AUTO_COMMIT=0
+      shift
+      ;;
+    --push)
+      AUTO_PUSH=1
+      shift
+      ;;
+    --no-health)
+      CHECK_HEALTH=0
+      shift
+      ;;
+    --help)
+      echo "Usage: $0 [--push] [--no-commit] [--no-health] skill-name — description"
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
 SKILL_REQUEST="${*:-}"
 [ -z "$SKILL_REQUEST" ] && { err "ระบุ: skill-name — description"; exit 1; }
 
@@ -79,7 +112,24 @@ ok "Created: $TARGET/SKILL.md"
 # Register Oracle
 bash "$JIT_ROOT/limbs/oracle.sh" learn "skill:$SKILL_NAME" "$CONTENT" "skill,$SKILL_NAME" 2>/dev/null || true
 
+if [ "$AUTO_COMMIT" = "1" ]; then
+  git -C "$JIT_ROOT" add "$TARGET/SKILL.md" >/dev/null 2>&1 || true
+  git -C "$JIT_ROOT" commit -m "auto-commit: skill-creator added $SKILL_NAME" >/dev/null 2>&1 || true
+  ok "Auto-committed: $TARGET/SKILL.md"
+  if [ "$AUTO_PUSH" = "1" ]; then
+    git -C "$JIT_ROOT" push --quiet 2>/dev/null && ok "Pushed commit to remote" || warn "Push skipped or failed"
+  fi
+fi
+
 echo ""
 echo "✅ Skill '$SKILL_NAME' created!"
 echo "   Path: .github/skills/$SKILL_NAME/SKILL.md"
 echo "   Add to bot.js case handler for: $SKILL_NAME"
+
+if [ "$CHECK_HEALTH" = "1" ]; then
+  echo ""
+  step "🔎 Checking system health and heart status"
+  bash "$JIT_ROOT/scripts/heartbeat.sh" status || true
+  echo ""
+  bash "$JIT_ROOT/organs/heart.sh" rhythm || true
+fi

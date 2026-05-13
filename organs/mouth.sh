@@ -46,6 +46,10 @@ case "$CMD" in
     MSG="$*"
     echo -e "${CYAN}[${AGENT_NAME}]${RESET} $MSG"
     log_action "MOUTH_SAY" "$MSG"
+    # Auto-speak in Thai if AUTO_SPEAK=1
+    if [ "${AUTO_SPEAK:-0}" = "1" ] && [ -n "$MSG" ]; then
+      bash "$SCRIPT_DIR/../skills/vaja-thai-tts/vaja-tts-wrapper.sh" summary "$MSG" &
+    fi
     ;;
 
   # ── ส่ง message ให้ agent ─────────────────────────────────────────
@@ -139,7 +143,7 @@ for a in d.get('agents', []):
       exit 1
     fi
     TEXT="$*"
-    SKILL_DIR="/c/Users/USER-NT/DEV/Jit/skills/vaja-thai-tts"
+    SKILL_DIR="$SCRIPT_DIR/../skills/vaja-thai-tts"
     bash "$SKILL_DIR/vaja-tts-wrapper.sh" summary "$TEXT"
     ;;
 

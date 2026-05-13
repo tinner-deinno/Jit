@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-05-12T13:40:25+07:00",
+  "trace_root": "/mnt/c/Users/USER-NT/DEV/Jit/ψ/memory/traces",
+  "today": "2026-05-12",
+  "trace_dir": "/mnt/c/Users/USER-NT/DEV/Jit/ψ/memory/traces/2026-05-12",
+  "git": {
+    "total_commits": 1473,
+    "latest_hash": "fffaf3ac5afe537a8a802bbedd4521facb3d4ee2",
+    "latest_message": "refactor: Simplify bot client initialization by removing unused intents",
+    "repo": "Jit"
+  },
+  "traces": {
+    "hourly": "/mnt/c/Users/USER-NT/DEV/Jit/ψ/memory/traces/2026-05-12/trace-hourly.md",
+    "daily": "/mnt/c/Users/USER-NT/DEV/Jit/ψ/memory/traces/2026-05-12/trace-daily.md",
+    "weekly": "/mnt/c/Users/USER-NT/DEV/Jit/ψ/memory/traces/2026-05-12/trace-weekly.md",
+    "pulses": "/mnt/c/Users/USER-NT/DEV/Jit/ψ/memory/traces/2026-05-12/heartbeat-pulses.md",
+    "summary": "/mnt/c/Users/USER-NT/DEV/Jit/ψ/memory/traces/2026-05-12/summary.md"
+  },
+  "auto_update": true,
+  "update_interval_seconds": 900,
+  "next_update": "2026-05-12T13:55:25+07:00"
+}

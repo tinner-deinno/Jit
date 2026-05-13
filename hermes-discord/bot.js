@@ -35,6 +35,10 @@ const modelRouter  = require('./model-router');
 const agentSpawner = require('./agent-spawner');
 const innovaBridge = require('./jit-innova-bridge');
 const { DiscordThoughtLoop } = require('./thought-loop');
+// jit-mother: Mother orchestrator — delegates to ALL agents + speaks Thai
+let jitMother;
+try { jitMother = require('../skills/vaja-thai-tts/jit-mother'); }
+catch (_) { jitMother = { orchestrate: async() => ({ task:'?', elapsed:'?', agentsInvoked:0, httpAgents:{}, thaiSummary:'jit-mother not found', allResults:[] }), ORGAN_AGENTS: [] }; }
 
 // ── Config ────────────────────────────────────────────────────────
 const DISCORD_TOKEN         = process.env.DISCORD_TOKEN       || '';
@@ -76,6 +80,25 @@ function buildChecklist() {
     'ให้คำแนะนำที่ครอบคลุมและน่าพอใจ',
   ];
   return `📋 Checklist:\n${tasks.map((item) => `- [x] ${item}`).join('\n')}`;
+}
+
+// ── Vaja TTS — Thai voice output after every agent response ─────
+let vajaSpeakEnabled = process.env.VAJA_SPEAK !== 'off'; // enabled by default
+
+/**
+ * vajaSpeak(text) — translate to Thai + speak with PowerShell TTS
+ * Non-blocking: fires and forgets (no await needed)
+ */
+function vajaSpeak(text) {
+  if (!vajaSpeakEnabled || !text || text.length < 3) return;
+  try {
+    // Use agentSpawner.speakAsVaja (translate + speak)
+    agentSpawner.speakAsVaja(text, function(err) {
+      if (err) console.warn('[vaja-tts] speak error:', err.message);
+    });
+  } catch (e) {
+    console.warn('[vaja-tts] init error:', e.message);
+  }
 }
 
 // ── Oracle API helper ───────────────────────────────────────────
@@ -391,6 +414,11 @@ function replyInChunks(message, text) {
       if (index === 0) return message.reply(chunk);
       return message.channel.send(chunk);
     });
+  });
+
+  // Auto-speak full response in Thai after all chunks sent
+  chain = chain.then(function() {
+    vajaSpeak(text);
   });
 
   return chain;
@@ -729,6 +757,48 @@ async function handleJitCommand(client, message, commandText) {
     return;
   }
 
+  // ── mother: jit-mother orchestrator (all agents + speak) ──────────
+  if (command === 'mother' || command === 'orchestrate') {
+    const task = normalized.slice(command.length).trim();
+    if (!task) {
+      await replyInChunks(message, [
+        '**🧠 Jit Mother Orchestrator**',
+        '',
+        'Usage: `' + JIT_COMMAND_PREFIX + ' mother <task>`',
+        'Example: `' + JIT_COMMAND_PREFIX + ' mother ตรวจสอบสถานะระบบทั้งหมด`',
+        '',
+        'ส่งงานให้ ' + jitMother.ORGAN_AGENTS.length + ' organ agents + innova-bot + innomcp พร้อมกัน',
+        'แล้วสรุปเป็นภาษาไทยและพูดออกเสียงทันที',
+      ].join('\n'));
+      return;
+    }
+
+    await message.channel.sendTyping();
+    await replyInChunks(message, '🧠 **จิต-แม่** เริ่มประสานงาน: `' + task + '`\nส่งให้ ' + (jitMother.ORGAN_AGENTS.length + 2) + ' agents... ⚙️');
+
+    try {
+      const result = await jitMother.orchestrate(task);
+      const lines = [
+        '📊 **สรุปผลการประสานงาน**',
+        '',
+        '• งาน: ' + result.task,
+        '• เวลา: ' + result.elapsed,
+        '• Agents: ' + result.agentsInvoked + ' ตัว',
+        '• innova-bot: ' + (result.httpAgents['innova-bot'] ? '✅ ตอบกลับ' : '❌ offline'),
+        '• innomcp: '   + (result.httpAgents.innomcp ? '✅ ตอบกลับ' : '❌ offline'),
+        '',
+        '📝 **สรุปภาษาไทย:**',
+        result.thaiSummary,
+        '',
+        '🔊 *พูดสรุปทางลำโพงแล้ว*',
+      ];
+      await replyInChunks(message, lines.join('\n'));
+    } catch (err) {
+      await replyInChunks(message, '⚠️ Mother orchestration error: ' + err.message);
+    }
+    return;
+  }
+
   // ── possess: Jit full-body possession mode ────────────────────────
   if (command === 'possess' || command === 'body') {
     await message.channel.sendTyping();
@@ -795,6 +865,91 @@ async function handleJitCommand(client, message, commandText) {
     JIT_COMMAND_PREFIX + ' innova do [role]          ทำต่อไป orchestrator',
     JIT_COMMAND_PREFIX + ' innova <tool> [json]      call any innova-bot tool',
   ].join('\n'));
+}
+
+// ── handleCommand — main command dispatcher ─────────────────────
+/**
+ * handleCommand(message, cmd, args)
+ * Routes commands to !jit or calls Ollama for normal chat.
+ * vajaSpeak() is called automatically via replyInChunks after every response.
+ */
+async function handleCommand(message, cmd, args) {
+  const hasJitPrefix = message.content.startsWith(JIT_COMMAND_PREFIX);
+  const isMentioned  = message.mentions.has && message.client && message.mentions.has(message.client.user);
+
+  // ── !speak toggle / direct speak ────────────────────────────────
+  if (cmd === 'speak') {
+    const subArg = (args[0] || '').toLowerCase();
+    if (subArg === 'on') {
+      vajaSpeakEnabled = true;
+      return replyInChunks(message, '🔊 วาจา TTS เปิดแล้ว — จะพูดภาษาไทยหลังทุก response');
+    }
+    if (subArg === 'off') {
+      vajaSpeakEnabled = false;
+      return replyInChunks(message, '🔇 วาจา TTS ปิดแล้ว');
+    }
+    if (subArg === 'status') {
+      return replyInChunks(message, '🔊 วาจา TTS: ' + (vajaSpeakEnabled ? 'เปิด ✅' : 'ปิด ❌'));
+    }
+    // Direct speak: !AnuT1n speak <text>
+    const textToSpeak = args.join(' ');
+    if (textToSpeak) {
+      agentSpawner.speakAsVaja(textToSpeak, function(err) {
+        if (err) message.reply('⚠️ TTS error: ' + err.message).catch(() => {});
+        else message.reply('🔊 กำลังพูด: ' + textToSpeak.slice(0, 60)).catch(() => {});
+      });
+      return;
+    }
+    return replyInChunks(message, [
+      '🔊 วาจา TTS Commands:',
+      '  ' + BOT_PREFIX + ' speak on       — เปิดเสียง',
+      '  ' + BOT_PREFIX + ' speak off      — ปิดเสียง',
+      '  ' + BOT_PREFIX + ' speak status   — ดูสถานะ',
+      '  ' + BOT_PREFIX + ' speak <text>   — พูดข้อความทันที',
+    ].join('\n'));
+  }
+
+  // ── !jit subcommand delegation ────────────────────────────────
+  const jitCmdText = getJitCommandText(message.content, hasJitPrefix, !!isMentioned);
+  if (hasJitPrefix || (cmd === 'jit' && args.length > 0)) {
+    const subText = cmd === 'jit' ? args.join(' ') : jitCmdText || args.join(' ');
+    return handleJitCommand(message.client || (message.channel && message.channel.client), message, subText);
+  }
+
+  // ── status, help ────────────────────────────────────────────────
+  if (cmd === 'status' || cmd === 'health') {
+    const status = await jitControl.collectStatus({ readyTag: BOT_NAME });
+    return replyInChunks(message, jitControl.formatStatusReport(status));
+  }
+
+  if (cmd === 'help') {
+    return replyInChunks(message, [
+      '**' + BOT_NAME + ' Commands**',
+      '',
+      BOT_PREFIX + ' <question>        — ถามคำถาม (Ollama AI)',
+      BOT_PREFIX + ' speak on/off      — เปิด/ปิด เสียงพูดไทย',
+      BOT_PREFIX + ' speak <text>      — พูดข้อความทันที',
+      BOT_PREFIX + ' status            — สถานะระบบ',
+      BOT_PREFIX + ' help              — คำสั่งทั้งหมด',
+      '',
+      '!jit <command>     — Jit control (status/spawn/agents/innova/...)',
+      '!jit help          — Jit command list',
+    ].join('\n'));
+  }
+
+  // ── Default: chat with Ollama + speak result ─────────────────────
+  const userQuestion = [cmd, ...args].join(' ');
+  await message.channel.sendTyping().catch(() => {});
+
+  return new Promise(function(resolve) {
+    callOllama(userQuestion, message.channelId || (message.channel && message.channel.id) || 'dm', function(err, reply) {
+      if (err) {
+        message.reply('❌ ' + (err.message || 'Ollama error')).catch(() => {});
+        return resolve();
+      }
+      replyInChunks(message, reply || 'ไม่มีคำตอบจาก AI').then(resolve).catch(resolve);
+    });
+  });
 }
 
 async function resolveReportChannel(client, fallbackChannel) {

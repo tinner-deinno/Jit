@@ -6,31 +6,51 @@
  * Continuously monitors agent outputs and generates Thai audio summaries
  */
 
-const fs = require('fs');
+const fs   = require('fs');
 const path = require('path');
+const http = require('http');
 const { spawn } = require('child_process');
 
-const INBOX_DIR = '/tmp/manusat-bus/vaja';
-const CACHE_DIR = '/tmp/vaja-tts';
-const LOG_FILE = '/tmp/vaja-tts.log';
+const BUS_ROOT   = process.env.MANUSAT_BUS_DIR || '/tmp/manusat-bus';
+const CACHE_DIR  = process.env.VAJA_CACHE_DIR  || '/tmp/vaja-tts';
+const LOG_FILE   = process.env.VAJA_LOG_FILE   || '/tmp/vaja-tts.log';
 
-// Target agents to listen for (from CLAUDE.md organ assignments)
-const TARGET_AGENTS = new Set(['pran', 'soma', 'sayanprasathan', 'mue']);
+// ALL 14 organ agents — listen to every agent
+const ALL_AGENTS = new Set([
+  'jit', 'soma',
+  'innova', 'lak', 'neta',
+  'vaja', 'chamu', 'rupa', 'pada', 'netra', 'karn', 'mue', 'pran', 'sayanprasathan',
+]);
+
+// External service endpoints
+const INNOVA_BOT_URL = process.env.INNOVA_BOT_URL || 'http://localhost:7010';
+const INNOMCP_URL    = process.env.INNOMCP_URL    || 'http://localhost:3012';
+
+// Speak queue — prevents overlapping speech
+const speakQueue = [];
+let isSpeaking   = false;
+
+// Track processed messages (dedup)
+const processedMessages = new Set();
 
 // Ensure directories exist
-[INBOX_DIR, CACHE_DIR].forEach(dir => {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+[CACHE_DIR].forEach(dir => {
+  try { fs.mkdirSync(dir, { recursive: true }); } catch (_) {}
+});
+ALL_AGENTS.forEach(a => {
+  try { fs.mkdirSync(path.join(BUS_ROOT, a), { recursive: true }); } catch (_) {}
 });
 
 const log = (msg) => {
   const timestamp = new Date().toISOString();
   const logMsg = `[${timestamp}] ${msg}\n`;
   process.stdout.write(logMsg);
-  fs.appendFileSync(LOG_FILE, logMsg);
+  try { fs.appendFileSync(LOG_FILE, logMsg); } catch (_) {}
 };
 
-log('🎤 Vaja Thai TTS Listener Started');
-log(`🎯 Listening for messages from: ${Array.from(TARGET_AGENTS).join(', ')}`);
+log('🎤 Vaja Thai TTS Listener v2 — All-Agents Mode');
+log(`🎯 Monitoring ALL ${ALL_AGENTS.size} organ agents on bus: ${BUS_ROOT}`);
+log(`🌐 innova-bot: ${INNOVA_BOT_URL} | innomcp: ${INNOMCP_URL}`);
 
 /**
  * Parse a message file into headers and body
@@ -67,11 +87,11 @@ async function generateThaiSummary(text) {
   return new Promise((resolve, reject) => {
     // Call limbs/ollama.sh translate function for Thai summarization
     // We'll ask it to summarize in Thai
-    const prompt = `กรุณาสรุปข้อความต่อไปนี้เป็นภาษาไทยอย่างกระชับและชัดเจน ไม่เกิน 3 ประโยค:\n\n${text}`;
+    const prompt = `กรุณาสรุปข้อความต่อไปนี้เป็นภาษาไทยอย่างกระชับและชัดเจน ไม่เกิน 2 ประโยค:${text.slice(0, 800)}`;
 
-    const ollamaScript = path.join(__dirname, '..', '..', '..', 'limbs', 'ollama.sh');
+    const ollamaScript = path.join(__dirname, '..', '..', 'limbs', 'ollama.sh');
 
-    const ollamaProcess = spawn('bash', [ollamaScript, 'translate', prompt], {
+    const ollamaProcess = spawn('bash', [ollamaScript, 'ask', prompt], {
       maxBuffer: 1024 * 1024 // 1MB buffer
     });
 
@@ -157,55 +177,66 @@ async function speakThai(thaiText) {
   });
 }
 
+// ── Speak queue — one at a time -----------------------------------------------
+function enqueueSpeech(text) {
+  speakQueue.push(text);
+  processNextSpeech();
+}
+
+async function processNextSpeech() {
+  if (isSpeaking || speakQueue.length === 0) return;
+  isSpeaking = true;
+  const text = speakQueue.shift();
+  try {
+    await speakThai(text);
+  } catch (e) {
+    log(`  ⚠ Speech error: ${e.message}`);
+  } finally {
+    isSpeaking = false;
+    if (speakQueue.length > 0) processNextSpeech();
+  }
+}
+
 /**
  * Process a message: check sender, summarize in Thai, and speak
  */
 async function processMessage(msgFile) {
+  const msgId = path.basename(msgFile);
+  if (processedMessages.has(msgId)) return;
+  processedMessages.add(msgId);
+
   try {
     const content = fs.readFileSync(msgFile, 'utf8');
     const { headers, body } = parseMessage(content);
 
-    const fromAgent = headers.from || '';
-    const subject = headers.subject || 'no subject';
+    const fromAgent = headers.from || headers.agent || '';
+    const subject   = headers.subject || 'no subject';
 
-    // Check if message is from one of our target agents
-    if (!TARGET_AGENTS.has(fromAgent)) {
-      // Not a target agent, skip silently
-      return;
-    }
+    // Skip messages from vaja itself (avoid echo)
+    if (fromAgent === 'vaja' || !body) return;
 
     log(`📨 Received from ${fromAgent}: ${subject}`);
-
-    if (!body) {
-      log('  ⚠ No content to summarize');
-      return;
-    }
-
-    log(`  📄 Content length: ${body.length} characters`);
+    log(`  📄 Content length: ${body.length} chars`);
 
     // Summarize in Thai
     log('  🌐 Generating Thai summary...');
-    const thaiSummary = await generateThaiSummary(body);
-    log(`  📝 Thai summary: ${thaiSummary}`);
+    const thaiSummary = await generateThaiSummary(
+      `จาก agent ${fromAgent}: ${subject}. ${body}`
+    );
+    log(`  📝 ไทย: ${thaiSummary.slice(0, 100)}`);
 
-    // Speak the Thai summary
-    log('  🔊 Speaking Thai summary...');
-    const spoken = await speakThai(thaiSummary);
-    if (spoken) {
-      log('  ✓ Thai summary spoken successfully');
-    } else {
-      log('  ⚠ Failed to speak Thai summary');
-    }
+    // Enqueue for speech (non-blocking, queued)
+    enqueueSpeech(thaiSummary);
 
-    // Optional: Save summary to cache for reference
-    const timestamp = Date.now();
-    const summaryFile = path.join(CACHE_DIR, `summary-${timestamp}.txt`);
-    fs.writeFileSync(summaryFile, thaiSummary, 'utf8');
+    // Save summary
+    const ts = Date.now();
+    const summaryFile = path.join(CACHE_DIR, `summary-${fromAgent}-${ts}.txt`);
+    fs.writeFileSync(summaryFile, `from:${fromAgent}\nsubject:${subject}\n\n${thaiSummary}`, 'utf8');
 
-    // Mark message as processed by moving it
+    // Archive processed message
     const processedFile = msgFile.replace(/\.msg$/, '.processed');
-    fs.renameSync(msgFile, processedFile);
-    log(`  📬 Message archived as: ${path.basename(processedFile)}`);
+    try { fs.renameSync(msgFile, processedFile); } catch (_) {}
+    log(`  📬 แอร์คไว: ${path.basename(processedFile)}`);
 
   } catch (err) {
     log(`  ✗ Error processing message: ${err.message}`);
@@ -213,70 +244,107 @@ async function processMessage(msgFile) {
 }
 
 /**
- * Watch for new messages in inbox
+ * Watch for new messages from ALL agents on the bus
  */
 function watchInbox() {
-  const processedFiles = new Set();
-
-  const checkMessages = () => {
-    try {
-      const files = fs.readdirSync(INBOX_DIR);
-
-      files.forEach(file => {
-        // Skip already processed files
-        if (processedFiles.has(file)) return;
-
-        // Only process .msg files (new messages)
-        if (!file.endsWith('.msg')) return;
-
-        const filepath = path.join(INBOX_DIR, file);
-        processedFiles.add(file);
-
-        processMessage(filepath);
-      });
-    } catch (err) {
-      log(`Inbox watch error: ${err.message}`);
-    }
+  const checkAllAgents = () => {
+    ALL_AGENTS.forEach(agentName => {
+      const inboxDir = path.join(BUS_ROOT, agentName);
+      try {
+        if (!fs.existsSync(inboxDir)) return;
+        const files = fs.readdirSync(inboxDir).filter(f => f.endsWith('.msg'));
+        files.forEach(f => processMessage(path.join(inboxDir, f)));
+      } catch (_) {}
+    });
   };
 
-  // Check every 3 seconds for more responsiveness
-  setInterval(checkMessages, 3000);
-  checkMessages(); // Check immediately
+  setInterval(checkAllAgents, 2000);
+  checkAllAgents(); // Initial check
+  log(`👀 Watching ${ALL_AGENTS.size} agent inboxes (every 2s)`);
+}
+
+// ── Poll innova-bot HTTP events ------------------------------------------
+let lastInnovaEventId = 0;
+
+function pollInnovaBot() {
+  const req = http.get(
+    `${INNOVA_BOT_URL}/api/events?since=${lastInnovaEventId}`,
+    { timeout: 5000 },
+    (res) => {
+      let data = '';
+      res.on('data', c => { data += c; });
+      res.on('end', () => {
+        if (res.statusCode !== 200) return;
+        try {
+          const events = JSON.parse(data);
+          if (!Array.isArray(events) || events.length === 0) return;
+          events.forEach(evt => {
+            if (evt.id) lastInnovaEventId = Math.max(lastInnovaEventId, evt.id);
+            const text = evt.message || evt.text || evt.content || '';
+            if (text.length > 20) {
+              log(`📡 [innova-bot] event: ${text.slice(0, 60)}`);
+              generateThaiSummary(`innova-bot รายงาน: ${text}`)
+                .then(s => enqueueSpeech(s));
+            }
+          });
+        } catch (_) {}
+      });
+    }
+  );
+  req.on('error', () => {}); // Silent if offline
+}
+
+// ── Poll innomcp ----------------------------------------------------------
+function pollInnomcp() {
+  const req = http.get(
+    `${INNOMCP_URL}/health`,
+    { timeout: 5000 },
+    (res) => {
+      let data = '';
+      res.on('data', c => { data += c; });
+      res.on('end', () => {
+        try {
+          const status = JSON.parse(data);
+          if (status && status._newResults) {
+            const text = JSON.stringify(status._newResults).slice(0, 200);
+            generateThaiSummary(`innomcp มีผลลัพธ์ใหม่: ${text}`)
+              .then(s => enqueueSpeech(s));
+          }
+        } catch (_) {}
+      });
+    }
+  );
+  req.on('error', () => {}); // Silent if offline
 }
 
 /**
- * Status reporting
+ * Status reporting every minute
  */
 function reportStatus() {
   setInterval(() => {
     try {
-      const files = fs.readdirSync(INBOX_DIR).length;
-      const msgFiles = fs.readdirSync(INBOX_DIR).filter(f => f.endsWith('.msg')).length;
-      const processedFiles = fs.readdirSync(INBOX_DIR).filter(f => f.endsWith('.processed')).length;
-      const summaryFiles = fs.readdirSync(CACHE_DIR).filter(f => f.startsWith('summary-') && f.endsWith('.txt')).length;
-      log(`📊 Status: ${msgFiles} pending, ${processedFiles} processed, ${summaryFiles} summaries generated`);
-    } catch (err) {
-      // silently ignore
-    }
-  }, 30000); // Every 30 seconds
+      let totalPending = 0;
+      ALL_AGENTS.forEach(agent => {
+        const d = path.join(BUS_ROOT, agent);
+        try {
+          totalPending += fs.readdirSync(d).filter(f => f.endsWith('.msg')).length;
+        } catch (_) {}
+      });
+      log(`📊 Status: ${totalPending} pending | ${processedMessages.size} processed | queue:${speakQueue.length} | speaking:${isSpeaking}`);
+    } catch (_) {}
+  }, 60000);
 }
 
-// Start listening
-log('🚀 Starting inbox watcher...');
+// Start
+log('🚀 Starting Vaja All-Agents Listener...');
 watchInbox();
-log('📊 Starting status reporter...');
+setInterval(pollInnovaBot, 10000);
+setInterval(pollInnomcp,    15000);
 reportStatus();
 
 // Handle shutdown
-process.on('SIGINT', () => {
-  log('🛑 Vaja TTS Listener Shutting Down');
-  process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  log('🛑 Vaja TTS Listener Terminated');
-  process.exit(0);
-});
+process.on('SIGINT',  () => { log('🛑 Vaja listener shutting down');  process.exit(0); });
+process.on('SIGTERM', () => { log('🛑 Vaja listener terminated');     process.exit(0); });
 
 // Keep process alive
 setInterval(() => {}, 3600000);
