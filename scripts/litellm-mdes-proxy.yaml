@@ -1,0 +1,34 @@
+# litellm proxy config — routes Claude Code API calls to mdes.ollama
+# Usage: litellm --config scripts/litellm-mdes-proxy.yaml --port 4000
+#
+# Then open new Claude Code window:
+#   $env:ANTHROPIC_BASE_URL="http://localhost:4000"; claude
+
+model_list:
+  # Primary: qwen3.5:9b — fast, good at code and Thai
+  - model_name: claude-sonnet-4-6
+    litellm_params:
+      model: openai/qwen3.5:9b
+      api_base: https://ollama.mdes-innova.online/v1
+      api_key: "9e34679b9d60d8b984005ec46508579c"
+
+  # Heavy code: qwen2.5-coder:32b — best for code generation
+  - model_name: claude-opus-4-7
+    litellm_params:
+      model: openai/qwen2.5-coder:32b
+      api_base: https://ollama.mdes-innova.online/v1
+      api_key: "9e34679b9d60d8b984005ec46508579c"
+
+  # Haiku replacement: gemma4:e4b — small + fast
+  - model_name: claude-haiku-4-5
+    litellm_params:
+      model: openai/gemma4:e4b
+      api_base: https://ollama.mdes-innova.online/v1
+      api_key: "9e34679b9d60d8b984005ec46508579c"
+
+litellm_settings:
+  drop_params: true
+  set_verbose: false
+
+general_settings:
+  master_key: "mdes-proxy-key"
