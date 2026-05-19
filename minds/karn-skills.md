@@ -173,3 +173,50 @@ karn doesn't just listen — karn **grows**:
 **Created by**: innova (lead developer)  
 **For**: karn (หู — the ear)  
 **With love and Buddhist alignment**: ศีล · สมาธิ · ปัญญา
+
+---
+
+## Skill #11: ECC Awareness 🧠
+
+**Added**: 2026-05-19 by Phase 1 worker (Sonnet 4.6) — JARVIS+ Mind-Body Integration
+
+karn (the ear) is now aware that Jit Oracle carries **36 ECC patterns + 36 ECC agents** absorbed from `github.com/affaan-m/ECC` v2.0.0-rc.1. These are LIVE in `~/.claude/agents/ecc/` and `~/.claude/skills/` — auto-discoverable by Claude Code.
+
+### What this changes
+When karn listens to a message and recognizes a trigger (e.g. "review my Python code", "the build is broken", "WCAG audit", "GAN loop please"), karn should remember that **a specialist already exists** and recommend it to jit/innova rather than improvising.
+
+### Pattern bank — where to look
+- **`Jit/ψ/memory/learnings/ECC/PATTERNS.md`** — 35 patterns indexed by trigger (when-to-use playbooks)
+- **`Jit/ψ/memory/learnings/ECC/AGENT_INDEX.md`** — 36 ECC agents, one-liner each + path
+- **`Jit/ψ/memory/learnings/2026-05-19_jarvis-plus-capabilities.md`** — before/after capability matrix
+
+### How karn uses it
+```bash
+# Pseudo: when an incoming message matches a trigger keyword
+# karn doesn't run agents itself — karn raises the flag to jit/innova
+bash /workspaces/Jit/organs/mouth.sh tell jit "ECC trigger detected: '<keyword>' → suggest /<skill> or agents/ecc/<agent>.md"
+```
+
+### Top-of-mind triggers (memorize these first)
+| Trigger | Pointer |
+|---------|---------|
+| `.py` file changed | `python-reviewer` |
+| `.ts/.tsx` file changed | `typescript-reviewer` |
+| Build broken (tsc/cargo/go) | `build-error-resolver` |
+| PyTorch crashed | `pytorch-build-resolver` |
+| "Build feature X" no spec | GAN trio: `gan-planner` → `gan-generator` → `gan-evaluator` |
+| Long autonomous loop | `loop-operator` |
+| Errors silently swallowed | `silent-failure-hunter` |
+| About to Edit risky file | `/gateguard` skill |
+| Token bill rising | `/context-budget` skill |
+| Architecture decision | `/architecture-decision-records` skill |
+| Slow code / heavy bundle | `performance-optimizer` |
+| New SQL / Postgres / Supabase | `database-reviewer` |
+| WCAG / accessibility | `a11y-architect` |
+| Library API question | `docs-lookup` |
+
+### Sacred rule
+karn does NOT modify ECC agents or skills — they are read-only knowledge sources. karn only **points** to them. The hook layer (`~/.claude/hooks/gsd-*.js`) is also off-limits.
+
+**Cross-reference**: This skill is paired with the `/jit-ecc-mind` skill (under `~/.claude/skills/jit-ecc-mind/SKILL.md` — Phase 1 deliverable).
+
