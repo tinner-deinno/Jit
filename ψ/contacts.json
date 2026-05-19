@@ -1,0 +1,12 @@
+{
+  "contacts": {
+    "mdes-dev": {
+      "maw": "mdes-dev",
+      "host": "10.181.235.38",
+      "user": "MDES-DEV-NB",
+      "ssh_host": "mdes-dev",
+      "notes": "MDES dev machine on local network — runs Ollama (gemma4:26b etc.)",
+      "ollama_url": "http://10.181.235.38:11434"
+    }
+  }
+}
