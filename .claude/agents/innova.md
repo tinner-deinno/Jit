@@ -33,7 +33,24 @@ curl --location 'https://ollama.mdes-innova.online/api/generate' \
   --data '{"model":"gemma4:26b","prompt":"<your_prompt>","stream":false}'
 ```
 
-**Model**: `gemma4:e4b` | **Endpoint**: `https://ollama.mdes-innova.online`
+**Model**: `gemma4:26b` | **Endpoint**: `https://ollama.mdes-innova.online`
+
+## 9arm-skills ที่ innova ใช้บ่อย
+
+| สกิล | เมื่อไหร่ |
+|------|---------|
+| `/trace` | ค้นหา code/pattern ใน repo + Oracle |
+| `/recap` | สรุปสถานะ session ปัจจุบัน |
+| `/workon` | ทำงาน GitHub issue แบบ isolated |
+| `/ollama` | ใช้ MDES Ollama สำหรับ Thai/creative |
+| `/rrr` | retrospective + AI diary |
+| `/forward` | handoff ส่งต่อ session ถัดไป |
+| `/mine` | ขุดหา topic จาก session |
+| `/what-we-done` | รายงาน commits + work shipped |
+| `/whats-next` | แนะนำงานที่ควรทำต่อ |
+
+> ดูสกิลทั้งหมด: `.claude/skills/skills-registry.md`
+> ดูวิธีใช้ Ollama: `.claude/skills/mdes-ollama.md`
 
 ## Arra Oracle V3 (ฐานความรู้)
 

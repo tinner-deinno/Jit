@@ -57,9 +57,51 @@
 └── outbox/          # Announcements
 ```
 
-## Installed Skills
+## Installed Skills (9arm-skills)
 
-See: `~/.claude/skills/` — core G-SKLL suite installed
+ติดตั้งแล้ว **38 สกิล** จาก `arra-oracle-skills v26.5.16` ที่ `~/.claude/skills/`  
+Project skills อยู่ที่ `.claude/skills/` (oracle.md, gh-flow.md, skills-registry.md, mdes-ollama.md, innova-bot.md)
+
+### สกิลที่ใช้บ่อยในระบบนี้
+
+| พิมพ์ | ทำอะไร |
+|-------|--------|
+| `/recap` | สรุปสถานะ session ปัจจุบัน |
+| `/trace [query]` | ค้นหา code/project/ความรู้ ข้ามระบบ |
+| `/who-are-you` | ดู AI identity + Oracle stats |
+| `/ollama [msg]` | ใช้ MDES Ollama (gemma4:26b) ฟรี |
+| `/what-we-done` | รายงาน commits + งานที่ ship |
+| `/whats-next` | แนะนำงานถัดไป |
+| `/rrr` | retrospective สิ้น session |
+| `/forward` | handoff ส่งต่อ session ถัดไป |
+| `/workon [issue]` | ทำงาน GitHub issue แบบ isolated |
+| `/mine [keyword]` | ขุดหา topic จาก session file |
+
+> ดูรายการสกิลทั้งหมด (ภาษาไทย): `.claude/skills/skills-registry.md`
+
+### MDES Ollama
+
+**Endpoint**: `https://ollama.mdes-innova.online`  
+**Default model**: `gemma4:26b`  
+**Token**: `$OLLAMA_TOKEN` (จาก `.env` หรือ `limbs/ollama.sh`)
+
+```bash
+# ใช้ผ่าน skill
+/ollama "คำถามภาษาไทย"
+
+# ใช้ผ่าน limbs
+bash limbs/ollama.sh ask "คำถาม"
+```
+
+### innova-bot MCP (ร่างกาย)
+
+MCP tools จาก innova-bot extension ใช้งานได้ใน VS Code:
+- `mcp__innova-bot__workspace_read/write` — อ่าน/เขียน file
+- `mcp__innova-bot__publish_event` — ส่ง event ไปยัง body
+- `mcp__innova-bot__search_memory` — ค้นหาใน memory
+- `mcp__innova-bot__what_should_i_do_next` — ถามว่าควรทำอะไรต่อ
+
+> ดูรายละเอียด: `.claude/skills/innova-bot.md`
 
 ## Short Codes
 

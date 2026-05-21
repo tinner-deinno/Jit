@@ -92,3 +92,38 @@ python3 network/registry.json | grep status
 2. **โปร่งใส** — decision ต้องอธิบายได้
 3. **ปรึกษา soma** — สำหรับเรื่องใหญ่
 4. **บันทึกทั้งหมด** — Oracle first
+
+## MDES Ollama
+
+```bash
+# Endpoint + Token
+OLLAMA_ENDPOINT="https://ollama.mdes-innova.online"
+# Token ใน .env หรือ limbs/ollama.sh
+
+# ใช้ผ่าน limbs
+bash limbs/ollama.sh ask "คำถาม"
+
+# ใช้ /ollama skill
+/ollama "คำถาม"
+```
+
+| Persona | Model |
+|---------|-------|
+| jit (Master Orchestrator) | `gemma4:26b` |
+| soma (Brain) | `qwen3.5:27b` |
+| innova (Developer) | `gemma4:e4b` |
+
+## 9arm-skills ที่ jit ใช้บ่อย
+
+| สกิล | เมื่อไหร่ |
+|------|---------|
+| `/recap` | เริ่ม session ใหม่ — ดูสถานะ |
+| `/trace` | ค้นหา patterns ข้ามระบบ |
+| `/who-are-you` | ตรวจ AI identity + Oracle |
+| `/what-we-done` | รายงานสิ่งที่ ship แล้ว |
+| `/whats-next` | แนะนำงานถัดไป |
+| `/forward` | สรุปส่งต่อ session |
+| `/rrr` | retrospective สิ้น session |
+| `/ollama` | ใช้ MDES AI ภาษาไทย |
+
+> ดูรายการสกิลทั้งหมด: `.claude/skills/skills-registry.md`
