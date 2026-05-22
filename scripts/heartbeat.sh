@@ -127,19 +127,120 @@ _commit_heartbeat() {
   git -C "$JIT_ROOT" commit -m "$msg" >/dev/null 2>&1 || true
 }
 
-# ── local state write (heartbeat writes runtime state only, never git commits) ──
-# Architecture rule: git is for source/docs/identity checkpoints only.
-# Heartbeat → local files only. Explicit milestone commands handle source commits.
+# ── local state write ──────────────────────────────────────────────────────
+PUSH_SKIP_COUNT=0   # นับ pulses ที่ไม่ได้ push (สำหรับ slow mode)
+
 _log_pulse_locally() {
   local MSG="$1"
   echo "$(date '+%Y-%m-%dT%H:%M:%S') | $(hostname) | $MSG" \
     >> "/tmp/innova-heartbeat-local.log" 2>/dev/null || true
-  echo "local-only"
 }
 
-# Kept as named stub so callers compile — always a no-op for git.
-_git_commit_if_changed() { _log_pulse_locally "pulse: $1"; }
-_git_push()              { echo "no-push (runtime)"; }
+# ── Adaptive source commit: commit tracked changes ตาม mode ────────────
+_git_commit_if_changed() {
+  local LABEL="${1:-pulse}"
+  local MODE_NOW="${2:-${HEARTBEAT_MODE:-normal}}"   # รับ mode เป็น param แทน global
+  local CHANGES
+  CHANGES=$(git -C "$JIT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+  [ "$CHANGES" -eq 0 ] && return 0
+
+  # ไม่ commit ใน rest mode (ไม่มีงาน)
+  [ "$MODE_NOW" = "rest" ] && return 0
+
+  local MSG="💾 auto-checkpoint [$LABEL] mode=$MODE_NOW changes=$CHANGES — $(hostname) @ $(date '+%Y-%m-%d %H:%M')"
+  git -C "$JIT_ROOT" add -u >/dev/null 2>&1 || true
+  git -C "$JIT_ROOT" commit -m "$MSG" >/dev/null 2>&1 && \
+    echo "  💾  committed $CHANGES change(s)" || true
+}
+
+# ── Adaptive git push: ปรับความถี่ที่ของ push ตาม mode ───────────
+_git_push() {
+  local MODE="${HEARTBEAT_MODE:-normal}"
+  case "$MODE" in
+    rest)
+      # ไม่มีงาน → skip push ทั้งหมด
+      return 0 ;;
+    slow)
+      # push ทุก 2 pulse
+      PUSH_SKIP_COUNT=$(( PUSH_SKIP_COUNT + 1 ))
+      [ $(( PUSH_SKIP_COUNT % 2 )) -ne 0 ] && return 0 ;;
+    *)
+      # sprint/fast/normal → push ทุก pulse
+      : ;;
+  esac
+
+  local push_ok=0
+  if git -C "$JIT_ROOT" push --quiet 2>/dev/null; then
+    push_ok=1
+    PUSH_SKIP_COUNT=0   # reset เฉพาะเมื่อ push สำเร็จ
+    echo "  ☁️   pushed → remote (เครื่องอื่น sync ได้)"
+  else
+    echo "  ⚠️   push ไม่สำเร็จ (offline/conflict) — จะลองใน pulse ถัดไป"
+  fi
+  log_action "GIT_PUSH" "mode=$MODE ok=$push_ok pulse=$PULSE_COUNT"
+}
+
+# ── Notify innova-bot body via HTTP (port 7010) ────────────────────────
+_notify_innova_bot() {
+  local EVENT_TYPE="${1:-heartbeat}"
+  local PAYLOAD="${2:-{}}"
+  local BOT_PORT="${INNOVA_BOT_PORT:-7010}"
+  local BOT_URL="http://127.0.0.1:${BOT_PORT}"
+
+  # ส่งผ่าน HTTP ตรง — ถ้า fail ค่อย fallback (ลด curl calls จาก 3 → 1)
+  local FULL_PAYLOAD
+  FULL_PAYLOAD=$(python3 -c "
+import json, sys
+evt = sys.argv[1]
+try:
+  body = json.loads(sys.argv[2])
+except:
+  body = {}
+body.update({'event_type': evt, 'source': 'jit-heartbeat', 'pulse': ${PULSE_COUNT:-0}, 'mode': '${HEARTBEAT_MODE:-normal}'})
+print(json.dumps(body))
+" "$EVENT_TYPE" "$PAYLOAD" 2>/dev/null || echo "{\"event_type\":\"$EVENT_TYPE\"}")
+
+  curl -sf --max-time 3 \
+    -X POST "${BOT_URL}/api/jit/event" \
+    -H 'Content-Type: application/json' \
+    -d "$FULL_PAYLOAD" >/dev/null 2>&1 && \
+    echo "  🤖  innova-bot notified (${EVENT_TYPE})" || \
+    _notify_innova_bot_via_file "$EVENT_TYPE" "$PAYLOAD"
+}
+
+# File bridge fallback: เขียน event ไปยัง .innova/jit-bridge
+_notify_innova_bot_via_file() {
+  local EVENT_TYPE="$1"
+  local PAYLOAD="$2"
+  local BOT_PATH
+  BOT_PATH="${INNOVA_BOT_PATH:-C:\\Users\\admin\\DEV\\PugAss1stant\\innova-bot}"
+
+  # แปลง Windows drive letter เป็น POSIX path เมื่อรันใน WSL
+  if uname -r 2>/dev/null | grep -qi microsoft; then
+    BOT_PATH=$(echo "$BOT_PATH" | sed 's|^C:\\\\|/mnt/c/|; s|\\\\|/|g')
+  fi
+
+  local BRIDGE_INBOX="${BOT_PATH}/.innova/jit-bridge/network/inbox"
+
+  if [ ! -d "$BRIDGE_INBOX" ]; then
+    echo "  📭  file-bridge ไม่พบ dir: $BRIDGE_INBOX" >/dev/null
+    return 0
+  fi
+
+  local FNAME="${BRIDGE_INBOX}/heartbeat_$(date +%Y%m%d_%H%M%S)_${PULSE_COUNT}.json"
+  python3 -c "
+import json, sys
+evt = sys.argv[1]
+try:
+  body = json.loads(sys.argv[2])
+except:
+  body = {}
+body.update({'event_type': evt, 'source': 'jit-heartbeat', 'pulse': ${PULSE_COUNT:-0}, 'mode': '${HEARTBEAT_MODE:-normal}', 'ts': __import__('datetime').datetime.now().isoformat()})
+with open(sys.argv[3], 'w') as f:
+  json.dump(body, f, ensure_ascii=False, indent=2)
+print('file-bridge: wrote', sys.argv[3])
+" "$EVENT_TYPE" "$PAYLOAD" "$FNAME" 2>/dev/null || true
+}
 
 # ══════════════════════════════════════════════════════════════════════
 # _do_pulse: หัวใจเต้น 1 รอบ (IN → OUT)
@@ -212,12 +313,27 @@ _do_pulse() {
   _log_pulse_locally "OUT #$PULSE_COUNT mode=$MODE"
 
   # ═══════════════════════════════════════════════════════════════
-  # สรุป Pulse (local state only — no git commit, no push)
-  # ═══════════════════════════════════════════════════════════════
+  # BEAT 3 — COMMIT + PUSH + NOTIFY: checkpoint source changes และแจ้ง body
+  # ═════════════════════════════════════════════════════════════
+  local PRE_COMMIT_CHANGES="$CHANGES"   # snapshot ก่อน commit เพื่อ progress bar
+  echo -ne "  💾  commit "
+  _git_commit_if_changed "pulse-$PULSE_COUNT" "$MODE"
+  printf " %s\n" "$(_hbar $([ "$PRE_COMMIT_CHANGES" -gt 0 ] && echo 100 || echo 30))"
+
+  echo -ne "  ☁️   push   "
+  _git_push
+  printf " %s mode=$MODE\n" "$(_hbar $([ "$MODE" != rest ] && echo 100 || echo 20))"
+
+  echo -ne "  🤖  body   "
+  _notify_innova_bot "heartbeat" "{\"pulse\":$PULSE_COUNT,\"mode\":\"$MODE\",\"pending\":$PENDING,\"changes\":$CHANGES}"
+
+  # ═════════════════════════════════════════════════════════════
+  # สรุป Pulse
+  # ═════════════════════════════════════════════════════════════
   echo ""
   echo -e "  ────────────────────────────────────────────────"
   echo -e "  ✅ Pulse #$PULSE_COUNT เสร็จ · mode=$MODE · next in ${PULSE_INTERVAL}s · $(date '+%H:%M:%S')"
-  echo -e "  📁  state written locally · heartbeat status updated"
+  echo -e "  📁  commit/push อัตโนมัติ · innova-bot notified"
   echo ""
 
   cat <<EOF > "$HEARTBEAT_STATUS_FILE"

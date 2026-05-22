@@ -35,7 +35,46 @@ cd /workspaces/arra-oracle-v3 && ORACLE_PORT=47778 bun run src/server.ts &
 # รอ 2 วิ แล้วรัน awaken.sh อีกครั้ง
 ```
 
+## ⚠️ Windows / PowerShell Fallback
+
+ถ้า Bash ไม่พร้อมใช้ (WSL ไม่ได้ติดตั้ง / ไม่ได้อยู่ใน Codespace) ให้ใช้วิธีนี้แทน:
+
+**ตรวจสอบสถานะระบบ (PowerShell):**
+```powershell
+# ตรวจ Ollama local
+$ProgressPreference = 'SilentlyContinue'
+try { (Invoke-WebRequest -Uri "http://127.0.0.1:11434/api/tags" -UseBasicParsing).StatusCode } catch { "Ollama NOT running" }
+
+# ตรวจ Oracle
+try { (Invoke-WebRequest -Uri "http://127.0.0.1:47778/api/health" -UseBasicParsing).StatusCode } catch { "Oracle NOT running" }
+
+# ตรวจ Python
+python --version
+
+# ตรวจ Node.js
+node --version
+```
+
+**เริ่ม Oracle บน Windows (ถ้ามี Bun):**
+```powershell
+cd C:\Users\admin\arra-oracle-v3
+$env:ORACLE_PORT = "47778"
+bun run src/server.ts
+```
+
+**รายงาน Vitality ด้วยตัวเอง** โดยนับ:
+- ✅ Runtime available (Node/Python): +20%
+- ✅ Ollama running (local): +15%
+- ✅ Oracle running: +20%
+- ✅ Discord bot running: +15%
+- ✅ Heartbeat daemon: +15%
+- ✅ Identity/Memory readable: +15%
+
+---
+
 ## สรุปสถานะ
 
 หลัง awaken.sh รัน ให้รายงานสถานะในภาษาไทยตามผลลัพธ์จริง ไม่เดา ไม่เติมเอง
 ระดับชีวิต (Vitality %) มาจาก progress bar ที่แสดงใน awaken.sh
+
+บน Windows (ไม่มี Bash): รายงานตามผลการตรวจสอบข้างต้นจริงเท่านั้น

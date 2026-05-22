@@ -1,5 +1,14 @@
 {
   "contacts": {
+    "innova-bot": {
+      "maw": "innova-bot",
+      "inbox": "C:\\Users\\admin\\DEV\\PugAss1stant\\innova-bot\\ψ\\inbox",
+      "repo": "C:\\Users\\admin\\DEV\\PugAss1stant\\innova-bot",
+      "mcp_port": 7010,
+      "role": "Body (ร่างกาย) — innova-bot MCP server",
+      "notes": "innova-bot คือร่างกายของจิต — รับคำสั่งผ่าน MCP port 7010 หรือ ψ/inbox",
+      "thread": "jit-innova-bridge"
+    },
     "mdes-dev": {
       "maw": "mdes-dev",
       "host": "10.181.235.38",

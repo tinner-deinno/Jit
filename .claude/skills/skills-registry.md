@@ -1,14 +1,17 @@
 ---
 description: >
-  คู่มือ 9arm-skills (arra-oracle-skills) ภาษาไทย — รายการ slash commands ทั้งหมดที่ติดตั้งไว้
-  ใช้เมื่อถาม "มีสกิลอะไรบ้าง", "ใช้ skill ยังไง", "9arm-skills คืออะไร", หรือต้องการดู skills ทั้งหมด
+  คู่มือ arra-oracle-skills ภาษาไทย — รายการ slash commands ทั้งหมดที่ติดตั้งไว้
+  ใช้เมื่อถาม "มีสกิลอะไรบ้าง", "ใช้ skill ยังไง", "arra-oracle-skills คืออะไร", หรือต้องการดู skills ทั้งหมด
 ---
 
-# 🧰 9arm-skills (arra-oracle-skills) — คู่มือภาษาไทย
+# 🧰 arra-oracle-skills — คู่มือภาษาไทย
 
-**9arm-skills** คือชุด slash commands ที่ติดตั้งใน `~/.claude/skills/`  
+**arra-oracle-skills** คือชุด slash commands ของ Oracle ecosystem ที่ติดตั้งใน `~/.claude/skills/`  
 ใช้โดยพิมพ์ `/ชื่อสกิล` ใน Claude Code chat  
-ติดตั้งแล้ว **38 สกิล** เวอร์ชัน `v26.5.16`
+ติดตั้งแล้ว **38 สกิล** เวอร์ชัน `arra-oracle-skills-cli v26.5.16`
+
+> ✅ **9arm-skills (thananon/9arm-skills) ติดตั้งแล้ว** ที่ `C:\Users\admin\DEV\9arm-skills`  
+> Skills linked ไปที่ `~/.claude/skills/` — ดู section **Engineering & Productivity Skills** ด้านล่าง
 
 ---
 
@@ -76,6 +79,29 @@ description: >
 | **new-issue** | `/new-issue` | สร้าง GitHub issue เร็วๆ |
 | **list-issues-pr-pulse** | `/list-issues-pr-pulse` | ดู issues, PRs, Pulse board |
 | **release** | `/release` | release flow — bump version, tag, push, GitHub release |
+
+---
+
+## 🛠️ Engineering & Productivity Skills (9arm-skills by thananon)
+
+ติดตั้งจาก `github.com/thananon/9arm-skills` — `C:\Users\admin\DEV\9arm-skills`  
+Skill files อยู่ที่ `.github/skills/` ใน Jit repo
+
+### 🔧 Engineering
+
+| สกิล | คำสั่ง | ใช้เมื่อ |
+|------|--------|----------|
+| **debug-mantra** | `/debug-mantra` | เริ่ม debug session — ท่องมนตรา 4 ข้อ แล้วใช้วินัย reproduce → trace → falsify → breadcrumb |
+| **post-mortem** | `/post-mortem` | เขียนบันทึกวิศวกรรมหลัง fix bug — root cause, fix, validation (ต้องมี repro + cause + fix + validated ก่อน) |
+| **scrutinize** | `/scrutinize` | review plan/PR/code จากมุมภายนอก — intent, trace path จริง, verify claim ทุกข้อ |
+
+### 📢 Productivity
+
+| สกิล | คำสั่ง | ใช้เมื่อ |
+|------|--------|----------|
+| **management-talk** | `/management-talk` | แปลงงาน engineer เป็นภาษา management — ปรับตาม channel (JIRA, Slack, email, standup, meeting) |
+
+> Skill files อยู่ที่ `.github/skills/{debug-mantra,post-mortem,scrutinize,management-talk}/SKILL.md`
 | **release-alpha** | `/release-alpha` | cut alpha pre-release |
 | **release-beta** | `/release-beta` | cut beta pre-release |
 | **incubate** | `/incubate [repo]` | clone repo สำหรับ active development |

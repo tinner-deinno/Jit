@@ -66,6 +66,43 @@ log_autonomy() {
   echo "[$(date '+%Y-%m-%dT%H:%M:%S')] [AUTONOMY] $MSG" | tee -a "$LOG_FILE"
 }
 
+# ── notify innova-bot body: HTTP first, file-bridge fallback ─────────
+notify_innova_bot() {
+  local EVENT_TYPE="${1:-autonomy-cycle}"
+  local PAYLOAD="${2:-{}}"
+  local BOT_PORT="${INNOVA_BOT_PORT:-7010}"
+  local BOT_URL="http://127.0.0.1:${BOT_PORT}"
+  local BOT_PATH="${INNOVA_BOT_PATH:-C:\\Users\\admin\\DEV\\PugAss1stant\\innova-bot}"
+  local BRIDGE_INBOX="${BOT_PATH}/.innova/jit-bridge/network/inbox"
+
+  # HTTP path
+  local FULL_PAYLOAD
+  FULL_PAYLOAD=$(python3 -c "
+import json, sys
+try:
+  body = json.loads(sys.argv[2])
+except:
+  body = {}
+body.update({'event_type': sys.argv[1], 'source': 'jit-autonomy', 'agent': '$AGENT_NAME', 'ts': __import__('datetime').datetime.now().isoformat()})
+print(json.dumps(body))
+" "$EVENT_TYPE" "$PAYLOAD" 2>/dev/null || echo "{\"event_type\":\"$EVENT_TYPE\"}")
+
+  if curl -sf --max-time 2 \
+      -X POST "${BOT_URL}/api/jit/event" \
+      -H 'Content-Type: application/json' \
+      -d "$FULL_PAYLOAD" >/dev/null 2>&1; then
+    log_autonomy "innova-bot notified via HTTP: $EVENT_TYPE"
+    return
+  fi
+
+  # File bridge fallback
+  if [ -d "$BRIDGE_INBOX" ]; then
+    local FNAME="${BRIDGE_INBOX}/autonomy_$(date +%Y%m%d_%H%M%S)_${EVENT_TYPE}.json"
+    echo "$FULL_PAYLOAD" > "$FNAME" 2>/dev/null && \
+      log_autonomy "innova-bot notified via file-bridge: $FNAME" || true
+  fi
+}
+
 update_selfhood() {
   local TS
   TS="$(date +%Y-%m-%dT%H:%M:%S)"
@@ -173,6 +210,10 @@ state = {
 with open('$STATE_FILE', 'w', encoding='utf-8') as f:
   json.dump(state, f, ensure_ascii=False, indent=2)
 PYEOF
+
+  # แจ้ง innova-bot body ว่า autonomy cycle เสร็จ
+  notify_innova_bot "autonomy-cycle" \
+    "{\"pending\":$PENDING,\"oracle_ok\":$ORACLE_OK,\"agent\":\"$AGENT_NAME\"}"
 
   log_autonomy "cycle complete | pending=$PENDING oracle=$ORACLE_OK"
 }

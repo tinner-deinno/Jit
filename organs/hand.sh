@@ -140,8 +140,51 @@ case "$CMD" in
     echo "   สามารถ: create | edit | append | delete | copy | call | execute | build"
     ;;
 
+  # ── autonomous work: execute tasks from inbox or commit changes ──────
+  work)
+    TASK="${1:-check}"
+    [ -f "$JIT_ROOT/core/blood.sh" ] && source "$JIT_ROOT/core/blood.sh"
+    done_tasks=(); failed_tasks=()
+    HAND_INBOX="/tmp/manusat-bus/hand"
+
+    case "$TASK" in
+      commit)
+        changes=$(git -C "$JIT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+        if [ "${changes:-0}" -gt 0 ]; then
+          git -C "$JIT_ROOT" add -u 2>/dev/null || true  # tracked files only — ป้องกัน commit ไฟล์ WIP
+          if git -C "$JIT_ROOT" commit -m \
+            "🤖 auto-checkpoint [hand:cycle=${CYCLE:-0}] changes=$changes" >/dev/null 2>&1; then
+            done_tasks+=("committed:$changes")
+          else
+            failed_tasks+=("commit-failed")
+          fi
+        else
+          done_tasks+=("no-changes")
+        fi
+        ;;
+      *)
+        # Execute any task:* messages from inbox
+        for MSG in "$HAND_INBOX"/*.msg; do
+          [ -f "$MSG" ] || continue
+          subj=$(grep '^subject:' "$MSG" | cut -d: -f2- | sed 's/^ //')
+          if echo "$subj" | grep -q '^cycle:'; then
+            rm -f "$MSG"; continue
+          fi
+          done_tasks+=("processed:$subj")
+          mv "$MSG" "${HAND_INBOX}/done_$(date +%s%N)_$(basename "$MSG")" 2>/dev/null
+        done
+        [ "${#done_tasks[@]}" -eq 0 ] && done_tasks+=("idle")
+        ;;
+    esac
+
+    touch "/tmp/manusat-alive-hand"
+    write_blood "hand" "${CYCLE:-0}" "$TASK" "done" \
+      "$(IFS=','; echo "${done_tasks[*]}")" "$(IFS=','; echo "${failed_tasks[*]}")"
+    log_action "HAND_WORK" "cycle=${CYCLE:-0} done=${#done_tasks[@]} failed=${#failed_tasks[@]}"
+    ;;
+
   *)
-    echo "Usage: hand.sh {create|edit|append|delete|copy|call|execute|build}"
+    echo "Usage: hand.sh {create|edit|append|delete|copy|call|execute|build|work}"
     echo ""
     echo "  create  <file> [content]       — สร้างไฟล์"
     echo "  edit    <file> <old> <new>     — แก้ไขข้อความในไฟล์"
@@ -150,5 +193,6 @@ case "$CMD" in
     echo "  call    <url> [json-data]      — เรียก API"
     echo "  execute <task-file>            — ทำงานตาม script"
     echo "  build   [project-dir]          — build/install project"
+    echo "  work    [commit|check]         — autonomous work (จาก life-loop)"
     ;;
 esac

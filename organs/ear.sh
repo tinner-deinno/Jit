@@ -128,13 +128,38 @@ case "$CMD" in
     ok "หู (ear) พร้อม | inbox: $MY_INBOX | รอ: $MSGS messages"
     ;;
 
+  # ── autonomous work: drain inbox, write blood ──────────────────────
+  work)
+    TASK="${1:-drain}"
+    [ -f "$JIT_ROOT/core/blood.sh" ] && source "$JIT_ROOT/core/blood.sh"
+    processed=0; subjects=()
+
+    for MSG in "$MY_INBOX"/*.msg; do
+      [ -f "$MSG" ] || continue
+      subj=$(grep '^subject:' "$MSG" | cut -d: -f2- | sed 's/^ //')
+      # Skip cycle task messages (from heart)
+      if echo "$subj" | grep -q '^cycle:'; then
+        rm -f "$MSG"; continue
+      fi
+      subjects+=("$subj")
+      mv "$MSG" "${MY_INBOX}/read_$(date +%s%N)_$(basename "$MSG")" 2>/dev/null
+      processed=$(( processed + 1 ))
+    done
+
+    touch "/tmp/manusat-alive-ear"
+    write_blood "ear" "${CYCLE:-0}" "$TASK" "done" \
+      "processed:${processed}" ""
+    log_action "EAR_WORK" "cycle=${CYCLE:-0} processed=$processed"
+    ;;
+
   *)
-    echo "Usage: ear.sh {listen|receive|inbox|from|clear|status}"
+    echo "Usage: ear.sh {listen|receive|inbox|from|clear|status|work}"
     echo ""
     echo "  listen  [timeout]   — รอรับ message (default 60s)"
     echo "  receive             — รับทุก message ที่รอ"
     echo "  inbox               — ดูสถานะ inbox"
     echo "  from <agent>        — รับเฉพาะจาก agent"
     echo "  clear               — ล้าง inbox"
+    echo "  work    [task]      — autonomous work (จาก life-loop)"
     ;;
 esac

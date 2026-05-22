@@ -143,6 +143,39 @@ case "$CMD" in
     echo "   สามารถ: go | jump | climb | step | deploy | map"
     ;;
 
+  # ── autonomous work: check deploy targets + git status ──────────
+  work)
+    TASK="${1:-check}"
+    JIT_ROOT_LG="$(cd "$SCRIPT_DIR/.." && pwd)"
+    [ -f "$JIT_ROOT_LG/core/blood.sh" ] && source "$JIT_ROOT_LG/core/blood.sh"
+    findings=(); alerts=()
+
+    # Git status
+    git_changes=$(git -C "$JIT_ROOT_LG" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+    findings+=("git-changes:${git_changes:-0}")
+    [ "${git_changes:-0}" -gt 30 ] && alerts+=("large-uncommitted:${git_changes}")
+
+    # ตรวจว่า push ล่าสุดเมื่อไร
+    last_push=$(git -C "$JIT_ROOT_LG" log --oneline -1 --format='%cr' 2>/dev/null || echo 'unknown')
+    findings+=("last-commit:${last_push// /-}")
+
+    # ตรวจ WSL/Linux path
+    if [ -d "/workspaces" ]; then
+      findings+=("env:codespace")
+    elif grep -qi 'microsoft' /proc/version 2>/dev/null; then
+      findings+=("env:wsl")
+    else
+      findings+=("env:linux")
+    fi
+
+    find "/tmp/manusat-bus/leg" -name '*from-heart.msg' -delete 2>/dev/null || true
+    touch "/tmp/manusat-alive-leg"
+
+    write_blood "leg" "${CYCLE:-0}" "$TASK" "done" \
+      "$(IFS=','; echo "${findings[*]}")" "$(IFS=','; echo "${alerts[*]}")"
+    log_action "LEG_WORK" "cycle=${CYCLE:-0} git-changes=$git_changes"
+    ;;
+
   *)
     echo "Usage: leg.sh {go|jump|climb|step|deploy|map|status}"
     echo ""

@@ -129,13 +129,42 @@ for a in d.get('agents', []):
     ok "ปาก (mouth) พร้อม | bus: $BUS_DIR | messages pending: $PENDING"
     ;;
 
+  # ── autonomous work: สรุป alerts จาก blood แล้วรายงาน ──────────────
+  work)
+    TASK="${1:-report}"
+    [ -f "$JIT_ROOT/core/blood.sh" ] && source "$JIT_ROOT/core/blood.sh"
+    done_msgs=(); alerts_found=()
+
+    # รวบ alerts จาก blood ทุก organ
+    while IFS= read -r alert_line; do
+      [ -n "$alert_line" ] && alerts_found+=("$alert_line")
+    done < <(get_all_alerts 2>/dev/null)
+
+    if [ "${#alerts_found[@]}" -gt 0 ]; then
+      summary=$(printf '%s\n' "${alerts_found[@]}" | head -10 | tr '\n' ' ')
+      echo "⚠️  Alerts (cycle ${CYCLE:-?}): $summary"
+      done_msgs+=("reported:${#alerts_found[@]}-alerts")
+    else
+      done_msgs+=("no-alerts")
+    fi
+
+    # ล้าง cycle task message จาก inbox
+    find "$BUS_DIR/mouth" -name '*from-heart.msg' -delete 2>/dev/null || true
+    touch "/tmp/manusat-alive-mouth"
+
+    write_blood "mouth" "${CYCLE:-0}" "$TASK" "done" \
+      "$(IFS=','; echo "${done_msgs[*]}")" ""
+    log_action "MOUTH_WORK" "cycle=${CYCLE:-0} alerts=${#alerts_found[@]}"
+    ;;
+
   *)
-    echo "Usage: mouth.sh {say|tell|broadcast|reply|report|status}"
+    echo "Usage: mouth.sh {say|tell|broadcast|reply|report|work|status}"
     echo ""
     echo "  say       <msg>                 — พูดออกมา"
     echo "  tell      <agent> <subj> <msg>  — ส่ง message"
     echo "  broadcast <subject> <msg>       — broadcast ทุก agent"
     echo "  reply     <ref-id> <agent> <m>  — ตอบกลับ"
     echo "  report    <title> <body>        — รายงานผล"
+    echo "  work      [report]              — autonomous work (จาก life-loop)"
     ;;
 esac

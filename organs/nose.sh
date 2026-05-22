@@ -142,10 +142,55 @@ case "$CMD" in
   # ── สถานะ ──────────────────────────────────────────────────────────
   status)
     ok "จมูก (nose) พร้อม"
-    echo "   สามารถ: sniff | alert | monitor | health | changes"
+    echo "   สามารถ: sniff | alert | monitor | health | changes | work"
+    ;;
+
+  # ── autonomous work: health check, write blood ──────────────────────
+  work)
+    TASK="${1:-health}"
+    [ -f "$JIT_ROOT/core/blood.sh" ] && source "$JIT_ROOT/core/blood.sh"
+    findings=(); alerts=()
+
+    # Oracle
+    if curl -sf --max-time 3 "${ORACLE_URL:-http://localhost:47778}/api/health" >/dev/null 2>&1; then
+      findings+=("oracle:ok")
+    else
+      findings+=("oracle:down")
+      alerts+=("oracle-down")
+    fi
+
+    # Ollama
+    if curl -sf --max-time 4 "${OLLAMA_URL:-https://ollama.mdes-innova.online}/api/version" >/dev/null 2>&1; then
+      findings+=("ollama:ok")
+    else
+      findings+=("ollama:unreachable")
+    fi
+
+    # Disk (root partition)
+    disk_pct=$(df / 2>/dev/null | awk 'NR==2 {gsub(/%/,"",$5); print $5}')
+    if [ -n "$disk_pct" ]; then
+      findings+=("disk:${disk_pct}%")
+      [ "${disk_pct:-0}" -gt 90 ] && alerts+=("disk-critical:${disk_pct}%")
+    fi
+
+    # Message bus
+    if [ -d "/tmp/manusat-bus" ]; then
+      findings+=("bus:ok")
+    else
+      findings+=("bus:missing")
+      alerts+=("bus-missing")
+    fi
+
+    # ล้าง cycle task message
+    find "/tmp/manusat-bus/nose" -name '*from-heart.msg' -delete 2>/dev/null || true
+    touch "/tmp/manusat-alive-nose"
+
+    write_blood "nose" "${CYCLE:-0}" "$TASK" "done" \
+      "$(IFS=','; echo "${findings[*]}")" "$(IFS=','; echo "${alerts[*]}")"
+    log_action "NOSE_WORK" "cycle=${CYCLE:-0} findings=${#findings[@]} alerts=${#alerts[@]}"
     ;;
 
   *)
-    echo "Usage: nose.sh {sniff|alert|monitor|health|changes|status}"
+    echo "Usage: nose.sh {sniff|alert|monitor|health|changes|status|work}"
     ;;
 esac

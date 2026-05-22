@@ -129,7 +129,7 @@ print('channel created:', '$CHANNEL_FILE')
     CONTEXT="$*"
     log_action "NERVE_PULSE" "$CONTEXT"
     echo "Nerve receives clean energy and propagates the signal across the system"
-    local stale=$(find "$NERVE_DIR" -name '*.evt' -type f -mmin +60 2>/dev/null | wc -l | tr -d ' ')
+    stale=$(find "$NERVE_DIR" -name '*.evt' -type f -mmin +60 2>/dev/null | wc -l | tr -d ' ')
     echo "  stale events remaining: ${stale:-0}"
     ;;
 
@@ -142,8 +142,43 @@ print('channel created:', '$CHANNEL_FILE')
     echo "   events บันทึก: $EVENTS | pending: $PENDING | channels: $CHANNELS"
     ;;
 
+  # ── autonomous work: pulse + clean stale events + count alive ────────
+  work)
+    TASK="${1:-route}"
+    [ -f "$JIT_ROOT/core/blood.sh" ] && source "$JIT_ROOT/core/blood.sh"
+    findings=()
+
+    # ล้าง stale events (> 60 นาที)
+    stale=$(find "$NERVE_DIR" -name '*.evt' -mmin +60 2>/dev/null | wc -l | tr -d ' ')
+    if [ "${stale:-0}" -gt 0 ]; then
+      find "$NERVE_DIR" -name '*.evt' -mmin +60 -delete 2>/dev/null
+      findings+=("cleaned-stale:$stale")
+    fi
+
+    # นับ alive agents (< 10 นาที)
+    alive_count=0
+    for f in /tmp/manusat-alive-*; do
+      [ -f "$f" ] || continue
+      age=$(( $(date +%s) - $(date -r "$f" +%s 2>/dev/null || echo 0) ))
+      [ "$age" -lt 600 ] && alive_count=$(( alive_count + 1 ))
+    done
+    findings+=("alive-organs:$alive_count")
+
+    # ส่ง life-cycle signal
+    _emit_event "life-cycle" "cycle=${CYCLE:-0}" "nerve-work"
+    findings+=("pulse:sent")
+
+    # ล้าง cycle task message
+    find "/tmp/manusat-bus/nerve" -name '*from-heart.msg' -delete 2>/dev/null || true
+    touch "/tmp/manusat-alive-nerve"
+
+    write_blood "nerve" "${CYCLE:-0}" "$TASK" "done" \
+      "$(IFS=','; echo "${findings[*]}")" ""
+    log_action "NERVE_WORK" "cycle=${CYCLE:-0} alive=$alive_count stale=$stale"
+    ;;
+
   *)
-    echo "Usage: nerve.sh {signal|listen|events|pending|clear|connect|status}"
+    echo "Usage: nerve.sh {signal|listen|events|pending|clear|connect|status|work}"
     echo ""
     echo "  signal  <event> <data> [source]  — ส่งสัญญาณ"
     echo "  listen  <event-type> [timeout]   — ฟัง event"
@@ -151,5 +186,6 @@ print('channel created:', '$CHANNEL_FILE')
     echo "  pending                          — ดู events รอดำเนินการ"
     echo "  clear                            — ล้าง pending events"
     echo "  connect <agent-a> <agent-b>      — สร้าง channel"
+    echo "  work    [route]                  — autonomous work (จาก life-loop)"
     ;;
 esac

@@ -221,7 +221,45 @@ except: pass
     fi
     ;;
 
+  # ── autonomous work: check Ollama load + write blood ───────────
+  work)
+    TASK="${1:-vitals}"
+    JIT_ROOT_P="$(cd "$SCRIPT_DIR/.." && pwd)"
+    [ -f "$JIT_ROOT_P/core/blood.sh" ] && source "$JIT_ROOT_P/core/blood.sh"
+    findings=(); alerts=()
+    _pran_init
+
+    if _ollama_check 2>/dev/null; then
+      LOAD=$(_ollama_load 2>/dev/null || echo 0)
+      PCT=$(( (${LOAD:-0} * 100) / MAX_CONCURRENT ))
+      [ "$PCT" -gt 100 ] && PCT=100
+      findings+=("ollama:ok" "load:${PCT}%")
+      [ "$PCT" -ge "$CRITICAL_THRESHOLD" ] && alerts+=("ollama-critical:${PCT}%")
+      [ "$PCT" -ge "$HIGH_THRESHOLD" ]     && alerts+=("ollama-high:${PCT}%")
+    else
+      findings+=("ollama:unreachable")
+      alerts+=("ollama-down")
+    fi
+
+    # ตรวจ active slots
+    active_count=$(python3 -c "
+import json
+try:
+  d=json.load(open('$PRAN_STATE'))
+  print(len(d.get('active',[])))
+except: print(0)
+" 2>/dev/null || echo 0)
+    findings+=("active-slots:${active_count}")
+
+    find "/tmp/manusat-bus/pran" -name '*from-heart.msg' -delete 2>/dev/null || true
+    touch "/tmp/manusat-alive-pran"
+
+    write_blood "pran" "${CYCLE:-0}" "$TASK" "done" \
+      "$(IFS=','; echo "${findings[*]}")" "$(IFS=','; echo "${alerts[*]}")"
+    log_action "PRAN_WORK" "cycle=${CYCLE:-0} load=${PCT:-?}% active=$active_count"
+    ;;
+
   *)
-    echo "Usage: $0 [status|capacity|request <agent>|release <agent>|queue|pulse|rebalance]"
+    echo "Usage: $0 [status|capacity|request <agent>|release <agent>|queue|pulse|rebalance|work]"
     ;;
 esac

@@ -111,8 +111,44 @@ print('...(ตัดที่ 2000 chars)')
     echo "   สามารถ: read | scan | watch | web | diff | observe"
     ;;
 
+  # ── autonomous work: รับ task จาก life-loop, เขียน blood กลับ ────────
+  work)
+    TASK="${1:-observe}"
+    [ -f "$JIT_ROOT/core/blood.sh" ] && source "$JIT_ROOT/core/blood.sh"
+    findings=(); alerts=()
+
+    # Git changes
+    changes=$(git -C "$JIT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+    findings+=("changes:${changes:-0}")
+    [ "${changes:-0}" -gt 20 ] && alerts+=("many-changes:${changes}")
+
+    # Oracle health
+    if curl -sf --max-time 2 "${ORACLE_URL:-http://localhost:47778}/api/health" >/dev/null 2>&1; then
+      findings+=("oracle:ok")
+    else
+      findings+=("oracle:down")
+      alerts+=("oracle-down")
+    fi
+
+    # Heartbeat alive?
+    if [ -f "/tmp/innova-heartbeat.pid" ] && kill -0 "$(cat /tmp/innova-heartbeat.pid)" 2>/dev/null; then
+      findings+=("heartbeat:alive")
+    else
+      findings+=("heartbeat:dead")
+      alerts+=("heartbeat-not-running")
+    fi
+
+    # ล้าง cycle task message ออกจาก inbox
+    find "/tmp/manusat-bus/eye" -name '*from-heart.msg' -delete 2>/dev/null || true
+    touch "/tmp/manusat-alive-eye"
+
+    write_blood "eye" "${CYCLE:-0}" "$TASK" "done" \
+      "$(IFS=','; echo "${findings[*]}")" "$(IFS=','; echo "${alerts[*]}")"
+    log_action "EYE_WORK" "cycle=${CYCLE:-0} findings=${#findings[@]} alerts=${#alerts[@]}"
+    ;;
+
   *)
-    echo "Usage: eye.sh {read|scan|watch|web|diff|observe|status}"
+    echo "Usage: eye.sh {read|scan|watch|web|diff|observe|status|work}"
     echo ""
     echo "  read   <file>           — อ่านไฟล์"
     echo "  scan   <dir> <pattern>  — หาไฟล์"
@@ -120,5 +156,6 @@ print('...(ตัดที่ 2000 chars)')
     echo "  web    <url>            — อ่านหน้าเว็บ"
     echo "  diff                    — เห็นการเปลี่ยนแปลง git"
     echo "  observe <topic>         — สังเกตและสรุปลง Oracle"
+    echo "  work    [task]          — autonomous work (จาก life-loop)"
     ;;
 esac

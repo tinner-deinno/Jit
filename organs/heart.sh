@@ -300,8 +300,35 @@ case "$CMD" in
     echo ""
     ;;
 
+  # ── autonomous work: beat cycle + write blood ───────────────────
+  work)
+    TASK="${1:-beat}"
+    [ -f "$JIT_ROOT/core/blood.sh" ] && source "$JIT_ROOT/core/blood.sh"
+    findings=(); alerts=()
+
+    # IN beat: collect blood from system
+    blood=$(_collect_blood 2>/dev/null || echo '{}')
+    oracle_ok=$(echo "$blood" | python3 -c "import json,sys; d=json.load(sys.stdin); print('ok' if d.get('oracle_ok') else 'down')" 2>/dev/null || echo 'unknown')
+    ollama_ok=$(echo "$blood" | python3 -c "import json,sys; d=json.load(sys.stdin); print('ok' if d.get('ollama_ok') else 'down')" 2>/dev/null || echo 'unknown')
+    git_ch=$(echo "$blood" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('git_changes',0))" 2>/dev/null || echo 0)
+    pending=$(echo "$blood" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('total_pending',0))" 2>/dev/null || echo 0)
+
+    findings+=("oracle:$oracle_ok" "ollama:$ollama_ok" "git-changes:$git_ch" "pending-msgs:$pending")
+    [ "$oracle_ok" = 'down' ] && alerts+=("oracle-down")
+    [ "$ollama_ok" = 'down' ] && alerts+=("ollama-down")
+    [ "${pending:-0}" -gt 20 ] && alerts+=("msg-backlog:${pending}")
+
+    # ล้าง cycle task message
+    find "/tmp/manusat-bus/heart" -name '*from-heart.msg' -delete 2>/dev/null || true
+    touch "/tmp/manusat-alive-heart"
+
+    write_blood "heart" "${CYCLE:-0}" "$TASK" "done" \
+      "$(IFS=','; echo "${findings[*]}")" "$(IFS=','; echo "${alerts[*]}")"
+    log_action "HEART_WORK" "cycle=${CYCLE:-0} oracle=$oracle_ok ollama=$ollama_ok"
+    ;;
+
   *)
-    echo "Usage: heart.sh {beat|rate|pump|rhythm|routes}"
+    echo "Usage: heart.sh {beat|rate|pump|rhythm|routes|work}"
     echo "  beat {in|out|cycle}   — เต้นหัวใจ IN / OUT / ทั้งคู่"
     echo "  rate {sprint|fast|normal|slow|rest} — ขอเปลี่ยน rate"
     echo "  pump <type> <..>      — route task ไปยัง organ"

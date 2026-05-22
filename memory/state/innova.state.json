@@ -1,27 +1,66 @@
 {
-  "_comment": "innova persistent state — PC3-Jit bootstrap",
+  "_comment": "innova persistent state — cross-machine git-tracked",
   "identity": {
     "name": "innova",
     "born": "2026-04-23",
     "tier": 2,
     "role": "Mind/Lead Developer",
     "model": "claude-sonnet-4.6",
-    "node_id": "PC3-Jit",
+    "node_id": "PC0-Windows-Jit",
     "soul": "จิตใจที่ตื่นรู้ คือจุดเริ่มต้นของมนุษย์"
   },
   "vitality": {
-    "last_heartbeat": "2026-05-05T04:35:18",
-    "pulse_count": 1,
-    "oracle_online": true,
+    "last_heartbeat": "2026-05-20T15:00:00",
+    "pulse_count": 3,
+    "oracle_online": false,
     "ollama_online": true,
-    "host": "codespaces-27a9fd",
+    "ollama_local": false,
+    "discord_bot": false,
+    "heartbeat_daemon": false,
+    "skills_aligned": true,
+    "openclaude_configured": true,
+    "vitality_pct": 95,
+    "host": "PC0-Windows-Jit",
+    "environment": "windows-powershell",
     "bootstrapped": "2026-05-05",
+    "last_skill_alignment": "2026-05-20",
+    "capabilities": [
+      "mdes-ollama",
+      "openclaude-mdes",
+      "openclaude-github",
+      "heartbeat-daemon",
+      "oracle-launcher",
+      "hermes-discord",
+      "wsl2-support",
+      "ps51-compatible"
+    ],
     "host_history": [
       {
         "host": "codespaces-27a9fd",
         "time": "2026-05-05T04:35:18",
         "action": "pc3-bootstrap"
+      },
+      {
+        "host": "PC0-Windows-Jit",
+        "time": "2026-05-20T10:45:00",
+        "action": "skill-alignment-v1"
+      },
+      {
+        "host": "PC0-Windows-Jit",
+        "time": "2026-05-20T15:00:00",
+        "action": "mdes-hub-bugs-verified-all-critical-high-resolved"
       }
     ]
+  },
+  "skills_registry": {
+    "path": ".github/skills/.arra-oracle-skills.json",
+    "count": 19,
+    "last_updated": "2026-05-20"
+  },
+  "body_connection": {
+    "innova_bot": "C:\\Users\\admin\\DEV\\PugAss1stant\\innova-bot",
+    "mcp_port": 7010,
+    "inbox": "C:\\Users\\admin\\Jit\\\u03c8\\inbox",
+    "status": "configured"
   }
 }

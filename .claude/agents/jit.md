@@ -113,7 +113,7 @@ bash limbs/ollama.sh ask "คำถาม"
 | soma (Brain) | `qwen3.5:27b` |
 | innova (Developer) | `gemma4:e4b` |
 
-## 9arm-skills ที่ jit ใช้บ่อย
+## arra-oracle-skills ที่ jit ใช้บ่อย
 
 | สกิล | เมื่อไหร่ |
 |------|---------|

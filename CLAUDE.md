@@ -57,9 +57,9 @@
 └── outbox/          # Announcements
 ```
 
-## Installed Skills (9arm-skills)
+## Installed Skills (arra-oracle-skills)
 
-ติดตั้งแล้ว **38 สกิล** จาก `arra-oracle-skills v26.5.16` ที่ `~/.claude/skills/`  
+ติดตั้งแล้ว **38 สกิล** จาก `arra-oracle-skills-cli v26.5.16` ที่ `~/.claude/skills/`  
 Project skills อยู่ที่ `.claude/skills/` (oracle.md, gh-flow.md, skills-registry.md, mdes-ollama.md, innova-bot.md)
 
 ### สกิลที่ใช้บ่อยในระบบนี้
@@ -78,6 +78,18 @@ Project skills อยู่ที่ `.claude/skills/` (oracle.md, gh-flow.md, s
 | `/mine [keyword]` | ขุดหา topic จาก session file |
 
 > ดูรายการสกิลทั้งหมด (ภาษาไทย): `.claude/skills/skills-registry.md`
+
+### Engineering & Productivity Skills (9arm-skills)
+
+ติดตั้งจาก `github.com/thananon/9arm-skills` — `C:\Users\admin\DEV\9arm-skills`  
+Skill files อยู่ที่ `.github/skills/` ใน Jit repo
+
+| พิมพ์ | ทำอะไร |
+|-------|--------|
+| `/debug-mantra` | เริ่ม debug — ท่องมนตรา 4 ข้อ แล้วใช้วินัย reproduce→trace→falsify→breadcrumb |
+| `/post-mortem` | เขียนบันทึกหลัง fix bug — root cause, fix, validation |
+| `/scrutinize` | review plan/PR/code จากมุมภายนอก — intent→trace→verify→report |
+| `/management-talk` | แปลงาน engineer เป็นภาษา management — ปรับตาม channel |
 
 ### MDES Ollama
 

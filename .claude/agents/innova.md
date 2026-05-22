@@ -35,7 +35,7 @@ curl --location 'https://ollama.mdes-innova.online/api/generate' \
 
 **Model**: `gemma4:26b` | **Endpoint**: `https://ollama.mdes-innova.online`
 
-## 9arm-skills ที่ innova ใช้บ่อย
+## arra-oracle-skills ที่ innova ใช้บ่อย
 
 | สกิล | เมื่อไหร่ |
 |------|---------|
