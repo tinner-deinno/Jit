@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^powershell -NoProfile -Command \"Get-ChildItem -Force -Path \\.claude, psi \\| Select-Object FullName,Attributes,Mode,Length \\| Format-Table -AutoSize\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

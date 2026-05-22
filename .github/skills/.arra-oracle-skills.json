@@ -1,0 +1,58 @@
+{
+  "version": "1.2.0",
+  "installedAt": "2026-05-20T10:45:00.000Z",
+  "updatedAt": "2026-05-20T11:30:00.000Z",
+  "agent": "copilot",
+  "repo": "Jit",
+  "note": "Jit-specific skills (custom) + Oracle lifecycle skills (local copies). Global Oracle skills at C:\\Users\\admin\\.claude\\skills\\",
+  "skills": [
+    "agent-customization",
+    "awaken",
+    "dig",
+    "forward",
+    "innova-organs",
+    "jit-master",
+    "learn",
+    "mind-body-bridge",
+    "multiagent-autonomy",
+    "ollama-swarm",
+    "ollama-think",
+    "ollama-vision",
+    "oracle-query",
+    "pran-heartbeat",
+    "recap",
+    "rrr",
+    "soma-brain",
+    "talk-to",
+    "team-agents"
+  ],
+  "custom_skills": [
+    "jit-master",
+    "multiagent-autonomy",
+    "agent-customization",
+    "innova-organs",
+    "soma-brain",
+    "ollama-swarm",
+    "ollama-think",
+    "ollama-vision",
+    "oracle-query",
+    "pran-heartbeat",
+    "mind-body-bridge"
+  ],
+  "oracle_lifecycle_skills": [
+    "awaken",
+    "dig",
+    "forward",
+    "learn",
+    "recap",
+    "rrr",
+    "talk-to",
+    "team-agents"
+  ],
+  "global_skills_path": "C:\\Users\\admin\\.claude\\skills\\",
+  "windows_scripts": {
+    "start_oracle": "scripts\\start-oracle-win.ps1",
+    "start_discord": "scripts\\start-hermes-win.ps1",
+    "heartbeat": "scripts\\heartbeat-win.py"
+  }
+}

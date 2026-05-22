@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎤 innova Voice Bridge</title>
+  <title>� จิต — มนุษย์ Agent</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -200,223 +200,385 @@
       color: var(--red);
       text-align: center;
     }
+
+    /* ── Jit Command Center additions ── */
+    .sub { color:var(--text-dim);font-size:.85rem;margin-top:.3rem;display:flex;align-items:center;justify-content:center;gap:.5rem }
+    .status-dot { width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;transition:background .4s }
+    .status-dot.alive { background:var(--green);animation:pulse-dot 2s ease-in-out infinite }
+    @keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,.4)} 50%{box-shadow:0 0 0 5px rgba(63,185,80,0)} }
+    .error-banner { display:none;width:100%;max-width:580px;padding:.9rem 1rem;border-radius:8px;background:rgba(248,81,73,.1);border:1px solid var(--red);color:var(--red);font-size:.875rem }
+    .card-title { font-size:.73rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem }
+    .toggles { display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap }
+    .toggle-label { display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.82rem;color:var(--text-dim);user-select:none }
+    .toggle-label input[type=checkbox] { display:none }
+    .toggle-pill { width:36px;height:20px;background:var(--border);border-radius:10px;position:relative;transition:background .2s;flex-shrink:0 }
+    .toggle-pill::after { content:'';position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:var(--text-dim);transition:transform .2s,background .2s }
+    .toggle-label input:checked + .toggle-pill { background:var(--accent) }
+    .toggle-label input:checked + .toggle-pill::after { transform:translateX(16px);background:#fff }
+    #micBtn.processing { border-color:var(--yellow);background:rgba(210,153,34,.1) }
+    .wake-hint { text-align:center;font-size:.75rem;color:var(--text-dim);margin-top:.3rem }
+    .action-badge { display:inline-block;padding:.2rem .7rem;border-radius:12px;font-size:.75rem;font-weight:600;background:rgba(88,166,255,.15);color:var(--accent);border:1px solid rgba(88,166,255,.3) }
+    .stat-val { font-size:1.5rem;font-weight:700;color:var(--accent);line-height:1.2 }
+    .stat-lbl { font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem }
+    .organ-chip { padding:.18rem .6rem;border-radius:10px;font-size:.72rem;border:1px solid var(--green);color:var(--green);background:rgba(63,185,80,.08) }
+    .h-in  { color:var(--text-dim);font-size:.82rem }
+    .h-out { color:#39d4b5;font-size:.82rem;margin-top:.2rem }
   </style>
 </head>
 <body>
 
+  <!-- Header -->
   <div class="header">
-    <h1>🎤 innova Voice Bridge</h1>
-    <p>พูดแล้ว text จะถูกส่งไปที่ Claude TUI (ไม่กด Enter)</p>
+    <h1>🌀 จิต</h1>
+    <div class="sub">
+      <div class="status-dot" id="lifeDot"></div>
+      <span id="lifeStatus">มนุษย์ Agent — กำลังเชื่อมต่อ...</span>
+    </div>
   </div>
 
-  <div id="errorBanner"></div>
+  <div class="error-banner" id="errBanner"></div>
 
-  <div class="card">
-    <div class="lang-row">
-      <button class="lang-btn active" data-lang="th-TH">🇹🇭 ไทย</button>
-      <button class="lang-btn" data-lang="en-US">🇺🇸 English</button>
+  <!-- Voice Card -->
+  <div class="card" style="max-width:580px">
+    <div class="card-title">🎤 Voice Command</div>
+    <div class="toggles">
+      <label class="toggle-label">
+        <input type="checkbox" id="wakeModeChk">
+        <span class="toggle-pill"></span>
+        Wake word <span style="color:var(--purple)">จิต</span>
+      </label>
+      <label class="toggle-label">
+        <input type="checkbox" id="ttsChk" checked>
+        <span class="toggle-pill"></span>
+        🔊 Auto TTS
+      </label>
+      <label class="toggle-label">
+        <input type="checkbox" id="continuousChk" checked>
+        <span class="toggle-pill"></span>
+        Continuous
+      </label>
     </div>
-
     <div class="mic-wrap">
-      <button id="micBtn" title="กด เพื่อเริ่ม/หยุด">🎤</button>
+      <button id="micBtn" title="Space = toggle">🎤</button>
     </div>
-    <div class="mic-label" id="micLabel">กดปุ่มเพื่อเริ่มพูด</div>
-
+    <div class="mic-label" id="micLabel">กดปุ่มเพื่อเริ่มฟัง</div>
+    <div class="wake-hint" id="wakeHint" style="display:none">พูดว่า <span style="color:var(--purple)">&quot;จิต + คำสั่ง&quot;</span> เพื่อส่งอัตโนมัติ</div>
     <div class="transcript-section">
       <label>กำลังฟัง (real-time):</label>
-      <div class="transcript-box" id="interimBox">—</div>
+      <div class="transcript-box" id="interimBox" style="color:var(--text-dim);font-style:italic">—</div>
     </div>
-
     <div class="transcript-section">
-      <label>ส่งแล้ว (สุดท้าย):</label>
+      <label>คำสั่งที่รับ:</label>
       <div class="transcript-box" id="finalBox">—</div>
     </div>
-
-    <div id="statusBox" class="status-info">ℹ️ รอการพูด...</div>
-
+    <div class="transcript-section">
+      <label>จิต ตอบกลับ:</label>
+      <div id="actionBadgeWrap" style="margin-bottom:.4rem"></div>
+      <div class="transcript-box" id="responseBox" style="color:#39d4b5;background:rgba(57,212,181,.04);border-color:rgba(57,212,181,.3)">—</div>
+    </div>
     <div class="actions">
       <button class="clear-btn" id="clearBtn">🗑 ล้างข้อความ</button>
     </div>
+  </div>
 
-    <div class="pane-info" id="paneInfo">กำลังโหลด pane target...</div>
+  <!-- History -->
+  <div class="card" style="max-width:580px">
+    <div class="card-title">📜 ประวัติคำสั่ง</div>
+    <ul id="historyList" style="list-style:none;max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem">
+      <li><span class="h-in">ยังไม่มีคำสั่ง...</span></li>
+    </ul>
+  </div>
+
+  <!-- Monitor -->
+  <div class="card" style="max-width:580px">
+    <div class="card-title">📊 Life Loop Monitor <span id="monDot" style="margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block"></span></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1rem">
+      <div id="mCycle"  style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem .75rem;text-align:center"><div class="stat-val">—</div><div class="stat-lbl">Cycle</div></div>
+      <div id="mDone"   style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem .75rem;text-align:center"><div class="stat-val">—</div><div class="stat-lbl">Organs</div></div>
+      <div id="mAlerts" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem .75rem;text-align:center"><div class="stat-val">—</div><div class="stat-lbl">Alerts</div></div>
+    </div>
+    <div id="organsWrap" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.75rem"></div>
+    <div id="monStatus" style="font-size:.8rem;color:var(--text-dim)">รอ Life Loop เริ่ม — รัน: bash scripts/start-jit.sh</div>
   </div>
 
   <script>
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) {
-      document.getElementById('errorBanner').style.display = 'block'
-      document.getElementById('errorBanner').textContent =
-        '❌ บราวเซอร์นี้ไม่รองรับ Web Speech API — กรุณาใช้ Chrome หรือ Edge'
-      document.getElementById('micBtn').disabled = true
+  // ────────────────────────────────────────────────────────────────
+  // TTS — Thai female voice (Microsoft Premwadee on Windows)
+  // ────────────────────────────────────────────────────────────────
+  let _voices = []
+  const _loadVoices = () => { _voices = window.speechSynthesis?.getVoices() || [] }
+  _loadVoices()
+  if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = _loadVoices
+
+  function pickThaiVoice() {
+    return _voices.find(v => v.name.includes('Premwadee'))
+        || _voices.find(v => v.lang === 'th-TH' && /female|woman/i.test(v.name))
+        || _voices.find(v => v.lang === 'th-TH')
+        || _voices.find(v => v.lang.startsWith('th'))
+        || null
+  }
+
+  function speak(text) {
+    if (!document.getElementById('ttsChk').checked) return
+    if (!window.speechSynthesis || !text) return
+    window.speechSynthesis.cancel()
+    const utt = new SpeechSynthesisUtterance(text)
+    const v = pickThaiVoice()
+    if (v) utt.voice = v
+    utt.lang = 'th-TH'; utt.rate = 1.05; utt.pitch = 1.15
+    window.speechSynthesis.speak(utt)
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // Speech Recognition
+  // ────────────────────────────────────────────────────────────────
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+  if (!SR) {
+    const b = document.getElementById('errBanner')
+    b.style.display = 'block'
+    b.textContent = '❌ บราวเซอร์นี้ไม่รองรับ Web Speech API — กรุณาใช้ Chrome หรือ Edge'
+  }
+
+  const rec = SR ? new SR() : null
+  let isRec = false
+
+  if (rec) {
+    rec.lang = 'th-TH'
+    rec.maxAlternatives = 1
+    rec.interimResults = true
+    rec.continuous = true
+  }
+
+  const $ = id => document.getElementById(id)
+  const micBtn   = $('micBtn')
+  const micLabel = $('micLabel')
+  const interimB = $('interimBox')
+  const finalBox = $('finalBox')
+  const respBox  = $('responseBox')
+  const badgeW   = $('actionBadgeWrap')
+  const wakeHint = $('wakeHint')
+
+  $('wakeModeChk').addEventListener('change', function() {
+    wakeHint.style.display = this.checked ? 'block' : 'none'
+  })
+  $('continuousChk').addEventListener('change', function() {
+    if (rec) rec.continuous = this.checked
+  })
+
+  micBtn.addEventListener('click', () => { if (rec) isRec ? stopRec() : startRec() })
+
+  function startRec() {
+    rec.continuous = $('continuousChk').checked
+    rec.start()
+    isRec = true
+    micBtn.classList.add('recording')
+    micBtn.textContent = '⏸'
+    micLabel.textContent = 'กำลังฟัง...'
+    micLabel.classList.add('recording')
+  }
+
+  function stopRec() {
+    rec.stop()
+    isRec = false
+    micBtn.classList.remove('recording', 'processing')
+    micBtn.textContent = '🎤'
+    micLabel.textContent = 'กดปุ่มเพื่อเริ่มฟัง'
+    micLabel.classList.remove('recording')
+    interimB.textContent = '—'
+  }
+
+  if (rec) {
+    rec.onresult = event => {
+      let interim = '', final = ''
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const t = event.results[i][0].transcript
+        event.results[i].isFinal ? (final += t) : (interim += t)
+      }
+      if (interim) interimB.textContent = interim
+      if (final.trim()) {
+        interimB.textContent = '—'
+        finalBox.textContent = final.trim()
+        const wakeMode = $('wakeModeChk').checked
+        if (!wakeMode || /จิต/.test(final)) sendCommand(final.trim())
+      }
     }
-
-    const recognition = SpeechRecognition ? new SpeechRecognition() : null
-    let isRecording = false
-    let currentLang = 'th-TH'
-
-    if (recognition) {
-      recognition.continuous = true
-      recognition.interimResults = true
-      recognition.lang = currentLang
-      recognition.maxAlternatives = 1
+    rec.onend = () => {
+      if (isRec) setTimeout(() => { if (isRec) { try { rec.start() } catch(e){} } }, 200)
     }
+    rec.onerror = event => {
+      if (['no-speech','audio-capture'].includes(event.error)) return
+      if (event.error === 'not-allowed') { stopRec(); showErr('❌ ไม่ได้รับอนุญาตใช้ไมค์') }
+    }
+  }
 
-    const micBtn    = document.getElementById('micBtn')
-    const micLabel  = document.getElementById('micLabel')
-    const interim   = document.getElementById('interimBox')
-    const finalBox  = document.getElementById('finalBox')
-    const statusBox = document.getElementById('statusBox')
-    const paneInfo  = document.getElementById('paneInfo')
-    const clearBtn  = document.getElementById('clearBtn')
+  // ────────────────────────────────────────────────────────────────
+  // Send voice command to /command endpoint
+  // ────────────────────────────────────────────────────────────────
+  async function sendCommand(text) {
+    micBtn.classList.remove('recording')
+    micBtn.classList.add('processing')
+    micBtn.textContent = '⏳'
+    micLabel.textContent = 'กำลังประมวลผล...'
+    micLabel.classList.remove('recording')
+    badgeW.innerHTML = ''
+    respBox.textContent = '...'
 
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'))
-        btn.classList.add('active')
-        currentLang = btn.dataset.lang
-        if (recognition) {
-          recognition.lang = currentLang
-          if (isRecording) {
-            recognition.stop()
-          }
-        }
+    try {
+      const resp = await fetch('/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
       })
-    })
+      const data = await resp.json()
+      if (!data.ok) {
+        respBox.textContent = `❌ ${data.error || 'เกิดข้อผิดพลาด'}`
+        respBox.style.color = 'var(--red)'
+        console.error('[cmd] server error:', data.error)
+        return
+      }
+      respBox.style.color = ''
+      const action = data.action || 'chat'
+      const reply  = data.response_th || 'ได้ยินค่ะ'
 
-    micBtn.addEventListener('click', () => {
-      if (!recognition) return
-      if (isRecording) {
-        stopRecording()
+      const badge = document.createElement('div')
+      badge.className = 'action-badge'
+      badge.textContent = actionLabel(action)
+      badgeW.appendChild(badge)
+
+      respBox.textContent = reply
+      speak(reply)
+      addHistory(text, reply, action)
+    } catch(err) {
+      respBox.textContent = 'ขอโทษค่ะ เกิดข้อผิดพลาด'
+      console.error('[cmd]', err)
+    } finally {
+      micBtn.classList.remove('processing')
+      if (isRec) {
+        micBtn.classList.add('recording')
+        micBtn.textContent = '⏸'
+        micLabel.textContent = 'กำลังฟัง...'
+        micLabel.classList.add('recording')
       } else {
-        startRecording()
+        micBtn.textContent = '🎤'
+        micLabel.textContent = 'กดปุ่มเพื่อเริ่มฟัง'
       }
-    })
-
-    function startRecording() {
-      recognition.lang = currentLang
-      recognition.start()
-      isRecording = true
-      micBtn.classList.add('recording')
-      micBtn.textContent = '⏸'
-      micLabel.textContent = 'กำลังฟัง... (กดอีกครั้งเพื่อหยุด)'
-      micLabel.classList.add('recording')
-      setStatus('info', '🎤 กำลังฟัง...')
     }
+  }
 
-    function stopRecording() {
-      recognition.stop()
-      isRecording = false
-      micBtn.classList.remove('recording')
-      micBtn.textContent = '🎤'
-      micLabel.textContent = 'กดปุ่มเพื่อเริ่มพูด'
-      micLabel.classList.remove('recording')
-      setStatus('info', 'ℹ️ หยุดฟังแล้ว')
-      interim.textContent = '—'
-    }
+  function actionLabel(a) {
+    return { search_youtube:'▶ YouTube', open_url:'🌐 เปิดเว็บ', search_web:'🔍 ค้นหา',
+             tell_time:'🕐 เวลา', tell_date:'📅 วันที่', system_status:'📊 สถานะ',
+             chat:'💬 สนทนา' }[a] || a
+  }
 
-    if (recognition) {
-      recognition.onresult = (event) => {
-        let interimText = ''
-        let finalText = ''
+  // ────────────────────────────────────────────────────────────────
+  // History
+  // ────────────────────────────────────────────────────────────────
+  const histList = $('historyList')
+  function addHistory(cmd, reply, action) {
+    const li = document.createElement('li')
+    li.style.cssText = 'background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.5rem .75rem'
+    li.innerHTML = `<div class="h-in">👤 ${esc(cmd.substring(0,90))}</div>
+                    <div class="h-out">🌀 [${actionLabel(action)}] ${esc(reply.substring(0,130))}</div>`
+    if (histList.firstChild?.querySelector?.('.h-in')?.textContent?.includes('ยังไม่มี')) histList.innerHTML = ''
+    histList.insertBefore(li, histList.firstChild)
+    if (histList.children.length > 8) histList.removeChild(histList.lastChild)
+  }
 
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript
-          if (event.results[i].isFinal) {
-            finalText += transcript
-          } else {
-            interimText += transcript
-          }
-        }
+  $('clearBtn').addEventListener('click', () => {
+    interimB.textContent = '—'; finalBox.textContent = '—'; respBox.textContent = '—'
+    badgeW.innerHTML = ''
+  })
 
-        if (interimText) {
-          interim.textContent = interimText
-        }
+  function esc(s) { return s.replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+  function showErr(msg) {
+    const b = $('errBanner'); b.style.display = 'block'; b.textContent = msg
+    setTimeout(() => b.style.display='none', 5000)
+  }
 
-        if (finalText.trim()) {
-          interim.textContent = '—'
-          finalBox.textContent = finalText.trim()
-          postSpeak(finalText.trim())
-        }
-      }
+  // ────────────────────────────────────────────────────────────────
+  // Life Loop Monitor — SSE /monitor
+  // ────────────────────────────────────────────────────────────────
+  function connectMonitor() {
+    const es = new EventSource('/monitor')
+    const monDot  = $('monDot')
+    const lifeDot = $('lifeDot')
+    const lifeSt  = $('lifeStatus')
+    const monStatus = $('monStatus')
+    const orgWrap = $('organsWrap')
 
-      recognition.onend = () => {
-        if (isRecording) {
-          setTimeout(() => {
-            if (isRecording) {
-              try { recognition.start() } catch(e) { }
-            }
-          }, 200)
-        }
-      }
+    es.onopen = () => { monDot.style.background = 'var(--green)' }
 
-      recognition.onerror = (event) => {
-        const ignorable = ['no-speech', 'audio-capture']
-        if (ignorable.includes(event.error)) {
-          console.log('[voice] speech error (ignorable):', event.error)
+    es.onmessage = event => {
+      try {
+        const d = JSON.parse(event.data)
+        if (d.status === 'connected') return
+
+        if (d.status === 'waiting') {
+          monDot.style.background = 'var(--yellow)'
+          lifeDot.style.background = 'var(--red)'
+          lifeSt.textContent = 'Life Loop ยังไม่เริ่ม'
+          monStatus.textContent = 'รอ Life Loop — รัน: bash scripts/start-jit.sh'
           return
         }
-        setStatus('error', `❌ Speech error: ${event.error}`)
-        if (event.error === 'not-allowed') {
-          setStatus('error', '❌ ไม่ได้รับอนุญาตใช้ไมค์ — กรุณาอนุญาตในเบราวเซอร์')
-          isRecording = false
-          micBtn.classList.remove('recording')
-          micBtn.textContent = '🎤'
-          micLabel.classList.remove('recording')
-          micLabel.textContent = 'กดปุ่มเพื่อเริ่มพูด'
-        }
-      }
 
-      recognition.onspeechstart = () => {
-        setStatus('info', '🔊 ตรวจพบเสียง...')
-      }
-    }
+        monDot.style.background = 'var(--green)'
+        lifeDot.style.background = 'var(--green)'
+        const alerts = d.alert_count || 0
 
-    async function postSpeak(text) {
-      setStatus('info', `📤 กำลังส่ง: "${text.substring(0, 40)}${text.length > 40 ? '...' : ''}"`)
-      try {
-        const resp = await fetch('/speak', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
+        $('mCycle').querySelector('.stat-val').textContent  = '#' + (d.cycle || 0)
+        $('mDone').querySelector('.stat-val').textContent   = d.organs_done || 0
+        $('mAlerts').querySelector('.stat-val').textContent = alerts
+
+        $('mDone').querySelector('.stat-val').style.color   = d.organs_done > 0 ? 'var(--green)' : 'var(--accent)'
+        $('mAlerts').querySelector('.stat-val').style.color = alerts > 0 ? 'var(--yellow)' : 'var(--green)'
+
+        lifeSt.textContent = `Cycle #${d.cycle} · ${d.organs_done} organs done · ${alerts} alerts`
+
+        // Organ chips
+        orgWrap.innerHTML = ''
+        ;(d.organs || '').split(',').map(o => o.trim()).filter(Boolean).forEach(o => {
+          const chip = document.createElement('span')
+          chip.className = 'organ-chip'
+          chip.textContent = o
+          orgWrap.appendChild(chip)
         })
-        const data = await resp.json()
-        if (data.ok) {
-          setStatus('ok', `✅ ส่งแล้ว → Claude (${data.length} ตัวอักษร) · pane: ${data.pane}`)
-        } else {
-          setStatus('error', `❌ ส่งไม่ได้: ${data.error}`)
+
+        // Blood details
+        const rows = (d.blood || []).map(b => {
+          const f = (b.findings || []).slice(0,3).join(' · ')
+          const a = (b.alerts || []).join(' ⚠ ')
+          const col = b.status === 'done' ? 'var(--green)' : 'var(--red)'
+          return `<div style="padding:.3rem 0;border-bottom:1px solid var(--border);font-size:.78rem;display:grid;grid-template-columns:70px 60px 50px 1fr 1fr">
+            <span><strong>${esc(b.organ||'?')}</strong></span>
+            <span style="color:var(--text-dim)">${esc(b.task||'')}</span>
+            <span style="color:${col}">${esc(b.status||'')}</span>
+            <span style="color:var(--text-dim)">${esc(f)}</span>
+            <span style="color:var(--yellow)">${esc(a)}</span>
+          </div>`
+        }).join('')
+
+        monStatus.innerHTML = rows || '<span style="color:var(--text-dim)">ไม่มีข้อมูล blood</span>'
+
+        if (d.ts) {
+          const ts = new Date(d.ts).toLocaleTimeString('th-TH')
+          monStatus.innerHTML += `<div style="font-size:.7rem;color:var(--text-dim);text-align:right;margin-top:.3rem">อัปเดต ${ts}</div>`
         }
-      } catch (err) {
-        setStatus('error', `❌ Network error: ${err.message}`)
-      }
+      } catch(e) { console.warn('[monitor]', e) }
     }
 
-    function setStatus(type, msg) {
-      statusBox.className = `status-${type}`
-      statusBox.textContent = msg
+    es.onerror = () => {
+      monDot.style.background = 'var(--red)'
+      setTimeout(() => { es.close(); connectMonitor() }, 10000)
     }
+  }
 
-    clearBtn.addEventListener('click', () => {
-      interim.textContent = '—'
-      finalBox.textContent = '—'
-      setStatus('info', 'ℹ️ ล้างแล้ว')
-    })
+  connectMonitor()
 
-    async function loadStatus() {
-      try {
-        const resp = await fetch('/status')
-        const data = await resp.json()
-        if (data.pane) {
-          paneInfo.innerHTML = `Claude pane: <code>${data.pane}</code>`
-        } else {
-          paneInfo.innerHTML = `⚠️ Claude pane ยังไม่ถูก set — รัน <code>innova-startup.sh</code> ก่อน`
-        }
-      } catch {
-        paneInfo.textContent = '⚠️ ไม่สามารถติดต่อ voice server'
-      }
-    }
-
-    loadStatus()
-    setInterval(loadStatus, 30000)
+  // Space bar shortcut
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space' && e.target.tagName !== 'INPUT') { e.preventDefault(); micBtn.click() }
+  })
   </script>
 </body>
 </html>
