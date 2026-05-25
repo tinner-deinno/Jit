@@ -30,7 +30,24 @@ const os    = require('os');
 const https = require('https');
 const http  = require('http');
 const url   = require('url');
+const childProcess = require('child_process');
 const openClaudeAdapter = require('./openclaude-adapter');
+
+// Load .env from Jit root for direct node executions
+try {
+  var envPath = path.join(__dirname, '..', '.env');
+  if (fs.existsSync(envPath)) {
+    fs.readFileSync(envPath, 'utf8').split(/\r?\n/).forEach(function(line) {
+      var trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) return;
+      var eq = trimmed.indexOf('=');
+      if (eq === -1) return;
+      var k = trimmed.slice(0, eq).trim();
+      var v = trimmed.slice(eq + 1).trim().replace(/^["']|["']$/g, '');
+      if (!process.env[k]) process.env[k] = v;
+    });
+  }
+} catch (_) {}
 
 // ── Multi-Backend Configuration ────────────────────────────────────────
 // Primary: MDES Ollama (free, always available)
@@ -47,9 +64,9 @@ if (!_defaultToken) {
   } catch (_) {}
 }
 
-const OLLAMA_MDES_URL    = process.env.OLLAMA_MDES_URL  || 'https://ollama.mdes-innova.online';
-const OLLAMA_MDES_TOKEN = process.env.OLLAMA_TOKEN     || _defaultToken;
-const OLLAMA_MDES_MODEL = process.env.OLLAMA_MDES_MODEL || 'gemma3:12b';
+const OLLAMA_MDES_URL   = process.env.OLLAMA_MDES_URL   || process.env.OLLAMA_BASE_URL || 'https://ollama.mdes-innova.online';
+const OLLAMA_MDES_TOKEN = process.env.OLLAMA_MDES_TOKEN || process.env.OLLAMA_TOKEN || process.env.THAILLM_TOKEN || _defaultToken;
+const OLLAMA_MDES_MODEL = process.env.OLLAMA_MDES_MODEL || process.env.OLLAMA_MODEL || process.env.THAILLM_MODEL || 'gemma4:26b';
 
 // Local: localhost Ollama (zero latency)
 const OLLAMA_LOCAL_URL   = process.env.OLLAMA_LOCAL_URL   || 'http://localhost:11434';
@@ -59,12 +76,18 @@ const OLLAMA_LOCAL_MODEL  = process.env.OLLAMA_LOCAL_MODEL  || 'llama2:latest';
 // Cloud: Ollama.com (free tier, backup)
 const OLLAMA_CLOUD_URL   = process.env.OLLAMA_CLOUD_URL   || 'https://ollama.com';
 const OLLAMA_CLOUD_TOKEN = process.env.OLLAMA_CLOUD_TOKEN || '';
-const OLLAMA_CLOUD_MODEL = process.env.OLLAMA_CLOUD_MODEL || 'claude-3.5-sonnet';
+const OLLAMA_CLOUD_MODEL = process.env.OLLAMA_CLOUD_MODEL || 'gpt-oss:120b-cloud';
+
+// ThaiLLM (optional) – if THAILLM_BASE_URL is absent, reuse MDES URL
+const THAILLM_URL   = process.env.THAILLM_BASE_URL   || OLLAMA_MDES_URL;
+const THAILLM_TOKEN = process.env.THAILLM_TOKEN      || OLLAMA_MDES_TOKEN;
+const THAILLM_MODEL = process.env.THAILLM_MODEL      || OLLAMA_MDES_MODEL;
 
 // Fallback: OpenAI/Copilot (paid, quota-limited)
 const OPENAI_KEY    = process.env.OPENAI_API_KEY   || '';
 const OPENAI_MODEL  = process.env.OPENAI_MODEL     || 'gpt-4o';
 const OPENAI_URL    = process.env.OPENAI_BASE_URL  || 'https://api.openai.com';
+const OPENAI_CODEX_MODEL = process.env.OPENAI_CODEX_MODEL || process.env.OMX_DEFAULT_FRONTIER_MODEL || 'gpt-5.5';
 
 const COPILOT_TOKEN_ENV = process.env.COPILOT_TOKEN || process.env.GITHUB_COPILOT_TOKEN || '';
 const COPILOT_MODEL     = process.env.COPILOT_MODEL || 'gpt-4o';
@@ -76,8 +99,19 @@ const OPENCLAUDE_PORT  = process.env.OPENCLAUDE_PORT  || 8000;
 const OPENCLAUDE_MODEL = process.env.OPENCLAUDE_MODEL || 'claude-3.5-sonnet';
 
 // Backend order: MDES → Local → Cloud → Copilot → OpenAI → OpenClaude
-const BACKEND_ORDER = (process.env.MULTI_BACKEND_ORDER || 'ollama_mdes,ollama_local,ollama_cloud,copilot,openai,openclaude')
-  .split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+function _normalizeBackendName(name) {
+  var v = String(name || '').trim().toLowerCase();
+  if (v === 'ollama' || v === 'mdes') return 'ollama_mdes';
+  if (v === 'local' || v === 'ollama-local') return 'ollama_local';
+  if (v === 'cloud' || v === 'ollama-cloud') return 'ollama_cloud';
+  if (v === 'thai' || v === 'thai_llm' || v === 'thaillm') return 'thaillm';
+  return v;
+}
+
+const BACKEND_ORDER = (process.env.MULTI_BACKEND_ORDER || 'ollama_mdes,thaillm,ollama_local,ollama_cloud,copilot,openai,openclaude')
+  .split(',')
+  .map(function(s) { return _normalizeBackendName(s); })
+  .filter(Boolean);
 
 // ── Backend Manager Class ───────────────────────────────────────────────
 class BackendManager {
@@ -102,6 +136,13 @@ class BackendManager {
         url: OLLAMA_CLOUD_URL,
         token: OLLAMA_CLOUD_TOKEN,
         model: OLLAMA_CLOUD_MODEL,
+        type: 'ollama'
+      },
+      thaillm: {
+        name: 'ThaiLLM',
+        url: THAILLM_URL,
+        token: THAILLM_TOKEN,
+        model: THAILLM_MODEL,
         type: 'ollama'
       },
       copilot: {
@@ -157,16 +198,43 @@ const backendManager = new BackendManager();
 // ── Error counters (reset on success) ────────────────────────────────
 const _errors = { copilot: 0, openai: 0, ollama: 0, openclaude: 0 };
 
+function _isCopilotOAuthToken(token) {
+  var t = String(token || '').trim();
+  if (!t) return false;
+  return t.startsWith('ghu_') || t.startsWith('ghs_') || t.startsWith('gho_') || t.startsWith('github_pat_');
+}
+
+function _resolveGhCliToken() {
+  try {
+    var out = childProcess.execFileSync('gh', ['auth', 'token'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+      timeout: 4000,
+      windowsHide: true,
+    });
+    var token = String(out || '').trim();
+    return token || null;
+  } catch (_) {
+    return null;
+  }
+}
+
 // ── Copilot Token Resolution ──────────────────────────────────────────
 function _resolveCopilotOAuthToken() {
   // 1. Explicit env
-  if (COPILOT_TOKEN_ENV) return COPILOT_TOKEN_ENV;
+  if (COPILOT_TOKEN_ENV && _isCopilotOAuthToken(COPILOT_TOKEN_ENV)) return COPILOT_TOKEN_ENV;
+  var ghCliToken = _resolveGhCliToken();
+  if (ghCliToken && _isCopilotOAuthToken(ghCliToken)) return ghCliToken;
 
   // 2. VS Code / GitHub Copilot token files (Windows + Linux paths)
   const candidates = [
     process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'github-copilot', 'apps.json'),
     process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'GitHub Copilot', 'apps.json'),
     process.env.APPDATA      && path.join(process.env.APPDATA, 'GitHub Copilot', 'hosts.json'),
+    process.env.APPDATA      && path.join(process.env.APPDATA, 'Code', 'User', 'globalStorage', 'github.copilot-chat', 'hosts.json'),
+    process.env.APPDATA      && path.join(process.env.APPDATA, 'Code', 'User', 'globalStorage', 'github.copilot', 'hosts.json'),
+    process.env.APPDATA      && path.join(process.env.APPDATA, 'Code', 'User', 'globalStorage', 'github.copilot-chat', 'apps.json'),
+    process.env.APPDATA      && path.join(process.env.APPDATA, 'Code', 'User', 'globalStorage', 'github.copilot', 'apps.json'),
     path.join(os.homedir(), '.config', 'github-copilot', 'hosts.json'),
     path.join(os.homedir(), '.config', 'github-copilot', 'apps.json'),
   ].filter(Boolean);
@@ -187,6 +255,65 @@ function _resolveCopilotOAuthToken() {
 // Copilot API token cache (25 min TTL)
 var _copilotApiToken    = null;
 var _copilotApiTokenExp = 0;
+var _copilotCliAvailable = null;
+var _copilotCliBin = null;
+var _codexCliAvailable = null;
+
+function _resolveCopilotCliBin() {
+  if (_copilotCliBin) return _copilotCliBin;
+  _copilotCliBin = process.platform === 'win32' ? 'copilot.cmd' : 'copilot';
+  return _copilotCliBin;
+}
+
+function _hasCopilotCli() {
+  if (_copilotCliAvailable !== null) return _copilotCliAvailable;
+  try {
+    if (process.platform === 'win32') {
+      childProcess.execFileSync('powershell.exe', ['-NoProfile', '-Command', 'copilot --version'], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        timeout: 4000,
+        windowsHide: true,
+      });
+    } else {
+      childProcess.execFileSync(_resolveCopilotCliBin(), ['--version'], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        timeout: 4000,
+        windowsHide: true,
+      });
+    }
+    _copilotCliAvailable = true;
+  } catch (_) {
+    _copilotCliAvailable = false;
+  }
+  return _copilotCliAvailable;
+}
+
+function _hasCodexCli() {
+  if (_codexCliAvailable !== null) return _codexCliAvailable;
+  try {
+    if (process.platform === 'win32') {
+      childProcess.execFileSync('powershell.exe', ['-NoProfile', '-Command', 'codex --version'], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        timeout: 5000,
+        windowsHide: true,
+      });
+    } else {
+      childProcess.execFileSync('codex', ['--version'], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        timeout: 5000,
+        windowsHide: true,
+      });
+    }
+    _codexCliAvailable = true;
+  } catch (_) {
+    _codexCliAvailable = false;
+  }
+  return _codexCliAvailable;
+}
 
 function _exchangeCopilotToken(oauthToken, callback) {
   var now = Date.now();
@@ -272,12 +399,18 @@ function _httpPost(baseUrl, apiPath, extraHeaders, bodyObj, callback) {
 
 // ── Backend Callers ───────────────────────────────────────────────────
 function _callOpenAI(messages, model, callback) {
-  if (!OPENAI_KEY) return callback(new Error('OPENAI_API_KEY not set'));
+  function useCodexFallback(originalErr) {
+    if (!_hasCodexCli()) return callback(originalErr || new Error('OPENAI_API_KEY not set'));
+    return _callOpenAIViaCodexCli(messages, model, callback);
+  }
+
+  if (!OPENAI_KEY) return useCodexFallback(new Error('OPENAI_API_KEY not set'));
+
   _httpPost(OPENAI_URL, '/v1/chat/completions',
     { 'Authorization': 'Bearer ' + OPENAI_KEY },
     { model: model || OPENAI_MODEL, messages: messages, stream: false },
     function(err, data) {
-      if (err) return callback(err);
+      if (err) return useCodexFallback(err);
       try {
         var j = JSON.parse(data);
         var reply = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
@@ -289,7 +422,130 @@ function _callOpenAI(messages, model, callback) {
   );
 }
 
+function _buildCodexPrompt(messages) {
+  var transcript = messages.map(function(m) {
+    return '[' + (m.role || 'user') + '] ' + String(m.content || '');
+  }).join('\n\n');
+  return [
+    'You are acting as the OpenAI backend for Jit.',
+    'Answer the conversation only.',
+    'Do not modify files, run commands, or take external actions.',
+    'Reply with the assistant answer only.',
+    '',
+    'Conversation:',
+    transcript,
+  ].join('\n');
+}
+
+function _callOpenAIViaCodexCli(messages, model, callback) {
+  var prompt = _buildCodexPrompt(messages);
+  var outFile = path.join(os.tmpdir(), 'jit-openai-codex-' + process.pid + '-' + Date.now() + '.txt');
+  var cliModel = model || OPENAI_CODEX_MODEL;
+  var childEnv = Object.assign({}, process.env);
+  delete childEnv.OPENAI_API_KEY;
+  delete childEnv.CODEX_API_KEY;
+  delete childEnv.OPENAI_BASE_URL;
+
+  function finish(err, stdout, stderr) {
+    var reply = '';
+    try {
+      if (fs.existsSync(outFile)) {
+        reply = fs.readFileSync(outFile, 'utf8').trim();
+      }
+      if (!reply && stdout) {
+        reply = String(stdout).trim();
+      }
+      if (reply) return callback(null, reply);
+      if (err) {
+        var detail = stderr || stdout || err.message;
+        return callback(new Error('Codex CLI failed: ' + String(detail).trim().slice(0, 200)));
+      }
+      if (!reply) return callback(new Error('Codex CLI returned empty reply'));
+    } catch (readErr) {
+      return callback(new Error('Codex CLI read failed: ' + readErr.message));
+    } finally {
+      try { if (fs.existsSync(outFile)) fs.unlinkSync(outFile); } catch (_) {}
+    }
+  }
+
+  if (process.platform === 'win32') {
+    var psScript = [
+      '$p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:CODEX_PROMPT_B64))',
+      '$args=@("exec","--skip-git-repo-check","--ephemeral","--sandbox","read-only","--color","never","--output-last-message",$env:CODEX_OUTPUT_PATH)',
+      'if($env:CODEX_MODEL){$args+=@("--model",$env:CODEX_MODEL)}',
+      '$args+="-"',
+      '$p | & codex @args',
+    ].join('; ');
+    return childProcess.execFile('powershell.exe', ['-NoProfile', '-Command', psScript], {
+      encoding: 'utf8',
+      timeout: 180000,
+      windowsHide: true,
+      maxBuffer: 2 * 1024 * 1024,
+      env: Object.assign(childEnv, {
+        CODEX_PROMPT_B64: Buffer.from(prompt, 'utf8').toString('base64'),
+        CODEX_OUTPUT_PATH: outFile,
+        CODEX_MODEL: cliModel,
+      }),
+    }, finish);
+  }
+
+  var args = ['exec', '--skip-git-repo-check', '--ephemeral', '--sandbox', 'read-only', '--color', 'never', '--output-last-message', outFile];
+  if (cliModel) args = args.concat(['--model', cliModel]);
+  args.push(prompt);
+  return childProcess.execFile('codex', args, {
+    encoding: 'utf8',
+    timeout: 180000,
+    windowsHide: true,
+    maxBuffer: 2 * 1024 * 1024,
+    env: childEnv,
+  }, finish);
+}
+
 function _callCopilot(messages, model, callback) {
+  if (_hasCopilotCli()) {
+    var prompt = messages.map(function(m) {
+      return '[' + (m.role || 'user') + '] ' + String(m.content || '');
+    }).join('\n\n');
+    if (process.platform === 'win32') {
+      var psScript = [
+        '$p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64))',
+        '$args=@("-s","-p",$p)',
+        model ? ('$args+=@("--model","' + String(model).replace(/"/g, '""') + '")') : '',
+        '& copilot @args',
+      ].filter(Boolean).join('; ');
+      return childProcess.execFile('powershell.exe', ['-NoProfile', '-Command', psScript], {
+        encoding: 'utf8',
+        timeout: 120000,
+        windowsHide: true,
+        maxBuffer: 2 * 1024 * 1024,
+        env: Object.assign({}, process.env, {
+          COPILOT_PROMPT_B64: Buffer.from(prompt, 'utf8').toString('base64'),
+        }),
+      }, function(err, stdout, stderr) {
+        if (err) {
+          var detail = stderr || stdout || err.message;
+          return callback(new Error('Copilot CLI failed: ' + String(detail).trim().slice(0, 200)));
+        }
+        return callback(null, String(stdout || '').trim());
+      });
+    }
+
+    var args = ['-s', '-p', prompt];
+    if (model) args = args.concat(['--model', model]);
+    return childProcess.execFile(_resolveCopilotCliBin(), args, {
+      encoding: 'utf8',
+      timeout: 120000,
+      windowsHide: true,
+      maxBuffer: 2 * 1024 * 1024,
+    }, function(err, stdout, stderr) {
+      if (err) {
+        var detail = stderr || stdout || err.message;
+        return callback(new Error('Copilot CLI failed: ' + String(detail).trim().slice(0, 200)));
+      }
+      return callback(null, String(stdout || '').trim());
+    });
+  }
+
   var oauthToken = _resolveCopilotOAuthToken();
   if (!oauthToken) return callback(new Error('No Copilot OAuth token found (install VS Code + GitHub Copilot, or set COPILOT_TOKEN)'));
   _exchangeCopilotToken(oauthToken, function(err, apiToken) {
@@ -314,16 +570,34 @@ function _callCopilot(messages, model, callback) {
   });
 }
 
-// Default Ollama URL (MDES)
-var OLLAMA_URL = OLLAMA_MDES_URL;
-var OLLAMA_MODEL = OLLAMA_MDES_MODEL;
-var OLLAMA_TOKEN = OLLAMA_MDES_TOKEN;
+function _getOllamaConfig(backendName) {
+  var be = backendManager.getBackend(backendName);
+  if (!be || be.type !== 'ollama') be = backendManager.getBackend('ollama_mdes');
+  var normalizedUrl = be.url;
+  var normalizedToken = be.token;
 
-function _callOllama(messages, model, callback) {
-  var parsed  = url.parse(OLLAMA_URL + '/api/chat');
+  // Ollama Cloud supports auth-free local proxying after `ollama signin`.
+  if (
+    backendName === 'ollama_cloud' &&
+    !normalizedToken &&
+    /^https?:\/\/ollama\.com\/?$/i.test(String(normalizedUrl || ''))
+  ) {
+    normalizedUrl = OLLAMA_LOCAL_URL;
+  }
+
+  return {
+    url: normalizedUrl,
+    model: be.model,
+    token: normalizedToken,
+  };
+}
+
+function _callOllama(messages, model, callback, backendName) {
+  var cfg = _getOllamaConfig(backendName);
+  var parsed  = url.parse(cfg.url + '/api/chat');
   var isHttps = parsed.protocol === 'https:';
   var lib     = isHttps ? https : http;
-  var bodyStr = JSON.stringify({ model: model || OLLAMA_MODEL, stream: false, messages: messages });
+  var bodyStr = JSON.stringify({ model: model || cfg.model, stream: false, messages: messages });
 
   var opts = {
     hostname: parsed.hostname,
@@ -333,9 +607,11 @@ function _callOllama(messages, model, callback) {
     headers: {
       'Content-Type':   'application/json',
       'Content-Length': Buffer.byteLength(bodyStr),
-      'Authorization':  'Bearer ' + OLLAMA_TOKEN,
     },
   };
+  if (cfg.token) {
+    opts.headers.Authorization = 'Bearer ' + cfg.token;
+  }
 
   var req = lib.request(opts, function(res) {
     var data = '';
@@ -376,6 +652,7 @@ function _callOpenClaude(messages, model, callback) {
 function callModel(messages, options, callback) {
   var opts  = options || {};
   var order = BACKEND_ORDER.slice();
+  if (opts.preferBackend) opts.preferBackend = _normalizeBackendName(opts.preferBackend);
 
   // Put preferred backend first
   if (opts.preferBackend && order.indexOf(opts.preferBackend) > 0) {
@@ -389,14 +666,14 @@ function callModel(messages, options, callback) {
     if (attempt >= order.length) {
       return callback(new Error('All backends exhausted (' + order.join(', ') + ')'));
     }
-    var backend = order[attempt++];
+    var backend = _normalizeBackendName(order[attempt++]);
     console.log('[model-router] -> ' + backend + (opts.model ? ' model=' + opts.model : ''));
 
     var caller;
     if (backend === 'openai')  caller = _callOpenAI;
     else if (backend === 'copilot') caller = _callCopilot;
     else if (backend === 'openclaude') caller = _callOpenClaude;
-    else                        caller = _callOllama;
+    else                        caller = function(msgs, mdl, cb) { _callOllama(msgs, mdl, cb, backend); };
 
     caller(messages, opts.model || null, function(err, reply) {
       if (!err) {
@@ -431,12 +708,31 @@ function callModelPromise(messages, options) {
 function status() {
   var oauthToken = _resolveCopilotOAuthToken();
   var ocStatus = openClaudeAdapter.status();
+  var envCopilotTokenLooksValid = _isCopilotOAuthToken(COPILOT_TOKEN_ENV);
+  var copilotCliAvailable = _hasCopilotCli();
+  var codexCliAvailable = _hasCodexCli();
   return {
     order:    BACKEND_ORDER,
     backends: {
-      copilot: { available: !!oauthToken, tokenSource: oauthToken ? (COPILOT_TOKEN_ENV ? 'env' : 'file') : 'none', errors: _errors.copilot || 0 },
-      openai:  { available: !!OPENAI_KEY, errors: _errors.openai  || 0 },
-      ollama:  { available: true, url: OLLAMA_URL, errors: _errors.ollama  || 0 },
+      copilot: {
+        available: copilotCliAvailable || !!oauthToken,
+        tokenSource: copilotCliAvailable ? 'copilot_cli' : (oauthToken ? (COPILOT_TOKEN_ENV ? 'env' : 'file') : (COPILOT_TOKEN_ENV && !envCopilotTokenLooksValid ? 'invalid_env_token' : 'none')),
+        errors: _errors.copilot || 0
+      },
+      openai:  {
+        available: !!OPENAI_KEY || codexCliAvailable,
+        tokenSource: !!OPENAI_KEY ? 'api_key' : (codexCliAvailable ? 'codex_cli' : 'none'),
+        model: OPENAI_MODEL,
+        fallback: codexCliAvailable ? 'codex_cli' : 'none',
+        fallbackModel: codexCliAvailable ? OPENAI_CODEX_MODEL : null,
+        errors: _errors.openai  || 0
+      },
+      ollama_mdes: { available: !!OLLAMA_MDES_URL, url: OLLAMA_MDES_URL, model: OLLAMA_MDES_MODEL, errors: _errors.ollama || 0 },
+      thaillm: { available: !!THAILLM_URL, url: THAILLM_URL, model: THAILLM_MODEL, errors: _errors.ollama || 0 },
+      ollama_local: { available: !!OLLAMA_LOCAL_URL, url: OLLAMA_LOCAL_URL, model: OLLAMA_LOCAL_MODEL, errors: _errors.ollama || 0 },
+      ollama_cloud: { available: !!OLLAMA_CLOUD_URL, url: OLLAMA_CLOUD_URL, model: OLLAMA_CLOUD_MODEL, errors: _errors.ollama || 0 },
+      // Backward-compatible alias for older callers.
+      ollama: { available: !!OLLAMA_MDES_URL, url: OLLAMA_MDES_URL, model: OLLAMA_MDES_MODEL, errors: _errors.ollama || 0 },
       openclaude: { available: ocStatus.available, host: ocStatus.host, port: ocStatus.port, model: ocStatus.model, errors: _errors.openclaude || 0 },
     },
     primary: BACKEND_ORDER[0] || 'ollama',
@@ -450,7 +746,7 @@ function status() {
  */
 function callModelOllamaFirst(messages, options, callback) {
   var opts = Object.assign({}, options || {});
-  opts.preferBackend = 'ollama';
+  opts.preferBackend = 'ollama_mdes';
   return callModel(messages, opts, callback);
 }
 
@@ -459,7 +755,7 @@ function callModelOllamaFirst(messages, options, callback) {
  * Promise version of callModelOllamaFirst
  */
 function callModelOllamaFirstPromise(messages, options) {
-  return callModelPromise(messages, Object.assign({}, options || {}, { preferBackend: 'ollama' }));
+  return callModelPromise(messages, Object.assign({}, options || {}, { preferBackend: 'ollama_mdes' }));
 }
 
 module.exports = { 

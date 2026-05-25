@@ -1,0 +1,14 @@
+{
+  "id": "hermes-cheam-84a16f040791",
+  "correlation_id": "84a16f040791",
+  "timestamp": "2026-05-25T13:23:19Z",
+  "sender": "codex-hermes",
+  "task": "Third smoke after talk-to patch",
+  "content": "Third smoke after talk-to patch",
+  "priority": "high",
+  "reply_to": "innova",
+  "targets": [
+    "jit"
+  ],
+  "transport": "jit-bus"
+}

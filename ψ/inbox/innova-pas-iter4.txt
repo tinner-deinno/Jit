@@ -1,0 +1,1 @@
+﻿PAS iter-4 done. Model Settings panel live: 6 provider presets (MDES/Ollama/LMStudio/vLLM/OpenAI/Custom), ad-hoc POST /api/model-settings/test + latency display, GET /api/model-settings/providers preset list. ModelSettingsPanel.tsx in ChatSidebar SlideOver. localStorage persist. 745/745 Jest + TSC clean. commit 55e0e2d.

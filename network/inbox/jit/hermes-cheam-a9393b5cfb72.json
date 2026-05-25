@@ -1,0 +1,14 @@
+{
+  "id": "hermes-cheam-a9393b5cfb72",
+  "correlation_id": "a9393b5cfb72",
+  "timestamp": "2026-05-25T13:18:05Z",
+  "sender": "codex-hermes",
+  "task": "Codex smoke test to Jit and maw bridge",
+  "content": "Codex smoke test to Jit and maw bridge",
+  "priority": "high",
+  "reply_to": "innova",
+  "targets": [
+    "jit"
+  ],
+  "transport": "jit-bus"
+}

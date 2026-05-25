@@ -1,0 +1,6 @@
+version: 1
+display_name: Jit Subagent Orchestrator
+short_description: GPT-5.5 led orchestration for Jit child agents and innova-bot MCP collaboration.
+default_prompt: >
+  Use GPT-5.5 as lead orchestrator, validate backend health, coordinate child-agent tasks,
+  and execute at least one successful innova-bot MCP SSE tool call with evidence.

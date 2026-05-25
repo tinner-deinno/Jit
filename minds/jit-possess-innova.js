@@ -46,9 +46,9 @@ if (!process.env.PSI_DIR) {
   if (fs.existsSync(psiCandidate)) process.env.PSI_DIR = psiCandidate;
 }
 
-const bridge      = require('./hermes-discord/jit-innova-bridge');
-const modelRouter = require('./hermes-discord/model-router');
-const agentSpawner = require('./hermes-discord/agent-spawner');
+const bridge      = require('../hermes-discord/jit-innova-bridge');
+const modelRouter = require('../hermes-discord/model-router');
+const agentSpawner = require('../hermes-discord/agent-spawner');
 
 // ── Identity: Jit as User ─────────────────────────────────────────────
 const JIT_IDENTITY = {

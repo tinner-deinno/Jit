@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-#  mind-loop.sh — MDES Ollama Single-Agent Continuous Loop
+#  mind-loop.sh â€” MDES Ollama Single-Agent Continuous Loop
 #  Usage: bash mind-loop.sh <NAME> <MODEL> <ROLE> [INTERVAL]
 # ============================================================
 set -uo pipefail
@@ -22,7 +22,7 @@ LOG_FILE="/tmp/agent-${AGENT_NAME,,}.log"
 
 mkdir -p "$BUS_DIR"
 
-# ── ANSI Colors ──────────────────────────────────────────────
+# â”€â”€ ANSI Colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 declare -A _CLRS
 _CLRS[INNOVA]='\033[1;35m'       # Magenta bold (mother)
 _CLRS[PLANNER]='\033[1;36m'      # Cyan bold
@@ -45,11 +45,11 @@ print_header() {
   local short_role="${ROLE:0:52}"
   printf '\033[H\033[2J'   # clear
   printf "${CLR}"
-  printf '╔══════════════════════════════════════════════════════════════╗\n'
-  printf '║  %-62s║\n' "🤖  $AGENT_NAME  ·  MODEL: $MODEL"
-  printf '║  %-62s║\n' "📋  $short_role"
-  printf '║  %-62s║\n' "🔄  Cycle #$CYCLE  ·  $ts"
-  printf '╠══════════════════════════════════════════════════════════════╣\n'
+  printf 'â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—\n'
+  printf 'â•‘  %-62sâ•‘\n' "ðŸ¤–  $AGENT_NAME  Â·  MODEL: $MODEL"
+  printf 'â•‘  %-62sâ•‘\n' "ðŸ“‹  $short_role"
+  printf 'â•‘  %-62sâ•‘\n' "ðŸ”„  Cycle #$CYCLE  Â·  $ts"
+  printf 'â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£\n'
   printf "${NC}"
 }
 
@@ -74,7 +74,7 @@ PYEOF
     --data "$payload" \
     --max-time 45 2>/dev/null)
   if [[ -z "$resp" ]]; then
-    echo "[no response — API timeout or unreachable]"
+    echo "[no response â€” API timeout or unreachable]"
     return
   fi
   echo "$resp" | python3 -c "
@@ -102,7 +102,7 @@ write_bus() {
   echo "$1" > "$BUS_DIR/${AGENT_NAME,,}.msg"
 }
 
-# ── Main Loop ────────────────────────────────────────────────
+# â”€â”€ Main Loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 echo -e "${CLR}[${AGENT_NAME}] Starting mind-loop (model=$MODEL interval=${INTERVAL}s)${NC}"
 
 while true; do
@@ -110,7 +110,7 @@ while true; do
   print_header
 
   BUS_CTX=$(read_bus)
-  [[ -z "$BUS_CTX" ]] && BUS_CTX="System start — no messages yet."
+  [[ -z "$BUS_CTX" ]] && BUS_CTX="System start â€” no messages yet."
 
   PROMPT="CYCLE ${CYCLE}: You are ${AGENT_NAME}, ${ROLE}.
 Bus context: ${BUS_CTX}
@@ -122,15 +122,15 @@ Be specific, avoid repetition. Keep it under 80 words."
   RESPONSE=$(call_ollama "$PROMPT")
   LAST_THOUGHT="$RESPONSE"
 
-  printf "\n${CLR}┌─ ${AGENT_NAME} @ $(date '+%H:%M:%S') ──────────────────────────────┐${NC}\n"
+  printf "\n${CLR}â”Œâ”€ ${AGENT_NAME} @ $(date '+%H:%M:%S') â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”${NC}\n"
   echo "$RESPONSE" | fold -s -w 62 | while IFS= read -r line; do
-    printf "${BLD}│${NC} %s\n" "$line"
+    printf "${BLD}â”‚${NC} %s\n" "$line"
   done
-  printf "${CLR}└──────────────────────────────────────────────────────────┘${NC}\n"
+  printf "${CLR}â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜${NC}\n"
 
   write_bus "$RESPONSE"
   printf '[%s] CYCLE#%d | %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$CYCLE" "$RESPONSE" >> "$LOG_FILE"
 
-  printf "\n${DIM}[Next cycle in ${INTERVAL}s — Ctrl+C to stop]${NC}\n"
+  printf "\n${DIM}[Next cycle in ${INTERVAL}s â€” Ctrl+C to stop]${NC}\n"
   sleep "$INTERVAL"
 done
