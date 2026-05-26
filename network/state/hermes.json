@@ -1,0 +1,59 @@
+{
+  "agent": "hermes",
+  "status": "queued",
+  "pending_messages": 25,
+  "pending_correlations": [
+    "3ed352a45bbc",
+    "1df7a8d6f57a",
+    "ec8599bb8f26",
+    "c8a7e85dfe7c",
+    "b4080f1bc035",
+    "366e3daa9dcd",
+    "8a2458e59eed",
+    "f1f8050159e6",
+    "09af8305499d",
+    "37b6bd2a8e34",
+    "0d7756fe8b62",
+    "634ecb22f6a9",
+    "48b331497905",
+    "461202de7ea7",
+    "f7443c7c0f59",
+    "6244c2c91207",
+    "d16cf99441c5",
+    "cee519a39d52",
+    "e40494ab69ea",
+    "700176b73f0a",
+    "275985e22565",
+    "2763f37b42cd",
+    "d7aa9d667c56",
+    "cbd75a98292b",
+    "6e627da0d400"
+  ],
+  "bus_root": "C:\\tmp\\manusat-bus",
+  "last_execution": "2026-05-26T04:24:44Z",
+  "last_sent_at": "2026-05-26T04:24:44Z",
+  "last_request": {
+    "source": "jit",
+    "targets": [
+      "jit"
+    ],
+    "subject": "task:cheam-jit",
+    "task": "S-100-STEADY: innmcp remains 100% operational. All core regression checks (Dockerfile, ModelRouter, MCP Gateway, Visual Execution) passed. System is stable. Notify: claude, codex, etc.",
+    "correlation_id": "6e627da0d400"
+  },
+  "last_transport": {
+    "bus_writes": [
+      "C:\\tmp\\manusat-bus\\jit\\1779769482599_6e627da0d400_from-jit-hermes.msg"
+    ],
+    "legacy_writes": [
+      "C:\\Users\\USER-NT\\DEV\\Jit\\network\\inbox\\jit\\hermes-cheam-6e627da0d400.json"
+    ],
+    "maw_results": [
+      {
+        "command": "hey local:jit S-100-STEADY: innmcp remains 100% operational. All core regression checks (Dockerfile, ModelRouter, MCP Gateway, Visual Execution) passed. System is stable. Notify: claude, codex, etc. --inbox",
+        "ok": "true",
+        "output": "\u001b[33mqueued\u001b[0m → jit ψ/inbox/2026-05-26_04-24_local-local_local-local-s-100-steady-innmcp-remains-100-oper.md: [local:local] S-100-STEADY: innmcp remains 100% operational. All core regression checks (Dockerfile, ModelRouter, MCP Gateway, Visual Execution) passed. System is stable. Notify: claude, codex, etc.\n\u001b[90m  ⤷ --inbox requested; pane injection skipped\u001b[0m"
+      }
+    ]
+  }
+}
