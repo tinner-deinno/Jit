@@ -53,16 +53,13 @@ function registerOmcBridge(router, spawner) {
       opts = opts || {};
       opts.preferBackend = opts.preferBackend || 'ollama'; // Prefer Ollama
 
-      return new Promise(function(resolve, reject) {
-        spawner.spawnAgent(jitAgent.jit, task, opts, function(err, result) {
-          if (err) return reject(err);
-          resolve({
-            agent: omcAgent,
-            jitAgent: jitAgent.jit,
-            reply: result.reply,
-            backend: result.backend,
-          });
-        });
+      return spawner.spawnAgent(jitAgent.jit, task, opts).then(function(result) {
+        return {
+          agent: omcAgent,
+          jitAgent: jitAgent.jit,
+          reply: result.reply,
+          backend: result.backend,
+        };
       });
     },
     spawnParallel: function(agents, task, opts) {

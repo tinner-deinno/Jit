@@ -18,7 +18,7 @@
  * Optional:
  *   MULTI_BACKEND_ORDER   — comma-separated priority, default: copilot,openai,ollama
  *   OLLAMA_BASE_URL       — default: https://ollama.mdes-innova.online
- *   OLLAMA_MODEL          — default: gemma4:e4b
+ *   OLLAMA_MODEL          — default: gemma4:26b
  *   BOT_PREFIX            — command prefix, default: !อนุ
  *   JIT_COMMAND_PREFIX    — Jit control prefix, default: !jit
  *   JIT_REPORT_CHANNEL_ID — startup/status report channel
@@ -49,7 +49,8 @@ const BOT_NAME              = process.env.BOT_NAME           || 'AnuT1n';
 const BOT_ALIASES           = (process.env.BOT_ALIASES || 'อนุทิน,ทิน')
   .split(',').map(u => u.trim()).filter(Boolean);
 const BOT_PREFIX            = process.env.BOT_PREFIX         || '!AnuT1n';
-const JIT_ROOT              = process.env.JIT_ROOT           || '/workspaces/Jit';
+const JIT_ROOT              = process.env.JIT_ROOT           ||
+  (process.platform === 'win32' ? 'C:\\Users\\' + (process.env.USERNAME || 'USER-NT') + '\\DEV\\Jit' : '/workspaces/Jit');
 const ORACLE_PORT           = process.env.ORACLE_PORT        || '47778';
 const ORACLE_URL            = 'http://localhost:' + ORACLE_PORT;
 const AUTO_REPORT_INTERVAL  = parseInt(process.env.AUTO_REPORT_INTERVAL || '300000');
@@ -69,7 +70,8 @@ const JIT_THOUGHT_LOOP_ACTIVE_WINDOW_MS = parsePositiveInt(process.env.JIT_THOUG
 const JIT_THOUGHT_LOOP_MIN_MESSAGES = parsePositiveInt(process.env.JIT_THOUGHT_LOOP_MIN_MESSAGES, 4);
 const JIT_THOUGHT_LOOP_MIN_PARTICIPANTS = parsePositiveInt(process.env.JIT_THOUGHT_LOOP_MIN_PARTICIPANTS, 2);
 const JIT_THOUGHT_LOOP_CHANNELS = splitCsv(process.env.JIT_THOUGHT_LOOP_CHANNELS || '');
-const JIT_THOUGHT_LOOP_STATE_FILE = process.env.JIT_THOUGHT_LOOP_STATE_FILE || '/tmp/hermes-discord-thought-loop.json';
+const JIT_THOUGHT_LOOP_STATE_FILE = process.env.JIT_THOUGHT_LOOP_STATE_FILE ||
+  require('path').join(require('os').tmpdir(), 'hermes-discord-thought-loop.json');
 
 function buildChecklist() {
   const tasks = [

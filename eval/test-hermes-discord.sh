@@ -205,7 +205,7 @@ echo -e "     Running bot.js --test-ollama (may take 10-30s)..."
 TEST_OUT=$(cd "$JIT_ROOT/hermes-discord" && \
   OLLAMA_TOKEN="$OLLAMA_TOKEN_VAL" \
   OLLAMA_BASE_URL="$OLLAMA_URL" \
-  OLLAMA_MODEL="${OLLAMA_MODEL:-gemma4:e4b}" \
+  OLLAMA_MODEL="${OLLAMA_MODEL:-gemma4:26b}" \
   node bot.js --test-ollama 2>&1) || TEST_EXIT=$?
 
 TEST_EXIT="${TEST_EXIT:-0}"

@@ -18,12 +18,13 @@ CMD="${1:-help}"
 shift || true
 
 # Known locations — แผนที่สำหรับ agent
+_JIT_ROOT="${JIT_ROOT:-/workspaces/Jit}"
 declare -A KNOWN_PLACES=(
-  ["jit"]="/workspaces/Jit"
-  ["oracle"]="/workspaces/arra-oracle-v3"
+  ["jit"]="$_JIT_ROOT"
+  ["oracle"]="${ORACLE_ROOT:-$(dirname "$_JIT_ROOT")/arra-oracle-v3}"
   ["home"]="$HOME"
-  ["tmp"]="/tmp"
-  ["scripts"]="/workspaces/Jit/scripts"
+  ["tmp"]="${TMPDIR:-/tmp}"
+  ["scripts"]="$_JIT_ROOT/scripts"
 )
 
 case "$CMD" in
@@ -82,13 +83,13 @@ case "$CMD" in
       shift
       PCT=$(( (CURRENT * 100) / TOTAL ))
       echo -ne "\r${CYAN}[$PCT%]${RESET} ขั้น $CURRENT/$TOTAL: $CMD_STEP"
-      eval "$CMD_STEP" > /tmp/leg-step-${CURRENT}.log 2>&1
+      eval "$CMD_STEP" > ${TMPDIR:-/tmp}/leg-step-${CURRENT}.log 2>&1
       if [ $? -eq 0 ]; then
         echo -e "\r${GREEN}[$PCT%]${RESET} ✓ ขั้น $CURRENT/$TOTAL: $CMD_STEP"
       else
         echo -e "\r${RED}[$PCT%]${RESET} ✗ ขั้น $CURRENT/$TOTAL: $CMD_STEP"
-        err "ล้มเหลว — ดู /tmp/leg-step-${CURRENT}.log"
-        cat "/tmp/leg-step-${CURRENT}.log"
+        err "ล้มเหลว — ดู ${TMPDIR:-/tmp}/leg-step-${CURRENT}.log"
+        cat "${TMPDIR:-/tmp}/leg-step-${CURRENT}.log"
         break
       fi
     done
@@ -132,7 +133,7 @@ case "$CMD" in
     log_action "LEG_PULSE" "$CONTEXT"
     echo "Leg receives clean energy and can move the system forward"
     echo "  current path: $(pwd)"
-    if [ -d "/workspaces/Jit" ]; then
+    if [ -d "${JIT_ROOT:-/workspaces/Jit}" ]; then
       echo "  known place: jit"
     fi
     ;;

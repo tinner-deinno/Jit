@@ -31,7 +31,7 @@ module.exports = {
       env_production: {
         NODE_ENV: "production",
         OLLAMA_BASE_URL: "https://ollama.mdes-innova.online",
-        OLLAMA_MODEL: "gemma4:e4b",
+        OLLAMA_MODEL: "gemma4:26b",
         // Tune thought-loop for 24/7 production
         JIT_THOUGHT_LOOP_ENABLED: "true",
         JIT_THOUGHT_LOOP_INTERVAL_MS: "120000",         // 2 min (was 5 min)

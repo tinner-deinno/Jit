@@ -25,10 +25,11 @@ switch ($Action) {
         Start-Agent "innomcp-planner" "$JitRoot" "gemma4:26b"
         
         # 2. 💻 Coder (นักเขียนโค้ด) - ใช้ตัวที่เขียนโค้ดเก่ง
-        Start-Agent "innomcp-coder" "C:\Users\admin\DEV\innomcp" "qwen2.5-coder:32b"
+        $innomcpPath = $env:INNOMCP_PATH -or "C:\Users\$env:USERNAME\DEV\innomcp"
+        Start-Agent "innomcp-coder" $innomcpPath "qwen2.5-coder:32b"
         
         # 3. 🧪 Tester (นักตรวจสอบ) - ใช้ตัวเร็วๆ
-        Start-Agent "innomcp-tester" "C:\Users\admin\DEV\innomcp" "qwen3.5:9b"
+        Start-Agent "innomcp-tester" $innomcpPath "qwen3.5:9b"
         
         Write-Host "`n✅ กองทัพพร้อมรบ! ส่งงานผ่าน Codex ได้เลย" -ForegroundColor Green
     }

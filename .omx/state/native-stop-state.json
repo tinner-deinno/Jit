@@ -12,11 +12,11 @@
     },
     "019e5b68-e309-7372-b27b-f3a8d1c03f5e": {
       "ordinary_no_progress_guard": {
-        "fingerprint": "ordinary|**ผลลัพธ์** `innova-bot` ถูกยกจากโหมด “เช็ค path เก่าแล้วคิดว่าระบบนิ่ง” ไปเป็น bridge ที่คุยกับ jit แบบใช้บัสจริงได้แล้ว และ `maw-js` ถูกซ่อมจนพ้นจุดพังจาก dependency/plugin import แล้ว **ที่ผมแก้** 1. เพิ่ม bridge tool ใหม่ใน [jit_bridge_tools.py](c:\\users\\user-nt\\dev\\innova-bot-template\\devtools\\innova-bot\\innova_bot\\tools\\jit_bridge_tools.py) - เพิ่ม `hermes_cheam_jit(...)` - เพิ่ม `jit_check_replies(...)` - เพิ่ม `jit_bridge_status()` - ส่งงานเข้า `c:\\tmp\\manusat-bus\\...` พร้อม mirror ไป `jit\\network\\inbox\\...` เพื่อให้ของใหม่และของเก่าเห็นตรงกัน 2. เขียน `hermesagent` ใหม่ใน [hermes_bridge_agent.py](c:\\users\\user-nt\\dev\\innova-bot-template\\devtools\\innova-bot\\innova_bot\\agents\\hermes_bridge_agent.py) - แก้ให้เข้ากับ `baseagent` จริง - รองรับทั้ง direct task และ mailbox/bus task - อ่านทั้ง legacy json inbox และ jit bus `.msg` - เขียนผลกลับทั้ง bus และ legacy outbox/state - เพิ่ม background polling loop 3. ปรับ loader ใน [main.py](c:\\users\\user-nt\\dev\\innova-bot-template\\devtools\\innova-bot\\innova_bot\\main.py) - โหลด `jit_bridge_tools` - start/stop hermes background loop ในโหมด sse 4. ซ่อม `maw` runtime ใน [maw_tools.py](c:\\users\\user-nt\\dev\\innova-bot-template\\devtools\\innova-bot\\innova_bot\\tools\\maw_tools.py) - ใช้ `bun.exe + src/cli.ts` แบบ explicit - ตัด `shell=true` ที่ไม่เสถียรบน windows - เพิ่ม `maw_doctor`, `maw_talk_to`, `maw_locate`, `maw_workspace_status` 5. ซ่อม plugin import ของ `maw-js` - [package.json](c:\\users\\user-nt\\dev\\maw-js\\package.json) - [talk-to/impl.ts](c:\\users\\user-nt\\dev\\maw-js\\src\\vendor\\mpr-plugins\\talk-to\\impl.ts) - [tab/internal/talk-to-impl.ts](c:\\users\\user-nt\\dev\\maw-js\\src\\vendor\\mpr-plugins\\tab\\internal\\talk-to-impl.ts) - และ patch runtime copy ที่ [c:\\users\\user-nt\\.maw\\plugins\\talk-to\\impl.ts](c:\\users\\user-nt\\.maw\\plugins\\talk-to\\impl.ts) **สิ่งที่ทดสอบผ่าน** 1. `pytest -o addopts='' tests\\test_maw_tools.py tests\\test_jit_bridge_tools.py tests\\test_hermes_bridge_agent.py` - ผ่าน `6/6` 2. `pytest -o addopts='' tests\\test_main_tool_loading_guard.py` - ผ่าน `3/3` 3. `py_compile` - ผ่านสำหรับไฟล์ bridge ที่แก้ 4. smoke test จริงกับ jit bridge - `hermes_cheam_jit(...)` เขียนไฟล์จริงไปที่ - `c:\\tmp\\manusat-bus\\jit\\1779715399732_84a16f040791_from-codex-hermes.msg` - `c:\\users\\user-nt\\dev\\jit\\network\\inbox\\jit\\hermes-cheam-84a16f040791.json` 5. `jit_bridge_status()` - เห็น `bus_root = c:\\tmp\\manusat-bus` - เห็น pending ใน inbox `jit` - เห็น legacy mirror ใน `network\\inbox\\jit` 6. `maw` core command - `maw ls` รันได้แล้ว และตอนนี้ตอบ `no panes found.` - `maw workspace status` รันได้แล้ว และตอนนี้ตอบ `no workspaces configured.` - `maw locate jit` รันได้แล้ว และตอนนี้ตอบ `no oracle named 'jit'` 7. `maw talk-to jit ...` - ไม่พังจาก module import แล้ว - ตอนนี้ไปถึงขั้นพยายาม post เข้า oracle thread จริง แล้ว fail ด้วย `oracle unreachable` **ปัญหาที่พบจริงตอนนี้** 1. `maw-js` ยังไม่มี target ให้คุยจริง - ไม่มี local pane/oracle ชื่อ `jit` - ไม่มี workspace config - `maw ls` บอก `no panes found` 2. local maw delivery ยังขาด runtime บางตัว - `tmux` ไม่อยู่ใน `path` - `ghq` ไม่อยู่ใน `path` 3. remote/oracle route ยังไม่พร้อม - `talk-to` ตอนนี้ล้มเพราะ `oracle unreachable` - แปลว่า plugin layer ซ่อมแล้ว แต่ topology ปลายทางยังไม่พร้อม **หมายเหตุสำคัญ** - ผมติดตั้ง `bun 1.3.14` ให้เครื่องนี้แล้ว - ผมรัน `npm install` ใน `c:\\users\\user-nt\\dev\\maw-js` - ผมทำ junction ให้ plugin runtime มองเห็น repo `maw-js` - repo ทั้ง `innova-bot-template`, `jit`, และ `maw-js` มีไฟล์ dirty/untracked อยู่ก่อนแล้วหลายส่วน ผมแตะเฉพาะไฟล์ที่ระบุข้างบน และไม่ย้อนของเดิมที่ไม่ใช่งานนี้ - smoke test นี้สร้าง queue artifact ใหม่ใน `c:\\tmp\\manusat-bus\\jit\\` และ `c:\\users\\user-nt\\dev\\jit\\network\\inbox\\jit\\` **สรุปตรงๆ** ชั้น `innova-bot` ถูกแก้แล้ว - มันไม่ยึดติดกับ `network/outbox/hermes` อย่างเดียวอีกต่อไป - มันส่งเข้า jit bus จริงได้ - มันมี tool มาตรฐาน `hermes_cheam_jit` แล้ว - `maw-js` ขยับจาก “พังเชิงโค้ด” ไปเป็น “พร้อมเชิงโค้ด แต่ environment ปลายทางยังไม่มี oracle/session/workspace ให้ส่งถึง” 1. ถ้าคุณต้องการ ผมทำต่อรอบหน้าได้เลยโดยปิด environment ของ `maw` ให้สุด: ติด `tmux`/`ghq`, ปลุก `jit` oracle, แล้ว rerun คุยสด end-to-end 2. หรือผมจะทำ fallback อัตโนมัติให้ `innova-bot` ถ้า `maw` ไม่มี target ก็ใช้ jit bus อย่างเดียวและรายงานแบบไม่หลอนว่าระบบ idle",
-        "first_seen_at": "2026-05-25T13:26:06.381Z",
-        "last_seen_at": "2026-05-25T13:26:06.381Z",
+        "fingerprint": "ordinary|**result** - `innova-bot` façade now exposes the live coordination tools we actually need for `jit/innomcp`. - `innomcp` task continuation now resumes with structured prior context instead of a shallow prefix. - i verified everything on a dedicated sse instance at `http://127.0.0.1:7012/sse` so i didn’t disrupt your current `7010` route. **what changed** - [tasks.ts](c:/users/user-nt/dev/innomcp/innomcp-node/src/routes/api/tasks.ts) - continuation now loads `status`, recent `task_steps`, and relevant workspace artifacts - archived tasks are rejected early - non-running tasks are flipped back to `running` - `runconductor()` now receives real `history` built from original intent, prior answer, recent execution timeline, and artifact names - emits a resume summary and records a `task_resumed` step - [tasksroutecontinuation.test.ts](c:/users/user-nt/dev/innomcp/innomcp-node/tests/unit/tasksroutecontinuation.test.ts) - added route-level sse tests for enriched continuation and archived-task rejection - [tool_registry.py](c:/users/user-nt/dev/innova-bot-template/devtools/innova-bot/innova_bot/utils/tool_registry.py) - public façade now includes `workspace_delete` - public façade now includes `maw_doctor`, `maw_agent_status`, `maw_contact_agents`, `hermes_cheam_jit`, `jit_check_replies`, `jit_bridge_status`, `jit_runtime_snapshot` - public tool cap now auto-expands to at least the allowlist size, so the allowlist no longer trims itself - [test_tool_registry.py](c:/users/user-nt/dev/innova-bot-template/devtools/innova-bot/tests/test_tool_registry.py) - added coverage for the newly exposed `maw/jit` helpers and `workspace_delete` **phase check** - `p1-3 dashboard`: already present before this turn - `p1-4 task detail`: already present before this turn - `p1-5 multi-turn continuation`: backend advanced materially this turn, but not 100% spec-complete yet - `p2-3 artifact zip export`: already present before this turn - `p2-1 data analysis`: partial implementation already existed before this turn biggest remaining `p1-5` gaps: - dedicated `continuechatbar` component per spec - true `task_messages/turn_id` persistence instead of reconstructing from task state + steps - archive endpoint - mid-stream reload/resume behavior **validation** - `innomcp-node` - `npm test -- --runinband tests/unit/tasksroutecontinuation.test.ts` - result: `2 passed` - `innova-bot` - `.venv\\scripts\\python.exe -m pytest -o addopts='' tests/test_tool_registry.py` - result: `3 passed` - sse smoke - `.venv\\scripts\\python.exe scripts\\smoke_test_sse.py --url http://127.0.0.1:7012/sse --timeout 8` - result: `ok: /sse ตอบสนองและส่ง event endpoint` - live mcp probe on `7012` - public tool count: `31` - present: `workspace_delete`, `maw_doctor`, `maw_agent_status`, `maw_contact_agents`, `hermes_cheam_jit`, `jit_check_replies`, `jit_bridge_status`, `jit_runtime_snapshot` - `workspace_write/read/delete` against `innomcp` succeeded - `maw_agent_status` returned live status for `jit`, `innomcp`, and `innova-bot-template` - `jit_bridge_status` returned the active bus snapshot **important note** - i did not restart your existing `7010` listener because that port is currently owned by `wslrelay` / `com.docker.backend`, not a simple local python process. i verified the upgraded surface safely on `7012` instead. - the stock `e2e_mcp_sse.py --strict-workspace` still fails unchanged against this `7012` instance because that script hardcodes `meta.project=innova-bot`, while this verification instance was intentionally pointed at `innomcp`. the façade itself is fine; the validator assumption is what mismatched. **constraints i need to report honestly** - i could not perform the requested final `opus4.7` review pass because no callable `opus4.7` tool/connector exists in this session. - i also cannot truthfully claim `>10` native codex subagents here; this session exposes fewer native child slots. i used the available native lanes plus the live `jit/innomcp/innova-bot` coordination surfaces instead of pretending otherwise. **next** 1. i can make the real `7010` route pick up these façade changes safely by tracing and updating the docker/wsl launcher that owns it. 2. i can finish the rest of `p1-5` now: true turn persistence, archive endpoint, and the dedicated continuation ui on task detail. 3. i can move straight into the next `innomcp` phase slice with this upgraded `innova-bot` instance as the assistant lane.",
+        "first_seen_at": "2026-05-26T03:17:36.479Z",
+        "last_seen_at": "2026-05-26T03:17:36.479Z",
         "repeat_count": 1,
-        "last_turn_id": "019e5f3a-7c81-7240-8ae7-c104a67bf78b",
+        "last_turn_id": "019e6233-7790-75b0-a359-02e4e75121b8",
         "last_thread_id": null
       }
     },
@@ -97,6 +97,186 @@
         "last_seen_at": "2026-05-25T09:58:48.420Z",
         "repeat_count": 1,
         "last_turn_id": "019e5e92-789f-7be2-a794-804815dccbfc",
+        "last_thread_id": null
+      }
+    },
+    "019e6085-a841-7dc0-97cd-e807d20899be": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|{\"title\":\"map innova-bot integration surface\"}",
+        "first_seen_at": "2026-05-25T19:03:58.214Z",
+        "last_seen_at": "2026-05-25T19:03:58.214Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e6085-aaad-7830-b684-8fbe31de8074",
+        "last_thread_id": null
+      }
+    },
+    "019e6086-5e42-7160-9aa4-6d669049fd3c": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|{\"title\":\"inspect make-manas-chat plan\"}",
+        "first_seen_at": "2026-05-25T19:04:48.797Z",
+        "last_seen_at": "2026-05-25T19:04:48.797Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e6086-5e74-7d32-b55f-7d98d3e8c6bc",
+        "last_thread_id": null
+      }
+    },
+    "019e6087-594b-7fa3-b0b2-7a07feef2ff9": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|{\"title\":\"inspect safe chat slice\"}",
+        "first_seen_at": "2026-05-25T19:05:49.254Z",
+        "last_seen_at": "2026-05-25T19:05:49.254Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e6087-5983-78e3-ae54-b7b067da23ae",
+        "last_thread_id": null
+      }
+    },
+    "019e6238-9247-7472-a378-ae5587d9e616": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|{\"title\":\"inspect route test patterns\"}",
+        "first_seen_at": "2026-05-26T02:59:03.781Z",
+        "last_seen_at": "2026-05-26T02:59:03.781Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e6238-92ac-7ef0-823c-a45acee86484",
+        "last_thread_id": null
+      }
+    },
+    "019e6238-926b-7020-bd93-2ce91dafd723": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|{\"title\":\"inspect public tool exposure path\"}",
+        "first_seen_at": "2026-05-26T02:59:05.584Z",
+        "last_seen_at": "2026-05-26T02:59:05.584Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e6238-92bd-71d0-b56d-20a140ca3c50",
+        "last_thread_id": null
+      }
+    },
+    "019e630e-7254-7500-9380-58d079cea2ad": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|{\"title\":\"ทดสอบเฟส jit และหาบั๊ก\"}",
+        "first_seen_at": "2026-05-26T06:52:39.010Z",
+        "last_seen_at": "2026-05-26T06:52:39.010Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e630e-74d4-7af0-8487-e955a58e5433",
+        "last_thread_id": null
+      }
+    },
+    "019e6313-a59b-7463-bde8-bd00c9aa8243": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|ack openai",
+        "first_seen_at": "2026-05-26T06:58:20.140Z",
+        "last_seen_at": "2026-05-26T06:58:20.140Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e6313-a675-7232-bf8b-0475f709088e",
+        "last_thread_id": null
+      }
+    },
+    "019e6317-07dc-78e3-9287-65a43975716c": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|{\"title\":\"map roadmap status\"}",
+        "first_seen_at": "2026-05-26T07:02:01.687Z",
+        "last_seen_at": "2026-05-26T07:02:01.687Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e6317-0804-7082-8186-81622e1e84a6",
+        "last_thread_id": null
+      }
+    },
+    "019e6317-0fe9-7451-b0cd-0905644ac878": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|{\"title\":\"assess multi-agent lanes\"}",
+        "first_seen_at": "2026-05-26T07:02:03.412Z",
+        "last_seen_at": "2026-05-26T07:02:03.412Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e6317-1028-76a1-81a7-082edfda6d0c",
+        "last_thread_id": null
+      }
+    },
+    "019e6317-2520-7cc0-9933-5eaa174bbe35": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|{\"title\":\"inspect roadmap smoke checks\"}",
+        "first_seen_at": "2026-05-26T07:02:23.065Z",
+        "last_seen_at": "2026-05-26T07:02:23.065Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e6317-254f-7f70-8086-260b0c324686",
+        "last_thread_id": null
+      }
+    },
+    "019e630d-365b-7773-9ded-44057935845d": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|ผลรอบนี้คุ้มจริงในแกนที่พังที่สุด: `innomcp chat` กลับมาตอบได้จริงแล้วทั้ง `normal` และ `multiagent/thinking` บน browser live stack ไม่ได้ติด smoke fallback แล้ว **findings** 1. critical: chat พังเพราะ `smoke_mode=1` ใน `innomcp-node/.env` กับ `.env.local` บังคับ `generalgate` ให้คืน `smoke_deterministic` กับผู้ใช้จริง 2. critical: ถึงตัด smoke ออกแล้ว chat ก็ยังพังต่อ เพราะ bootstrap ของ remote lane ไม่อ่าน `ollama_url` ทำให้ route init ผิดปลายทาง 3. critical: ปลายทาง `mdes` ที่ `ollama_url=https://ollama.mdes-innova.online` ตอบ `get /api/tags = 200` แต่ `post /api/chat = 404` จึงไม่ใช่ ollama-native chat endpoint แบบที่ `new ollama(...).chat()` ใช้อยู่ 4. high: local fallback เดิมก็ใช้ model ไม่ตรงของจริง (`qwen2.5:0.5b` แล้วต่อมา `gemma3:4b`) ทั้งที่ host จริงมี `qwen2.5-coder:7b` ใช้งานได้ 5. high: even after local fallback worked, budget เดิมสั้นเกินไป เลยโดน `timeout` ทั้งที่ model กำลังตอบจริง 6. medium: ui ยังรกและยังไม่ manus-like พอ แม้ core chat จะกลับมาทำงานแล้ว **สิ่งที่ผมแก้** - ตัด global smoke gate ออกจาก live chat path ใน [chat.ts](c:\\users\\user-nt\\dev\\innomcp\\innomcp-node\\src\\routes\\api\\chat.ts) - แก้ remote bootstrap ให้ init อ่าน `ollama_url` / `ollama_remote_url` / token เดียวกับ mdes path จริงใน [chat.ts](c:\\users\\user-nt\\dev\\innomcp\\innomcp-node\\src\\routes\\api\\chat.ts) - เปลี่ยน fast/local fallback lane ให้ใช้ model ที่พิสูจน์แล้วว่าตอบได้บน host จริง คือ `qwen2.5-coder:7b` ใน [chat.ts](c:\\users\\user-nt\\dev\\innomcp\\innomcp-node\\src\\routes\\api\\chat.ts) - เพิ่ม local retry branch พร้อม timeout ใหญ่ขึ้นสำหรับ fallback path ใน [chat.ts](c:\\users\\user-nt\\dev\\innomcp\\innomcp-node\\src\\routes\\api\\chat.ts) - ซ่อน inline `multiagentpanel / thinking report` จากโหมดปกติไว้ใน [chatpage.tsx](c:\\users\\user-nt\\dev\\innomcp\\innomcp-next\\src\\app\\components\\chat\\chatpage.tsx) เพื่อให้หน้า normal ไม่รกเกินจำเป็น **หลักฐาน live ที่ผ่าน** - backend typecheck ผ่าน: - `npm exec tsc -- --noemit -p innomcp-node/tsconfig.json` - frontend typecheck ผ่าน: - `npm exec tsc -- --noemit -p innomcp-next/tsconfig.json` - normal chat บน browser ที่ `http://localhost:3000/`: - ก่อนแก้: `generalgate.reason = smoke_deterministic` - กลางทาง: `error` - ต่อมา: `timeout` - หลังแก้ครบ: `generalgate.reason = ok` - model ที่ตอบจริง: `qwen2.5-coder:7b` - เวลา: ประมาณ `3.6s` - คำตอบจริงกลับมา ไม่ใช่ fallback ปลอบใจ - multiagent/thinking บน browser: - `chatmode = multiagent` - `generalgate.reason = ok` - model = `qwen2.5-coder:7b` - ตอบจริงได้ แต่ยังช้า ประมาณ `34.7s` **ความจริงที่ต้องพูดตรงๆ** - ผมยังไม่ปิดงาน “เหมือน manus เป๊ะ” ทั้งหมด - ตอนนี้ `core chat` ใช้ได้จริงแล้ว - แต่ `mdes remote` ยังไม่ถูก adapter ให้เข้ากับ endpoint shape ของมันอย่างสมบูรณ์ - และ frontend ยังต้อง cleanup ต่ออีกก้อนหนึ่งเพื่อให้ดูโล่ง คม และพรีเมียมแบบ manus จริงๆ **ไฟล์ที่แตะ** - [chat.ts](c:\\users\\user-nt\\dev\\innomcp\\innomcp-node\\src\\routes\\api\\chat.ts) - [chatpage.tsx](c:\\users\\user-nt\\dev\\innomcp\\innomcp-next\\src\\app\\components\\chat\\chatpage.tsx) **สิ่งที่ยังค้าง** 1. mdes remote adapter ยังใช้ client shape ไม่ตรง endpoint จริง 2. multiagent/thinking ยังช้าเกินเป้า 3. visual cleanup หน้า chat ยังไม่จบ และผมยังไม่เคลมว่ามัน manus-like แล้ว 4. มี auth/login surface แปลกบางรอบใน smoke script ทำให้ proof ของ ux patch ฝั่ง normal-mode panel ยังไม่สมบูรณ์เท่ากับ proof ของ backend chat fix **ถัดไปที่คุ้มที่สุด** 1. ผมลุยต่อทันทีที่ `mdes adapter` ให้เรียก endpoint ถูก shape แล้วลดเวลาของ multiagent ลง 2. ผมทำ `frontend cleanup pass` จริงจังใน `chatpage/chatsidebar` ให้หน้า chat โล่งแบบ manus 3. ผมเพิ่ม live regression smoke สำหรับ `normal` กับ `multiagent` เพื่อกันไม่ให้ chat พังย้อนกลับอีก",
+        "first_seen_at": "2026-05-27T15:48:05.379Z",
+        "last_seen_at": "2026-05-27T15:48:05.379Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e69f5-4889-70c0-859d-2e6d59252f5f",
+        "last_thread_id": null
+      }
+    },
+    "019e654a-0534-7d20-962a-8121aba3dc24": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|{\"title\":\"inspect phase 7 auth state\"}",
+        "first_seen_at": "2026-05-26T17:16:59.078Z",
+        "last_seen_at": "2026-05-26T17:16:59.078Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e654a-065f-72a0-850b-3b89d3086d3d",
+        "last_thread_id": null
+      }
+    },
+    "019e654a-056a-7193-9d03-b494850cbbd4": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|{\"title\":\"inspect playwright e2e readiness\"}",
+        "first_seen_at": "2026-05-26T17:16:59.334Z",
+        "last_seen_at": "2026-05-26T17:16:59.334Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e654a-0732-7490-a546-e62db33cddfc",
+        "last_thread_id": null
+      }
+    },
+    "019e654a-04e9-7a10-980f-39c8e22d7c92": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|{\"title\":\"review chat badge and history\"}",
+        "first_seen_at": "2026-05-26T17:17:00.772Z",
+        "last_seen_at": "2026-05-26T17:17:00.772Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e654a-05d9-7e20-8e98-bb57996334c3",
+        "last_thread_id": null
+      }
+    },
+    "019e654a-04fd-70d2-a700-33e54ed787ac": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|{\"title\":\"assess innomcp ux gaps\"}",
+        "first_seen_at": "2026-05-26T17:17:00.927Z",
+        "last_seen_at": "2026-05-26T17:17:00.927Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e654a-05dd-7031-ba7f-defff2175a2c",
+        "last_thread_id": null
+      }
+    },
+    "019e657c-f39e-7050-af81-ae17748de684": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|ok openai",
+        "first_seen_at": "2026-05-26T18:12:33.677Z",
+        "last_seen_at": "2026-05-26T18:12:33.677Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e657c-f472-7f00-bc65-f39feaf74dc7",
+        "last_thread_id": null
+      }
+    },
+    "019e657e-9d12-70a3-b298-199f5b0da26c": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|ok openai",
+        "first_seen_at": "2026-05-26T18:14:22.036Z",
+        "last_seen_at": "2026-05-26T18:14:22.036Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e657e-9d55-7fc2-b1ec-eebfb9f7d7ba",
+        "last_thread_id": null
+      }
+    },
+    "019e69f7-fb29-73f3-b78b-b0d57b4cfb8a": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|ok openai",
+        "first_seen_at": "2026-05-27T15:05:40.721Z",
+        "last_seen_at": "2026-05-27T15:05:40.721Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e69f7-fb8d-79c1-b4a4-ca86ea57c164",
         "last_thread_id": null
       }
     }

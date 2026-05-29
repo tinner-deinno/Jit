@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const jitControl = require('./jit-control');
 
 const JIT_ROOT = process.env.JIT_ROOT || path.resolve(__dirname, '..');
-const BUS_ROOT = process.env.JIT_BUS_DIR || '/tmp/manusat-bus';
+const BUS_ROOT = process.env.JIT_BUS_DIR || require('path').join(require('os').tmpdir(), 'manusat-bus');
 const BRIDGE_POLL_MS = parsePositiveInt(process.env.JIT_BODY_BRIDGE_POLL_MS, 5000);
 const BRIDGE_PORT = parsePositiveInt(process.env.JIT_BODY_BRIDGE_PORT, 7011);
 const BRIDGE_BIND_HOST = process.env.JIT_BODY_BRIDGE_HOST || '127.0.0.1';
@@ -89,8 +89,8 @@ function buildBridgeState() {
     failedDir: process.env.JIT_BODY_BRIDGE_FAILED_DIR || path.join(bridgeRoot, 'failed'),
     ackDir: process.env.JIT_BODY_BRIDGE_ACK_DIR || path.join(bridgeRoot, 'acks'),
     tempDir: process.env.JIT_BODY_BRIDGE_TMP_DIR || path.join(bridgeRoot, 'tmp'),
-    logFile: process.env.JIT_BODY_BRIDGE_LOG || '/tmp/innova-body-bridge.log',
-    pidFile: process.env.JIT_BODY_BRIDGE_PID || '/tmp/innova-body-bridge.pid',
+    logFile: process.env.JIT_BODY_BRIDGE_LOG || path.join(require('os').tmpdir(), 'innova-body-bridge.log'),
+    pidFile: process.env.JIT_BODY_BRIDGE_PID || path.join(require('os').tmpdir(), 'innova-body-bridge.pid'),
     healthPath: process.env.JIT_BODY_BRIDGE_HEALTH_PATH || '/health',
     webhookPath: process.env.JIT_BODY_BRIDGE_WEBHOOK_PATH || '/api/jit/discord',
   };

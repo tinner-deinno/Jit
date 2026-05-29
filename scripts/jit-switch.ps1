@@ -88,7 +88,8 @@ function EnsureProxyRunning {
 
     Write-Host "[jit-switch] Starting multi-proxy.py..." -ForegroundColor Cyan
     $logDir = Join-Path $SCRIPT_DIR "tmp_multi_proxy.log"
-    Start-Process python -ArgumentList @($PROXY_PY) `
+    $pyCmd = if (Get-Command python3 -ErrorAction SilentlyContinue) { "python3" } else { "python" }
+    Start-Process $pyCmd -ArgumentList @($PROXY_PY) `
         -WorkingDirectory $SCRIPT_DIR `
         -RedirectStandardOutput $logDir `
         -WindowStyle Hidden

@@ -47,7 +47,8 @@ class DiscordThoughtLoop {
     this.maxMentions = parsePositiveInt(options && options.maxMentions, 6);
     this.commandPrefix = options && options.commandPrefix ? options.commandPrefix : '!jit';
     this.channelIds = splitCsv(options && options.channelIds);
-    this.stateFile = options && options.stateFile ? options.stateFile : '/tmp/hermes-discord-thought-loop.json';
+    this.stateFile = options && options.stateFile ? options.stateFile :
+      require('path').join(require('os').tmpdir(), 'hermes-discord-thought-loop.json');
     this.logger = options && options.logger ? options.logger : function() {};
     this.client = null;
     this.handlers = null;

@@ -51,10 +51,10 @@ check "MDES Ollama reachable" "$OLLAMA" 'models'
 
 echo ""
 echo "[ Jit Repo Structure ]"
-check "core/identity exists" "$(ls /workspaces/Jit/core/ 2>/dev/null)" "identity"
-check "limbs/ollama exists" "$(ls /workspaces/Jit/limbs/ 2>/dev/null)" "ollama"
-check "brain/reasoning exists" "$(ls /workspaces/Jit/brain/ 2>/dev/null)" "reasoning"
-check "agent file exists" "$(ls /workspaces/Jit/.github/agents/ 2>/dev/null)" "innova"
+check "core/identity exists" "$(ls "$JIT_ROOT/core/" 2>/dev/null)" "identity"
+check "limbs/ollama exists" "$(ls "$JIT_ROOT/limbs/" 2>/dev/null)" "ollama"
+check "brain/reasoning exists" "$(ls "$JIT_ROOT/brain/" 2>/dev/null)" "reasoning"
+check "agent file exists" "$(ls "$JIT_ROOT/.github/agents/" 2>/dev/null)" "innova"
 
 echo ""
 echo "=== Results: $PASS pass, $FAIL fail ==="

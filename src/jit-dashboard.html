@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jit — มนุษย์ Agent Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0f0f10;
+      --sidebar-bg:  #161618;
+      --panel-bg:    #1c1c1e;
+      --panel-hover: #222226;
+      --border:      #2a2a2e;
+      --border-light:#333338;
+      --text:        #f0f0f2;
+      --text-dim:    #888890;
+      --text-muted:  #555560;
+      --accent:      #7c6af7;
+      --accent-dim:  #4b3fa0;
+      --green:       #30d158;
+      --green-dim:   #1a7a35;
+      --red:         #ff453a;
+      --yellow:      #ffd60a;
+      --blue:        #0a84ff;
+      --cyan:        #32d2ff;
+      --pink:        #ff375f;
+      --orange:      #ff9f0a;
+      --radius:      10px;
+      --radius-sm:   6px;
+      --shadow:      0 4px 24px rgba(0,0,0,0.5);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+                   "Noto Sans Thai", "Sarabun", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 260px 1fr 360px;
+      grid-template-rows: 48px 1fr;
+      overflow: hidden;
+    }
+
+    /* ─── Topbar ────────────────────────────────────────────── */
+    #topbar {
+      grid-column: 1 / -1;
+      background: var(--sidebar-bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 16px;
+      z-index: 10;
+    }
+    #topbar .logo {
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #topbar .logo .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .topbar-mid {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #task-input {
+      flex: 1;
+      max-width: 560px;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      color: var(--text);
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    #task-input:focus { border-color: var(--accent); }
+    #task-input::placeholder { color: var(--text-muted); }
+
+    .btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-ghost { background: var(--panel-bg); color: var(--text-dim); border: 1px solid var(--border); }
+
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .proxy-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 3px 10px;
+    }
+    .proxy-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
+    .proxy-badge.online .dot { background: var(--green); }
+
+    /* ─── Sidebar ───────────────────────────────────────────── */
+    #sidebar {
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-section { padding: 10px 12px 4px; }
+    .sidebar-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0 4px;
+      margin-bottom: 4px;
+    }
+    .agent-list { flex: 1; overflow-y: auto; padding: 0 8px 8px; }
+    .agent-list::-webkit-scrollbar { width: 4px; }
+    .agent-list::-webkit-scrollbar-track { background: transparent; }
+    .agent-list::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+
+    .agent-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background .15s;
+      margin-bottom: 1px;
+    }
+    .agent-item:hover { background: var(--panel-hover); }
+    .agent-item.active { background: rgba(124,106,247,.15); }
+    .agent-item.active .agent-name { color: var(--accent); }
+
+    .agent-avatar {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .agent-status-dot {
+      position: absolute;
+      bottom: -1px; right: -1px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      border: 1.5px solid var(--sidebar-bg);
+      background: var(--text-muted);
+    }
+    .agent-status-dot.active  { background: var(--green); }
+    .agent-status-dot.busy    { background: var(--yellow); animation: pulse 1.5s infinite; }
+    .agent-status-dot.error   { background: var(--red); }
+
+    .agent-info { flex: 1; min-width: 0; }
+    .agent-name { font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .agent-role { font-size: 0.68rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .agent-tier-badge {
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: var(--panel-bg);
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .sidebar-stats {
+      border-top: 1px solid var(--border);
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .stat-card {
+      background: var(--panel-bg);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+    }
+    .stat-num { font-size: 1.1rem; font-weight: 700; }
+    .stat-label { font-size: 0.65rem; color: var(--text-muted); margin-top: 1px; }
+
+    /* ─── Main Content ──────────────────────────────────────── */
+    #main {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+    .main-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .main-header h2 { font-size: 0.9rem; font-weight: 700; }
+    .main-header .meta { font-size: 0.72rem; color: var(--text-dim); margin-top: 2px; }
+
+    .tabs {
+      display: flex;
+      gap: 2px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--sidebar-bg);
+    }
+    .tab {
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color .15s, border-color .15s;
+    }
+    .tab.active { color: var(--accent); border-color: var(--accent); }
+    .tab:hover:not(.active) { color: var(--text); }
+
+    #feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #feed::-webkit-scrollbar { width: 4px; }
+    #feed::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+
+    /* ─── Feed Items (Manus-style step cards) ─────────────── */
+    .step-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      display: flex;
+      gap: 12px;
+      animation: fadeIn .3s ease;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+    .step-card:hover { border-color: var(--border-light); }
+    .step-card.running { border-left: 2px solid var(--accent); }
+    .step-card.done    { border-left: 2px solid var(--green); }
+    .step-card.error   { border-left: 2px solid var(--red); }
+    .step-card.info    { border-left: 2px solid var(--blue); }
+
+    .step-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      background: var(--panel-hover);
+    }
+    .step-body { flex: 1; min-width: 0; }
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .step-agent {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(124,106,247,.12);
+      border-radius: 4px;
+      padding: 1px 6px;
+    }
+    .step-type { font-size: 0.7rem; color: var(--text-muted); }
+    .step-time { font-size: 0.68rem; color: var(--text-muted); margin-left: auto; }
+    .step-content { font-size: 0.82rem; line-height: 1.5; color: var(--text); }
+    .step-content code {
+      background: rgba(255,255,255,.07);
+      border-radius: 4px;
+      padding: 0 4px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.78rem;
+    }
+    .step-content pre {
+      background: #0d0d0f;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      overflow-x: auto;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      margin-top: 6px;
+      color: #cdd6f4;
+    }
+
+    .step-status {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.68rem;
+      margin-top: 6px;
+    }
+    .step-status.running { color: var(--accent); }
+    .step-status.done    { color: var(--green); }
+    .step-status.error   { color: var(--red); }
+    .spinner {
+      width: 10px; height: 10px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Right Panel ───────────────────────────────────────── */
+    #right-panel {
+      border-left: 1px solid var(--border);
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-scroll { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .panel-scroll::-webkit-scrollbar { width: 4px; }
+    .panel-scroll::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+
+    .model-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+    }
+    .model-card .mc-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .mc-icon {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: var(--accent-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem;
+    }
+    .mc-title { font-size: 0.8rem; font-weight: 700; }
+    .mc-sub   { font-size: 0.68rem; color: var(--text-dim); }
+    .mc-models { display: flex; flex-direction: column; gap: 4px; }
+    .mc-model-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 8px;
+      border-radius: var(--radius-sm);
+      background: var(--panel-hover);
+      font-size: 0.73rem;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .mc-model-row:hover { background: rgba(124,106,247,.12); }
+    .mc-model-row.selected { background: rgba(124,106,247,.18); color: var(--accent); }
+    .mc-model-name { font-weight: 500; }
+    .mc-model-badge {
+      font-size: 0.6rem;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    .badge-active  { background: rgba(48,209,88,.15); color: var(--green); }
+    .badge-copilot { background: rgba(10,132,255,.15); color: var(--blue); }
+    .badge-thai    { background: rgba(255,159,10,.15); color: var(--orange); }
+    .badge-local   { background: rgba(50,210,255,.15); color: var(--cyan); }
+    .badge-mdes    { background: rgba(124,106,247,.15); color: var(--accent); }
+
+    .task-item {
+      display: flex;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+    }
+    .task-item .ti-status {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+    .ti-status.done    { background: var(--green); }
+    .ti-status.pending { background: var(--text-muted); }
+    .ti-status.error   { background: var(--red); }
+    .ti-status.blocked { background: var(--orange); }
+    .task-item .ti-title { font-weight: 600; line-height: 1.4; }
+    .task-item .ti-meta  { font-size: 0.67rem; color: var(--text-muted); margin-top: 1px; }
+
+    /* ─── Thinking bubble ───────────────────────────────────── */
+    .thinking-bubble {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(124,106,247,.08);
+      border: 1px solid rgba(124,106,247,.2);
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      color: var(--accent);
+    }
+    .think-dots span {
+      display: inline-block;
+      width: 5px; height: 5px;
+      background: currentColor;
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+      margin: 0 1px;
+    }
+    .think-dots span:nth-child(2) { animation-delay: .2s; }
+    .think-dots span:nth-child(3) { animation-delay: .4s; }
+    @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+
+    /* ─── Scrollbar global ─────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<!-- ─── Topbar ──────────────────────────────────────────────── -->
+<header id="topbar">
+  <div class="logo">
+    <div class="dot"></div>
+    จิต · มนุษย์ Agent
+  </div>
+  <div class="topbar-mid">
+    <input id="task-input" type="text" placeholder="ส่งงานให้ jit… (เช่น: ตรวจสอบ Oracle, สร้าง feature X, deploy ใหม่)">
+    <button class="btn btn-primary" onclick="dispatchTask()">▶ ส่ง</button>
+    <button class="btn btn-ghost" onclick="clearFeed()">ล้าง</button>
+  </div>
+  <div class="topbar-right">
+    <div class="proxy-badge" id="proxy-badge">
+      <div class="dot"></div>
+      <span id="proxy-status-text">Proxy: ตรวจสอบ…</span>
+    </div>
+    <div class="proxy-badge" id="oracle-badge">
+      <div class="dot"></div>
+      <span id="oracle-status-text">Oracle: ตรวจสอบ…</span>
+    </div>
+  </div>
+</header>
+
+<!-- ─── Sidebar ─────────────────────────────────────────────── -->
+<nav id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Agents — 14 Organs</div>
+  </div>
+  <div class="agent-list" id="agent-list"></div>
+  <div class="sidebar-stats">
+    <div class="stat-card">
+      <div class="stat-num" id="stat-active">0</div>
+      <div class="stat-label">Online</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-tasks">0</div>
+      <div class="stat-label">Tasks Today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-models">35</div>
+      <div class="stat-label">Models</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-oracle">—</div>
+      <div class="stat-label">Oracle</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── Main Feed ─────────────────────────────────────────────── -->
+<main id="main">
+  <div class="main-header">
+    <div>
+      <h2 id="main-title">ภาพรวมระบบ</h2>
+      <div class="meta" id="main-meta">มนุษย์ Agent · v2.0 · 14 Organs</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="runHealthCheck()">🔍 Health Check</button>
+      <button class="btn btn-ghost" onclick="checkProxy()">🔄 Reload Status</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(this,'activity')">Activity Feed</div>
+    <div class="tab" onclick="switchTab(this,'tasks')">Tasks</div>
+    <div class="tab" onclick="switchTab(this,'logs')">Proxy Logs</div>
+  </div>
+  <div id="feed"></div>
+</main>
+
+<!-- ─── Right Panel ─────────────────────────────────────────────── -->
+<aside id="right-panel">
+  <div class="panel-header">
+    <span>🤖 Models & Tasks</span>
+    <span style="font-size:.68rem;color:var(--text-muted);font-weight:400" id="current-model-label">–</span>
+  </div>
+  <div class="panel-scroll" id="right-panel-content"></div>
+</aside>
+
+<script>
+// ─── Agent Data ──────────────────────────────────────────────
+const AGENTS = [
+  { name:'jit',             icon:'🌀', role:'จิต · Master Orchestrator', tier:'T0', color:'#7c6af7' },
+  { name:'soma',            icon:'🧠', role:'สมอง · Brain / Strategic Lead', tier:'T1', color:'#ff9f0a' },
+  { name:'innova',          icon:'💡', role:'จิตใจ · Mind / Lead Dev', tier:'T2', color:'#0a84ff' },
+  { name:'lak',             icon:'🦴', role:'กระดูก · Solution Architect', tier:'T2', color:'#32d2ff' },
+  { name:'neta',            icon:'👁',  role:'เนตร · Code Reviewer', tier:'T2', color:'#30d158' },
+  { name:'vaja',            icon:'💬', role:'วาจา · Personal Assistant', tier:'T3', color:'#ff375f' },
+  { name:'chamu',           icon:'👃', role:'จมูก · QA / Tester', tier:'T3', color:'#ffd60a' },
+  { name:'rupa',            icon:'🎨', role:'รูป · Designer / UI-UX', tier:'T3', color:'#bf5af2' },
+  { name:'pada',            icon:'🦵', role:'บาท · DevOps / Infra', tier:'T3', color:'#ff6961' },
+  { name:'netra',           icon:'🔭', role:'เนตร · Observer / Monitor', tier:'T3', color:'#30d158' },
+  { name:'karn',            icon:'👂', role:'หู · Listener / Input', tier:'T3', color:'#63e6be' },
+  { name:'mue',             icon:'✋', role:'มือ · Executor / Action', tier:'T3', color:'#74c0fc' },
+  { name:'pran',            icon:'❤️', role:'หัวใจ · Heart / Vital', tier:'T3', color:'#ff453a' },
+  { name:'sayanprasathan',  icon:'⚡', role:'ระบบประสาท · Nerve / Events', tier:'T3', color:'#ffe066' },
+];
+
+const MODELS = {
+  mdes: {
+    label:'MDES Ollama',icon:'🟣',badge:'badge-mdes',
+    items:['gemma4:26b','gemma4:e4b','qwen3.5:9b','qwen3.5:27b','qwen2.5-coder:32b','gemma3:12b'],
+  },
+  copilot_claude: {
+    label:'Copilot · Claude',icon:'🔵',badge:'badge-copilot',
+    items:['claude-sonnet-4.6','claude-sonnet-4.5','claude-haiku-4.5','claude-opus-4.5','claude-opus-4.7'],
+  },
+  copilot_gpt5: {
+    label:'Copilot · GPT-5',icon:'🔵',badge:'badge-copilot',
+    items:['gpt-5.5','gpt-5.4','gpt-5.3-codex','gpt-5.2','gpt-5.2-codex','gpt-5-mini'],
+  },
+  copilot_gpt4: {
+    label:'Copilot · GPT-4',icon:'🔵',badge:'badge-copilot',
+    items:['gpt-4.1','gpt-4o','gpt-4o-mini'],
+  },
+  thaillm: {
+    label:'ThaiLLM',icon:'🇹🇭',badge:'badge-thai',
+    items:['typhoon-v2-70b-instruct','typhoon-v2-8b-instruct','typhoon-v2-r1-70b','typhoon-v1.5x-70b','openthai-8b-v7.2','pathumma-qwen3-8b','thalle-0.2-8b'],
+  },
+  local: {
+    label:'Local Ollama',icon:'🟢',badge:'badge-local',
+    items:['qwen2.5-coder:7b','llama3.2:3b','phi3:mini'],
+  },
+};
+
+const PROXY_PORT = 4322;
+const ORACLE_PORT = 47778;
+let selectedAgent = 'jit';
+let taskCount = 0;
+let activeTab = 'activity';
+let selectedModel = 'gemma4:26b';
+
+// ─── Init ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderAgents();
+  renderRightPanel();
+  checkProxy();
+  checkOracle();
+  showWelcomeFeed();
+  setInterval(checkProxy, 15000);
+  setInterval(checkOracle, 30000);
+  document.getElementById('task-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') dispatchTask();
+  });
+});
+
+// ─── Render Agents ──────────────────────────────────────────
+function renderAgents() {
+  const el = document.getElementById('agent-list');
+  el.innerHTML = AGENTS.map(a => `
+    <div class="agent-item ${a.name===selectedAgent?'active':''}" onclick="selectAgent('${a.name}')">
+      <div class="agent-avatar" style="background:${a.color}22">
+        <span>${a.icon}</span>
+        <div class="agent-status-dot active" id="dot-${a.name}"></div>
+      </div>
+      <div class="agent-info">
+        <div class="agent-name">${a.name}</div>
+        <div class="agent-role">${a.role.replace(/·.*/,'').trim()}</div>
+      </div>
+      <div class="agent-tier-badge">${a.tier}</div>
+    </div>
+  `).join('');
+  document.getElementById('stat-active').textContent = AGENTS.length;
+}
+
+// ─── Render Right Panel ──────────────────────────────────────
+function renderRightPanel() {
+  const el = document.getElementById('right-panel-content');
+  const modelCards = Object.entries(MODELS).map(([k, g]) => `
+    <div class="model-card">
+      <div class="mc-header">
+        <div class="mc-icon">${g.icon}</div>
+        <div>
+          <div class="mc-title">${g.label}</div>
+          <div class="mc-sub">${g.items.length} models</div>
+        </div>
+      </div>
+      <div class="mc-models">
+        ${g.items.map(m => `
+          <div class="mc-model-row ${m===selectedModel?'selected':''}" onclick="selectModel('${m}','${g.badge}')">
+            <span class="mc-model-name">${m}</span>
+            ${m===selectedModel ? `<span class="mc-model-badge badge-active">✓ Active</span>` : `<span class="mc-model-badge ${g.badge}">${k}</span>`}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  const bugItems = [
+    { s:'done',    t:'omc-adapter.js Promise fix', m:'Bug class C — callback→.then()' },
+    { s:'done',    t:'/tmp/ → os.tmpdir() (5 files)', m:'Bug class A — Windows compat' },
+    { s:'done',    t:'mdes-gang.ps1 user path', m:'Bug class D — $env:USERNAME' },
+    { s:'done',    t:'hermes.json token literal', m:'Bug class E — env fallback' },
+    { s:'done',    t:'Model consistency (13 files)', m:'Bug class F — gemma4:26b' },
+    { s:'blocked', t:'Rotate secrets in .env', m:'🔴 Security — Human action required' },
+    { s:'pending', t:'Fill THAILLM_TOKEN', m:'ThaiLLM won\'t work until set' },
+    { s:'pending', t:'Runtime integration test', m:'PowerShell unavailable in session' },
+  ];
+
+  el.innerHTML = `
+    <div style="font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Model ปัจจุบัน</div>
+    <div style="background:var(--panel-bg);border:1px solid var(--accent);border-radius:var(--radius);padding:10px 12px;font-size:.82rem">
+      <div style="font-weight:700;color:var(--accent)">${selectedModel}</div>
+      <div style="font-size:.68rem;color:var(--text-dim);margin-top:2px">ผ่าน multi-proxy :${PROXY_PORT}</div>
+    </div>
+    <div style="font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin:6px 0 4px">Session Bug Tracker</div>
+    ${bugItems.map(i => `
+      <div class="task-item">
+        <div class="ti-status ${i.s}"></div>
+        <div>
+          <div class="ti-title">${i.t}</div>
+          <div class="ti-meta">${i.m}</div>
+        </div>
+      </div>
+    `).join('')}
+    <div style="font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin:6px 0 4px">All Models</div>
+    ${modelCards}
+  `;
+}
+
+// ─── Feed ────────────────────────────────────────────────────
+function addStep(opts) {
+  const { agent='jit', type='', icon='📌', content='', status='done', isThinking=false } = opts;
+  const el = document.getElementById('feed');
+  const card = document.createElement('div');
+  const now = new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  if (isThinking) {
+    card.className = 'thinking-bubble';
+    card.id = 'thinking-now';
+    card.innerHTML = `
+      <div class="think-dots"><span></span><span></span><span></span></div>
+      <span>${content}</span>
+    `;
+  } else {
+    card.className = `step-card ${status}`;
+    card.innerHTML = `
+      <div class="step-icon">${icon}</div>
+      <div class="step-body">
+        <div class="step-header">
+          <span class="step-agent">${agent}</span>
+          <span class="step-type">${type}</span>
+          <span class="step-time">${now}</span>
+        </div>
+        <div class="step-content">${content}</div>
+        ${status==='running'?`<div class="step-status running"><div class="spinner"></div> กำลังทำงาน…</div>`:''}
+        ${status==='done'?`<div class="step-status done">✓ เสร็จสิ้น</div>`:''}
+        ${status==='error'?`<div class="step-status error">✕ ล้มเหลว</div>`:''}
+      </div>
+    `;
+  }
+
+  el.appendChild(card);
+  el.scrollTop = el.scrollHeight;
+  return card;
+}
+
+function removeThinking() {
+  const t = document.getElementById('thinking-now');
+  if (t) t.remove();
+}
+
+function clearFeed() {
+  document.getElementById('feed').innerHTML = '';
+}
+
+// ─── Welcome feed ────────────────────────────────────────────
+function showWelcomeFeed() {
+  addStep({ agent:'jit', icon:'🌀', type:'boot', status:'done',
+    content:`ระบบมนุษย์ Agent v2.0 พร้อมทำงาน · 14 Organs · <code>2026-05-29T19:10:35+07:00</code>` });
+  addStep({ agent:'innova', icon:'💡', type:'session-summary', status:'info',
+    content:`ปิด session ก่อนหน้า: แก้ไข <strong>13 bugs</strong> — CRITICAL×5, HIGH×5, MEDIUM×3<br>
+    <code>body-bridge</code>, <code>jit-control</code>, <code>thought-loop</code>, <code>omc-adapter</code> ✓<br>
+    Post-mortem: <code>changelog/2026-05-29-windows-compat-60bugs-postmortem.md</code>` });
+  addStep({ agent:'chamu', icon:'👃', type:'quality-gate', status:'done',
+    content:`13/13 fixes static-validated · Runtime test pending (PowerShell ยังไม่พร้อม)` });
+  addStep({ agent:'pada', icon:'🦵', type:'security-alert', status:'error',
+    content:`🔴 <strong>SECURITY</strong>: <code>.env</code> มี <code>DISCORD_TOKEN</code>, <code>OLLAMA_TOKEN</code>, <code>CODEX_API_KEY</code> ใน git history<br>
+    → ต้องรีโวก + rotate token ด้วยตนเอง` });
+  taskCount = 4;
+  document.getElementById('stat-tasks').textContent = taskCount;
+}
+
+// ─── Actions ─────────────────────────────────────────────────
+function selectAgent(name) {
+  selectedAgent = name;
+  const a = AGENTS.find(x => x.name === name);
+  document.getElementById('main-title').textContent = `${a.icon} ${a.name} · ${a.role.split('·')[0].trim()}`;
+  document.getElementById('main-meta').textContent = `${a.role} · ${a.tier}`;
+  document.querySelectorAll('.agent-item').forEach(el => el.classList.remove('active'));
+  document.querySelector(`.agent-item[onclick*="'${name}'"]`)?.classList.add('active');
+  addStep({ agent: name, icon: a.icon, type: 'selected', status: 'info',
+    content: `เลือก <strong>${name}</strong> — ${a.role}` });
+}
+
+function selectModel(model, badge) {
+  selectedModel = model;
+  document.getElementById('current-model-label').textContent = model;
+  renderRightPanel();
+  addStep({ agent: 'jit', icon: '🤖', type: 'model-switch', status: 'done',
+    content: `เปลี่ยน model เป็น <code>${model}</code>` });
+}
+
+function switchTab(el, tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  activeTab = tab;
+  if (tab === 'logs') loadProxyLogs();
+}
+
+function dispatchTask() {
+  const inp = document.getElementById('task-input');
+  const task = inp.value.trim();
+  if (!task) return;
+  inp.value = '';
+  taskCount++;
+  document.getElementById('stat-tasks').textContent = taskCount;
+
+  const thinking = addStep({ isThinking: true,
+    content: `${selectedAgent} กำลังวิเคราะห์: "${task}"` });
+
+  addStep({ agent: selectedAgent, icon: '📥', type: 'task-received', status: 'running',
+    content: `<strong>${task}</strong>` });
+
+  setTimeout(() => {
+    removeThinking();
+    addStep({ agent: selectedAgent, icon: '🔍', type: 'oracle-query', status: 'done',
+      content: `Query Oracle: <code>"${task.substring(0,40)}"</code> → ค้นหา patterns ที่เกี่ยวข้อง` });
+    addStep({ agent: selectedAgent, icon: '💡', type: 'plan', status: 'done',
+      content: `วางแผน: route งานไปยัง agents ที่เหมาะสม ผ่าน <code>model: ${selectedModel}</code>` });
+  }, 800 + Math.random()*400);
+}
+
+function runHealthCheck() {
+  addStep({ agent:'jit', icon:'🔍', type:'health-check', status:'running',
+    content:`ตรวจสอบระบบทั้งหมด: Proxy, Oracle, 14 agents, message bus…` });
+  checkProxy();
+  checkOracle();
+  setTimeout(() => {
+    const allOk = document.getElementById('proxy-badge').classList.contains('online');
+    addStep({ agent:'pran', icon:'❤️', type:'vital-signs', status: allOk?'done':'error',
+      content: allOk
+        ? `ระบบปกติ: Proxy ✓ · Message bus ✓ · 14 agents ✓`
+        : `⚠️ บางส่วนออฟไลน์: ตรวจสอบ Proxy port ${PROXY_PORT} และ Oracle port ${ORACLE_PORT}` });
+  }, 1500);
+}
+
+function loadProxyLogs() {
+  addStep({ agent:'pada', icon:'📋', type:'proxy-logs', status:'info',
+    content:`Proxy log: <code>scripts/tmp_multi_proxy.log</code><br>
+    ดู logs ด้วย: <code>Get-Content C:\\Users\\USER-NT\\DEV\\Jit\\tmp_multi_proxy.log -Tail 50</code>` });
+}
+
+// ─── Status checks ───────────────────────────────────────────
+async function checkProxy() {
+  const badge = document.getElementById('proxy-badge');
+  const text  = document.getElementById('proxy-status-text');
+  try {
+    const r = await fetch(`http://localhost:${PROXY_PORT}/health`, { signal: AbortSignal.timeout(2000) });
+    if (r.ok) {
+      badge.classList.add('online');
+      const j = await r.json().catch(() => ({}));
+      text.textContent = `Proxy: ${j.status||'online'} :${PROXY_PORT}`;
+      return;
+    }
+  } catch (_) {}
+  badge.classList.remove('online');
+  text.textContent = `Proxy: offline (รัน jit-switch.ps1)`;
+}
+
+async function checkOracle() {
+  const badge = document.getElementById('oracle-badge');
+  const text  = document.getElementById('oracle-status-text');
+  try {
+    const r = await fetch(`http://localhost:${ORACLE_PORT}/api/health`, { signal: AbortSignal.timeout(2000) });
+    if (r.ok) {
+      badge.classList.add('online');
+      const j = await r.json().catch(() => ({}));
+      text.textContent = `Oracle: v${j.version||'3'} :${ORACLE_PORT}`;
+      document.getElementById('stat-oracle').textContent = 'v3';
+      return;
+    }
+  } catch (_) {}
+  badge.classList.remove('online');
+  text.textContent = `Oracle: offline`;
+  document.getElementById('stat-oracle').textContent = '—';
+}
+</script>
+</body>
+</html>

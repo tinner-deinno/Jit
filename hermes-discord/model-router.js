@@ -71,7 +71,7 @@ const OLLAMA_MDES_MODEL = process.env.OLLAMA_MDES_MODEL || process.env.OLLAMA_MO
 // Local: localhost Ollama (zero latency)
 const OLLAMA_LOCAL_URL   = process.env.OLLAMA_LOCAL_URL   || 'http://localhost:11434';
 const OLLAMA_LOCAL_TOKEN = process.env.OLLAMA_LOCAL_TOKEN || '';
-const OLLAMA_LOCAL_MODEL  = process.env.OLLAMA_LOCAL_MODEL  || 'llama2:latest';
+const OLLAMA_LOCAL_MODEL  = process.env.OLLAMA_LOCAL_MODEL  || 'qwen2.5-coder:7b';
 
 // Cloud: Ollama.com (free tier, backup)
 const OLLAMA_CLOUD_URL   = process.env.OLLAMA_CLOUD_URL   || 'https://ollama.com';
@@ -196,7 +196,7 @@ class BackendManager {
 const backendManager = new BackendManager();
 
 // ── Error counters (reset on success) ────────────────────────────────
-const _errors = { copilot: 0, openai: 0, ollama: 0, openclaude: 0 };
+const _errors = { copilot: 0, openai: 0, ollama: 0, ollama_mdes: 0, ollama_local: 0, ollama_cloud: 0, thaillm: 0, openclaude: 0 };
 
 function _isCopilotOAuthToken(token) {
   var t = String(token || '').trim();

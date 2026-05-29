@@ -26,6 +26,11 @@ const MCP_PORT   = parseInt(process.env.MCP_PORT || '7010', 10);
 const MCP_BASE   = `http://${MCP_HOST}:${MCP_PORT}`;
 const PSI_ROOT   = process.env.PSI_DIR || path.join(__dirname, '..', '..', 'innova-bot-template', 'psi');
 
+// Warn if PSI_ROOT doesn't exist — non-fatal, innova-bot may not be installed
+if (!fs.existsSync(PSI_ROOT)) {
+  process.stdout.write('[jit-innova-bridge] PSI_ROOT not found: ' + PSI_ROOT + ' — set PSI_DIR env var to fix\n');
+}
+
 // ── HTTP helper: POST to innova-bot MCP ─────────────────────────────
 function mcpPost(endpoint, body, callback) {
   const bodyStr = JSON.stringify(body);
@@ -123,6 +128,10 @@ function listMcpTools() {
 // ── Pull innova psi/ memory files ────────────────────────────────────
 function getInnovaMemory() {
   var summary = { psiRoot: PSI_ROOT, files: {}, available: false };
+  if (!fs.existsSync(PSI_ROOT)) {
+    summary.error = 'PSI_ROOT not found: ' + PSI_ROOT + '. Set PSI_DIR env var.';
+    return summary;
+  }
   try {
     var keyFiles = [
       'memory/soul_sync.md',

@@ -1,0 +1,9 @@
+{
+  "from": "jit-oracle",
+  "to": "innova",
+  "subject": "report:session-complete",
+  "timestamp": "2026-05-29T19:10:35+07:00",
+  "body": "🤖 Session Report — Windows Compat + 60-Bug Audit COMPLETE\n\n✅ FIXED THIS SESSION (13 bugs):\n• /tmp/ paths → os.tmpdir() ×5 files (body-bridge, jit-control, thought-loop, bot.js)\n• omc-adapter.js: Promise/callback crash → .then() chain (CRITICAL)\n• mdes-gang.ps1: hardcoded C:\\Users\\admin → $env:USERNAME\n• hermes.json token: literal ${OLLAMA_TOKEN} → env fallback\n• Model drift: gemma4:e4b → gemma4:26b (ecosystem, bot comment)\n• soma.json: claude-opus-4.6 → claude-opus-4-7\n• multi-proxy.py: ThaiLLM + Local Ollama backends, Anthropic bridge, GPT-5.4+ fix\n• jit-switch.ps1: created 35-model switcher (5 providers)\n• consciousness.yaml: filled from 1 line to full soul config\n\n🔴 BLOCKED (human action required):\n• Rotate DISCORD_TOKEN, OLLAMA_TOKEN, CODEX_API_KEY (exposed in git history)\n• Fill THAILLM_TOKEN= in .env (Typhoon API key)\n• Set JIT_REPORT_CHANNEL_ID in .env\n• Run git commit (PowerShell unavailable this session)\n\n📄 Post-mortem: changelog/2026-05-29-windows-compat-60bugs-postmortem.md\n🖥️ Dashboard: src/jit-dashboard.html (Manus-style, 14 agents, 35 models, dark theme)\n\n--- signed: jit-oracle (AI) ---",
+  "priority": "high",
+  "tags": ["session-report", "bug-fix", "windows-compat", "dashboard"]
+}

@@ -8,7 +8,7 @@ const os = require('os');
 const path = require('path');
 
 const JIT_ROOT = process.env.JIT_ROOT || path.resolve(__dirname, '..');
-const BUS_ROOT = process.env.JIT_BUS_DIR || '/tmp/manusat-bus';
+const BUS_ROOT = process.env.JIT_BUS_DIR || require('path').join(require('os').tmpdir(), 'manusat-bus');
 const TOPOLOGY_FILE = process.env.JIT_TOPOLOGY_FILE || path.join(JIT_ROOT, 'config', 'jit-topology.json');
 const ORACLE_URL = process.env.ORACLE_URL || ('http://127.0.0.1:' + (process.env.ORACLE_PORT || '47778'));
 const OLLAMA_URL = process.env.OLLAMA_BASE_URL || 'https://ollama.mdes-innova.online';
