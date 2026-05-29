@@ -21,7 +21,7 @@ Claude Code:
     claude --dangerously-skip-permissions
 """
 
-import os, json, time, threading, urllib.request, urllib.error, glob
+import os, json, time, re, threading, urllib.request, urllib.error, glob
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 # ─── Config ───────────────────────────────────────────────────────────
@@ -42,8 +42,18 @@ OLLAMA_MODEL       = os.environ.get("OLLAMA_MODEL", "gemma4:26b")
 
 GITHUB_TOKEN       = os.environ.get("GITHUB_TOKEN", "") or os.environ.get("GH_TOKEN", "")
 
+# ThaiLLM — Typhoon (SCB10X), OpenThaiGPT (AIEAT), Pathumma (NECTEC), THaLLE (KBTG)
+THAILLM_TOKEN    = os.environ.get("THAILLM_TOKEN", "")
+THAILLM_BASE_URL = os.environ.get("THAILLM_BASE_URL", "https://api.opentyphoon.ai")
+THAILLM_MODEL    = os.environ.get("THAILLM_MODEL", "typhoon-v2-8b-instruct")
+
+# Local Ollama (localhost)
+OLLAMA_LOCAL_URL   = os.environ.get("OLLAMA_LOCAL_URL", "http://127.0.0.1:11434")
+OLLAMA_LOCAL_MODEL = os.environ.get("OLLAMA_LOCAL_MODEL", "qwen2.5-coder:7b")
+OLLAMA_LOCAL_TOKEN = os.environ.get("OLLAMA_LOCAL_TOKEN", "")
+
 # Backend order — first available wins, rotates on quota error
-_BACKEND_ORDER_ENV = os.environ.get("MULTI_BACKEND_ORDER", "openai,copilot,ollama")
+_BACKEND_ORDER_ENV = os.environ.get("MULTI_BACKEND_ORDER", "ollama,copilot,thaillm,local,openai")
 BACKEND_ORDER = [b.strip() for b in _BACKEND_ORDER_ENV.split(",") if b.strip()]
 
 # ─── Copilot token auto-detect ────────────────────────────────────────
@@ -157,9 +167,29 @@ def _init_backends():
 
     if OLLAMA_TOKEN:
         available.append("ollama")
-        print(f"[MULTI] ✓ Ollama backend (model: {OLLAMA_MODEL})", flush=True)
+        print(f"[MULTI] ✓ Ollama/MDES backend (model: {OLLAMA_MODEL})", flush=True)
     else:
-        print("[MULTI] ○ Ollama: no OLLAMA_TOKEN", flush=True)
+        print("[MULTI] ○ Ollama/MDES: no OLLAMA_TOKEN", flush=True)
+
+    if THAILLM_TOKEN:
+        available.append("thaillm")
+        print(f"[MULTI] ✓ ThaiLLM backend (model: {THAILLM_MODEL})", flush=True)
+    else:
+        print("[MULTI] ○ ThaiLLM: no THAILLM_TOKEN", flush=True)
+
+    # Local Ollama — ping /api/tags to detect
+    try:
+        req = urllib.request.Request(f"{OLLAMA_LOCAL_URL}/api/tags", method="GET")
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            tags_raw = json.loads(resp.read())
+        local_models = [m["name"] for m in tags_raw.get("models", [])]
+        if local_models:
+            available.append("local")
+            print(f"[MULTI] ✓ Local Ollama backend ({len(local_models)} models: {', '.join(local_models[:3])}...)", flush=True)
+        else:
+            print("[MULTI] ○ Local Ollama: running but no models installed", flush=True)
+    except Exception:
+        print(f"[MULTI] ○ Local Ollama: not reachable at {OLLAMA_LOCAL_URL}", flush=True)
 
     ordered = [b for b in BACKEND_ORDER if b in available]
     if not ordered:
@@ -246,11 +276,16 @@ def anthropic_to_openai(body: dict, model: str) -> dict:
 
         oai_msgs.append({"role": role, "content": _content_to_str(content)})
 
+    tok_limit = min(int(max_tok), 16384)
     result = {
         "model": model,
         "messages": oai_msgs,
-        "max_tokens": min(int(max_tok), 16384),
     }
+    # GPT-5.4 / GPT-5.5 require max_completion_tokens instead of max_tokens
+    if re.match(r"^gpt-5\.[45]", model):
+        result["max_completion_tokens"] = tok_limit
+    else:
+        result["max_tokens"] = tok_limit
 
     # Convert Anthropic tools → OpenAI tools
     if "tools" in body and body["tools"]:
@@ -413,9 +448,10 @@ def _build_sse_events(anthr_resp: dict) -> bytes:
 
 # ─── Backend callers ──────────────────────────────────────────────────
 
-def _call_openai(body: dict) -> dict:
+def _call_openai(body: dict, model_override: str = None) -> dict:
     """Call OpenAI Chat Completions API"""
-    oai_body = anthropic_to_openai(body, OPENAI_MODEL)
+    model    = model_override or OPENAI_MODEL
+    oai_body = anthropic_to_openai(body, model)
     payload  = json.dumps(oai_body).encode()
     req = urllib.request.Request(
         f"{OPENAI_BASE_URL}/v1/chat/completions",
@@ -428,7 +464,7 @@ def _call_openai(body: dict) -> dict:
     )
     with urllib.request.urlopen(req, timeout=180) as resp:
         raw  = json.loads(resp.read())
-        return openai_to_anthropic(raw, f"openai/{OPENAI_MODEL}")
+        return openai_to_anthropic(raw, f"openai/{model}")
 
 
 def _get_copilot_token() -> str:
@@ -444,13 +480,14 @@ def _get_copilot_token() -> str:
     return _copilot_bearer
 
 
-def _call_copilot(body: dict) -> dict:
+def _call_copilot(body: dict, model_override: str = None) -> dict:
     """Call GitHub Copilot Chat Completions API"""
     token = _get_copilot_token()
     if not token:
         raise RuntimeError("No Copilot token available")
 
-    oai_body = anthropic_to_openai(body, COPILOT_MODEL)
+    model    = model_override or COPILOT_MODEL
+    oai_body = anthropic_to_openai(body, model)
     payload  = json.dumps(oai_body).encode()
     req = urllib.request.Request(
         f"{COPILOT_BASE_URL}/chat/completions",
@@ -467,12 +504,13 @@ def _call_copilot(body: dict) -> dict:
     )
     with urllib.request.urlopen(req, timeout=180) as resp:
         raw = json.loads(resp.read())
-        return openai_to_anthropic(raw, f"copilot/{COPILOT_MODEL}")
+        return openai_to_anthropic(raw, f"copilot/{model}")
 
 
-def _call_ollama(body: dict) -> dict:
+def _call_ollama(body: dict, model_override: str = None) -> dict:
     """Call MDES Ollama /api/chat"""
-    ollama_body = anthropic_to_ollama(body, OLLAMA_MODEL)
+    model       = model_override or OLLAMA_MODEL
+    ollama_body = anthropic_to_ollama(body, model)
     payload     = json.dumps(ollama_body).encode()
     req = urllib.request.Request(
         f"{OLLAMA_BASE_URL}/api/chat",
@@ -485,13 +523,55 @@ def _call_ollama(body: dict) -> dict:
     )
     with urllib.request.urlopen(req, timeout=180) as resp:
         raw = json.loads(resp.read())
-        return ollama_to_anthropic(raw, f"ollama/{OLLAMA_MODEL}")
+        return ollama_to_anthropic(raw, f"mdes/{model}")
+
+
+def _call_thaillm(body: dict, model_override: str = None) -> dict:
+    """Call ThaiLLM OpenAI-compatible API (Typhoon, OpenThaiGPT, Pathumma, THaLLE)"""
+    if not THAILLM_TOKEN:
+        raise RuntimeError("No THAILLM_TOKEN set")
+    model    = model_override or THAILLM_MODEL
+    oai_body = anthropic_to_openai(body, model)
+    payload  = json.dumps(oai_body).encode()
+    req = urllib.request.Request(
+        f"{THAILLM_BASE_URL}/v1/chat/completions",
+        data=payload,
+        headers={
+            "Content-Type":  "application/json",
+            "Authorization": f"Bearer {THAILLM_TOKEN}",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=180) as resp:
+        raw = json.loads(resp.read())
+        return openai_to_anthropic(raw, f"thaillm/{model}")
+
+
+def _call_local(body: dict, model_override: str = None) -> dict:
+    """Call Local Ollama /api/chat"""
+    model       = model_override or OLLAMA_LOCAL_MODEL
+    ollama_body = anthropic_to_ollama(body, model)
+    payload     = json.dumps(ollama_body).encode()
+    headers = {"Content-Type": "application/json"}
+    if OLLAMA_LOCAL_TOKEN:
+        headers["Authorization"] = f"Bearer {OLLAMA_LOCAL_TOKEN}"
+    req = urllib.request.Request(
+        f"{OLLAMA_LOCAL_URL}/api/chat",
+        data=payload,
+        headers=headers,
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=180) as resp:
+        raw = json.loads(resp.read())
+        return ollama_to_anthropic(raw, f"local/{model}")
 
 
 _BACKEND_CALLERS = {
-    "openai":  _call_openai,
-    "copilot": _call_copilot,
-    "ollama":  _call_ollama,
+    "openai":   _call_openai,
+    "copilot":  _call_copilot,
+    "ollama":   _call_ollama,
+    "thaillm":  _call_thaillm,
+    "local":    _call_local,
 }
 
 # ─── Backend rotation ─────────────────────────────────────────────────
@@ -516,8 +596,42 @@ def _current_backend() -> str:
     return _available_backends[_state["backend_idx"] % len(_available_backends)]
 
 
+def _parse_model_prefix(raw_model: str):
+    """
+    Returns (backend, clean_model).
+    Prefixes: copilot/, mdes/, thaillm/, local/, openai/
+    """
+    for prefix, backend in (
+        ("copilot/",  "copilot"),
+        ("mdes/",     "ollama"),
+        ("thaillm/",  "thaillm"),
+        ("local/",    "local"),
+        ("openai/",   "openai"),
+    ):
+        if raw_model.lower().startswith(prefix):
+            return backend, raw_model[len(prefix):]
+    return None, raw_model
+
+
 def call_with_rotation(body: dict) -> dict:
-    """Call current backend, rotate on error, try all backends"""
+    """Call backend. If model has a prefix (e.g. copilot/...) pin that backend.
+    Otherwise rotate across available backends."""
+    raw_model = body.get("model", "")
+    pinned_backend, clean_model = _parse_model_prefix(raw_model)
+
+    if pinned_backend:
+        body = {**body, "model": clean_model}
+        caller = _BACKEND_CALLERS.get(pinned_backend)
+        if not caller:
+            raise RuntimeError(f"No caller for pinned backend: {pinned_backend}")
+        snippet = json.dumps(body)[:80].replace("\n", " ")
+        print(f"[MULTI] → [{pinned_backend}:{clean_model}] {snippet}...", flush=True)
+        result = caller(body, clean_model)
+        out_tok = result.get("usage", {}).get("output_tokens", 0)
+        print(f"[MULTI] ✓ {pinned_backend} → {out_tok} tokens", flush=True)
+        return result
+
+    # No prefix — rotate across available backends
     tries = max(len(_available_backends), 1)
 
     for attempt in range(tries):
@@ -600,19 +714,54 @@ class ProxyHandler(BaseHTTPRequestHandler):
                 "rotations":        _state["rotations"],
                 "uptime_secs":      uptime,
                 "backends": {
-                    "openai":  bool(OPENAI_API_KEY),
-                    "copilot": bool(_copilot_bearer),
-                    "ollama":  bool(OLLAMA_TOKEN),
+                    "openai":   bool(OPENAI_API_KEY),
+                    "copilot":  bool(_copilot_bearer),
+                    "ollama":   bool(OLLAMA_TOKEN),
+                    "thaillm":  bool(THAILLM_TOKEN),
+                    "local":    "local" in _available_backends,
                 },
             })
         elif "/v1/models" in self.path:
             models = [
-                {"id": "multi-proxy",   "object": "model"},
-                {"id": "gpt-4o",        "object": "model"},
-                {"id": "gpt-4.1",       "object": "model"},
-                {"id": "o4-mini",       "object": "model"},
-                {"id": "copilot-gpt4o", "object": "model"},
-                {"id": "gemma4:26b",    "object": "model"},
+                # MDES Ollama
+                {"id": "mdes/gemma4:26b",           "object": "model"},
+                {"id": "mdes/qwen3.5:9b",            "object": "model"},
+                {"id": "mdes/qwen3.5:27b",           "object": "model"},
+                {"id": "mdes/qwen2.5-coder:32b",     "object": "model"},
+                {"id": "mdes/gemma4:e4b",            "object": "model"},
+                {"id": "mdes/gemma3:12b",            "object": "model"},
+                # Copilot Claude (bridged)
+                {"id": "copilot/claude-sonnet-4.6",  "object": "model"},
+                {"id": "copilot/claude-sonnet-4.5",  "object": "model"},
+                {"id": "copilot/claude-haiku-4.5",   "object": "model"},
+                {"id": "copilot/claude-opus-4.5",    "object": "model"},
+                {"id": "copilot/claude-opus-4.7",    "object": "model"},
+                # Copilot GPT-5
+                {"id": "copilot/gpt-5.5",            "object": "model"},
+                {"id": "copilot/gpt-5.4",            "object": "model"},
+                {"id": "copilot/gpt-5.3-codex",      "object": "model"},
+                {"id": "copilot/gpt-5.2",            "object": "model"},
+                {"id": "copilot/gpt-5.2-codex",      "object": "model"},
+                {"id": "copilot/gpt-5-mini",         "object": "model"},
+                # Copilot GPT-4
+                {"id": "copilot/gpt-4.1",            "object": "model"},
+                {"id": "copilot/gpt-4o",             "object": "model"},
+                {"id": "copilot/gpt-4o-mini",        "object": "model"},
+                # Copilot Gemini
+                {"id": "copilot/gemini-2.5-pro",     "object": "model"},
+                # ThaiLLM
+                {"id": "thaillm/typhoon-v2-70b-instruct",         "object": "model"},
+                {"id": "thaillm/typhoon-v2-8b-instruct",          "object": "model"},
+                {"id": "thaillm/typhoon-v2-r1-70b",               "object": "model"},
+                {"id": "thaillm/typhoon-v1.5x-70b-instruct",      "object": "model"},
+                {"id": "thaillm/Typhoon-S-ThaiLLM-8B-Instruct",   "object": "model"},
+                {"id": "thaillm/OpenThaiGPT-ThaiLLM-8B-Instruct-v7.2", "object": "model"},
+                {"id": "thaillm/Pathumma-ThaiLLM-qwen3-8b-think-3.0.0", "object": "model"},
+                {"id": "thaillm/THaLLE-0.2-ThaiLLM-8B-fa",       "object": "model"},
+                # Local Ollama
+                {"id": "local/qwen2.5-coder:7b",    "object": "model"},
+                {"id": "local/qwen3:8b",             "object": "model"},
+                {"id": "local/llama3.2",             "object": "model"},
             ]
             self._send_json(200, {"object": "list", "data": models})
         else:
@@ -633,7 +782,66 @@ class ProxyHandler(BaseHTTPRequestHandler):
         path   = self.path.split("?")[0]
         is_stream = body.get("stream", False)
 
-        if "/messages" not in path and "/complete" not in path:
+        if "/messages" in path or "/complete" in path:
+            # Anthropic format — pass through to call_with_rotation
+            pass
+        elif "/chat/completions" in path:
+            # OpenAI format — convert to Anthropic body for call_with_rotation
+            raw_model = body.get("model", "")
+            pinned_backend, clean_model = _parse_model_prefix(raw_model)
+            # Build a minimal Anthropic-style body so call_with_rotation can handle it
+            msgs = body.get("messages", [])
+            anthropic_body = {
+                "model": body.get("model", ""),
+                "max_tokens": body.get("max_tokens") or body.get("max_completion_tokens") or 4096,
+                "messages": [],
+                "stream": False,
+            }
+            system_parts = []
+            for m in msgs:
+                role = m.get("role", "user")
+                content = m.get("content", "")
+                if role == "system":
+                    system_parts.append(content)
+                else:
+                    anthropic_body["messages"].append({"role": role, "content": content})
+            if system_parts:
+                anthropic_body["system"] = "\n".join(system_parts)
+
+            try:
+                result = call_with_rotation(anthropic_body)
+                out_tok = result.get("usage", {}).get("output_tokens", 0)
+                print(f"[MULTI] ✓ OAI path → {out_tok} tokens", flush=True)
+                # Convert back to OpenAI format for the caller
+                text = ""
+                for block in result.get("content", []):
+                    if block.get("type") == "text":
+                        text += block.get("text", "")
+                oai_resp = {
+                    "id": result.get("id", "chatcmpl-proxy"),
+                    "object": "chat.completion",
+                    "model": result.get("model", raw_model),
+                    "choices": [{"index": 0, "message": {"role": "assistant", "content": text},
+                                 "finish_reason": result.get("stop_reason", "stop")}],
+                    "usage": {
+                        "prompt_tokens":     result.get("usage", {}).get("input_tokens", 0),
+                        "completion_tokens": result.get("usage", {}).get("output_tokens", 0),
+                        "total_tokens":      result.get("usage", {}).get("input_tokens", 0) +
+                                             result.get("usage", {}).get("output_tokens", 0),
+                    },
+                }
+                self._send_json(200, oai_resp)
+            except urllib.error.HTTPError as e:
+                code = e.code
+                try:   err_body = json.loads(e.read())
+                except Exception: err_body = {}
+                print(f"[MULTI] ✗ OAI path HTTP {code}", flush=True)
+                self._send_json(code, {"error": {"type": "api_error", "message": str(err_body or code)}})
+            except Exception as ex:
+                print(f"[MULTI] ✗ OAI path error: {ex}", flush=True)
+                self._send_json(500, {"error": {"type": "api_error", "message": str(ex)}})
+            return
+        else:
             self._send_json(404, {"error": f"unknown path: {path}"})
             return
 
@@ -670,22 +878,25 @@ class ProxyHandler(BaseHTTPRequestHandler):
 
 def banner():
     avail = " + ".join(_available_backends) if _available_backends else "NONE"
+    thaillm_stat = ("✓ " + THAILLM_MODEL) if THAILLM_TOKEN else "✗ no THAILLM_TOKEN"
+    local_stat   = "✓ local Ollama" if "local" in _available_backends else "✗ not reachable"
     print(f"""
 ╔══════════════════════════════════════════════════════════════╗
 ║  🤖 Multi-Backend Proxy (multi-proxy.py)                    ║
 ╠══════════════════════════════════════════════════════════════╣
-║  Port    : {PROXY_HOST}:{PROXY_PORT:<47} ║
-║  Active  : {avail:<52} ║
-║  Order   : {" → ".join(BACKEND_ORDER):<52} ║
+║  Port         : {PROXY_HOST}:{PROXY_PORT:<40} ║
+║  Active       : {avail:<46} ║
 ╠══════════════════════════════════════════════════════════════╣
-║  OpenAI  : {"✓ " + OPENAI_MODEL if OPENAI_API_KEY else "✗ no OPENAI_API_KEY":<52} ║
-║  Copilot : {"✓ " + COPILOT_MODEL if _copilot_bearer else "✗ no token":<52} ║
-║  Ollama  : {"✓ " + OLLAMA_MODEL if OLLAMA_TOKEN else "✗ no OLLAMA_TOKEN":<52} ║
+║  MDES/Ollama  : {"✓ " + OLLAMA_MODEL if OLLAMA_TOKEN else "✗ no OLLAMA_TOKEN":<44} ║
+║  Copilot      : {"✓ " + COPILOT_MODEL if _copilot_bearer else "✗ no token":<44} ║
+║  ThaiLLM      : {thaillm_stat:<44} ║
+║  Local Ollama : {local_stat:<44} ║
+║  OpenAI       : {"✓ " + OPENAI_MODEL if OPENAI_API_KEY else "✗ no OPENAI_API_KEY":<44} ║
 ╠══════════════════════════════════════════════════════════════╣
-║  Claude Code setup:                                          ║
-║    set ANTHROPIC_BASE_URL=http://{PROXY_HOST}:{PROXY_PORT}           ║
-║    set ANTHROPIC_API_KEY=multi-proxy                         ║
-║    claude --dangerously-skip-permissions                     ║
+║  set ANTHROPIC_BASE_URL=http://{PROXY_HOST}:{PROXY_PORT}             ║
+║  set OPENAI_BASE_URL=http://{PROXY_HOST}:{PROXY_PORT}                ║
+║  set ANTHROPIC_API_KEY=multi-proxy                           ║
+║  set OPENAI_API_KEY=multi-proxy                              ║
 ╚══════════════════════════════════════════════════════════════╝
 """, flush=True)
 
