@@ -227,16 +227,35 @@ const _errors = { copilot: 0, openai: 0, ollama: 0, ollama_mdes: 0, ollama_local
 // boundary). A lane that fails BREAKER_THRESHOLD times in a row is "open" and
 // skipped during rotation for BREAKER_COOLDOWN_MS — so a 504-storming lane (e.g.
 // MDES) stops being hammered on every call. noRotate calls (probes) bypass it.
-const _breakerOpenedAt = {}; // backend -> epoch ms when opened
 // Validate env (GPT-5.5 review): a bad value (0, negative, NaN, fractional)
 // would silently disable or corrupt the breaker — clamp to a positive integer.
 function _posInt(v, def) { const n = Math.floor(Number(v)); return Number.isFinite(n) && n > 0 ? n : def; }
 const BREAKER_THRESHOLD = _posInt(process.env.BREAKER_THRESHOLD, 3);
 const BREAKER_COOLDOWN_MS = _posInt(process.env.BREAKER_COOLDOWN_MS, 60000);
+
+// Breaker state is PERSISTED to disk so it survives across one-shot CLI
+// invocations (each `mother chat`/`run` is a fresh process — without this the
+// breaker would reset every call and never protect a repeatedly-failing lane).
+const _BREAKER_FILE = path.join(__dirname, '..', 'network', 'breaker-state.json');
+function _loadBreaker() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(_BREAKER_FILE, 'utf8'));
+    const out = {};
+    const now = Date.now();
+    for (const k in raw) if (typeof raw[k] === 'number' && (now - raw[k]) < BREAKER_COOLDOWN_MS) out[k] = raw[k];
+    return out;
+  } catch (e) { return {}; }
+}
+const _breakerOpenedAt = _loadBreaker(); // backend -> epoch ms when opened
+function _saveBreaker() {
+  try { fs.writeFileSync(_BREAKER_FILE, JSON.stringify(_breakerOpenedAt)); } catch (e) { /* best-effort */ }
+}
 function _breakerOpen(backend) {
   const t = _breakerOpenedAt[backend];
   return t ? (Date.now() - t) < BREAKER_COOLDOWN_MS : false;
 }
+function _tripBreaker(backend) { _breakerOpenedAt[backend] = Date.now(); _saveBreaker(); }
+function _resetBreaker(backend) { if (_breakerOpenedAt[backend]) { delete _breakerOpenedAt[backend]; _saveBreaker(); } }
 
 function _isCopilotOAuthToken(token) {
   var t = String(token || '').trim();
@@ -834,20 +853,20 @@ function callModel(messages, options, callback) {
         var okReply = !!(reply && String(reply).trim().length > 0);
         if (okReply) {
           _errors[backend] = 0;
-          delete _breakerOpenedAt[backend]; // success closes the breaker
+          _resetBreaker(backend); // success closes the breaker (persisted)
           attempts.push({ backend: backend, ok: true });
           return callback(null, { reply: reply, backend: backend, attempts: attempts });
         }
         console.warn('[model-router] ' + backend + ' returned empty reply; rotating');
         _errors[backend] = (_errors[backend] || 0) + 1;
-        if (_errors[backend] >= BREAKER_THRESHOLD) _breakerOpenedAt[backend] = Date.now();
+        if (_errors[backend] >= BREAKER_THRESHOLD) _tripBreaker(backend);
         attempts.push({ backend: backend, ok: false, error: 'empty reply' });
         if (opts.noRotate) { var er = new Error('empty reply from ' + backend); er.attempts = attempts; return callback(er); }
         return tryNext();
       }
       console.warn('[model-router] ' + backend + ' failed: ' + err.message);
       _errors[backend] = (_errors[backend] || 0) + 1;
-      if (_errors[backend] >= BREAKER_THRESHOLD) _breakerOpenedAt[backend] = Date.now();
+      if (_errors[backend] >= BREAKER_THRESHOLD) _tripBreaker(backend);
       attempts.push({ backend: backend, ok: false, error: err.message });
       if (opts.noRotate) { err.attempts = attempts; return callback(err); }
       tryNext();

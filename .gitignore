@@ -69,3 +69,4 @@ network/leaderboard.db-wal
 network/leaderboard.db-shm
 network/mother-events.jsonl
 network/artifacts/
+network/breaker-state.json

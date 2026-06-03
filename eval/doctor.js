@@ -54,6 +54,14 @@ function pingBridge(timeoutMs = 2500) {
     if (ageMin !== '?' && ageMin > 30) warnings.push(`Provider probe is stale (${ageMin}m) — re-probe for accurate routing.`);
   }
 
+  // 1b. Circuit breakers (persisted) — surface lanes currently tripped.
+  const breaker = readJSON(path.join(ROOT, 'network', 'breaker-state.json'), {});
+  const now = Date.now();
+  const cd = (() => { const n = Math.floor(Number(process.env.BREAKER_COOLDOWN_MS)); return Number.isFinite(n) && n > 0 ? n : 60000; })();
+  const tripped = Object.entries(breaker).filter(([, t]) => typeof t === 'number' && (now - t) < cd)
+    .map(([b, t]) => `${b} (${Math.round((cd - (now - t)) / 1000)}s left)`);
+  if (tripped.length) warnings.push(`Circuit breaker OPEN: ${tripped.join(', ')} — these lanes are being skipped until cooldown.`);
+
   // 2. innova-bot bridge
   const bridge = await pingBridge();
   if (bridge.up) ok.push(`innova-bot bridge UP (${bridge.detail})`);
