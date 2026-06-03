@@ -3,6 +3,7 @@ const path = require('path');
 const { spawnAgent, spawnAgentParallel, spawnAgentChain } = require('../hermes-discord/agent-spawner');
 const { execSync } = require('child_process');
 const InnovaBotBridge = require('./innova-bot-bridge');
+const eventLog = require('./event-log');
 
 class MotherEngine {
   constructor() {
@@ -119,6 +120,7 @@ class MotherEngine {
    */
   async executePhase(phaseName, goal) {
     console.log(`\n--- Starting Phase: ${phaseName} ---`);
+    const startTime = Date.now();
 
     // 0. Notify innova-bot about the new phase
     try {
@@ -167,10 +169,21 @@ class MotherEngine {
     }
 
     // 4. Rank Update
-    await this.updateLeaderboard(squadNames, verifications);
+    const verdictScores = await this.updateLeaderboard(squadNames, verifications);
 
     // 5. Atomic Commit
     this.atomicCommit(phaseName, goal, results);
+
+    // 5b. Phase 38: append a dispatch event to the append-only event log.
+    eventLog.record({
+      phase: phaseName,
+      goal: goal,
+      provider: this.liveProvider ? this.liveProvider.backend : 'router-rotation',
+      squad: squadNames,
+      verdicts: verdictScores,
+      durationMs: Date.now() - startTime,
+      committed: true,
+    });
 
     // 6. Final Report to innova-bot
     try {
@@ -185,11 +198,13 @@ class MotherEngine {
   async updateLeaderboard(squad, verifications) {
     console.log(`[Mother] Updating Leaderboard based on performance...`);
     const fleet = this.leaderboard.fleet;
+    const scores = [];
 
     squad.forEach((name, idx) => {
       const verdict = verifications[idx]?.reply || "0";
       let score = parseInt(verdict.match(/\d+/) ? verdict.match(/\d+/)[0] : "50", 10);
       score = Math.max(0, Math.min(100, isNaN(score) ? 50 : score)); // clamp 0..100
+      scores.push(score);
 
       if (fleet[name]) {
         fleet[name].completed_tasks++;
@@ -201,6 +216,7 @@ class MotherEngine {
 
     this.rankFleet();
     fs.writeFileSync(this.leaderboardPath, JSON.stringify(this.leaderboard, null, 2));
+    return scores;
   }
 
   /**
