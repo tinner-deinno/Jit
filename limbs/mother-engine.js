@@ -239,6 +239,54 @@ class MotherEngine {
     return results;
   }
 
+  /**
+   * Decompose a goal into <= max sequential phases via the live provider.
+   * Returns [{ title, goal }]. Falls back to a single phase on any failure.
+   */
+  async decomposeGoal(goal, max = 4) {
+    const prompt = [
+      `Break this goal into ${max} or fewer concrete, sequential phases.`,
+      'Return ONLY a numbered list, one phase per line, formatted "Title: what to do".',
+      'Keep titles short (2-4 words). No preamble.',
+      `\nGoal: ${goal}`,
+    ].join('\n');
+    const opts = this.liveProvider
+      ? { overrideBackend: this.liveProvider.backend, overrideModel: this.liveProvider.model }
+      : {};
+    let reply = '';
+    try { reply = (await spawnAgent('soma', prompt, opts)).reply || ''; }
+    catch (e) { console.warn(`[Mother] decompose failed (${e.message}); single-phase fallback.`); }
+
+    const lines = reply.split(/\r?\n/)
+      .map(l => l.replace(/^\s*\d+[.)]\s*/, '').replace(/^[-*]\s*/, '').trim())
+      .filter(l => l.length > 3);
+    if (!lines.length) return [{ title: 'Phase 1', goal }];
+    return lines.slice(0, max).map((l, i) => {
+      const idx = l.indexOf(':');
+      const title = idx > 0 ? l.slice(0, idx).trim().slice(0, 40) : `Phase ${i + 1}`;
+      return { title, goal: l };
+    });
+  }
+
+  /**
+   * runGoal — the Manus-like multi-phase loop: decompose a goal, then run each
+   * phase in sequence, feeding prior-phase summaries forward as context.
+   * Each phase still does squad->verify->leaderboard->commit->event.
+   */
+  async runGoal(goal, max = 4) {
+    const phases = await this.decomposeGoal(goal, max);
+    console.log(`[Mother] Decomposed into ${phases.length} phase(s): ${phases.map(p => p.title).join(' → ')}`);
+    const summaries = [];
+    for (let i = 0; i < phases.length; i++) {
+      const ph = phases[i];
+      const ctx = summaries.length ? `\n\n[Prior phases]\n${summaries.join('\n')}` : '';
+      const res = await this.executePhase(ph.title, ph.goal + ctx);
+      const first = (Array.isArray(res) && res[0] && res[0].reply) ? String(res[0].reply) : '(no output)';
+      summaries.push(`${ph.title}: ${first.replace(/\s+/g, ' ').slice(0, 140)}`);
+    }
+    return { goal, phases: phases.map(p => p.title), summaries };
+  }
+
   async updateLeaderboard(squad, verifications) {
     console.log(`[Mother] Updating Leaderboard based on performance...`);
     const fleet = this.leaderboard.fleet;

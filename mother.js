@@ -91,14 +91,29 @@ async function chat(goal) {
   process.exit(0);
 }
 
+async function run(goal, max) {
+  loadEnv();
+  const MotherEngine = require('./limbs/mother-engine');
+  console.log(`\n🌀 Mother — multi-phase goal: "${goal}"\n`);
+  const engine = new MotherEngine();
+  if (engine.liveProvider) console.log(`   provider: ${engine.liveProvider.backend} (${engine.liveProvider.model || 'default'})`);
+  const t0 = Date.now();
+  const out = await engine.runGoal(goal, max);
+  console.log(`\n── ${out.phases.length} phases complete (${Date.now() - t0}ms) ──`);
+  out.summaries.forEach((s, i) => console.log(`\n${i + 1}. ${s}`));
+  console.log('\n✓ all phases recorded → `node mother.js events` | `node mother.js status`\n');
+  process.exit(0);
+}
+
 function help() {
   console.log(`
 mother.js — innomcp front door
 
-  node mother.js chat "<goal>"   run a Mother phase (live providers)
-  node mother.js status          unified status board (no quota)
-  node mother.js probe           refresh provider liveness (no LLM)
-  node mother.js events [N]      last N dispatch events (default 10)
+  node mother.js chat "<goal>"       run ONE Mother phase (live providers)
+  node mother.js run "<goal>" [N]    decompose into <=N phases (default 4) and run all
+  node mother.js status              unified status board (no quota)
+  node mother.js probe               refresh provider liveness (no LLM)
+  node mother.js events [N]          last N dispatch events (default 10)
   node mother.js help
 `);
 }
@@ -109,6 +124,15 @@ switch (cmd) {
     const goal = rest.join(' ').trim();
     if (!goal) { console.error('Usage: node mother.js chat "<goal>"'); process.exit(2); }
     chat(goal).catch(e => { console.error(`[Error] ${e && e.message || e}`); process.exit(1); });
+    break;
+  }
+  case 'run': {
+    // Last arg may be a phase count; everything else is the goal.
+    let max = 4; let parts = rest.slice();
+    if (parts.length > 1 && /^\d+$/.test(parts[parts.length - 1])) max = parseInt(parts.pop(), 10);
+    const goal = parts.join(' ').trim();
+    if (!goal) { console.error('Usage: node mother.js run "<goal>" [maxPhases]'); process.exit(2); }
+    run(goal, Math.max(1, Math.min(8, max))).catch(e => { console.error(`[Error] ${e && e.message || e}`); process.exit(1); });
     break;
   }
   case 'status': case 'board': runScript('eval/status-board.js'); break;
