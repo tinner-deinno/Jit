@@ -113,6 +113,32 @@ So it adds NO resilience — kept OUT of default `BACKEND_ORDER` (preferBackend-
 **Conclusion: the only real fleet-widening left needs YOU** (start local ollama,
 refresh ThaiLLM token, restore MDES/cloud quota) — not code.
 
+## Iteration 9 — Unified `mother` CLI front door ✅
+`node mother.js chat|run|status|probe|events|help`. Single entry to drive the
+system. 5-Haiku swarm: arg/cwd/Windows/delegation PASS; fixed 3 chat() bugs
+(unhandled-rejection, exit-code-on-failure, delta-vs-hydration timing).
+
+## Iteration 10 — Multi-phase decomposition + multi-model validation ✅
+`mother run "<goal>"`: `decomposeGoal` (live provider) → `runGoal` runs phases
+in sequence with context passing. Proven live: "haiku → Thai" decomposed into
+2 phases, completed. 5-Haiku swarm found 5 bugs; all fixed:
+- run arg footgun (trailing digit → `--phases N` flag)
+- mid-phase failure now STOPS the chain (was silent)
+- decompose preamble junk-phase filtered
+- context passed as separate arg (no squad-selection pollution)
+- prior-phase summary 140 → 800 chars (dependent phases see the real artifact)
+
+**Multi-model validation loop (user directive):** `eval/model-validate.js` routes
+diffs to MDES / ThaiLLM / Copilot / **GPT-5.5 (senior)**. GPT-5.5 **caught a
+regression** in the first decompose fix (marker-only filter dropped `Phase 1:`
+and plain lines); corrected + unit-verified. MDES validated PASS. ThaiLLM
+(token expired) / Copilot (token 404) currently unavailable.
+
+## Provider reality (degraded, 2026-06-04)
+MDES alive but very slow (~28–80s cold); GPT-5.5 alive ~15–80s; ollama_cloud
+quota-exhausted; ThaiLLM token expired; Copilot token now 404; local ollama down.
+Usable-but-slow fleet = MDES, GPT-5.5 (and Copilot when its token is refreshed).
+
 ## innova-bot bridge
 **ALIVE & genuinely talking (MCP).** `node eval/innova-bot-mcp-probe.js` lists the
 31 tools. Port 7010; `/gui` (37KB) + `/sse` work; `/health` 404 (cosmetic).
