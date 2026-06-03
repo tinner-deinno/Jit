@@ -55,14 +55,18 @@ async function chat(goal) {
   const snap = () => { try { const f = JSON.parse(fs.readFileSync(LB, 'utf8')).fleet || {}; const o = {}; for (const k in f) o[k] = f[k].correctness_score; return o; } catch { return {}; } };
 
   console.log(`\n🌀 Mother — goal: "${goal}"\n`);
-  const before = snap();
+  // Construct FIRST: the constructor hydrates the leaderboard from the DB and
+  // rewrites the JSON. Snapshot AFTER so the delta reflects this phase only,
+  // not the (unrelated) DB->JSON hydration sync.
   const engine = new MotherEngine();
   if (engine.liveProvider) console.log(`   provider: ${engine.liveProvider.backend} (${engine.liveProvider.model || 'default'})`);
   else console.log('   provider: router rotation (no probe — run `node mother.js probe`)');
+  const before = snap();
 
   const t0 = Date.now();
   const results = await engine.executePhase('Chat', goal);
   const after = snap();
+  const failed = results && !Array.isArray(results) && results.error;
 
   console.log(`\n── result (${Date.now() - t0}ms) ──`);
   if (Array.isArray(results)) {
@@ -78,6 +82,10 @@ async function chat(goal) {
   if (moved.length) {
     console.log('\n── leaderboard delta ──');
     for (const k of moved) console.log(`  ${k}: ${(+before[k] || 0).toFixed(2)} → ${(+after[k]).toFixed(2)}`);
+  }
+  if (failed) {
+    console.error(`\n✗ phase failed: ${failed}\n`);
+    process.exit(1);
   }
   console.log('\n✓ phase recorded → `node mother.js events` | `node mother.js status`\n');
   process.exit(0);
@@ -100,7 +108,7 @@ switch (cmd) {
   case 'chat': {
     const goal = rest.join(' ').trim();
     if (!goal) { console.error('Usage: node mother.js chat "<goal>"'); process.exit(2); }
-    chat(goal);
+    chat(goal).catch(e => { console.error(`[Error] ${e && e.message || e}`); process.exit(1); });
     break;
   }
   case 'status': case 'board': runScript('eval/status-board.js'); break;
