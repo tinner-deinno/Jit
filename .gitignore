@@ -63,4 +63,11 @@ Thumbs.db
 
 # Local tooling/runtime state
 .claude/worktrees/
+.claude/commands/*.md
+.claude/skills/.arra-oracle-skills.json
+.claude/skills/VERSION.md
+.claude/skills/*/
+.claude/scheduled_tasks.lock
+mouth/
+ψ/
 psi/
