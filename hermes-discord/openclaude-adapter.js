@@ -203,11 +203,17 @@ function callOpenClaudePromise(messages, opts) {
 
 // ── Status function ──────────────────────────────────────────────────
 function status() {
+  const configured = isAvailable();
   return {
-    available: isAvailable(),
+    // Legacy callers use `available` to mean "configured". Live readiness is
+    // proven by /health or a real model call.
+    available: configured,
+    configured: configured,
+    readiness: 'configured_unverified',
     host: OPENCLAUDE_HOST,
     port: OPENCLAUDE_PORT,
     baseUrl: OPENCLAUDE_BASE_URL,
+    healthEndpoint: OPENCLAUDE_BASE_URL.replace(/\/$/, '') + '/health',
     model: OPENCLAUDE_MODEL,
     hasApiKey: !!OPENCLAUDE_API_KEY,
     environment: {

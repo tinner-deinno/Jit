@@ -49,6 +49,24 @@ try {
   }
 } catch (_) {}
 
+function _normalizeModelAlias(model) {
+  var value = String(model || '').trim();
+  if (value === 'gemma4:31b-cloud9') return 'gemma4:31b-cloud';
+  return value;
+}
+
+function _modelForOllamaBackend(model, backendName, backendUrl) {
+  var value = _normalizeModelAlias(model);
+  if (
+    backendName === 'ollama_cloud' &&
+    value.endsWith('-cloud') &&
+    /^https?:\/\/ollama\.com\/?$/i.test(String(backendUrl || ''))
+  ) {
+    return value.slice(0, -'-cloud'.length);
+  }
+  return value;
+}
+
 // ── Multi-Backend Configuration ────────────────────────────────────────
 // Primary: MDES Ollama (free, always available)
 // Auto-load token from skill config if not in env
@@ -76,7 +94,8 @@ const OLLAMA_LOCAL_MODEL  = process.env.OLLAMA_LOCAL_MODEL  || 'qwen2.5-coder:7b
 // Cloud: Ollama.com (free tier, backup)
 const OLLAMA_CLOUD_URL   = process.env.OLLAMA_CLOUD_URL   || 'https://ollama.com';
 const OLLAMA_CLOUD_TOKEN = process.env.OLLAMA_CLOUD_TOKEN || '';
-const OLLAMA_CLOUD_MODEL = process.env.OLLAMA_CLOUD_MODEL || 'gpt-oss:120b-cloud';
+const JIT_CLOUD_MODEL    = _normalizeModelAlias(process.env.JIT_CLOUD_MODEL || 'gemma4:31b-cloud');
+const OLLAMA_CLOUD_MODEL = _normalizeModelAlias(process.env.OLLAMA_CLOUD_MODEL || JIT_CLOUD_MODEL);
 
 // ThaiLLM (optional) – if THAILLM_BASE_URL is absent, reuse MDES URL
 const THAILLM_URL   = process.env.THAILLM_BASE_URL   || OLLAMA_MDES_URL;
@@ -161,7 +180,7 @@ class BackendManager {
       },
       openclaude: {
         name: 'OpenClaude',
-        url: `http://${OPENCLAUDE_HOST}:${OPENCLAUDE_PORT}`,
+        url: openClaudeAdapter.OPENCLAUDE_BASE_URL,
         token: null,
         model: OPENCLAUDE_MODEL,
         type: 'openclaude'
@@ -597,7 +616,8 @@ function _callOllama(messages, model, callback, backendName) {
   var parsed  = url.parse(cfg.url + '/api/chat');
   var isHttps = parsed.protocol === 'https:';
   var lib     = isHttps ? https : http;
-  var bodyStr = JSON.stringify({ model: model || cfg.model, stream: false, messages: messages });
+  var selectedModel = _modelForOllamaBackend(model || cfg.model, backendName, cfg.url);
+  var bodyStr = JSON.stringify({ model: selectedModel, stream: false, messages: messages });
 
   var opts = {
     hostname: parsed.hostname,
@@ -655,9 +675,14 @@ function callModel(messages, options, callback) {
   if (opts.preferBackend) opts.preferBackend = _normalizeBackendName(opts.preferBackend);
 
   // Put preferred backend first
-  if (opts.preferBackend && order.indexOf(opts.preferBackend) > 0) {
-    order.splice(order.indexOf(opts.preferBackend), 1);
-    order.unshift(opts.preferBackend);
+  if (opts.preferBackend) {
+    var preferredIndex = order.indexOf(opts.preferBackend);
+    if (preferredIndex > 0) {
+      order.splice(preferredIndex, 1);
+      order.unshift(opts.preferBackend);
+    } else if (preferredIndex === -1 && backendManager.getBackend(opts.preferBackend)) {
+      order.unshift(opts.preferBackend);
+    }
   }
 
   var attempt = 0;
@@ -711,6 +736,7 @@ function status() {
   var envCopilotTokenLooksValid = _isCopilotOAuthToken(COPILOT_TOKEN_ENV);
   var copilotCliAvailable = _hasCopilotCli();
   var codexCliAvailable = _hasCodexCli();
+  var cloudCfg = _getOllamaConfig('ollama_cloud');
   return {
     order:    BACKEND_ORDER,
     backends: {
@@ -730,10 +756,10 @@ function status() {
       ollama_mdes: { available: !!OLLAMA_MDES_URL, url: OLLAMA_MDES_URL, model: OLLAMA_MDES_MODEL, errors: _errors.ollama || 0 },
       thaillm: { available: !!THAILLM_URL, url: THAILLM_URL, model: THAILLM_MODEL, errors: _errors.ollama || 0 },
       ollama_local: { available: !!OLLAMA_LOCAL_URL, url: OLLAMA_LOCAL_URL, model: OLLAMA_LOCAL_MODEL, errors: _errors.ollama || 0 },
-      ollama_cloud: { available: !!OLLAMA_CLOUD_URL, url: OLLAMA_CLOUD_URL, model: OLLAMA_CLOUD_MODEL, errors: _errors.ollama || 0 },
+      ollama_cloud: { available: !!OLLAMA_CLOUD_URL, url: OLLAMA_CLOUD_URL, resolvedUrl: cloudCfg.url, model: OLLAMA_CLOUD_MODEL, apiModel: _modelForOllamaBackend(OLLAMA_CLOUD_MODEL, 'ollama_cloud', cloudCfg.url), targetModel: JIT_CLOUD_MODEL, errors: _errors.ollama || 0 },
       // Backward-compatible alias for older callers.
       ollama: { available: !!OLLAMA_MDES_URL, url: OLLAMA_MDES_URL, model: OLLAMA_MDES_MODEL, errors: _errors.ollama || 0 },
-      openclaude: { available: ocStatus.available, host: ocStatus.host, port: ocStatus.port, model: ocStatus.model, errors: _errors.openclaude || 0 },
+      openclaude: { available: ocStatus.available, configured: ocStatus.configured, host: ocStatus.host, port: ocStatus.port, model: ocStatus.model, healthEndpoint: ocStatus.healthEndpoint, errors: _errors.openclaude || 0 },
     },
     primary: BACKEND_ORDER[0] || 'ollama',
   };
