@@ -45,13 +45,35 @@ function classify(err) {
   return 'ERROR';
 }
 
+// A backend can answer HTTP-200 yet return an in-band error STRING (e.g.
+// innova-bot's ask_local_ai returns "[SYSTEM OVERRIDE]: Local AI query failed"
+// when its own backend is down). The ping asks for "OK", so a healthy reply
+// contains "ok"; treat error-sentinel replies as a degraded ERROR, not ALIVE.
+function isErrorReply(text) {
+  const t = String(text || '');
+  if (!t.trim()) return true;
+  if (/\bok\b/i.test(t)) return false; // echoed the ping → healthy
+  return /(system override|query failed|unavailable|not available|backend (failed|error)|i (cannot|can't|am unable)|error:)/i.test(t);
+}
+
 function probeOne(backend) {
   const t0 = Date.now();
   return Promise.race([
     router.callModelPromise(PING, { preferBackend: backend, noRotate: true, model: null }),
     new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), TIMEOUT)),
   ]).then(
-    (r) => ({ backend, status: 'ALIVE', ms: Date.now() - t0, served_by: r.backend, sample: String(r.reply || '').slice(0, 40).replace(/\s+/g, ' ') }),
+    (r) => {
+      const reply = String(r.reply || '');
+      const bad = isErrorReply(reply);
+      return {
+        backend,
+        status: bad ? 'ERROR' : 'ALIVE',
+        ms: Date.now() - t0,
+        served_by: r.backend,
+        sample: reply.slice(0, 60).replace(/\s+/g, ' '),
+        ...(bad ? { error: 'in-band error reply: ' + reply.slice(0, 60).replace(/\s+/g, ' ') } : {}),
+      };
+    },
     (e) => ({ backend, status: classify(e), ms: Date.now() - t0, error: String(e && e.message || e).slice(0, 80) })
   );
 }
