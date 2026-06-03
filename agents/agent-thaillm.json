@@ -1,0 +1,10 @@
+{
+  "name": "agent-thaillm",
+  "organ": "Mouth (Thai Linguistics)",
+  "tier": 3,
+  "provider": "thaillm",
+  "model": "gemma4:31b-cloud",
+  "capabilities": ["cultural-nuance", "high-fidelity-thai", "local-context"],
+  "role": "Thai Linguistic Specialist",
+  "description": "Specialist for Thai language refinement, cultural adaptation, and high-fidelity translation."
+}

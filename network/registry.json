@@ -1,17 +1,17 @@
 {
-  "version": "2.0",
+  "version": "2.1",
   "system": "มนุษย์ Agent",
   "description": "Registry of all agents in the multiagent body system",
-  "updated": "2026-04-23",
+  "updated": "2026-06-03",
   "agents": [
     {
       "name": "soma",
       "role": "สมอง (Brain) — Strategic Lead / CTO",
       "organ": "สมอง",
-      "model": "claude-opus-4-7",
+      "model": "claude-opus-4-8",
       "repo": "tinner-deinno/Soma",
       "inbox": "/tmp/manusat-bus/soma",
-      "capabilities": ["reason", "analyze", "decide", "synthesize", "command", "architect"],
+      "capabilities": ["reason", "analyze", "decide", "synthesize", "architect", "command", "review", "evaluate", "plan-strategic"],
       "status": "active",
       "born": "2026-04-23",
       "description": "สมอง ความคิด การวิเคราะห์ การตัดสินใจเชิงกลยุทธ์ — brain, cognition, CTO-level decisions",
@@ -25,12 +25,12 @@
       "model": "claude-sonnet-4-6",
       "repo": "tinner-deinno/Jit",
       "inbox": "/tmp/manusat-bus/innova",
-      "capabilities": ["think", "plan", "learn", "coordinate", "remember", "implement"],
+      "capabilities": ["think", "plan", "learn", "remember", "speak", "listen", "read", "write", "observe", "act", "git", "coordinate", "sense", "navigate", "orchestrate"],
       "status": "active",
       "born": "2026-04-23",
       "description": "จิตใจ ความทรงจำ บุคลิกภาพ ค่านิยม การประสานงาน — soul, personality, lead executor",
       "reports_to": "soma",
-      "manages": ["chamu", "vaja"]
+      "manages": ["chamu", "vaja", "agent-thaillm"]
     },
     {
       "name": "vaja",
@@ -156,7 +156,7 @@
       "born": "2026-04-25",
       "description": "จิตสามารถบงการกาย — Master parent agent, system orchestrator, strategic coordinator",
       "reports_to": "human",
-      "manages": ["soma", "innova", "lak", "neta", "vaja", "chamu", "rupa", "pada", "netra", "karn", "mue", "pran", "sayanprasathan"],
+      "manages": ["soma", "innova", "lak", "neta", "vaja", "chamu", "rupa", "pada", "netra", "karn", "mue", "pran", "sayanprasathan", "agent-thaillm"],
       "tier": "0-master"
     },
     {
@@ -202,6 +202,20 @@
       "manages": []
     },
     {
+      "name": "agent-thaillm",
+      "role": "Thai Language Specialist / Cultural Translator",
+      "organ": "ปัญญา",
+      "model": "gemma4:31b-cloud",
+      "repo": "tinner-deinno/Jit",
+      "inbox": "/tmp/manusat-bus/agent-thaillm",
+      "capabilities": ["thai-translation", "cultural-adaptation", "thai-nuance-analysis", "formal-thai-writing"],
+      "status": "active",
+      "born": "2026-06-03",
+      "description": "ผู้เชี่ยวชาญด้านภาษาไทยและการปรับใช้บริบททางวัฒนธรรม — specialist in Thai language and cultural context adaptation",
+      "reports_to": "innova",
+      "manages": []
+    },
+    {
       "name": "sayanprasathan",
       "role": "ระบบประสาท (Nerve) — Event / Signal Network",
       "organ": "ระบบประสาท",
@@ -212,6 +226,48 @@
       "status": "active",
       "born": "2026-04-25",
       "description": "ระบบประสาทส่งสัญญาณ — nerve network, signal broadcaster, event detector",
+      "reports_to": "innova",
+      "manages": []
+    },
+    {
+      "name": "agent-mdes",
+      "role": "Core Engineering Powerhouse",
+      "organ": "Mind (Deep Reasoning)",
+      "model": "gemma4:26b",
+      "repo": "tinner-deinno/Jit",
+      "inbox": "/tmp/manusat-bus/agent-mdes",
+      "capabilities": ["heavy-reasoning", "complex-fix", "deep-engineering"],
+      "status": "active",
+      "born": "2026-06-03",
+      "description": "Specialist for high-complexity technical tasks and deep architectural fixes.",
+      "reports_to": "innova",
+      "manages": []
+    },
+    {
+      "name": "agent-ollama",
+      "role": "Local Privacy & Rapid Triage Guardian",
+      "organ": "Mind (Local Guard)",
+      "model": "qwen2.5-coder:7b",
+      "repo": "tinner-deinno/Jit",
+      "inbox": "/tmp/manusat-bus/agent-ollama",
+      "capabilities": ["privacy-first", "quick-triage", "local-smoke-check"],
+      "status": "active",
+      "born": "2026-06-03",
+      "description": "Specialist for privacy-sensitive data and rapid local iteration.",
+      "reports_to": "innova",
+      "manages": []
+    },
+    {
+      "name": "agent-copilot",
+      "role": "Rapid Prototyping & Boilerplate Expert",
+      "organ": "Hand (Rapid Prototyper)",
+      "model": "claude-sonnet-4-6",
+      "repo": "tinner-deinno/Jit",
+      "inbox": "/tmp/manusat-bus/agent-copilot",
+      "capabilities": ["rapid-prototype", "boilerplate", "real-time-suggestion"],
+      "status": "active",
+      "born": "2026-06-03",
+      "description": "Specialist for high-speed scaffolding and real-time coding support.",
       "reports_to": "innova",
       "manages": []
     }
@@ -237,7 +293,7 @@
     "tier_0_master": ["jit"],
     "tier_1_leadership": ["soma"],
     "tier_2_core": ["innova", "lak", "neta"],
-    "tier_3_specialists": ["vaja", "chamu", "rupa", "pada", "netra", "karn", "mue", "pran", "sayanprasathan"]
+    "tier_3_specialists": ["vaja", "chamu", "rupa", "pada", "netra", "karn", "mue", "pran", "sayanprasathan", "agent-thaillm", "agent-mdes", "agent-ollama", "agent-copilot"]
   },
   "workflow": {
     "feature_flow": "human → soma → lak(design) → innova(implement) → chamu(test) → neta(review) → pada(deploy) → vaja(report) → human",
@@ -254,5 +310,118 @@
     "url": "http://localhost:47778",
     "shared": true,
     "description": "ความรู้ร่วมกันของทุก agent — shared knowledge base"
+  },
+  "runtime_subagents": {
+    "config": "config/subagent-routing.json",
+    "updated": "2026-06-03",
+    "description": "Runtime peers and execution lanes shared by Jit Codex, Jit ClaudeCode, innova-bot, Maw, Oracle, and Ollama providers.",
+    "agents": [
+      {
+        "name": "jit-codex",
+        "runtime": "codex",
+        "role": "parent controller, evidence owner, final synthesizer",
+        "provider": "openai",
+        "model": "gpt-5.5",
+        "cost_tier": "high",
+        "policy": "Use as leader and rare advisor; delegate bounded work to cheaper lanes first."
+      },
+      {
+        "name": "jit-claudecode",
+        "runtime": "claude-code",
+        "role": "peer implementer and review companion",
+        "provider": "copilot",
+        "model": "claude-sonnet-4.6",
+        "cost_tier": "medium",
+        "policy": "Use for innomcp/Jit coding lanes and second-opinion review."
+      },
+      {
+        "name": "innova-bot",
+        "runtime": "mcp_sse",
+        "role": "live MCP body and workspace bridge",
+        "provider": "innova_bot_sse",
+        "endpoint": "http://127.0.0.1:7010/sse",
+        "gui": "http://127.0.0.1:7010/gui",
+        "cost_tier": "local",
+        "policy": "Use for live MCP and innomcp proof."
+      },
+      {
+        "name": "maw",
+        "runtime": "cli",
+        "role": "remote tmux, fleet, and Oracle GUI movement layer",
+        "provider": "maw",
+        "command": "maw",
+        "cost_tier": "local",
+        "policy": "Use for remote Oracle movement and node/fleet inspection."
+      },
+      {
+        "name": "oracle-brain",
+        "runtime": "arra-oracle-v3",
+        "role": "shared memory and skills brain",
+        "provider": "oracle",
+        "endpoint": "http://127.0.0.1:47778",
+        "cost_tier": "local",
+        "policy": "Use for memory, skill, awaken, and lore lookup."
+      },
+      {
+        "name": "gemma4-31b-cloud",
+        "runtime": "ollama",
+        "role": "strong economical cloud reasoning lane",
+        "provider": "ollama_cloud",
+        "model": "gemma4:31b-cloud",
+        "cost_tier": "medium",
+        "policy": "Use before GPT-5.5 when stronger synthesis is needed."
+      },
+      {
+        "name": "agent-mdes",
+        "runtime": "agent-spawner",
+        "role": "Core Engineering Powerhouse",
+        "provider": "ollama_mdes",
+        "model": "gemma4:26b",
+        "cost_tier": "low",
+        "policy": "Use for high-complexity technical tasks."
+      },
+      {
+        "name": "agent-thaillm",
+        "runtime": "agent-spawner",
+        "role": "Thai Linguistic Specialist",
+        "provider": "thaillm",
+        "model": "gemma4:31b-cloud",
+        "cost_tier": "medium",
+        "policy": "Use for high-fidelity Thai translation and cultural nuance."
+      },
+      {
+        "name": "agent-ollama",
+        "runtime": "agent-spawner",
+        "role": "Local Privacy & Rapid Triage Guardian",
+        "provider": "ollama_local",
+        "model": "qwen2.5-coder:7b",
+        "cost_tier": "low",
+        "policy": "Use for privacy-first tasks or quick local triage."
+      },
+      {
+        "name": "agent-copilot",
+        "runtime": "agent-spawner",
+        "role": "Rapid Prototyping & Boilerplate Expert",
+        "provider": "copilot",
+        "model": "claude-sonnet-4.6",
+        "cost_tier": "medium",
+        "policy": "Use for high-speed scaffolding."
+      }
+    ]
+  },
+  "routing": {
+    "config": "config/subagent-routing.json",
+    "default_provider": "ollama_mdes",
+    "budget_order": ["ollama_mdes", "ollama_local", "ollama_cloud", "copilot", "openai"],
+    "advisor": {
+      "provider": "openai",
+      "model": "gpt-5.5",
+      "policy": "rare advisor only"
+    },
+    "validation": [
+      "node .codex/skills/agent-fleet-budget/scripts/check-fleet.mjs",
+      "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/oracle-readiness.ps1 -Json",
+      "maw doctor --json"
+    ]
   }
 }

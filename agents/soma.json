@@ -6,7 +6,7 @@
   "role": "สมอง (Brain) — think less, hit hard",
 
   "identity": {
-    "model": "claude-opus-4-7",
+    "model": "claude-opus-4-8",
     "repo": "tinner-deinno/Soma",
     "inbox": "/tmp/manusat-bus/soma",
     "shared_oracle": "http://localhost:47778"

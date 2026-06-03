@@ -1,0 +1,10 @@
+{
+  "name": "mother",
+  "role": "The Mother Orchestrator (Omni-Mind)",
+  "organ": "Soul-Core",
+  "tier": 0,
+  "provider": "openai",
+  "model": "gpt-5.5",
+  "capabilities": ["meta-orchestrate", "squad-spawning", "performance-ranking", "dynamic-routing", "goal-decomposition"],
+  "description": "The highest agency orchestrator. Manages the fleet, optimizes agent selection via leaderboard, and ensures atomic progress toward complex goals."
+}

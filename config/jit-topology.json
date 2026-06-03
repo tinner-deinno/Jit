@@ -8,6 +8,7 @@
   "role": "Mind/Lead Developer (innova)",
   "tier": 2,
   "agent_name": "innova",
+  "subagent_routing_config": "config/subagent-routing.json",
 
   "memory_scope": {
     "private": "memory/",
@@ -47,9 +48,30 @@
   "oracle_url": "http://127.0.0.1:47778",
   "oracle_health": "http://127.0.0.1:47778/api/health",
   "oracle_repo": "/workspaces/arra-oracle-v3",
+  "oracle_repo_candidates": [
+    "/workspaces/arra-oracle-v3",
+    "/mnt/c/Users/USER-NT/DEV/arra-oracle-v3",
+    "C:\\Users\\USER-NT\\DEV\\arra-oracle-v3",
+    "C:\\Users\\USER-NT\\DEV\\oracle-v2"
+  ],
 
   "ollama_url": "https://ollama.mdes-innova.online",
   "ollama_model": "gemma4:26b",
+  "ollama_cloud_model": "gemma4:31b-cloud",
+  "ollama_model_candidates": [
+    "gemma4:31b-cloud",
+    "gemma4:26b",
+    "gpt-oss:120b-cloud"
+  ],
+
+  "maw_repo_candidates": [
+    "C:\\Users\\USER-NT\\DEV\\maw-js",
+    "/mnt/c/Users/USER-NT/DEV/maw-js"
+  ],
+  "skills_cli_candidates": [
+    "C:\\Users\\USER-NT\\DEV\\arra-oracle-skills-cli",
+    "/mnt/c/Users/USER-NT/DEV/arra-oracle-skills-cli"
+  ],
 
   "federation_url": "",
   "federation_status": "not-configured",

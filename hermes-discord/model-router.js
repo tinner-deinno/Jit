@@ -29,7 +29,6 @@ const path  = require('path');
 const os    = require('os');
 const https = require('https');
 const http  = require('http');
-const url   = require('url');
 const childProcess = require('child_process');
 const openClaudeAdapter = require('./openclaude-adapter');
 
@@ -340,11 +339,11 @@ function _exchangeCopilotToken(oauthToken, callback) {
     return callback(null, _copilotApiToken);
   }
 
-  var parsed = url.parse(COPILOT_TOKEN_URL + '/copilot_internal/v2/token');
+  var parsed = new URL(COPILOT_TOKEN_URL.replace(/\/$/, '') + '/copilot_internal/v2/token');
   var opts = {
     hostname: parsed.hostname,
-    port:     443,
-    path:     parsed.path,
+    port:     parsed.port || 443,
+    path:     parsed.pathname + parsed.search,
     method:   'GET',
     headers: {
       'Authorization': 'Bearer ' + oauthToken,
@@ -378,7 +377,7 @@ function _exchangeCopilotToken(oauthToken, callback) {
 
 // ── Generic HTTP POST ─────────────────────────────────────────────────
 function _httpPost(baseUrl, apiPath, extraHeaders, bodyObj, callback) {
-  var parsed  = url.parse(baseUrl + apiPath);
+  var parsed  = new URL(String(baseUrl || '').replace(/\/$/, '') + apiPath);
   var isHttps = parsed.protocol === 'https:';
   var lib     = isHttps ? https : http;
   var bodyStr = JSON.stringify(bodyObj);
@@ -386,7 +385,7 @@ function _httpPost(baseUrl, apiPath, extraHeaders, bodyObj, callback) {
   var opts = {
     hostname: parsed.hostname,
     port:     parsed.port || (isHttps ? 443 : 80),
-    path:     parsed.path,
+    path:     parsed.pathname + parsed.search,
     method:   'POST',
     headers:  Object.assign({
       'Content-Type':   'application/json',
@@ -613,16 +612,58 @@ function _getOllamaConfig(backendName) {
 
 function _callOllama(messages, model, callback, backendName) {
   var cfg = _getOllamaConfig(backendName);
-  var parsed  = url.parse(cfg.url + '/api/chat');
+  var selectedModel = _modelForOllamaBackend(model || cfg.model, backendName, cfg.url);
+
+  _postOllama(cfg, '/api/chat', { model: selectedModel, stream: false, messages: messages }, function(err, data) {
+    if (err) {
+      var shouldTryGenerate = [404, 405, 500, 502, 503, 504].indexOf(err.statusCode) !== -1;
+      if (!shouldTryGenerate) return callback(err);
+
+      return _postOllama(cfg, '/api/generate', {
+        model: selectedModel,
+        stream: false,
+        prompt: _messagesToPrompt(messages),
+      }, function(generateErr, generateData) {
+        if (generateErr) return callback(err);
+        try {
+          var generated = JSON.parse(generateData);
+          var generatedReply = generated.response || (generated.message && generated.message.content) || '';
+          return callback(null, String(generatedReply || '').trim());
+        } catch (e) {
+          return callback(new Error('Ollama generate parse: ' + e.message + ' raw:' + generateData.slice(0, 100)));
+        }
+      });
+    }
+
+    try {
+      var j = JSON.parse(data);
+      var reply = (j.message && j.message.content) || j.response || '';
+      callback(null, reply.trim());
+    } catch (e) {
+      callback(new Error('Ollama parse: ' + e.message + ' raw:' + data.slice(0, 100)));
+    }
+  });
+}
+
+function _messagesToPrompt(messages) {
+  return (messages || []).map(function(message) {
+    var role = message && message.role ? String(message.role) : 'user';
+    var content = message && message.content ? String(message.content) : '';
+    return role.toUpperCase() + ':\n' + content;
+  }).join('\n\n') + '\n\nASSISTANT:\n';
+}
+
+function _postOllama(cfg, endpointPath, payload, callback) {
+  var baseUrl = String(cfg.url || '').replace(/\/$/, '');
+  var parsed  = new URL(baseUrl + endpointPath);
   var isHttps = parsed.protocol === 'https:';
   var lib     = isHttps ? https : http;
-  var selectedModel = _modelForOllamaBackend(model || cfg.model, backendName, cfg.url);
-  var bodyStr = JSON.stringify({ model: selectedModel, stream: false, messages: messages });
+  var bodyStr = JSON.stringify(payload);
 
   var opts = {
     hostname: parsed.hostname,
     port:     parsed.port || (isHttps ? 443 : 80),
-    path:     parsed.path,
+    path:     parsed.pathname + parsed.search,
     method:   'POST',
     headers: {
       'Content-Type':   'application/json',
@@ -638,15 +679,12 @@ function _callOllama(messages, model, callback, backendName) {
     res.on('data', function(c) { data += c; });
     res.on('end', function() {
       if (res.statusCode && res.statusCode >= 400) {
-        return callback(new Error('Ollama HTTP ' + res.statusCode + ': ' + data.slice(0, 200)));
+        var err = new Error('Ollama HTTP ' + res.statusCode + ': ' + data.slice(0, 200));
+        err.statusCode = res.statusCode;
+        err.response = data;
+        return callback(err);
       }
-      try {
-        var j = JSON.parse(data);
-        var reply = (j.message && j.message.content) || j.response || '';
-        callback(null, reply.trim());
-      } catch (e) {
-        callback(new Error('Ollama parse: ' + e.message + ' raw:' + data.slice(0, 100)));
-      }
+      callback(null, data);
     });
   });
   req.on('error', callback);

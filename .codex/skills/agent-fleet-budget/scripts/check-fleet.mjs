@@ -29,10 +29,15 @@ function requestJson(targetUrl, headers = {}, timeoutMs = 5000) {
             body += chunk;
           });
           response.on("end", () => {
+            let parsedJson = null;
+            try {
+              parsedJson = JSON.parse(body);
+            } catch {}
             resolve({
               ok: response.statusCode >= 200 && response.statusCode < 300,
               status: response.statusCode ?? 0,
               body: body.slice(0, 400),
+              json: parsedJson,
             });
           });
         }
@@ -101,27 +106,69 @@ function checkTcp(host, port, timeoutMs = 2500) {
 }
 
 async function probeOllama(url, token) {
+  if (!url) return { ok: false, status: 0, error: "missing url" };
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
-  return requestJson(`${url.replace(/\/$/, "")}/api/tags`, headers);
+  const probe = await requestJson(`${url.replace(/\/$/, "")}/api/tags`, headers);
+  const models = Array.isArray(probe.json?.models)
+    ? probe.json.models.map((model) => String(model.name || model.model || "")).filter(Boolean)
+    : [];
+  delete probe.json;
+  if (models.length) probe.models = models.slice(0, 80);
+  return probe;
+}
+
+async function probeFirstStatus(urls, headers = {}, timeoutMs = 5000) {
+  let last = null;
+  for (const targetUrl of urls.filter(Boolean)) {
+    const probe = await requestStatus(targetUrl, headers, timeoutMs);
+    const withUrl = { ...probe, url: targetUrl };
+    if (probe.ok) return withUrl;
+    last = withUrl;
+  }
+  return last || { ok: false, status: 0, error: "no urls" };
+}
+
+function cloudModelAliases(model) {
+  const value = String(model || "").trim();
+  const aliases = new Set([value]);
+  if (value.endsWith("-cloud")) aliases.add(value.slice(0, -"-cloud".length));
+  return Array.from(aliases).filter(Boolean);
 }
 
 async function main() {
   const status = modelRouter.status();
   const backends = status.backends || {};
+  const targetCloudModel = process.env.JIT_CLOUD_MODEL || backends.ollama_cloud?.targetModel || backends.ollama_cloud?.model || "gemma4:31b-cloud";
+  const innovaSseUrls = Array.from(
+    new Set([process.env.INNOVA_BOT_SSE_URL || "http://127.0.0.1:7010/sse", "http://127.0.0.1:7012/sse"])
+  );
 
   const probes = {
     ollama_mdes: await probeOllama(backends.ollama_mdes?.url, process.env.OLLAMA_MDES_TOKEN || process.env.OLLAMA_TOKEN || ""),
     thaillm: await probeOllama(backends.thaillm?.url, process.env.THAILLM_TOKEN || process.env.OLLAMA_TOKEN || ""),
     ollama_local: await probeOllama(backends.ollama_local?.url, process.env.OLLAMA_LOCAL_TOKEN || ""),
     ollama_cloud: await probeOllama(backends.ollama_cloud?.url, process.env.OLLAMA_CLOUD_TOKEN || ""),
-    openclaude: await checkTcp(backends.openclaude?.host || "localhost", Number(backends.openclaude?.port || 8000)),
-    innova_bot_sse: await requestStatus("http://127.0.0.1:7010/sse"),
+    openclaude: await requestStatus(
+      backends.openclaude?.healthEndpoint || `http://${backends.openclaude?.host || "localhost"}:${Number(backends.openclaude?.port || 8000)}/health`
+    ),
+    innova_bot_sse: await probeFirstStatus(innovaSseUrls),
   };
+  if (Array.isArray(probes.ollama_cloud.models)) {
+    const aliases = cloudModelAliases(targetCloudModel);
+    probes.ollama_cloud.targetModel = targetCloudModel;
+    probes.ollama_cloud.targetModelAliases = aliases;
+    probes.ollama_cloud.targetModelPresent = probes.ollama_cloud.models.some((model) => aliases.includes(model));
+  } else {
+    probes.ollama_cloud.targetModel = targetCloudModel;
+    probes.ollama_cloud.targetModelAliases = cloudModelAliases(targetCloudModel);
+    probes.ollama_cloud.targetModelPresent = null;
+  }
 
-  const summarize = (name, configured, probe) => {
+  const summarize = (name, configured, probe, options = {}) => {
+    const targetModelMissing = Boolean(options.requireTargetModel && probe?.targetModelPresent === false);
     const state = !configured
       ? "offline"
-      : probe?.ok
+      : probe?.ok && !targetModelMissing
       ? "ready"
       : probe?.status === 401 || probe?.status === 403 || probe?.status === 429
       ? "degraded"
@@ -130,6 +177,8 @@ async function main() {
       state,
       probe,
       configured,
+      reachable: Boolean(probe?.ok),
+      usable: state === "ready",
     };
   };
 
@@ -141,7 +190,7 @@ async function main() {
       ollama_mdes: summarize("ollama_mdes", Boolean(backends.ollama_mdes?.available), probes.ollama_mdes),
       thaillm: summarize("thaillm", Boolean(backends.thaillm?.available), probes.thaillm),
       ollama_local: summarize("ollama_local", Boolean(backends.ollama_local?.available), probes.ollama_local),
-      ollama_cloud: summarize("ollama_cloud", Boolean(backends.ollama_cloud?.available), probes.ollama_cloud),
+      ollama_cloud: summarize("ollama_cloud", Boolean(backends.ollama_cloud?.available), probes.ollama_cloud, { requireTargetModel: true }),
       copilot: {
         state: backends.copilot?.available ? "configured" : "offline",
         details: backends.copilot,
@@ -150,7 +199,7 @@ async function main() {
         state: backends.openai?.available ? "configured" : "offline",
         details: backends.openai,
       },
-      openclaude: summarize("openclaude", Boolean(backends.openclaude?.available), probes.openclaude),
+      openclaude: summarize("openclaude", Boolean(backends.openclaude?.configured ?? backends.openclaude?.available), probes.openclaude),
       innova_bot_sse: summarize("innova_bot_sse", true, probes.innova_bot_sse),
     },
   };

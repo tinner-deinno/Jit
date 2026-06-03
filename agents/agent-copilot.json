@@ -1,0 +1,10 @@
+{
+  "name": "agent-copilot",
+  "organ": "Hand (Rapid Prototyper)",
+  "tier": 3,
+  "provider": "copilot",
+  "model": "claude-sonnet-4.6",
+  "capabilities": ["rapid-prototype", "boilerplate", "real-time-suggestion"],
+  "role": "Rapid Prototyping & Boilerplate Expert",
+  "description": "Specialist for high-speed scaffolding, boilerplate generation, and real-time coding support."
+}

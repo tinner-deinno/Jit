@@ -1,0 +1,10 @@
+{
+  "name": "agent-ollama",
+  "organ": "Mind (Local Guard)",
+  "tier": 3,
+  "provider": "ollama_local",
+  "model": "qwen2.5-coder:7b",
+  "capabilities": ["privacy-first", "quick-triage", "local-smoke-check"],
+  "role": "Local Privacy & Rapid Triage Guardian",
+  "description": "Specialist for privacy-sensitive data processing and rapid local iteration/smoke testing."
+}

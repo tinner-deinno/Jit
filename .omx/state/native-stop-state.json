@@ -279,6 +279,26 @@
         "last_turn_id": "019e69f7-fb8d-79c1-b4a4-ca86ea57c164",
         "last_thread_id": null
       }
+    },
+    "019e88ad-192e-70e3-b40d-1d048f5d7683": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|ok openai",
+        "first_seen_at": "2026-06-02T14:11:53.143Z",
+        "last_seen_at": "2026-06-02T14:11:53.143Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e88ad-19e9-7e50-af55-3abf58debdbc",
+        "last_thread_id": null
+      }
+    },
+    "019e88a9-cf88-7eb2-b6c9-2c2e60ced7a8": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|ok bro go go okok พร้อมแล้วในระดับใช้งานร่วมรบได้จริงครับ ผมทำ proposal ของ jit claudecode ให้เป็นระบบจริงแล้ว: - เพิ่ม `config/subagent-routing.json` เป็น source of truth สำหรับ codex, claudecode, innova-bot, maw, oracle, mdes/local/cloud ollama และ gpt-5.5 advisor policy - เพิ่ม overlay ใน `network/registry.json` - เพิ่ม agent interfaces: `.github/agents/jit-codex.agent.md` และ `.github/agents/jit-claudecode.agent.md` - อัปเดต `agent-spawner.js` ให้มี `routetask()` / `spawnroutedagent()` และ routed calls ใช้ `norotate` กันเผา budget ผิด backend - อัปเดต `model-router.js` ให้ ollama fallback จาก `/api/chat` ไป `/api/generate` ใน provider เดียวกัน - อัปเดต `openclaude-adapter.js` ให้ใช้ `openclaude_base_url` จริง - อัปเดต `limbs/ollama.sh` ให้เลือก endpoint/model ผ่าน env ได้ หลักฐานล่าสุด: - `spawnroutedagent('fix script bug')` -> `mue` + `ollama_mdes` + `ok mdes route` - architecture route -> `lak` + `ollama_cloud` + `ok cloud route` - `check-fleet.mjs`: mdes, local ollama, cloud ollama, innova-bot sse พร้อม - `oracle-readiness.ps1 -json`: `ok: true` - `maw doctor --json`: `ok: true` แต่ยังเตือนว่า fleet windows ของ `jit/innomcp/innova-bot-template` ยังไม่ได้ init - `bash limbs/ollama.sh status`: ผ่าน - json/module/bash syntax และ `git diff --check`: ผ่าน ข้อจำกัดที่ยังรายงานตรง ๆ: thaillm กับ openclaude ยัง degraded, และ `7012` ไม่ติด แต่ `7010/sse` ใช้งานจริงพร้อมแล้ว. ผมใช้ mini subagents ตรวจและปิดหมดแล้ว; gpt-5.5 ถูกเก็บไว้เป็น parent/advisor ตามโจทย์.",
+        "first_seen_at": "2026-06-03T06:25:10.940Z",
+        "last_seen_at": "2026-06-03T06:25:10.940Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e8bf9-32e3-7aa0-9b55-edb2259b2c28",
+        "last_thread_id": null
+      }
     }
   }
 }

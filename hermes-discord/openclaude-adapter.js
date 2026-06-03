@@ -18,36 +18,57 @@
 
 const https = require('https');
 const http  = require('http');
-const url   = require('url');
 
 // ── Configuration ─────────────────────────────────────────────────────
 const OPENCLAUDE_HOST     = process.env.OPENCLAUDE_HOST     || 'localhost';
 const OPENCLAUDE_PORT     = process.env.OPENCLAUDE_PORT     || 8000;
 const OPENCLAUDE_API_KEY  = process.env.OPENCLAUDE_API_KEY  || '';
 const OPENCLAUDE_MODEL    = process.env.OPENCLAUDE_MODEL    || 'claude-3.5-sonnet';
-const OPENCLAUDE_BASE_URL = process.env.OPENCLAUDE_BASE_URL || 'http://localhost:8000';
+const OPENCLAUDE_BASE_URL = process.env.OPENCLAUDE_BASE_URL || `http://${OPENCLAUDE_HOST}:${OPENCLAUDE_PORT}`;
 
 const DEBUG = process.env.DEBUG_OPENCLAUDE === 'true';
 
 // ── Status Check ──────────────────────────────────────────────────────
 function isAvailable() {
   // OpenClaude is available if:
-  // 1. Server is reachable at OPENCLAUDE_HOST:PORT
+  // 1. A base URL can be resolved
   // 2. API key is set (if required)
-  return !!(OPENCLAUDE_HOST && OPENCLAUDE_PORT);
+  return !!_buildOpenClaudeUrl('/health');
+}
+
+function _buildOpenClaudeUrl(endpointPath) {
+  try {
+    const target = new URL(OPENCLAUDE_BASE_URL);
+    const basePath = target.pathname.replace(/\/$/, '');
+    const requestPath = String(endpointPath || '').startsWith('/') ? endpointPath : '/' + endpointPath;
+    target.pathname = basePath + requestPath;
+    return target;
+  } catch (_) {
+    return null;
+  }
+}
+
+function _requestOptions(target, method, headers, timeout) {
+  return {
+    hostname: target.hostname,
+    port: target.port || (target.protocol === 'https:' ? 443 : 80),
+    path: target.pathname + target.search,
+    method: method,
+    headers: headers || {},
+    timeout: timeout,
+  };
+}
+
+function _transport(target) {
+  return target.protocol === 'https:' ? https : http;
 }
 
 async function checkHealth() {
   return new Promise((resolve) => {
-    const options = {
-      hostname: OPENCLAUDE_HOST,
-      port: OPENCLAUDE_PORT,
-      path: '/health',
-      method: 'GET',
-      timeout: 5000,
-    };
+    const target = _buildOpenClaudeUrl('/health');
+    if (!target) return resolve({ ok: false, message: 'OpenClaude invalid base URL' });
 
-    const req = (http).request(options, (res) => {
+    const req = _transport(target).request(_requestOptions(target, 'GET', {}, 5000), (res) => {
       let data = '';
       res.on('data', (d) => { data += d; });
       res.on('end', () => {
@@ -55,6 +76,7 @@ async function checkHealth() {
           ok: res.statusCode === 200,
           status: res.statusCode,
           message: res.statusCode === 200 ? 'OpenClaude online' : 'OpenClaude error',
+          url: target.href,
         });
       });
     });
@@ -92,26 +114,26 @@ function callOpenClaude(messages, opts, callback) {
     max_tokens: maxTokens,
     stream: false,
   };
+  const body = JSON.stringify(payload);
+  const target = _buildOpenClaudeUrl('/v1/messages');
+  if (!target) {
+    const err = new Error('OpenClaude invalid base URL');
+    if (callback) return callback(err, null);
+    return Promise.reject(err);
+  }
 
   if (DEBUG) {
     console.log('[openclaude-adapter] Calling:', {
-      url: OPENCLAUDE_BASE_URL + '/v1/messages',
+      url: target.href,
       model: model,
       messages: messages.length,
     });
   }
 
-  const postOptions = {
-    hostname: OPENCLAUDE_HOST,
-    port: OPENCLAUDE_PORT,
-    path: '/v1/messages',
-    method: 'POST',
-    headers: {
+  const postOptions = _requestOptions(target, 'POST', {
       'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(JSON.stringify(payload)),
-    },
-    timeout: 30000,
-  };
+      'Content-Length': Buffer.byteLength(body),
+    }, 30000);
 
   // Add API key if set
   if (OPENCLAUDE_API_KEY) {
@@ -121,7 +143,7 @@ function callOpenClaude(messages, opts, callback) {
   const promiseHandler = new Promise((resolve, reject) => {
     let responseData = '';
 
-    const req = http.request(postOptions, (res) => {
+    const req = _transport(target).request(postOptions, (res) => {
       res.on('data', (chunk) => { responseData += chunk; });
 
       res.on('end', () => {
@@ -177,7 +199,7 @@ function callOpenClaude(messages, opts, callback) {
       reject(new Error('OpenClaude request error: ' + e.message));
     });
 
-    req.write(JSON.stringify(payload));
+    req.write(body);
     req.end();
   });
 

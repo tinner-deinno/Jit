@@ -1,0 +1,339 @@
+{
+  "version": "1.1",
+  "updated": "2026-06-03",
+  "purpose": "Shared budget-aware routing map for Jit Codex, Jit ClaudeCode, innova-bot, Maw, Oracle, and Ollama lanes.",
+  "policy": {
+    "lead_agent": "jit-codex",
+    "parent_controller": true,
+    "default_agent": "innova",
+    "default_provider": "ollama_mdes",
+    "budget_order": ["ollama_mdes", "ollama_local", "ollama_cloud", "copilot", "openai"],
+    "advisor_provider": "openai",
+    "advisor_model": "gpt-5.5",
+    "advisor_policy": "Use GPT-5.5 only for high-risk architecture, hard blockers, final critical review, or user-facing synthesis that cheaper lanes cannot resolve.",
+    "evidence_policy": "A route is ready only after registry load, provider health, and the smallest relevant smoke check pass."
+  },
+  "providers": {
+    "ollama_mdes": {
+      "kind": "ollama",
+      "endpoint_env": "OLLAMA_URL",
+      "default_endpoint": "https://ollama.mdes-innova.online",
+      "default_model": "gemma4:26b",
+      "cost_tier": "low",
+      "use_for": ["thai", "summaries", "routine reasoning", "first-pass implementation planning"]
+    },
+    "ollama_local": {
+      "kind": "ollama",
+      "endpoint_env": "LOCAL_OLLAMA_URL",
+      "default_endpoint": "http://127.0.0.1:11434",
+      "default_model": "qwen2.5-coder:7b",
+      "cost_tier": "low",
+      "use_for": ["local code review", "test ideas", "short verifier checks"]
+    },
+    "ollama_cloud": {
+      "kind": "ollama",
+      "endpoint_env": "JIT_CLOUD_OLLAMA_URL",
+      "default_endpoint": "http://127.0.0.1:11434",
+      "default_model": "gemma4:31b-cloud",
+      "direct_endpoint": "https://ollama.com",
+      "direct_model_alias": "gemma4:31b",
+      "cost_tier": "medium",
+      "use_for": ["strong Thai reasoning", "fallback synthesis", "ClaudeCode companion review"]
+    },
+    "copilot": {
+      "kind": "chat_completion",
+      "endpoint_env": "COPILOT_API_URL",
+      "default_model": "claude-sonnet-4.6",
+      "cost_tier": "medium",
+      "use_for": ["ClaudeCode peer lane", "structured coding review"]
+    },
+    "openai": {
+      "kind": "chat_completion",
+      "endpoint_env": "OPENAI_API_BASE",
+      "default_model": "gpt-5.5",
+      "cost_tier": "high",
+      "use_for": ["advisor only", "critical synthesis", "deep blocker analysis"]
+    },
+    "thaillm": {
+      "kind": "ollama",
+      "endpoint_env": "THAILLM_URL",
+      "default_endpoint": "https://ollama.mdes-innova.online",
+      "default_model": "gemma4:31b-cloud",
+      "cost_tier": "medium",
+      "use_for": ["cultural nuance", "high-fidelity Thai translation", "local Thai context"]
+    },
+    "innova_bot_sse": {
+      "kind": "mcp_sse",
+      "endpoint": "http://127.0.0.1:7010/sse",
+      "gui": "http://127.0.0.1:7010/gui",
+      "cost_tier": "local",
+      "use_for": ["MCP tools", "workspace bridge", "live innomcp collaboration"]
+    },
+    "maw": {
+      "kind": "cli",
+      "command": "maw",
+      "cost_tier": "local",
+      "use_for": ["remote tmux", "fleet discovery", "Oracle GUI and node movement"]
+    },
+    "oracle": {
+      "kind": "http",
+      "health": "http://127.0.0.1:47778/api/health",
+      "root": "http://127.0.0.1:47778",
+      "cost_tier": "local",
+      "use_for": ["shared memory", "arra-oracle-v3", "skills and lore lookup"]
+    }
+  },
+  "agents": {
+    "jit-codex": {
+      "runtime": "codex",
+      "provider": "openai",
+      "model": "gpt-5.5",
+      "role": "parent controller, evidence owner, final synthesizer",
+      "cost_tier": "high",
+      "call": "Codex native leader; spawn bounded child agents before using deep advisor reasoning.",
+      "capabilities": ["orchestrate", "verify", "edit", "subagent-routing", "final-synthesis"],
+      "when_to_use": ["main user-facing coordination", "integration of child results", "critical final answer"]
+    },
+    "jit-claudecode": {
+      "runtime": "claude-code",
+      "provider": "copilot",
+      "model": "claude-sonnet-4.6",
+      "role": "peer implementer for innomcp and Jit-side coding lanes",
+      "cost_tier": "medium",
+      "call": "Use as a companion lane through ClaudeCode or Copilot-backed prompts when active.",
+      "capabilities": ["implementation", "code review", "repo navigation", "innomcp continuation"],
+      "when_to_use": ["parallel coding", "second-opinion review", "handoff from Codex"]
+    },
+    "innova-bot": {
+      "runtime": "mcp_sse",
+      "provider": "innova_bot_sse",
+      "role": "MCP body and live workspace bridge",
+      "cost_tier": "local",
+      "call": "Connect to http://127.0.0.1:7010/sse and use GUI at http://127.0.0.1:7010/gui when needed.",
+      "capabilities": ["mcp-tools", "workspace", "events", "innomcp"],
+      "when_to_use": ["live MCP proof", "workspace bridge", "innomcp collaboration"]
+    },
+    "maw": {
+      "runtime": "cli",
+      "provider": "maw",
+      "role": "remote tmux and Oracle fleet movement layer",
+      "cost_tier": "local",
+      "call": "maw doctor --json, maw fleet, maw attach, and GUI flows from C:\\Users\\USER-NT\\DEV\\maw-js.",
+      "capabilities": ["tmux-remote", "fleet", "gui", "node-movement"],
+      "when_to_use": ["move work between machines", "inspect Oracle fleet", "open Oracle GUI"]
+    },
+    "oracle-brain": {
+      "runtime": "arra-oracle-v3",
+      "provider": "oracle",
+      "role": "shared memory and skill-lore brain",
+      "cost_tier": "local",
+      "call": "HTTP health/search on port 47778 and arra-oracle-skills CLI.",
+      "capabilities": ["memory", "skills", "search", "awaken", "lore"],
+      "when_to_use": ["memory lookup", "skill profile sync", "Oracle readiness"]
+    },
+    "gemma4-31b-cloud": {
+      "runtime": "ollama",
+      "provider": "ollama_cloud",
+      "model": "gemma4:31b-cloud",
+      "role": "strong economical cloud reasoning lane",
+      "cost_tier": "medium",
+      "call": "model-router preferBackend=ollama_cloud, model=gemma4:31b-cloud",
+      "capabilities": ["thai", "synthesis", "advisor-lite", "fallback"],
+      "when_to_use": ["needs stronger than local", "avoid GPT-5.5", "Thai-heavy synthesis"]
+    },
+    "jit": {
+      "runtime": "agent-spawner",
+      "provider": "ollama_mdes",
+      "model": "gemma4:26b",
+      "role": "soul orchestrator inside Jit body",
+      "cost_tier": "low",
+      "capabilities": ["orchestrate", "delegate", "monitor"]
+    },
+    "innova": {
+      "runtime": "agent-spawner",
+      "provider": "ollama_mdes",
+      "model": "gemma4:26b",
+      "role": "lead developer and implementation planner",
+      "cost_tier": "low",
+      "capabilities": ["implement", "analyze", "coordinate"]
+    },
+    "mue": {
+      "runtime": "agent-spawner",
+      "provider": "ollama_mdes",
+      "model": "gemma4:26b",
+      "role": "executor for reversible local work",
+      "cost_tier": "low",
+      "capabilities": ["execute", "scripts", "small-edits"]
+    },
+    "chamu": {
+      "runtime": "agent-spawner",
+      "provider": "ollama_mdes",
+      "model": "gemma4:26b",
+      "role": "QA and verifier lane",
+      "cost_tier": "low",
+      "capabilities": ["tests", "bug-hunt", "regression"]
+    },
+    "neta": {
+      "runtime": "agent-spawner",
+      "provider": "ollama_cloud",
+      "model": "gemma4:31b-cloud",
+      "role": "review and risk lane",
+      "cost_tier": "medium",
+      "capabilities": ["review", "security", "quality"]
+    },
+    "lak": {
+      "runtime": "agent-spawner",
+      "provider": "ollama_cloud",
+      "model": "gemma4:31b-cloud",
+      "role": "architecture and boundary lane",
+      "cost_tier": "medium",
+      "capabilities": ["architecture", "design", "tradeoffs"]
+    },
+    "vaja": {
+      "runtime": "agent-spawner",
+      "provider": "ollama_mdes",
+      "model": "gemma4:26b",
+      "role": "human-facing summary lane",
+      "cost_tier": "low",
+      "capabilities": ["summarize", "report", "communicate"]
+    },
+    "agent-mdes": {
+      "runtime": "agent-spawner",
+      "provider": "ollama_mdes",
+      "model": "gemma4:26b",
+      "role": "Core Engineering Powerhouse",
+      "cost_tier": "low",
+      "capabilities": ["heavy-reasoning", "complex-fix", "deep-engineering"],
+      "when_to_use": ["when standard implementation fails", "deep technical debt resolution"]
+    },
+    "agent-thaillm": {
+      "runtime": "agent-spawner",
+      "provider": "thaillm",
+      "model": "gemma4:31b-cloud",
+      "role": "Thai Linguistic Specialist",
+      "cost_tier": "medium",
+      "capabilities": ["cultural-nuance", "high-fidelity-thai", "local-context"],
+      "when_to_use": ["Thai language refinement", "cultural adaptation"]
+    },
+    "agent-ollama": {
+      "runtime": "agent-spawner",
+      "provider": "ollama_local",
+      "model": "qwen2.5-coder:7b",
+      "role": "Local Privacy & Rapid Triage Guardian",
+      "cost_tier": "low",
+      "capabilities": ["privacy-first", "quick-triage", "local-smoke-check"],
+      "when_to_use": ["sensitive data processing", "rapid iteration check"]
+    },
+    "agent-copilot": {
+      "runtime": "agent-spawner",
+      "provider": "copilot",
+      "model": "claude-sonnet-4.6",
+      "role": "Rapid Prototyping & Boilerplate Expert",
+      "cost_tier": "medium",
+      "capabilities": ["rapid-prototype", "boilerplate", "real-time-suggestion"],
+      "when_to_use": ["starting new modules", "rapidly scaffolding features"]
+    }
+  },
+  "routing_rules": [
+    {
+      "id": "mcp-innomcp-live",
+      "match": ["innomcp", "mcp", "sse", "workspace", "innova-bot", "7010"],
+      "agent": "innova-bot",
+      "provider": "innova_bot_sse",
+      "reason": "Live innomcp or MCP work should prove the actual body bridge first."
+    },
+    {
+      "id": "implementation",
+      "match": ["implement", "fix", "edit", "script", "create", "write code"],
+      "agent": "mue",
+      "provider": "ollama_mdes",
+      "model": "gemma4:26b",
+      "reason": "Use a bounded low-cost executor lane before escalating."
+    },
+    {
+      "id": "test-qa",
+      "match": ["test", "qa", "verify", "regression", "bug", "smoke"],
+      "agent": "chamu",
+      "provider": "ollama_mdes",
+      "model": "gemma4:26b",
+      "reason": "Use the responsive low-cost MDES verifier lane for first-pass QA."
+    },
+    {
+      "id": "architecture",
+      "match": ["architecture", "design", "router", "interface", "registry", "tradeoff"],
+      "agent": "lak",
+      "provider": "ollama_cloud",
+      "model": "gemma4:31b-cloud",
+      "reason": "Architecture needs stronger reasoning but still avoids GPT-5.5."
+    },
+    {
+      "id": "review",
+      "match": ["review", "security", "risk", "audit"],
+      "agent": "neta",
+      "provider": "ollama_cloud",
+      "model": "gemma4:31b-cloud",
+      "reason": "Use medium-cost cloud review before frontier advisor."
+    },
+    {
+      "id": "oracle-memory",
+      "match": ["oracle", "memory", "psi", "skills", "awaken", "arra"],
+      "agent": "oracle-brain",
+      "provider": "oracle",
+      "reason": "Memory and skill truth comes from Oracle and arra-oracle-skills."
+    },
+    {
+      "id": "remote-maw",
+      "match": ["maw", "tmux", "remote", "fleet", "gui"],
+      "agent": "maw",
+      "provider": "maw",
+      "reason": "Remote movement and GUI flows belong to Maw."
+    },
+    {
+      "id": "summary",
+      "match": ["summary", "report", "handoff", "status", "recap"],
+      "agent": "vaja",
+      "provider": "ollama_mdes",
+      "model": "gemma4:26b",
+      "reason": "Use the low-cost communication lane for status reports."
+    },
+    {
+      "id": "heavy-engineering",
+      "match": ["complex-fix", "deep-engineering", "refactor-heavy", "performance-bottleneck"],
+      "agent": "agent-mdes",
+      "provider": "ollama_mdes",
+      "model": "gemma4:26b",
+      "reason": "Use the core engineering powerhouse for high-complexity technical tasks."
+    },
+    {
+      "id": "thai-cultural",
+      "match": ["thai-nuance", "translate-thai", "cultural-adaptation", "thai-context"],
+      "agent": "agent-thaillm",
+      "provider": "thaillm",
+      "model": "gemma4:31b-cloud",
+      "reason": "Linguistic and cultural nuances in Thai require the specialized ThaiLLM lane."
+    },
+    {
+      "id": "local-privacy",
+      "match": ["privacy-first", "sensitive-data", "quick-triage", "local-smoke"],
+      "agent": "agent-ollama",
+      "provider": "ollama_local",
+      "model": "qwen2.5-coder:7b",
+      "reason": "Local processing for privacy or rapid, low-latency triage."
+    },
+    {
+      "id": "rapid-prototype",
+      "match": ["boilerplate", "scaffold", "rapid-prototype", "autocomplete"],
+      "agent": "agent-copilot",
+      "provider": "copilot",
+      "model": "claude-sonnet-4.6",
+      "reason": "Copilot is the best for high-speed scaffolding and boilerplate generation."
+    }
+  ],
+  "validation": {
+    "registry_parse": "node -e \"JSON.parse(require('fs').readFileSync('network/registry.json','utf8')); console.log('registry ok')\"",
+    "routing_parse": "node -e \"JSON.parse(require('fs').readFileSync('config/subagent-routing.json','utf8')); console.log('routing ok')\"",
+    "fleet": "node .codex/skills/agent-fleet-budget/scripts/check-fleet.mjs",
+    "readiness": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/oracle-readiness.ps1 -Json",
+    "maw": "maw doctor --json"
+  }
+}

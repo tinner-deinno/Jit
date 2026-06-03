@@ -29,6 +29,105 @@
  */
 
 var modelRouter = require('./model-router');
+var fs = require('fs');
+var path = require('path');
+
+var JIT_ROOT = path.resolve(__dirname, '..');
+var ROUTING_CONFIG = _loadRoutingConfig();
+
+function _loadRoutingConfig() {
+  var file = path.join(JIT_ROOT, 'config', 'subagent-routing.json');
+  try {
+    var config = JSON.parse(fs.readFileSync(file, 'utf8'));
+    config.__file = file;
+    return config;
+  } catch (err) {
+    if (process.env.JIT_ROUTING_DEBUG) {
+      console.warn('[agent-spawner] Routing config unavailable: ' + err.message);
+    }
+    return { policy: {}, agents: {}, routing_rules: [] };
+  }
+}
+
+function getRoutingConfig() {
+  return ROUTING_CONFIG;
+}
+
+function _isModelBackend(backend) {
+  return [
+    'ollama',
+    'ollama_mdes',
+    'ollama_local',
+    'ollama_cloud',
+    'copilot',
+    'openai',
+    'openclaude',
+  ].indexOf(backend) !== -1;
+}
+
+function _defaultProvider() {
+  return (ROUTING_CONFIG.policy && ROUTING_CONFIG.policy.default_provider) || 'ollama_mdes';
+}
+
+function _modelBackendOrDefault(backend) {
+  return _isModelBackend(backend) ? backend : _defaultProvider();
+}
+
+function _costTierToSort(costTier, fallback) {
+  if (typeof fallback === 'number') return fallback;
+  if (costTier === 'local' || costTier === 'low') return 3;
+  if (costTier === 'medium') return 4;
+  if (costTier === 'high') return 5;
+  return 4;
+}
+
+function _agentRoute(agentName) {
+  var agents = ROUTING_CONFIG.agents || {};
+  return agents[agentName] || null;
+}
+
+function _routeToAgentDef(agentName, route) {
+  var provider = route.provider || route.backend || _defaultProvider();
+  var prompt = [
+    'You are ' + agentName + ' in the Jit runtime sub-agent network.',
+    'Role: ' + (route.role || 'bounded specialist'),
+    'Runtime: ' + (route.runtime || 'model-router'),
+    'Follow config/subagent-routing.json and report concise evidence-first results.',
+    'Escalate blockers upward to the Jit Codex parent controller.',
+  ].join('\n');
+
+  return {
+    backend: _modelBackendOrDefault(provider),
+    model: route.model || null,
+    tier: _costTierToSort(route.cost_tier, null),
+    organ: route.runtime || route.provider || 'runtime',
+    systemPrompt: route.systemPrompt || prompt,
+    route: route,
+  };
+}
+
+function _cloneAgentDef(def) {
+  var copy = {};
+  Object.keys(def).forEach(function(key) { copy[key] = def[key]; });
+  return copy;
+}
+
+function _effectiveAgentDef(agentName) {
+  var base = AGENT_REGISTRY[agentName];
+  var route = _agentRoute(agentName);
+
+  if (!base && route) return _routeToAgentDef(agentName, route);
+  if (!base) return null;
+  if (!route) return base;
+
+  var merged = _cloneAgentDef(base);
+  var provider = route.provider || route.backend;
+  if (provider) merged.backend = _modelBackendOrDefault(provider);
+  if (route.model) merged.model = route.model;
+  if (route.cost_tier) merged.cost_tier = route.cost_tier;
+  merged.route = route;
+  return merged;
+}
 
 // ── Agent Registry ────────────────────────────────────────────────────
 // Each entry: { backend, model, systemPrompt }
@@ -212,11 +311,11 @@ var AGENT_REGISTRY = {
  */
 function spawnAgent(agentName, userMessage, options) {
   var opts     = options || {};
-  var agentDef = AGENT_REGISTRY[agentName];
+  var agentDef = _effectiveAgentDef(agentName);
 
   if (!agentDef) {
     console.warn('[agent-spawner] Unknown agent: ' + agentName + ', falling back to vaja');
-    agentDef = AGENT_REGISTRY['vaja'];
+    agentDef = _effectiveAgentDef('vaja') || AGENT_REGISTRY['vaja'];
     agentName = 'vaja (fallback)';
   }
 
@@ -234,6 +333,7 @@ function spawnAgent(agentName, userMessage, options) {
   return modelRouter.callModelPromise(messages, {
     preferBackend: opts.overrideBackend || agentDef.backend,
     model:         opts.overrideModel   || agentDef.model   || null,
+    noRotate:      Boolean(opts.noRotate),
   }).then(function(result) {
     return {
       reply:   result.reply,
@@ -241,6 +341,7 @@ function spawnAgent(agentName, userMessage, options) {
       agent:   agentName,
       tier:    agentDef.tier,
       organ:   agentDef.organ,
+      route:   agentDef.route || null,
     };
   });
 }
@@ -292,10 +393,97 @@ function spawnAgentParallel(tasks) {
 /**
  * listAgents() → [{ name, backend, model, tier, organ }]
  */
+function _ruleMatches(rule, text) {
+  var terms = rule.match || rule.keywords || [];
+  if (!Array.isArray(terms)) return false;
+  return terms.some(function(term) {
+    return text.indexOf(String(term).toLowerCase()) !== -1;
+  });
+}
+
+function _routeResult(rule, opts) {
+  var agentName = rule.agent || (ROUTING_CONFIG.policy && ROUTING_CONFIG.policy.default_agent) || 'innova';
+  var route = _agentRoute(agentName) || {};
+  var provider = opts.overrideBackend || rule.provider || rule.backend || route.provider || route.backend || _defaultProvider();
+  var model = opts.overrideModel || rule.model || route.model || null;
+
+  return {
+    id: rule.id || 'default',
+    agent: agentName,
+    backend: provider,
+    model: model,
+    reason: rule.reason || route.role || 'Default budget-aware route.',
+    model_backend: _modelBackendOrDefault(provider),
+    is_model_backend: _isModelBackend(provider),
+  };
+}
+
+function routeTask(userMessage, options) {
+  var opts = options || {};
+  var text = String(userMessage || '').toLowerCase();
+  var rules = Array.isArray(ROUTING_CONFIG.routing_rules) ? ROUTING_CONFIG.routing_rules : [];
+
+  for (var i = 0; i < rules.length; i++) {
+    if (_ruleMatches(rules[i], text)) return _routeResult(rules[i], opts);
+  }
+
+  return _routeResult({
+    id: 'default',
+    agent: opts.defaultAgent || (ROUTING_CONFIG.policy && ROUTING_CONFIG.policy.default_agent) || 'innova',
+    provider: opts.defaultBackend || _defaultProvider(),
+    reason: 'Default route from config/subagent-routing.json.',
+  }, opts);
+}
+
+function spawnRoutedAgent(userMessage, options) {
+  var opts = options || {};
+  var route = routeTask(userMessage, opts);
+
+  if (!route.is_model_backend) {
+    return Promise.resolve({
+      reply: 'Route selected: ' + route.agent + ' via ' + route.backend + '. Use the provider command or MCP surface directly.',
+      backend: route.backend,
+      agent: route.agent,
+      route: route,
+      routedOnly: true,
+    });
+  }
+
+  var spawnOpts = _cloneAgentDef(opts);
+  spawnOpts.overrideBackend = route.model_backend;
+  if (route.model) spawnOpts.overrideModel = route.model;
+  if (spawnOpts.noRotate === undefined) spawnOpts.noRotate = true;
+
+  return spawnAgent(route.agent, userMessage, spawnOpts).then(function(result) {
+    result.route = route;
+    return result;
+  });
+}
+
 function listAgents() {
-  return Object.keys(AGENT_REGISTRY).map(function(name) {
-    var def = AGENT_REGISTRY[name];
-    return { name: name, backend: def.backend, model: def.model || '(default)', tier: def.tier, organ: def.organ };
+  var seen = {};
+  var names = Object.keys(AGENT_REGISTRY);
+  Object.keys(ROUTING_CONFIG.agents || {}).forEach(function(name) {
+    if (names.indexOf(name) === -1) names.push(name);
+  });
+
+  return names.filter(function(name) {
+    if (seen[name]) return false;
+    seen[name] = true;
+    return true;
+  }).map(function(name) {
+    var def = _effectiveAgentDef(name);
+    var route = _agentRoute(name);
+    return {
+      name: name,
+      backend: def.backend,
+      model: def.model || '(default)',
+      tier: def.tier,
+      organ: def.organ,
+      cost_tier: route && route.cost_tier || def.cost_tier || null,
+      runtime: route && route.runtime || null,
+      route_provider: route && route.provider || null,
+    };
   }).sort(function(a, b) { return a.tier - b.tier || a.name.localeCompare(b.name); });
 }
 
@@ -404,8 +592,11 @@ function speakAsVajaPromise(text) {
 
 module.exports = {
   spawnAgent:         spawnAgent,
+  spawnRoutedAgent:   spawnRoutedAgent,
   spawnAgentChain:    spawnAgentChain,
   spawnAgentParallel: spawnAgentParallel,
+  routeTask:          routeTask,
+  getRoutingConfig:   getRoutingConfig,
   listAgents:         listAgents,
   AGENT_REGISTRY:     AGENT_REGISTRY,
   // Thai TTS exports

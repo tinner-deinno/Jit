@@ -1,0 +1,10 @@
+{
+  "name": "agent-mdes",
+  "organ": "Mind (Deep Reasoning)",
+  "tier": 3,
+  "provider": "ollama_mdes",
+  "model": "gemma4:26b",
+  "capabilities": ["heavy-reasoning", "complex-fix", "deep-engineering"],
+  "role": "Core Engineering Powerhouse",
+  "description": "Specialist for high-complexity technical tasks, deep architectural fixes, and extreme performance optimization."
+}

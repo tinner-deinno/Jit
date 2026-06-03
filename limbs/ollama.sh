@@ -20,6 +20,10 @@ if [ -f "$JIT_ROOT/.env" ]; then
   set -a; source "$JIT_ROOT/.env"; set +a
 fi
 
+OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-${OLLAMA_URL:-https://ollama.mdes-innova.online}}"
+OLLAMA_MODEL="${OLLAMA_MODEL:-${JIT_OLLAMA_MODEL:-gemma4:26b}}"
+OLLAMA_API_PATH="${OLLAMA_API_PATH:-/api/generate}"
+
 CMD="${1:-ask}"
 shift || true
 
@@ -28,9 +32,10 @@ _call_ollama() {
   local TIMEOUT="${2:-45}"
   log_action "OLLAMA_CALL" "${PROMPT:0:80}..."
 
-  local JSON_BODY=$(printf '%s' "$PROMPT" | python3 -c "import sys, json; print(json.dumps({'model':'gemma4:26b', 'prompt':sys.stdin.read(), 'stream':False}))")
+  local JSON_BODY=$(printf '%s' "$PROMPT" | OLLAMA_MODEL="$OLLAMA_MODEL" python3 -c "import os, sys, json; print(json.dumps({'model':os.environ.get('OLLAMA_MODEL','gemma4:26b'), 'prompt':sys.stdin.read(), 'stream':False}))")
 
-  local RESPONSE=$(curl -s --max-time "$TIMEOUT" "https://ollama.mdes-innova.online/api/generate" \
+  local API_URL="${OLLAMA_BASE_URL%/}${OLLAMA_API_PATH}"
+  local RESPONSE=$(curl -s --max-time "$TIMEOUT" "$API_URL" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $OLLAMA_TOKEN" \
     --data "$JSON_BODY" 2>/dev/null)
@@ -49,7 +54,7 @@ case "$CMD" in
   ask)
     PROMPT="$*"
     if [ -z "$PROMPT" ]; then err "ต้องระบุ prompt"; exit 1; fi
-    step "ถาม Ollama (gemma4:26b)..."
+    step "Ask Ollama (${OLLAMA_MODEL})..."
     _call_ollama "$PROMPT"
     ;;
 

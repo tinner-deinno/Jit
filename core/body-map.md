@@ -170,8 +170,9 @@ Jit/
 
 | System | Count | Status |
 |--------|-------|--------|
-| Agents | 8 | ✅ registered |
-| Organs (scripts) | 10 | ✅ created |
-| Bus inboxes | 8 | ⚠️ needs mkdir |
+| Agents | 14 | ✅ registered |
+| Organs (scripts) | 14 | ✅ created |
+| Bus inboxes | 14 | ✅ operational |
 | Oracle | 1 | ✅ localhost:47778 |
+| Innova-Bot Bridge | 1 | ✅ port 7010 synced |
 | Eval scripts | 2 | ✅ soul-check + body-check |
