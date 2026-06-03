@@ -114,8 +114,16 @@ class InnovaBotBridge extends EventEmitter {
                 const { resolve: res, reject: rej, timer } = this.pending.get(data.id);
                 clearTimeout(timer);
                 this.pending.delete(data.id);
-                if (data.error) rej(new Error(`MCP error ${data.error.code}: ${data.error.message}`));
-                else res(data.result);
+                if (data.error) {
+                  rej(new Error(`MCP error ${data.error.code}: ${data.error.message}`));
+                } else if (data.result && data.result.isError) {
+                  // innova-bot wraps tool failures in result.isError (FastMCP),
+                  // not the standard JSON-RPC error field — reject those too.
+                  const txt = data.result.content && data.result.content[0] && data.result.content[0].text;
+                  rej(new Error(`Tool error: ${txt || 'unknown'}`));
+                } else {
+                  res(data.result);
+                }
                 return;
               }
 
@@ -155,6 +163,7 @@ class InnovaBotBridge extends EventEmitter {
     if (this.state === ConnectionState.RECONNECTING) return;
     this.state = ConnectionState.RECONNECTING;
     this.sessionID = null;
+    this.initialized = false; // new session needs a fresh MCP handshake
     if (this.eventSource) {
       this.eventSource.close();
       this.eventSource = null;
@@ -285,6 +294,7 @@ class InnovaBotBridge extends EventEmitter {
     }
     this.state = ConnectionState.DISCONNECTED;
     this.sessionID = null;
+    this.initialized = false;
     console.log('[InnovaBotBridge] Disconnected.');
   }
 }
