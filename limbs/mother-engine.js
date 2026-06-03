@@ -32,13 +32,23 @@ class MotherEngine {
   pickLiveProvider() {
     try {
       const ps = JSON.parse(fs.readFileSync(path.join(__dirname, '../network/provider-status.json'), 'utf8'));
-      const usable = ps.usable || [];
+      // Exclude anything the probe saw as rate-limited even if it once answered.
+      const usable = (ps.usable || []).filter(b => ps.results?.[b]?.status !== 'RATE_LIMITED');
       if (!usable.length) return null;
-      // Prefer fastest by last_latency: order by recorded ms ascending.
+      // Budget-aware: prefer the CHEAPEST usable lane, then fastest — keeps the
+      // expensive frontier provider (openai/gpt-5.5, advisor-only) out of the
+      // squad. Ties broken by recorded latency.
+      const costRank = { local: 0, low: 1, medium: 2, high: 3 };
+      const cost = b => costRank[this.routing?.providers?.[b]?.cost_tier] ?? 2;
       const ranked = usable.slice().sort((a, b) =>
-        (ps.results?.[a]?.ms ?? 1e9) - (ps.results?.[b]?.ms ?? 1e9));
-      console.log(`[Mother] Live providers (fastest-first): ${ranked.join(', ')}`);
-      return ranked[0];
+        (cost(a) - cost(b)) || ((ps.results?.[a]?.ms ?? 1e9) - (ps.results?.[b]?.ms ?? 1e9)));
+      const backend = ranked[0];
+      // CRITICAL: a backend only accepts its own model. Routing config holds the
+      // correct default_model per provider; passing the agent's model verbatim
+      // (e.g. gemma4:26b) to ollama_cloud yields 404 model-not-found.
+      const model = this.routing?.providers?.[backend]?.default_model || null;
+      console.log(`[Mother] Live providers (fastest-first): ${ranked.join(', ')} -> using ${backend} (model=${model || 'backend-default'})`);
+      return { backend, model };
     } catch (e) {
       console.warn(`[Mother] No provider-status probe found (${e.message}); falling back to router rotation.`);
       return null;
@@ -129,7 +139,7 @@ class MotherEngine {
         squadNames.map(name => ({
           agent: name,
           message: `Goal: ${goal}. Context: Phase ${phaseName}. Provide your specialized output.`,
-          options: this.liveProvider ? { overrideBackend: this.liveProvider } : {}
+          options: this.liveProvider ? { overrideBackend: this.liveProvider.backend, overrideModel: this.liveProvider.model } : {}
         })),
         `Phase ${phaseName} Execution`
       );
@@ -147,7 +157,7 @@ class MotherEngine {
         verifierSquad.map(name => ({
           agent: name,
           message: `Review results for phase ${phaseName}. Score it 0-100. Goal was: ${goal}. Results: ${JSON.stringify(results)}`,
-          options: this.liveProvider ? { overrideBackend: this.liveProvider } : {}
+          options: this.liveProvider ? { overrideBackend: this.liveProvider.backend, overrideModel: this.liveProvider.model } : {}
         })),
         `Phase ${phaseName} Verification`
       );

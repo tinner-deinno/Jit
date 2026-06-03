@@ -40,7 +40,7 @@ function snapshot() {
     console.error('[live] ABORT: no live provider in provider-status.json — run eval/provider-probe.js first.');
     process.exit(2);
   }
-  console.log(`[live] live provider = ${engine.liveProvider}`);
+  console.log(`[live] live provider = ${engine.liveProvider.backend} (model=${engine.liveProvider.model || 'default'})`);
 
   const phase = 'LiveProof';
   const goal = 'Summarize in ONE sentence what a multi-agent orchestration leaderboard is for.';

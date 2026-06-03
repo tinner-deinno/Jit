@@ -35,6 +35,7 @@ const modelRouter  = require('./model-router');
 const agentSpawner = require('./agent-spawner');
 const innovaBridge = require('./jit-innova-bridge');
 const { DiscordThoughtLoop } = require('./thought-loop');
+const commandTranslator = require('./command-translator');
 // jit-mother: Mother orchestrator — delegates to ALL agents + speaks Thai
 let jitMother;
 try { jitMother = require('../skills/vaja-thai-tts/jit-mother'); }
@@ -445,7 +446,14 @@ function buildMeta(message) {
 }
 
 async function handleJitCommand(client, message, commandText) {
-  const normalized = (commandText || '').trim();
+  let normalized = (commandText || '').trim();
+
+  // Translate Thai natural language to !jit command if necessary
+  if (normalized) {
+    await message.channel.sendTyping().catch(() => {});
+    normalized = await commandTranslator.translateThaiToJit(normalized);
+  }
+
   const parts = normalized ? normalized.split(/\s+/) : [];
   const command = (parts[0] || 'help').toLowerCase();
   const meta = buildMeta(message);

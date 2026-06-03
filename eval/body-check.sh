@@ -93,6 +93,24 @@ _section "Network Multiagent"
 [ -f "$JIT_ROOT/network/router.sh" ]     && _pass "network/router.sh" || _fail "network/router.sh"
 
 # ════════════════════════════════════════════════════════
+_section "Body Bridge (Innova-Bot Connection)"
+if [ -f "$JIT_ROOT/eval/bridge-check.sh" ]; then
+  bash "$JIT_ROOT/eval/bridge-check.sh"
+
+  B_EXIT=0
+  bash "$JIT_ROOT/eval/bridge-check.sh" > /dev/null 2>&1
+  B_EXIT=$?
+
+  if [ $B_EXIT -eq 0 ]; then
+    _pass "Bridge health check passed"
+  else
+    _fail "Bridge health check failed"
+  fi
+else
+  _fail "eval/bridge-check.sh not found"
+fi
+
+
 _section "Agents (ผู้เล่น)"
 [ -f "$JIT_ROOT/agents/innova.json" ]  && _pass "agents/innova.json" || _fail "agents/innova.json"
 [ -f "$JIT_ROOT/agents/soma.json" ]    && _pass "agents/soma.json" || _fail "agents/soma.json"

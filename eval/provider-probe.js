@@ -29,7 +29,7 @@ const router = require('../hermes-discord/model-router');
 
 const TIMEOUT = (() => {
   const i = process.argv.indexOf('--timeout');
-  return i > -1 ? parseInt(process.argv[i + 1], 10) : 20000;
+  return i > -1 ? parseInt(process.argv[i + 1], 10) : 35000; // generous: ollama_mdes cold-start can take >20s
 })();
 
 // Backends to probe (keys in model-router BackendManager).
