@@ -139,9 +139,10 @@ Each phase's full multi-agent output persists to `network/artifacts/<runId>/NN_t
 `runGoal` feeds the FULL previous-phase output (capped 3000) forward (per GPT-5.5:
 dependent phases need the real artifact, not a stub). `mother artifacts [runId]`.
 Claude swarm 11/11 regression PASS + path-traversal SAFE; fixed Thai-safe
-filenames (`\p{L}`) + numeric run sort. **Live: phase-1 artifact wrote the full
-haiku correctly**; phase-2 leg unconfirmed live (MDES 504 ate the 420s budget) —
-logic unit-proven.
+filenames (`\p{L}`) + numeric run sort. **Live-CONFIRMED (2026-06-04, MDES recovered):** a 2-phase run (compose →
+translate) where phase 2's artifact translated phase 1's ACTUAL sentence
+(referenced "Orchestration"/"Unifies" from phase 1 + produced real Thai) — full
+prior artifact passed forward, not a stub. The fix works end-to-end.
 
 ## Iteration 12 — `mother doctor` self-diagnostic ✅
 One no-quota command: provider liveness+staleness, bridge, **git push-gate
