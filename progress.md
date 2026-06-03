@@ -186,6 +186,12 @@ state persists to `network/breaker-state.json` (expired pruned on load; trip/res
 write through), and `mother doctor` surfaces OPEN lanes + cooldown remaining.
 GPT-5.5 senior caught the env-config bug en route (round 5). Regression green.
 
+## Iteration 17 — Bidirectional innova-bot A2A ✅
+Mother published to the bot's A2A bus but never consumed. Added
+`bridge.fetchPendingEvents(role)` + `mother inbox [role]`. Loop now complete:
+publish (`dispatchTask`→publish_event) + consume (`inbox`→fetch_pending_events).
+Verified LIVE: fetched real events Mother had published earlier.
+
 ## Provider reality (degraded, 2026-06-04)
 MDES alive but very slow (~28–80s cold); GPT-5.5 alive ~15–80s; ollama_cloud
 quota-exhausted; ThaiLLM token expired; Copilot token now 404; local ollama down.
