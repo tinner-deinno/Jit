@@ -134,6 +134,21 @@ regression** in the first decompose fix (marker-only filter dropped `Phase 1:`
 and plain lines); corrected + unit-verified. MDES validated PASS. ThaiLLM
 (token expired) / Copilot (token 404) currently unavailable.
 
+## Iteration 11 — Phase artifact storage ✅
+Each phase's full multi-agent output persists to `network/artifacts/<runId>/NN_title.md`;
+`runGoal` feeds the FULL previous-phase output (capped 3000) forward (per GPT-5.5:
+dependent phases need the real artifact, not a stub). `mother artifacts [runId]`.
+Claude swarm 11/11 regression PASS + path-traversal SAFE; fixed Thai-safe
+filenames (`\p{L}`) + numeric run sort. **Live: phase-1 artifact wrote the full
+haiku correctly**; phase-2 leg unconfirmed live (MDES 504 ate the 420s budget) —
+logic unit-proven.
+
+## Iteration 12 — `mother doctor` self-diagnostic ✅
+One no-quota command: provider liveness+staleness, bridge, **git push-gate
+(surfaces unpushed count)**, leaderboard integrity, recent success rate →
+prioritized HEALTHY/WARNINGS/BLOCKERS. Live output flagged 68 unpushed commits
++ stale probe automatically.
+
 ## Provider reality (degraded, 2026-06-04)
 MDES alive but very slow (~28–80s cold); GPT-5.5 alive ~15–80s; ollama_cloud
 quota-exhausted; ThaiLLM token expired; Copilot token now 404; local ollama down.
