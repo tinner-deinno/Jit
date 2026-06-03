@@ -189,6 +189,10 @@ class InnovaBotBridge extends EventEmitter {
         this.handleDisconnect();
       }
     }, 30000);
+    // Don't let the heartbeat timer alone keep the Node event loop alive. (The
+    // SSE socket can still hold it open, so long-lived consumers should still
+    // call disconnect()/shutdownInnovaBot() — but this removes one hang source.)
+    if (this.heartbeatTimer && typeof this.heartbeatTimer.unref === 'function') this.heartbeatTimer.unref();
   }
 
   stopHeartbeat() {
