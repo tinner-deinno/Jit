@@ -13,24 +13,24 @@
       "provisional": false
     },
     "soma": {
-      "completed_tasks": 98,
-      "correctness_score": 86.31810449581201,
+      "completed_tasks": 99,
+      "correctness_score": 87.45448359664961,
       "success_rate": 1,
       "rank": 3,
       "provisional": false
     },
     "innova": {
-      "completed_tasks": 168,
-      "correctness_score": 83.74306960858235,
+      "completed_tasks": 169,
+      "correctness_score": 84.59445568686587,
       "success_rate": 1,
       "rank": 4,
       "provisional": false
     },
     "lak": {
-      "completed_tasks": 68,
-      "correctness_score": 71.10868967257672,
-      "success_rate": 1,
-      "rank": 5,
+      "completed_tasks": 69,
+      "correctness_score": 57.88695173806138,
+      "success_rate": 0,
+      "rank": 7,
       "provisional": false
     },
     "neta": {
@@ -41,17 +41,17 @@
       "provisional": false
     },
     "vaja": {
-      "completed_tasks": 218,
-      "correctness_score": 67.3565196245331,
-      "success_rate": 0,
-      "rank": 6,
+      "completed_tasks": 219,
+      "correctness_score": 72.28521569962649,
+      "success_rate": 1,
+      "rank": 5,
       "provisional": false
     },
     "chamu": {
-      "completed_tasks": 138,
-      "correctness_score": 63.09994448237024,
+      "completed_tasks": 139,
+      "correctness_score": 68.8799555858962,
       "success_rate": 1,
-      "rank": 7,
+      "rank": 6,
       "provisional": false
     },
     "agent-mdes": {
