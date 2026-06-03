@@ -102,6 +102,17 @@ returns real output, `jit_bridge_status` returns structured data.
 - `what_should_i_do_next` — bot's task-suggestion brain.
 - `jit_runtime_snapshot` — one-call health/observability.
 
+## Iteration 8 — innova-bot as a model lane ⚠️ (works, but a proxy)
+
+Wired `innova_bot` (bot's `ask_local_ai`) as a model-router backend via a lazy
+singleton bridge — goal was a credential-free fleet widener. Routing/rotation/
+normalization all verified (5-Haiku swarm); fixed heartbeat `.unref()` so
+one-shot scripts can exit. **Honest finding:** `ask_local_ai` is a **pure proxy
+to the same MDES Ollama** (bot's local ollama offline → cascades to remote MDES).
+So it adds NO resilience — kept OUT of default `BACKEND_ORDER` (preferBackend-only).
+**Conclusion: the only real fleet-widening left needs YOU** (start local ollama,
+refresh ThaiLLM token, restore MDES/cloud quota) — not code.
+
 ## innova-bot bridge
 **ALIVE & genuinely talking (MCP).** `node eval/innova-bot-mcp-probe.js` lists the
 31 tools. Port 7010; `/gui` (37KB) + `/sse` work; `/health` 404 (cosmetic).
