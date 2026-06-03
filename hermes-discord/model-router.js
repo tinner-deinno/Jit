@@ -223,6 +223,18 @@ const backendManager = new BackendManager();
 // ── Error counters (reset on success) ────────────────────────────────
 const _errors = { copilot: 0, openai: 0, ollama: 0, ollama_mdes: 0, ollama_local: 0, ollama_cloud: 0, thaillm: 0, openclaude: 0 };
 
+// Circuit breaker (per architect-agent review: protect the orchestrator→provider
+// boundary). A lane that fails BREAKER_THRESHOLD times in a row is "open" and
+// skipped during rotation for BREAKER_COOLDOWN_MS — so a 504-storming lane (e.g.
+// MDES) stops being hammered on every call. noRotate calls (probes) bypass it.
+const _breakerOpenedAt = {}; // backend -> epoch ms when opened
+const BREAKER_THRESHOLD = Number(process.env.BREAKER_THRESHOLD || 3);
+const BREAKER_COOLDOWN_MS = Number(process.env.BREAKER_COOLDOWN_MS || 60000);
+function _breakerOpen(backend) {
+  const t = _breakerOpenedAt[backend];
+  return t ? (Date.now() - t) < BREAKER_COOLDOWN_MS : false;
+}
+
 function _isCopilotOAuthToken(token) {
   var t = String(token || '').trim();
   if (!t) return false;
@@ -794,6 +806,13 @@ function callModel(messages, options, callback) {
       return callback(exhausted);
     }
     var backend = _normalizeBackendName(order[attempt++]);
+    // Circuit breaker: during rotation, skip a tripped lane without calling it
+    // (stops hammering a 504-storming provider). Probes (noRotate) bypass it.
+    if (!opts.noRotate && _breakerOpen(backend)) {
+      console.warn('[model-router] ' + backend + ' circuit OPEN — skipping (cooldown)');
+      attempts.push({ backend: backend, ok: false, error: 'circuit-open' });
+      return tryNext();
+    }
     console.log('[model-router] -> ' + backend + (opts.model ? ' model=' + opts.model : ''));
 
     var caller;
@@ -812,17 +831,20 @@ function callModel(messages, options, callback) {
         var okReply = !!(reply && String(reply).trim().length > 0);
         if (okReply) {
           _errors[backend] = 0;
+          delete _breakerOpenedAt[backend]; // success closes the breaker
           attempts.push({ backend: backend, ok: true });
           return callback(null, { reply: reply, backend: backend, attempts: attempts });
         }
         console.warn('[model-router] ' + backend + ' returned empty reply; rotating');
         _errors[backend] = (_errors[backend] || 0) + 1;
+        if (_errors[backend] >= BREAKER_THRESHOLD) _breakerOpenedAt[backend] = Date.now();
         attempts.push({ backend: backend, ok: false, error: 'empty reply' });
         if (opts.noRotate) { var er = new Error('empty reply from ' + backend); er.attempts = attempts; return callback(er); }
         return tryNext();
       }
       console.warn('[model-router] ' + backend + ' failed: ' + err.message);
       _errors[backend] = (_errors[backend] || 0) + 1;
+      if (_errors[backend] >= BREAKER_THRESHOLD) _breakerOpenedAt[backend] = Date.now();
       attempts.push({ backend: backend, ok: false, error: err.message });
       if (opts.noRotate) { err.attempts = attempts; return callback(err); }
       tryNext();
