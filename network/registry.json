@@ -205,7 +205,7 @@
       "name": "agent-thaillm",
       "role": "Thai Language Specialist / Cultural Translator",
       "organ": "ปัญญา",
-      "model": "gemma4:31b-cloud",
+      "model": "openthaigpt-thaillm-8b-instruct-v7.2",
       "repo": "tinner-deinno/Jit",
       "inbox": "/tmp/manusat-bus/agent-thaillm",
       "capabilities": ["thai-translation", "cultural-adaptation", "thai-nuance-analysis", "formal-thai-writing"],
@@ -341,6 +341,13 @@
         "provider": "innova_bot_sse",
         "endpoint": "http://127.0.0.1:7010/sse",
         "gui": "http://127.0.0.1:7010/gui",
+        "health_probe": "sse_connect",
+        "fallback_agent": "jit-claudecode",
+        "fallback_provider": "copilot",
+        "retry_policy": {
+          "attempts": 2,
+          "on": ["connect_error", "timeout", "empty_reply"]
+        },
         "cost_tier": "local",
         "policy": "Use for live MCP and innomcp proof."
       },
@@ -385,7 +392,7 @@
         "runtime": "agent-spawner",
         "role": "Thai Linguistic Specialist",
         "provider": "thaillm",
-        "model": "gemma4:31b-cloud",
+        "model": "openthaigpt-thaillm-8b-instruct-v7.2",
         "cost_tier": "medium",
         "policy": "Use for high-fidelity Thai translation and cultural nuance."
       },

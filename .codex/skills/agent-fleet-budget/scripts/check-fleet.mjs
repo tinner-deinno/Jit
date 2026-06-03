@@ -85,6 +85,54 @@ function requestStatus(targetUrl, headers = {}, timeoutMs = 5000) {
   });
 }
 
+function requestPostJson(targetUrl, headers = {}, body = {}, timeoutMs = 15000) {
+  return new Promise((resolve) => {
+    try {
+      const parsed = new URL(targetUrl);
+      const transport = parsed.protocol === "https:" ? https : http;
+      const bodyText = JSON.stringify(body);
+      const request = transport.request(
+        parsed,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Content-Length": Buffer.byteLength(bodyText),
+            ...headers,
+          },
+          timeout: timeoutMs,
+        },
+        (response) => {
+          let responseBody = "";
+          response.on("data", (chunk) => {
+            responseBody += chunk;
+          });
+          response.on("end", () => {
+            let parsedJson = null;
+            try {
+              parsedJson = JSON.parse(responseBody);
+            } catch {}
+            resolve({
+              ok: response.statusCode >= 200 && response.statusCode < 300,
+              status: response.statusCode ?? 0,
+              body: responseBody.slice(0, 400),
+              json: parsedJson,
+            });
+          });
+        }
+      );
+      request.on("error", (error) => resolve({ ok: false, status: 0, error: error.message }));
+      request.on("timeout", () => {
+        request.destroy(new Error("timeout"));
+      });
+      request.write(bodyText);
+      request.end();
+    } catch (error) {
+      resolve({ ok: false, status: 0, error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+}
+
 function checkTcp(host, port, timeoutMs = 2500) {
   return new Promise((resolve) => {
     const socket = new net.Socket();
@@ -117,6 +165,44 @@ async function probeOllama(url, token) {
   return probe;
 }
 
+function normalizeThaiLLMBaseUrl(url) {
+  const value = String(url || "").trim().replace(/\/+$/, "");
+  return (value || "http://thaillm.or.th/api")
+    .replace(/\/v1\/chat\/completions$/i, "")
+    .replace(/\/chat\/completions$/i, "");
+}
+
+async function probeThaiLLM(url, token, model) {
+  const baseUrl = normalizeThaiLLMBaseUrl(url);
+  if (!token) return { ok: false, status: 0, error: "missing token", baseUrl };
+  const headers = { Authorization: `Bearer ${token}` };
+  const modelsProbe = await requestJson(`${baseUrl}/v1/models`, headers, 8000);
+  const models = Array.isArray(modelsProbe.json?.data)
+    ? modelsProbe.json.data.map((item) => String(item.id || item.model || "")).filter(Boolean)
+    : [];
+  if (modelsProbe.ok) {
+    const out = { ...modelsProbe, baseUrl };
+    delete out.json;
+    if (models.length) out.models = models.slice(0, 80);
+    return out;
+  }
+
+  const chatProbe = await requestPostJson(
+    `${baseUrl}/v1/chat/completions`,
+    headers,
+    {
+      model: model || "openthaigpt-thaillm-8b-instruct-v7.2",
+      messages: [{ role: "user", content: "Reply exactly: OK thaillm" }],
+      max_tokens: 32,
+      temperature: 0.1,
+    },
+    20000
+  );
+  const out = { ...chatProbe, baseUrl };
+  delete out.json;
+  return out;
+}
+
 async function probeFirstStatus(urls, headers = {}, timeoutMs = 5000) {
   let last = null;
   for (const targetUrl of urls.filter(Boolean)) {
@@ -145,7 +231,7 @@ async function main() {
 
   const probes = {
     ollama_mdes: await probeOllama(backends.ollama_mdes?.url, process.env.OLLAMA_MDES_TOKEN || process.env.OLLAMA_TOKEN || ""),
-    thaillm: await probeOllama(backends.thaillm?.url, process.env.THAILLM_TOKEN || process.env.OLLAMA_TOKEN || ""),
+    thaillm: await probeThaiLLM(backends.thaillm?.url, process.env.THAILLM_TOKEN || "", backends.thaillm?.model),
     ollama_local: await probeOllama(backends.ollama_local?.url, process.env.OLLAMA_LOCAL_TOKEN || ""),
     ollama_cloud: await probeOllama(backends.ollama_cloud?.url, process.env.OLLAMA_CLOUD_TOKEN || ""),
     openclaude: await requestStatus(
@@ -224,6 +310,31 @@ async function main() {
       } catch (error) {
         smokeResults.push({
           backend,
+          ok: false,
+          latencyMs: Date.now() - startedAt,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+    for (const model of backends.thaillm?.models || []) {
+      const startedAt = Date.now();
+      try {
+        const result = await modelRouter.callModelPromise(
+          [{ role: "user", content: `Reply with exactly: OK thaillm ${model}` }],
+          { preferBackend: "thaillm", model, noRotate: true }
+        );
+        smokeResults.push({
+          backend: "thaillm",
+          model,
+          ok: true,
+          usedBackend: result.backend,
+          latencyMs: Date.now() - startedAt,
+          reply: String(result.reply || "").slice(0, 120),
+        });
+      } catch (error) {
+        smokeResults.push({
+          backend: "thaillm",
+          model,
           ok: false,
           latencyMs: Date.now() - startedAt,
           error: error instanceof Error ? error.message : String(error),

@@ -1,64 +1,64 @@
 {
-  "probed_at_ms": 1780509838287,
-  "timeout_ms": 25000,
+  "probed_at_ms": 1780515409907,
+  "timeout_ms": 45000,
   "usable": [
     "ollama_mdes",
-    "copilot",
-    "openai",
-    "innova_bot"
+    "ollama_cloud",
+    "thaillm"
   ],
   "results": {
     "ollama_mdes": {
       "backend": "ollama_mdes",
       "status": "ALIVE",
-      "ms": 5220,
+      "ms": 7918,
       "served_by": "ollama_mdes",
       "sample": "OK"
     },
     "ollama_local": {
       "backend": "ollama_local",
       "status": "UNREACHABLE",
-      "ms": 25003,
+      "ms": 45013,
       "error": "timeout"
     },
     "ollama_cloud": {
       "backend": "ollama_cloud",
-      "status": "RATE_LIMITED",
-      "ms": 3495,
-      "error": "Ollama HTTP 429: {\"error\":\"you (mdescanva04) have reached your weekly usage limi"
+      "status": "ALIVE",
+      "ms": 2324,
+      "served_by": "ollama_cloud",
+      "sample": "OK"
     },
     "thaillm": {
       "backend": "thaillm",
-      "status": "AUTH",
-      "ms": 5838,
-      "error": "HTTP 401: {\"detail\":\"Invalid API Key\"}"
+      "status": "ALIVE",
+      "ms": 3364,
+      "served_by": "thaillm",
+      "sample": "<think> Okay, let's see. The user wants me to reply with exa"
     },
     "copilot": {
       "backend": "copilot",
-      "status": "ALIVE",
-      "ms": 20131,
-      "served_by": "copilot",
-      "sample": "OK"
+      "status": "RATE_LIMITED",
+      "ms": 12319,
+      "error": "Copilot CLI failed: 402 {\"error\":{\"message\":\"You have no quota\",\"code\":\"quota_ex"
     },
     "openai": {
       "backend": "openai",
-      "status": "ALIVE",
-      "ms": 9411,
-      "served_by": "openai",
-      "sample": "OK"
+      "status": "ERROR",
+      "ms": 8541,
+      "error": "Codex CLI failed: 2026-06-03T19:36:09.067575Z  WARN codex_core::shell_snapshot: "
     },
     "openclaude": {
       "backend": "openclaude",
       "status": "UNREACHABLE",
-      "ms": 122,
+      "ms": 107,
       "error": "OpenClaude request error: ECONNREFUSED"
     },
     "innova_bot": {
       "backend": "innova_bot",
-      "status": "ALIVE",
-      "ms": 11526,
+      "status": "ERROR",
+      "ms": 2998,
       "served_by": "innova_bot",
-      "sample": "OK"
+      "sample": "[SYSTEM OVERRIDE]: Local AI query failed (Ollama may be offl",
+      "error": "in-band error reply: [SYSTEM OVERRIDE]: Local AI query failed (Ollama may be offl"
     }
   }
 }

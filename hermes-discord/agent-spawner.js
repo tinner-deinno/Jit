@@ -59,9 +59,11 @@ function _isModelBackend(backend) {
     'ollama_mdes',
     'ollama_local',
     'ollama_cloud',
+    'thaillm',
     'copilot',
     'openai',
     'openclaude',
+    'innova_bot',
   ].indexOf(backend) !== -1;
 }
 

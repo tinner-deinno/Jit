@@ -54,6 +54,14 @@ function _normalizeModelAlias(model) {
   return value;
 }
 
+function _normalizeThaiLLMBaseUrl(value) {
+  var url = String(value || '').trim().replace(/\/+$/, '');
+  if (!url) return 'http://thaillm.or.th/api';
+  return url
+    .replace(/\/v1\/chat\/completions$/i, '')
+    .replace(/\/chat\/completions$/i, '');
+}
+
 function _modelForOllamaBackend(model, backendName, backendUrl) {
   var value = _normalizeModelAlias(model);
   if (
@@ -96,10 +104,18 @@ const OLLAMA_CLOUD_TOKEN = process.env.OLLAMA_CLOUD_TOKEN || '';
 const JIT_CLOUD_MODEL    = _normalizeModelAlias(process.env.JIT_CLOUD_MODEL || 'gemma4:31b-cloud');
 const OLLAMA_CLOUD_MODEL = _normalizeModelAlias(process.env.OLLAMA_CLOUD_MODEL || JIT_CLOUD_MODEL);
 
-// ThaiLLM (optional) – if THAILLM_BASE_URL is absent, reuse MDES URL
-const THAILLM_URL   = process.env.THAILLM_BASE_URL   || OLLAMA_MDES_URL;
-const THAILLM_TOKEN = process.env.THAILLM_TOKEN      || OLLAMA_MDES_TOKEN;
-const THAILLM_MODEL = process.env.THAILLM_MODEL      || OLLAMA_MDES_MODEL;
+// ThaiLLM (OpenAI-compatible). Keep this separate from MDES Ollama so the
+// Thai lane is not accidentally probed/called with Ollama endpoints.
+const THAILLM_DEFAULT_URL = 'http://thaillm.or.th/api';
+const THAILLM_MODELS = (process.env.THAILLM_MODELS || [
+  'openthaigpt-thaillm-8b-instruct-v7.2',
+  'pathumma-thaillm-qwen3-8b-think-3.0.0',
+  'typhoon-s-thaillm-8b-instruct',
+  'thalle-0.2-thaillm-8b-fa',
+].join(',')).split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+const THAILLM_URL   = _normalizeThaiLLMBaseUrl(process.env.THAILLM_BASE_URL || process.env.THAILLM_URL || THAILLM_DEFAULT_URL);
+const THAILLM_TOKEN = process.env.THAILLM_TOKEN || '';
+const THAILLM_MODEL = process.env.THAILLM_MODEL || THAILLM_MODELS[0] || 'openthaigpt-thaillm-8b-instruct-v7.2';
 
 // Fallback: OpenAI/Copilot (paid, quota-limited)
 const OPENAI_KEY    = process.env.OPENAI_API_KEY   || '';
@@ -161,7 +177,8 @@ class BackendManager {
         url: THAILLM_URL,
         token: THAILLM_TOKEN,
         model: THAILLM_MODEL,
-        type: 'ollama'
+        models: THAILLM_MODELS,
+        type: 'chat_completion'
       },
       copilot: {
         name: 'GitHub Copilot',
@@ -749,7 +766,13 @@ function _callThaiLLM(messages, model, callback) {
   if (!THAILLM_TOKEN) return callback(new Error('THAILLM_TOKEN not set'));
   _httpPost(THAILLM_URL, '/v1/chat/completions',
     { 'Authorization': 'Bearer ' + THAILLM_TOKEN },
-    { model: model || THAILLM_MODEL, messages: messages, stream: false },
+    {
+      model: model || THAILLM_MODEL,
+      messages: messages,
+      stream: false,
+      max_tokens: 2048,
+      temperature: 0.3,
+    },
     function(err, data) {
       if (err) return callback(err);
       try {
@@ -926,7 +949,7 @@ function status() {
         errors: _errors.openai  || 0
       },
       ollama_mdes: { available: !!OLLAMA_MDES_URL, url: OLLAMA_MDES_URL, model: OLLAMA_MDES_MODEL, errors: _errors.ollama || 0 },
-      thaillm: { available: !!THAILLM_URL, url: THAILLM_URL, model: THAILLM_MODEL, errors: _errors.ollama || 0 },
+      thaillm: { available: !!THAILLM_URL && !!THAILLM_TOKEN, url: THAILLM_URL, model: THAILLM_MODEL, models: THAILLM_MODELS, errors: _errors.thaillm || 0 },
       ollama_local: { available: !!OLLAMA_LOCAL_URL, url: OLLAMA_LOCAL_URL, model: OLLAMA_LOCAL_MODEL, errors: _errors.ollama || 0 },
       ollama_cloud: { available: !!OLLAMA_CLOUD_URL, url: OLLAMA_CLOUD_URL, resolvedUrl: cloudCfg.url, model: OLLAMA_CLOUD_MODEL, apiModel: _modelForOllamaBackend(OLLAMA_CLOUD_MODEL, 'ollama_cloud', cloudCfg.url), targetModel: JIT_CLOUD_MODEL, errors: _errors.ollama || 0 },
       // Backward-compatible alias for older callers.

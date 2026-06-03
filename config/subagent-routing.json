@@ -1,13 +1,13 @@
 {
   "version": "1.1",
-  "updated": "2026-06-03",
+  "updated": "2026-06-04",
   "purpose": "Shared budget-aware routing map for Jit Codex, Jit ClaudeCode, innova-bot, Maw, Oracle, and Ollama lanes.",
   "policy": {
     "lead_agent": "jit-codex",
     "parent_controller": true,
     "default_agent": "innova",
     "default_provider": "ollama_mdes",
-    "budget_order": ["ollama_mdes", "ollama_local", "ollama_cloud", "copilot", "openai"],
+    "budget_order": ["ollama_mdes", "thaillm", "ollama_cloud", "copilot", "openai", "ollama_local"],
     "advisor_provider": "openai",
     "advisor_model": "gpt-5.5",
     "advisor_policy": "Use GPT-5.5 only for high-risk architecture, hard blockers, final critical review, or user-facing synthesis that cheaper lanes cannot resolve.",
@@ -37,6 +37,7 @@
       "default_model": "gemma4:31b-cloud",
       "direct_endpoint": "https://ollama.com",
       "direct_model_alias": "gemma4:31b",
+      "models": ["gemma4:31b-cloud", "nemotron-3-super:cloud"],
       "cost_tier": "medium",
       "use_for": ["strong Thai reasoning", "fallback synthesis", "ClaudeCode companion review"]
     },
@@ -55,10 +56,16 @@
       "use_for": ["advisor only", "critical synthesis", "deep blocker analysis"]
     },
     "thaillm": {
-      "kind": "ollama",
-      "endpoint_env": "THAILLM_URL",
-      "default_endpoint": "https://ollama.mdes-innova.online",
-      "default_model": "gemma4:31b-cloud",
+      "kind": "chat_completion",
+      "endpoint_env": "THAILLM_BASE_URL",
+      "default_endpoint": "http://thaillm.or.th/api",
+      "default_model": "openthaigpt-thaillm-8b-instruct-v7.2",
+      "models": [
+        "openthaigpt-thaillm-8b-instruct-v7.2",
+        "pathumma-thaillm-qwen3-8b-think-3.0.0",
+        "typhoon-s-thaillm-8b-instruct",
+        "thalle-0.2-thaillm-8b-fa"
+      ],
       "cost_tier": "medium",
       "use_for": ["cultural nuance", "high-fidelity Thai translation", "local Thai context"]
     },
@@ -66,6 +73,13 @@
       "kind": "mcp_sse",
       "endpoint": "http://127.0.0.1:7010/sse",
       "gui": "http://127.0.0.1:7010/gui",
+      "health_probe": "sse_connect",
+      "fallback_provider": "copilot",
+      "fallback_agent": "jit-claudecode",
+      "retry_policy": {
+        "attempts": 2,
+        "on": ["connect_error", "timeout", "empty_reply"]
+      },
       "cost_tier": "local",
       "use_for": ["MCP tools", "workspace bridge", "live innomcp collaboration"]
     },
@@ -209,7 +223,7 @@
     "agent-thaillm": {
       "runtime": "agent-spawner",
       "provider": "thaillm",
-      "model": "gemma4:31b-cloud",
+      "model": "openthaigpt-thaillm-8b-instruct-v7.2",
       "role": "Thai Linguistic Specialist",
       "cost_tier": "medium",
       "capabilities": ["cultural-nuance", "high-fidelity-thai", "local-context"],
@@ -240,6 +254,13 @@
       "match": ["innomcp", "mcp", "sse", "workspace", "innova-bot", "7010"],
       "agent": "innova-bot",
       "provider": "innova_bot_sse",
+      "health_probe": "sse_connect",
+      "fallback_agent": "jit-claudecode",
+      "fallback_provider": "copilot",
+      "retry_policy": {
+        "attempts": 2,
+        "on": ["connect_error", "timeout", "empty_reply"]
+      },
       "reason": "Live innomcp or MCP work should prove the actual body bridge first."
     },
     {
