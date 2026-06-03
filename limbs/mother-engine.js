@@ -199,7 +199,25 @@ class MotherEngine {
       }
     });
 
+    this.rankFleet();
     fs.writeFileSync(this.leaderboardPath, JSON.stringify(this.leaderboard, null, 2));
+  }
+
+  /**
+   * Tasks-gated ranking so seeded agents with ~0 completed tasks can't sit at
+   * the top with a default 100. Proven agents (>= MIN_TASKS) rank first by EMA;
+   * the rest are flagged provisional. Keeps the leaderboard trustworthy.
+   */
+  rankFleet(minTasks = 5) {
+    const fleet = this.leaderboard.fleet || {};
+    const rows = Object.keys(fleet).map(k => ({ k, v: fleet[k] }));
+    rows.sort((a, b) => {
+      const ap = (a.v.completed_tasks || 0) >= minTasks;
+      const bp = (b.v.completed_tasks || 0) >= minTasks;
+      if (ap !== bp) return ap ? -1 : 1;
+      return (b.v.correctness_score || 0) - (a.v.correctness_score || 0);
+    });
+    rows.forEach((r, i) => { r.v.rank = i + 1; r.v.provisional = (r.v.completed_tasks || 0) < minTasks; });
   }
 
   atomicCommit(phase, goal, results) {
