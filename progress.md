@@ -179,6 +179,13 @@ that ate earlier run budgets). Success closes it; probes bypass; env-tunable.
 State-machine unit-verified. **Confirmed live: per-attempt `attempts[]` present
 in real squad results** (reliability fix working in production).
 
+## Iteration 16 — Breaker persistence + observability ✅
+The iter15 breaker was per-process, so it reset every one-shot `mother chat`/`run`
+and never protected the PRIMARY (CLI) usage from a repeatedly-failing lane. Now
+state persists to `network/breaker-state.json` (expired pruned on load; trip/reset
+write through), and `mother doctor` surfaces OPEN lanes + cooldown remaining.
+GPT-5.5 senior caught the env-config bug en route (round 5). Regression green.
+
 ## Provider reality (degraded, 2026-06-04)
 MDES alive but very slow (~28–80s cold); GPT-5.5 alive ~15–80s; ollama_cloud
 quota-exhausted; ThaiLLM token expired; Copilot token now 404; local ollama down.
