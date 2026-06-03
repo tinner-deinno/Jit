@@ -2,12 +2,14 @@ const fs = require('fs');
 const path = require('path');
 const { spawnAgent, spawnAgentParallel, spawnAgentChain } = require('../hermes-discord/agent-spawner');
 const { execSync } = require('child_process');
+const InnovaBotBridge = require('./innova-bot-bridge');
 
 class MotherEngine {
   constructor() {
     this.registryPath = path.join(__dirname, '../network/registry.json');
     this.leaderboardPath = path.join(__dirname, '../network/leaderboard.json');
     this.routingPath = path.join(__dirname, '../config/subagent-routing.json');
+    this.botBridge = new InnovaBotBridge();
     this.loadState();
   }
 
@@ -18,7 +20,7 @@ class MotherEngine {
   }
 
   /**
-   * Selects the top 5 agents for a given goal based on laederboard scores
+   * Selects the top 5 agents for a given goal based on leaderboard scores
    * and capability matching.
    */
   async selectSquad(goal, phase) {
@@ -52,6 +54,14 @@ class MotherEngine {
   async executePhase(phaseName, goal) {
     console.log(`\n--- Starting Phase: ${phaseName} ---`);
 
+    // 0. Notify innova-bot about the new phase
+    try {
+      await this.botBridge.connect();
+      await this.botBridge.dispatchTask(`Mother has started phase: ${phaseName}. Goal: ${goal}`);
+    } catch (e) {
+      console.warn(`[Mother] Could not notify innova-bot: ${e.message}`);
+    }
+
     // 1. Design Squad
     const squadNames = await this.selectSquad(goal, phaseName);
     console.log(`[Mother] Squad Selected: ${squadNames.join(', ')}`);
@@ -69,7 +79,7 @@ class MotherEngine {
     } catch (e) {
       console.error(`[Mother] Execution failed for phase ${phaseName}: ${e.message}`);
       return { error: 'Execution failed', details: e.message };
-    };
+    }
 
     // 3. Adversarial Verification (Spawn a Verifier Squad)
     console.log(`[Mother] Verifying results via Reviewer Squad...`);
@@ -93,6 +103,13 @@ class MotherEngine {
 
     // 5. Atomic Commit
     this.atomicCommit(phaseName, goal, results);
+
+    // 6. Final Report to innova-bot
+    try {
+      await this.botBridge.dispatchTask(`Phase ${phaseName} completed successfully. Squad: ${squadNames.join(', ')}. Results pushed to git.`);
+    } catch (e) {
+      console.warn(`[Mother] Could not report completion to innova-bot: ${e.message}`);
+    }
 
     return results;
   }

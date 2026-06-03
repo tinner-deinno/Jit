@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
-const EventSource = require('eventsource');
+const { EventSource } = require('eventsource');
 
 class InnovaBotBridge {
   constructor(config = {}) {
@@ -22,8 +22,7 @@ class InnovaBotBridge {
         this.eventSource = new EventSource(this.endpoint);
 
         this.eventSource.onopen = () => {
-          console.log('[InnovaBotBridge] Connection opened.');
-          resolve(true);
+          console.log('[InnovaBotBridge] Connection opened. Waiting for session endpoint...');
         };
 
         this.eventSource.onmessage = (event) => {
@@ -31,6 +30,7 @@ class InnovaBotBridge {
           if (data.event === 'endpoint') {
             this.sessionID = data.endpoint;
             console.log(`[InnovaBotBridge] Session established. Endpoint: ${this.sessionID}`);
+            resolve(true); // Resolve only after session ID is received
           }
           // Log all incoming events from the bot
           console.log(`[InnovaBotBridge] Event received: ${JSON.stringify(data)}`);
@@ -40,6 +40,14 @@ class InnovaBotBridge {
           console.error('[InnovaBotBridge] SSE Error:', err);
           reject(err);
         };
+
+        // Timeout if endpoint is not received within 10 seconds
+        setTimeout(() => {
+          if (!this.sessionID) {
+            reject(new Error('SSE connection timeout: Endpoint not received within 10s'));
+          }
+        }, 10000);
+
       } catch (e) {
         reject(e);
       }
