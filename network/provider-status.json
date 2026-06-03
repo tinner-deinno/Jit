@@ -1,55 +1,64 @@
 {
-  "probed_at_ms": 1780495661339,
-  "timeout_ms": 2000,
-  "usable": [],
+  "probed_at_ms": 1780509370934,
+  "timeout_ms": 30000,
+  "usable": [
+    "ollama_mdes",
+    "copilot",
+    "openai",
+    "innova_bot"
+  ],
   "results": {
     "ollama_mdes": {
       "backend": "ollama_mdes",
-      "status": "UNREACHABLE",
-      "ms": 2979,
-      "error": "timeout"
+      "status": "ALIVE",
+      "ms": 8733,
+      "served_by": "ollama_mdes",
+      "sample": "OK"
     },
     "ollama_local": {
       "backend": "ollama_local",
       "status": "UNREACHABLE",
-      "ms": 2952,
+      "ms": 30007,
       "error": "timeout"
     },
     "ollama_cloud": {
       "backend": "ollama_cloud",
-      "status": "UNREACHABLE",
-      "ms": 2952,
-      "error": "timeout"
+      "status": "RATE_LIMITED",
+      "ms": 4358,
+      "error": "Ollama HTTP 429: {\"error\":\"you (mdescanva04) have reached your weekly usage limi"
     },
     "thaillm": {
       "backend": "thaillm",
-      "status": "UNREACHABLE",
-      "ms": 2952,
-      "error": "timeout"
+      "status": "AUTH",
+      "ms": 3434,
+      "error": "HTTP 401: {\"detail\":\"Invalid API Key\"}"
     },
     "copilot": {
       "backend": "copilot",
-      "status": "UNREACHABLE",
-      "ms": 4860,
-      "error": "timeout"
+      "status": "ALIVE",
+      "ms": 20912,
+      "served_by": "copilot",
+      "sample": "OK"
     },
     "openai": {
       "backend": "openai",
-      "status": "UNREACHABLE",
-      "ms": 2009,
-      "error": "timeout"
+      "status": "ALIVE",
+      "ms": 11940,
+      "served_by": "openai",
+      "sample": "OK"
     },
     "openclaude": {
       "backend": "openclaude",
       "status": "UNREACHABLE",
-      "ms": 109,
+      "ms": 204,
       "error": "OpenClaude request error: ECONNREFUSED"
     },
     "innova_bot": {
       "backend": "innova_bot",
-      "status": "UNREACHABLE",
-      "ms": 2096,
-      "error": "timeout"
+      "status": "ALIVE",
+      "ms": 3198,
+      "served_by": "innova_bot",
+      "sample": "[SYSTEM OVERRIDE]: Local AI query failed"
     }
   }
 }
