@@ -40,6 +40,21 @@ function inlineChecks() {
     if (typeof db.recordProviderResult !== 'function' || typeof db.getProviderStats !== 'function') throw new Error('provider-stats API missing');
   });
 
+  t('innova-bot bridge rejects pending on disconnect', () => {
+    const InnovaBotBridge = require('../limbs/innova-bot-bridge.js');
+    const bridge = new InnovaBotBridge();
+    let rejected = false;
+    const timer = setTimeout(() => {}, 10000);
+    bridge.pending.set('test-id', {
+      resolve: () => {},
+      reject: (error) => { rejected = /pending MCP request cancelled/.test(error.message); },
+      timer,
+    });
+    bridge._rejectPending('pending MCP request cancelled');
+    if (!rejected) throw new Error('pending promise was not rejected');
+    if (bridge.pending.size !== 0) throw new Error('pending map was not cleared');
+  });
+
   return results;
 }
 

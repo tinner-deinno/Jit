@@ -164,6 +164,7 @@ class InnovaBotBridge extends EventEmitter {
     this.state = ConnectionState.RECONNECTING;
     this.sessionID = null;
     this.initialized = false; // new session needs a fresh MCP handshake
+    this._rejectPending('InnovaBotBridge disconnected; pending MCP request cancelled');
     if (this.eventSource) {
       this.eventSource.close();
       this.eventSource = null;
@@ -179,6 +180,18 @@ class InnovaBotBridge extends EventEmitter {
       console.error(`[InnovaBotBridge] Reconnection attempt ${this.reconnectAttempts} failed: ${e.message}`);
       this.handleDisconnect();
     }
+  }
+
+  _rejectPending(reason) {
+    if (!this.pending || this.pending.size === 0) return;
+    const error = reason instanceof Error ? reason : new Error(String(reason || 'InnovaBotBridge disconnected'));
+    for (const { reject, timer } of this.pending.values()) {
+      if (timer) clearTimeout(timer);
+      if (typeof reject === 'function') {
+        try { reject(error); } catch (_) {}
+      }
+    }
+    this.pending.clear();
   }
 
   startHeartbeat() {
@@ -297,6 +310,7 @@ class InnovaBotBridge extends EventEmitter {
 
   async disconnect() {
     this.stopHeartbeat();
+    this._rejectPending('InnovaBotBridge disconnected; pending MCP request cancelled');
     if (this.eventSource) {
       this.eventSource.close();
       this.eventSource = null;
