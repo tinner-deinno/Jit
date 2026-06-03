@@ -45,7 +45,9 @@ function pingBridge(timeoutMs = 2500) {
     let u; try { u = new URL(url); } catch { return resolve({ up: false, detail: 'bad URL' }); }
     const req = http.get({ host: u.hostname, port: u.port, path: u.pathname, timeout: timeoutMs }, (res) => {
       res.resume();
-      resolve({ up: res.statusCode < 500, detail: `HTTP ${res.statusCode}` });
+      // 2xx only — a 404/401/3xx is a false-green (something listening, but the
+      // GUI isn't actually serving). Matches eval/doctor.js after GPT-5.5 review.
+      resolve({ up: res.statusCode >= 200 && res.statusCode < 300, detail: `HTTP ${res.statusCode}` });
     });
     req.on('timeout', () => { req.destroy(); resolve({ up: false, detail: 'timeout' }); });
     req.on('error', (e) => resolve({ up: false, detail: e.code || e.message }));

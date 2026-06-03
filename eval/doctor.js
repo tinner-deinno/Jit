@@ -29,7 +29,10 @@ function pingBridge(timeoutMs = 2500) {
   return new Promise((resolve) => {
     const url = process.env.INNOVA_BOT_GUI_URL || 'http://127.0.0.1:7010/gui';
     let u; try { u = new URL(url); } catch { return resolve({ up: false, detail: 'bad URL' }); }
-    const req = http.get({ host: u.hostname, port: u.port, path: u.pathname, timeout: timeoutMs }, (res) => { res.resume(); resolve({ up: res.statusCode < 500, detail: `HTTP ${res.statusCode}` }); });
+    // Require 2xx for a true health signal (per GPT-5.5 review): a 404/401/3xx
+    // means something is listening but the bridge GUI isn't actually serving —
+    // that's a false-green, so treat it as DOWN.
+    const req = http.get({ host: u.hostname, port: u.port, path: u.pathname, timeout: timeoutMs }, (res) => { res.resume(); resolve({ up: res.statusCode >= 200 && res.statusCode < 300, detail: `HTTP ${res.statusCode}` }); });
     req.on('timeout', () => { req.destroy(); resolve({ up: false, detail: 'timeout' }); });
     req.on('error', (e) => resolve({ up: false, detail: e.code || e.message }));
   });
