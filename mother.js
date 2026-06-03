@@ -139,7 +139,8 @@ async function inbox(role) {
     if (!events.length) { console.log('  (no pending events)'); }
     else events.forEach((e, i) => {
       const o = typeof e === 'string' ? { raw: e } : (e || {});
-      console.log(`  ${i + 1}. topic=${o.topic || '?'}  from=${o.source || o.from || '?'}  ${o.ts || ''}`);
+      const from = o.source || o.from || (o.payload && o.payload.source) || '?';
+      console.log(`  ${i + 1}. topic=${o.topic || '?'}  from=${from}  ${o.ts || ''}`);
       const payload = o.payload != null ? (typeof o.payload === 'string' ? o.payload : JSON.stringify(o.payload)) : (o.raw || '');
       if (payload) console.log(`     ${String(payload).slice(0, 200)}`);
     });
