@@ -183,6 +183,13 @@ class BackendManager {
         token: null,
         model: OPENCLAUDE_MODEL,
         type: 'openclaude'
+      },
+      innova_bot: {
+        name: 'innova-bot (MCP ask_local_ai)',
+        url: process.env.INNOVA_BOT_SSE_URL || 'http://127.0.0.1:7010/sse',
+        token: null,
+        model: process.env.INNOVA_BOT_MODEL || null,
+        type: 'innova_bot'
       }
     };
   }
@@ -718,6 +725,41 @@ function _callOpenClaude(messages, model, callback) {
   });
 }
 
+// ── innova-bot lane (MCP ask_local_ai) ────────────────────────────────
+// Uses the bot's own AI backend as an extra provider — no credentials needed.
+// Lazy singleton bridge: only connects on first use; reused across calls.
+// NOTE: the bridge holds an SSE connection + heartbeat, so one-shot scripts
+// that use this lane must call process.exit() (or shutdownInnovaBot()).
+var _innovaBotBridge = null;
+function _getInnovaBotBridge() {
+  if (!_innovaBotBridge) {
+    var InnovaBotBridge = require('../limbs/innova-bot-bridge');
+    _innovaBotBridge = new InnovaBotBridge();
+  }
+  return _innovaBotBridge;
+}
+function shutdownInnovaBot() {
+  if (_innovaBotBridge) { try { _innovaBotBridge.disconnect(); } catch (e) {} _innovaBotBridge = null; }
+}
+function _callInnovaBot(messages, model, callback) {
+  var bridge = _getInnovaBotBridge();
+  var sys = (messages.find(function (m) { return m.role === 'system'; }) || {}).content || null;
+  var convo = messages.filter(function (m) { return m.role !== 'system'; });
+  var prompt = _messagesToPrompt(convo);
+  var opts = {};
+  if (sys) opts.system = sys;
+  if (model) opts.model = model;
+  bridge.connect()
+    .then(function () { return bridge.askBot(prompt, opts); })
+    .then(function (res) {
+      var text = (res && res.structuredContent && res.structuredContent.result) ||
+                 (res && res.content && res.content[0] && res.content[0].text) || '';
+      if (!text) return callback(new Error('innova_bot returned empty reply'));
+      callback(null, String(text));
+    })
+    .catch(function (e) { callback(e); });
+}
+
 // ── Core: callModel with rotation ────────────────────────────────────
 /**
  * callModel(messages, options, callback)
@@ -755,6 +797,7 @@ function callModel(messages, options, callback) {
     else if (backend === 'copilot') caller = _callCopilot;
     else if (backend === 'thaillm') caller = _callThaiLLM;
     else if (backend === 'openclaude') caller = _callOpenClaude;
+    else if (backend === 'innova_bot') caller = _callInnovaBot;
     else                        caller = function(msgs, mdl, cb) { _callOllama(msgs, mdl, cb, backend); };
 
     caller(messages, opts.model || null, function(err, reply) {
@@ -841,10 +884,11 @@ function callModelOllamaFirstPromise(messages, options) {
   return callModelPromise(messages, Object.assign({}, options || {}, { preferBackend: 'ollama_mdes' }));
 }
 
-module.exports = { 
-  callModel, 
-  callModelPromise, 
+module.exports = {
+  callModel,
+  callModelPromise,
   callModelOllamaFirst,
   callModelOllamaFirstPromise,
-  status 
+  status,
+  shutdownInnovaBot
 };

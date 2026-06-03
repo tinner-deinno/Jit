@@ -33,7 +33,7 @@ const TIMEOUT = (() => {
 })();
 
 // Backends to probe (keys in model-router BackendManager).
-const BACKENDS = ['ollama_mdes', 'ollama_local', 'ollama_cloud', 'thaillm', 'copilot', 'openai', 'openclaude'];
+const BACKENDS = ['ollama_mdes', 'ollama_local', 'ollama_cloud', 'thaillm', 'copilot', 'openai', 'openclaude', 'innova_bot'];
 
 const PING = [{ role: 'user', content: 'Reply with exactly: OK' }];
 
