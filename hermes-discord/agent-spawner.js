@@ -383,12 +383,28 @@ function spawnAgentChain(steps) {
  * spawnAgentParallel(tasks) → Promise<results[]>
  *
  * tasks: [{ agent, message, options }]
- * All run concurrently — no shared context
+ * All run concurrently — no shared context. RESILIENT: one agent whose backends
+ * all fail no longer aborts the whole squad (Promise.allSettled). A failed agent
+ * yields an error-result { agent, backend:'none', reply:'', error, attempts } so
+ * the phase continues with partial output and the failed lanes are still
+ * reliability-recorded. Result order matches task order.
  */
 function spawnAgentParallel(tasks) {
-  return Promise.all(tasks.map(function(task) {
+  return Promise.allSettled(tasks.map(function(task) {
     return spawnAgent(task.agent, task.message, task.options || {});
-  }));
+  })).then(function(settled) {
+    return settled.map(function(s, i) {
+      if (s.status === 'fulfilled') return s.value;
+      var reason = s.reason || {};
+      return {
+        agent:   tasks[i].agent,
+        backend: 'none',
+        reply:   '',
+        error:   reason.message || String(reason),
+        attempts: reason.attempts || null,
+      };
+    });
+  });
 }
 
 /**
