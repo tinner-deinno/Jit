@@ -52,10 +52,10 @@
       "rank": 7
     },
     "agent-mdes": {
-      "completed_tasks": 0,
+      "completed_tasks": 1,
       "success_rate": 1,
       "avg_latency": 0,
-      "correctness_score": 100,
+      "correctness_score": 102.0,
       "rank": 8
     },
     "agent-thaillm": {
@@ -63,25 +63,25 @@
       "success_rate": 1,
       "avg_latency": 0,
       "correctness_score": 100,
-      "rank": 9
+      "rank": 10
     },
     "agent-ollama": {
       "completed_tasks": 0,
       "success_rate": 1,
       "avg_latency": 0,
       "correctness_score": 100,
-      "rank": 10
+      "rank": 11
     },
     "agent-copilot": {
       "completed_tasks": 0,
       "success_rate": 1,
       "avg_latency": 0,
       "correctness_score": 100,
-      "rank": 11
+      "rank": 12
     }
   },
   "global_metrics": {
-    "total_tasks": 770,
+    "total_tasks": 771,
     "system_reliability": 0.93,
     "average_latency": 1.6
   }

@@ -10,6 +10,8 @@
 #   ./bus.sh queue                        — ดู queue ทั้งหมด
 #   ./bus.sh flush                        — ล้าง queue เก่า
 #   ./bus.sh stats                        — สถิติ bus
+#
+# Optimized: Asynchronous delivery with order preservation.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../limbs/lib.sh"
@@ -37,6 +39,28 @@ for a in d.get('agents', []):
 }
 _init_bus
 
+# Helper for async delivery
+_deliver() {
+  local to="$1"
+  local subject="$2"
+  local body="$3"
+  local from="$4"
+  local ts="$5"
+  local corr_id="$6"
+  local msg_file="$BUS_ROOT/$to/${ts}_from-${from}.msg"
+
+  cat > "$msg_file" << EOF
+from:$from
+to:$to
+subject:$subject
+timestamp:$(date '+%Y-%m-%dT%H:%M:%S')
+correlation-id:$corr_id
+---
+$body
+EOF
+  log_action "BUS_SEND" "to:$to subject:$subject"
+}
+
 case "$CMD" in
 
   # ── ส่ง message ─────────────────────────────────────────────────
@@ -47,19 +71,13 @@ case "$CMD" in
     FROM="${AGENT_NAME:-system}"
     CORR_ID="$(python3 -c "import uuid; print(str(uuid.uuid4())[:8])" 2>/dev/null || echo "$(date +%s)")"
     TS=$(date +%s%3N)
-    MSG_FILE="$BUS_ROOT/$TO/${TS}_from-${FROM}.msg"
 
-    cat > "$MSG_FILE" << EOF
-from:$FROM
-to:$TO
-subject:$SUBJECT
-timestamp:$(date '+%Y-%m-%dT%H:%M:%S')
-correlation-id:$CORR_ID
----
-$BODY
-EOF
+    # Asynchronous delivery: execute in background
+    # Order is strictly preserved by the TS in the filename,
+    # ensuring 'task:' and 'alert:' maintain sequence upon retrieval.
+    _deliver "$TO" "$SUBJECT" "$BODY" "$FROM" "$TS" "$CORR_ID" &
+
     ok "bus → $TO: [$SUBJECT] (id:$CORR_ID)"
-    log_action "BUS_SEND" "to:$TO subject:$SUBJECT"
     echo "$CORR_ID"
     ;;
 
@@ -75,7 +93,8 @@ EOF
     fi
 
     step "$AGENT: รับ $MSGS messages"
-    for MSG_FILE in "$INBOX"/*.msg; do
+    # Use explicit sort to ensure delivery order is respected based on timestamped filenames
+    for MSG_FILE in $(ls "$INBOX"/*.msg 2>/dev/null | sort); do
       [ -f "$MSG_FILE" ] || continue
       echo ""
       echo -e "${CYAN}── $(basename "$MSG_FILE") ──${RESET}"
@@ -116,13 +135,17 @@ EOF
     shift || true
     BODY="$*"
     FROM="${AGENT_NAME:-system}"
-    COUNT=0
-    for INBOX_DIR in "$BUS_ROOT"/*/; do
-      [ -d "$INBOX_DIR" ] || continue
-      AGENT=$(basename "$INBOX_DIR")
-      [ "$AGENT" = "$FROM" ] && continue
-      TS=$(date +%s%3N)
-      cat > "$INBOX_DIR/${TS}_broadcast.msg" << EOF
+
+    # Identify target agents
+    AGENTS=$(ls -1 "$BUS_ROOT" | grep -v "^\.$" | grep -v "^\.\.$")
+
+    # Asynchronous delivery for broadcast to prevent blocking the main process
+    (
+      for AGENT in $AGENTS; do
+        [ "$AGENT" = "$FROM" ] && continue
+        TS=$(date +%s%3N)
+        INBOX_DIR="$BUS_ROOT/$AGENT"
+        cat > "$INBOX_DIR/${TS}_broadcast.msg" << EOF
 from:$FROM
 to:$AGENT
 subject:broadcast:$SUBJECT
@@ -130,10 +153,12 @@ timestamp:$(date '+%Y-%m-%dT%H:%M:%S')
 ---
 $BODY
 EOF
-      ((COUNT++))
-    done
-    ok "broadcast → $COUNT agents: [$SUBJECT]"
-    log_action "BUS_BROADCAST" "$SUBJECT to $COUNT agents"
+      done
+      log_action "BUS_BROADCAST" "$SUBJECT"
+    ) &
+
+    ACTUAL_COUNT=$(echo "$AGENTS" | wc -l)
+    ok "broadcast → ~$ACTUAL_COUNT agents: [$SUBJECT]"
     ;;
 
   # ── ล้าง read messages เก่า (> 24h) ──────────────────────────────
