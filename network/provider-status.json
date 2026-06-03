@@ -1,60 +1,55 @@
 {
-  "probed_at_ms": 1780494925172,
-  "timeout_ms": 35000,
-  "usable": [
-    "copilot",
-    "openai"
-  ],
+  "probed_at_ms": 1780495661339,
+  "timeout_ms": 2000,
+  "usable": [],
   "results": {
     "ollama_mdes": {
       "backend": "ollama_mdes",
       "status": "UNREACHABLE",
-      "ms": 35049,
+      "ms": 2979,
       "error": "timeout"
     },
     "ollama_local": {
       "backend": "ollama_local",
       "status": "UNREACHABLE",
-      "ms": 35015,
+      "ms": 2952,
       "error": "timeout"
     },
     "ollama_cloud": {
       "backend": "ollama_cloud",
-      "status": "RATE_LIMITED",
-      "ms": 3536,
-      "error": "Ollama HTTP 429: {\"error\":\"you (mdescanva04) have reached your weekly usage limi"
+      "status": "UNREACHABLE",
+      "ms": 2952,
+      "error": "timeout"
     },
     "thaillm": {
       "backend": "thaillm",
-      "status": "AUTH",
-      "ms": 3225,
-      "error": "HTTP 401: {\"detail\":\"Invalid API Key\"}"
+      "status": "UNREACHABLE",
+      "ms": 2952,
+      "error": "timeout"
     },
     "copilot": {
       "backend": "copilot",
-      "status": "ALIVE",
-      "ms": 21788,
-      "served_by": "copilot",
-      "sample": "OK"
+      "status": "UNREACHABLE",
+      "ms": 4860,
+      "error": "timeout"
     },
     "openai": {
       "backend": "openai",
-      "status": "ALIVE",
-      "ms": 16487,
-      "served_by": "openai",
-      "sample": "OK"
+      "status": "UNREACHABLE",
+      "ms": 2009,
+      "error": "timeout"
     },
     "openclaude": {
       "backend": "openclaude",
       "status": "UNREACHABLE",
-      "ms": 119,
+      "ms": 109,
       "error": "OpenClaude request error: ECONNREFUSED"
     },
     "innova_bot": {
       "backend": "innova_bot",
       "status": "UNREACHABLE",
-      "ms": 30155,
-      "error": "MCP response timeout for tools/call (30000ms)"
+      "ms": 2096,
+      "error": "timeout"
     }
   }
 }
