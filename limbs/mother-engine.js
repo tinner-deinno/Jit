@@ -17,6 +17,39 @@ class MotherEngine {
     this.registry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
     this.leaderboard = JSON.parse(fs.readFileSync(this.leaderboardPath, 'utf8'));
     this.routing = JSON.parse(fs.readFileSync(this.routingPath, 'utf8'));
+
+    this.setupBotEventListeners();
+    this.botBridge.connect().catch(e => console.warn(`[Mother] Initial bot connection failed: ${e.message}`));
+  }
+
+  setupBotEventListeners() {
+    this.botBridge.on('connected', (sessionID) => {
+      console.log(`[Mother] Confirmed connectivity to innova-bot. Session: ${sessionID}`);
+    });
+
+    this.botBridge.on('bot_event', (event) => {
+      this.handleBotEvent(event);
+    });
+  }
+
+  async handleBotEvent(event) {
+    console.log(`[Mother] Processing bot event: ${event.event || 'unknown'}`);
+
+    switch (event.event) {
+      case 'task_update':
+        console.log(`[Mother] Bot Task Update: ${event.data?.status} - ${event.data?.message}`);
+        break;
+      case 'emergency_stop':
+        console.error(`[Mother] EMERGENCY STOP received from bot: ${event.data?.reason}`);
+        // Implement emergency stop logic here (e.g., stop all current spawnAgentParallel)
+        break;
+      case 'insight':
+        console.log(`[Mother] Bot provided an insight: ${event.data?.content}`);
+        // Possibly persist this insight to Oracle
+        break;
+      default:
+        console.log(`[Mother] Unhandled bot event: ${JSON.stringify(event)}`);
+    }
   }
 
   /**
