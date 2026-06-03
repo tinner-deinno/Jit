@@ -150,6 +150,21 @@ One no-quota command: provider liveness+staleness, bridge, **git push-gate
 prioritized HEALTHY/WARNINGS/BLOCKERS. Live output flagged 68 unpushed commits
 + stale probe automatically.
 
+## Iteration 13 — Probe honesty + reliability correctness ✅
+Two real bugs fixed, both surfaced by the **GPT-5.5 senior validation loop**:
+- **Probe in-band-error false-green:** a backend can return HTTP-200 with an
+  error STRING (innova-bot's `ask_local_ai` → "[SYSTEM OVERRIDE]: ...failed").
+  `isErrorReply()` now flags these as ERROR (not usable). GPT-5.5 caught an
+  ordering flaw (checked "ok" before errors) → reordered; 9/9 unit cases pass.
+- **Reliability under-counting:** rotation failures (504→next lane) were invisible
+  to `provider_stats` (only final success recorded). `callModel` now threads an
+  `attempts[]` through → `executePhase` records every lane. Unit-proven.
+- Bridge health requires 2xx (GPT-5.5 caught `<500` false-green) in doctor + board.
+
+**Validator pattern (per directive):** model fleet (GPT-5.5 senior, MDES, Copilot)
+reviews each diff. GPT-5.5 has caught a real flaw in my fixes 3× this session
+(decompose regression, bridge false-green, isErrorReply ordering).
+
 ## Provider reality (degraded, 2026-06-04)
 MDES alive but very slow (~28–80s cold); GPT-5.5 alive ~15–80s; ollama_cloud
 quota-exhausted; ThaiLLM token expired; Copilot token now 404; local ollama down.
