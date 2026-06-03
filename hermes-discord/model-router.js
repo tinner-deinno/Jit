@@ -228,8 +228,11 @@ const _errors = { copilot: 0, openai: 0, ollama: 0, ollama_mdes: 0, ollama_local
 // skipped during rotation for BREAKER_COOLDOWN_MS — so a 504-storming lane (e.g.
 // MDES) stops being hammered on every call. noRotate calls (probes) bypass it.
 const _breakerOpenedAt = {}; // backend -> epoch ms when opened
-const BREAKER_THRESHOLD = Number(process.env.BREAKER_THRESHOLD || 3);
-const BREAKER_COOLDOWN_MS = Number(process.env.BREAKER_COOLDOWN_MS || 60000);
+// Validate env (GPT-5.5 review): a bad value (0, negative, NaN, fractional)
+// would silently disable or corrupt the breaker — clamp to a positive integer.
+function _posInt(v, def) { const n = Math.floor(Number(v)); return Number.isFinite(n) && n > 0 ? n : def; }
+const BREAKER_THRESHOLD = _posInt(process.env.BREAKER_THRESHOLD, 3);
+const BREAKER_COOLDOWN_MS = _posInt(process.env.BREAKER_COOLDOWN_MS, 60000);
 function _breakerOpen(backend) {
   const t = _breakerOpenedAt[backend];
   return t ? (Date.now() - t) < BREAKER_COOLDOWN_MS : false;
