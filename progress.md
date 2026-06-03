@@ -54,12 +54,22 @@ squad → verify → leaderboard → commit cycle is durable with REAL (non-seed
 | Adversarial test | 3 Haiku agents (injection / unicode / robustness) | ✅ | found 1 real HIGH bug, rest clean |
 | Fix + regression | leading-whitespace bypass `/^\s*[=+\-@]/` | ✅ | `eval/event-log-check.js` all pass |
 
+## Iteration 4 — Leaderboard DB Hydration (Phase 36.5) ✅
+
+| Task | How | Status | Evidence |
+|------|-----|--------|----------|
+| Durable store | `limbs/leaderboard-db.js` (node:sqlite, no dep) | ✅ | `network/leaderboard.db` (gitignored; JSON is portable seed) |
+| Hydrate/seed in engine | `hydrateLeaderboard()` in loadState | ✅ | DB=source of truth, JSON=mirror |
+| Survives JSON reset | wipe JSON → rehydrate | ✅ | innova 78.43 preserved |
+| Verify swarm (5 Haiku) | concurrency/injection/scale/corruption/migration | ✅ | injection-safe, corruption-graceful, lossless |
+| Fixes from swarm | txn-wrap (630x), finite-guard, WAL+busy_timeout | ✅ | persist 5001 agents 43s→68ms |
+
 ## innova-bot bridge
 **ALIVE & talking.** `eval/innova-bot-talk.js` round-trips: dispatch → `"Accepted"` in ~1.5s.
 Port 7010 listening; `/gui` (37KB) + `/sse` work; `/health` 404 (cosmetic).
 
 ## Known gaps / next
 - ~~Phase 38 event-log export~~ ✅ DONE (iteration 3).
-- **Leaderboard DB hydration (Phase 36.5) = missing.** Scores persist to JSON only; no DB → vulnerable to reset.
+- ~~Leaderboard DB hydration (Phase 36.5)~~ ✅ DONE (iteration 4).
 - **Provider widening (user action):** refresh ThaiLLM token; start local ollama; restore MDES quota/cloud; start openclaude. Then re-probe.
 - **Reliability scoring:** probe is point-in-time; cloud quota exhausts mid-run. Consider per-call health tracking in the leaderboard.
