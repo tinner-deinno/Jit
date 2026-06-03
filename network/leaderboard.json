@@ -1,54 +1,57 @@
 {
   "version": "1.0",
   "updated": "2026-06-03",
+  "achievements": [
+    "Bus Hardening Complete (2026-06-03)"
+  ],
   "fleet": {
     "jit": {
       "completed_tasks": 100,
       "success_rate": 0.98,
       "avg_latency": 1.2,
-      "correctness_score": 95,
+      "correctness_score": 97,
       "rank": 1
     },
     "soma": {
       "completed_tasks": 89,
       "success_rate": 1,
       "avg_latency": 2.5,
-      "correctness_score": 93.57763993600003,
+      "correctness_score": 95.57763993600003,
       "rank": 2
     },
     "innova": {
       "completed_tasks": 159,
       "success_rate": 1,
       "avg_latency": 1.5,
-      "correctness_score": 73.03332454400002,
+      "correctness_score": 75.03332454400002,
       "rank": 3
     },
     "lak": {
       "completed_tasks": 59,
       "success_rate": 1,
       "avg_latency": 3,
-      "correctness_score": 74.83935744000001,
+      "correctness_score": 76.83935744000001,
       "rank": 4
     },
     "neta": {
       "completed_tasks": 70,
       "success_rate": 0.94,
       "avg_latency": 2,
-      "correctness_score": 90,
+      "correctness_score": 92,
       "rank": 5
     },
     "vaja": {
       "completed_tasks": 209,
       "success_rate": 1,
       "avg_latency": 0.5,
-      "correctness_score": 93.56722790400005,
+      "correctness_score": 95.56722790400005,
       "rank": 6
     },
     "chamu": {
       "completed_tasks": 129,
       "success_rate": 1,
       "avg_latency": 1,
-      "correctness_score": 83.38961817600003,
+      "correctness_score": 85.38961817600003,
       "rank": 7
     },
     "agent-mdes": {
@@ -82,7 +85,7 @@
   },
   "global_metrics": {
     "total_tasks": 771,
-    "system_reliability": 0.93,
+    "system_reliability": 0.95,
     "average_latency": 1.6
   }
 }

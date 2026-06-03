@@ -2,16 +2,15 @@
 # network/bus.sh — รถบัสข้อมูล: ส่งและรับ message ระหว่าง agents
 #
 # หลักพุทธ: อิทัปปัจจยตา — เชื่อมโยงปัจจัยต่างๆ ให้เกิดผล
-# บทบาท multiagent: reliable message delivery, queue management
+# บทบาท multiagent: reliable message delivery, priority-queued management
 #
 # Usage:
-#   ./bus.sh send <to> <subject> <body>   — ส่ง message
-#   ./bus.sh recv <agent>                 — รับ messages ของ agent
-#   ./bus.sh queue                        — ดู queue ทั้งหมด
-#   ./bus.sh flush                        — ล้าง queue เก่า
-#   ./bus.sh stats                        — สถิติ bus
-#
-# Optimized: Asynchronous delivery with order preservation.
+#   ./bus.sh send <to> <priority> <subject> <body>   — ส่ง message (priority: high|med|low)
+#   ./bus.sh broadcast <priority> <subject> <body>    — ส่ง broadcast ถึงทุก agent
+#   ./bus.sh recv <agent>                           — รับ messages ของ agent (sorted by priority)
+#   ./bus.sh queue                                  — ดู queue ทั้งหมด
+#   ./bus.sh flush                                  — ล้าง queue เก่า
+#   ./bus.sh stats                                  — สถิติ bus
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../limbs/lib.sh"
@@ -20,177 +19,161 @@ CMD="${1:-queue}"
 shift || true
 
 BUS_ROOT="/tmp/manusat-bus"
+STAGING_DIR="/tmp/manusat-bus-staging"
 REGISTRY="$SCRIPT_DIR/registry.json"
 
-# สร้าง inbox ของทุก agent จาก registry
+# Initialize bus structure
 _init_bus() {
   mkdir -p "$BUS_ROOT"
+  mkdir -p "$STAGING_DIR"
   if [ -f "$REGISTRY" ]; then
+    # Use python to read registry and create directories
     python3 -c "
-import json
-with open('$REGISTRY') as f:
-    d = json.load(f)
-for a in d.get('agents', []):
-    import os; os.makedirs('$BUS_ROOT/' + a['name'], exist_ok=True)
+import json, os
+try:
+    with open('$REGISTRY') as f:
+        d = json.load(f)
+    for a in d.get('agents', []):
+        name = a['name']
+        for p in ['high', 'med', 'low']:
+            os.makedirs('$BUS_ROOT/' + name + '/' + p, exist_ok=True)
+except Exception as e:
+    print(f'Error initializing bus from registry: {e}')
 "
   else
-    mkdir -p "$BUS_ROOT/innova" "$BUS_ROOT/soma"
+    # Fallback for basic agents if registry is missing
+    for a in "innova" "soma" "jit"; do
+      for p in "high" "med" "low"; do mkdir -p "$BUS_ROOT/$a/$p"; done
+    done
   fi
 }
-_init_bus
 
-# Helper for async delivery
+# Atomic delivery to prevent race conditions
 _deliver() {
   local to="$1"
-  local subject="$2"
-  local body="$3"
-  local from="$4"
-  local ts="$5"
-  local corr_id="$6"
-  local msg_file="$BUS_ROOT/$to/${ts}_from-${from}.msg"
+  local priority="$2"
+  local subject="$3"
+  local body="$4"
+  local from="${5:-system}"
+  local corr_id="${6:-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -N 8 | head -n 1)}"
 
-  cat > "$msg_file" << EOF
+  # Validate priority
+  case "$priority" in
+    high|med|low) ;;
+    *) priority="med" ;;
+  esac
+
+  # Generate high-precision timestamp for strict ordering (YYYYMMDDHHMMSS_nanos)
+  local ts=$(date +%Y%m%d%H%M%S_%N)
+  local filename="${ts}_${corr_id}.msg"
+  local staging_file="$STAGING_DIR/$filename"
+  local target_dir="$BUS_ROOT/$to/$priority"
+
+  # Ensure target directory exists (in case agent was added since boot)
+  mkdir -p "$target_dir"
+
+  # 1. Write to staging directory (asynchronous/isolated)
+  cat > "$staging_file" << EOF
 from:$from
 to:$to
+priority:$priority
 subject:$subject
-timestamp:$(date '+%Y-%m-%dT%H:%M:%S')
+timestamp:$(date '+%Y-%m-%dT%H:%M:%S.%N')
 correlation-id:$corr_id
 ---
 $body
 EOF
-  log_action "BUS_SEND" "to:$to subject:$subject"
+
+  # 2. Atomic move to target inbox (prevents partial reads)
+  mv "$staging_file" "$target_dir/$filename"
 }
 
+# Commands implementation
 case "$CMD" in
-
-  # ── ส่ง message ─────────────────────────────────────────────────
   send)
-    TO="$1" SUBJECT="$2"
-    shift 2 || { err "Usage: bus.sh send <to> <subject> <body>"; exit 1; }
-    BODY="$*"
-    FROM="${AGENT_NAME:-system}"
-    CORR_ID="$(python3 -c "import uuid; print(str(uuid.uuid4())[:8])" 2>/dev/null || echo "$(date +%s)")"
-    TS=$(date +%s%3N)
-
-    # Asynchronous delivery: execute in background
-    # Order is strictly preserved by the TS in the filename,
-    # ensuring 'task:' and 'alert:' maintain sequence upon retrieval.
-    _deliver "$TO" "$SUBJECT" "$BODY" "$FROM" "$TS" "$CORR_ID" &
-
-    ok "bus → $TO: [$SUBJECT] (id:$CORR_ID)"
-    echo "$CORR_ID"
+    # Usage: send <to> <priority> <subject> <body> [from] [corr_id]
+    to="$1"; priority="$2"; subject="$3"; body="$4"; from="$5"; corr_id="$6"
+    if [ -z "$to" ] || [ -z "$body" ]; then
+      echo "Usage: $0 send <to> <priority> <subject> <body> [from] [corr_id]"
+      exit 1
+    fi
+    _init_bus
+    _deliver "$to" "$priority" "$subject" "$body" "$from" "$corr_id"
     ;;
 
-  # ── รับ messages ─────────────────────────────────────────────────
-  recv)
-    AGENT="${1:-${AGENT_NAME:-innova}}"
-    INBOX="$BUS_ROOT/$AGENT"
-    MSGS=$(ls "$INBOX"/*.msg 2>/dev/null | wc -l)
+  broadcast)
+    # Usage: broadcast <priority> <subject> <body> [from]
+    priority="$1"; subject="$2"; body="$3"; from="$4"
+    if [ -z "$priority" ] || [ -z "$body" ]; then
+      echo "Usage: $0 broadcast <priority> <subject> <body> [from]"
+      exit 1
+    fi
+    _init_bus
+    if [ -f "$REGISTRY" ]; then
+      agents=$(python3 -c "import json; d=json.load(open('$REGISTRY')); print('\n'.join([a['name'] for a in d.get('agents', [])]))")
+      for agent in $agents; do
+        _deliver "$agent" "$priority" "$subject" "$body" "$from"
+      done
+    else
+      echo "Registry not found, cannot broadcast."
+      exit 1
+    fi
+    ;;
 
-    if [ "$MSGS" -eq 0 ]; then
-      info "$AGENT: inbox ว่าง"
-      exit 0
+  recv)
+    # Usage: recv <agent>
+    agent="$1"
+    if [ -z "$agent" ]; then
+      echo "Usage: $0 recv <agent>"
+      exit 1
     fi
 
-    step "$AGENT: รับ $MSGS messages"
-    # Use explicit sort to ensure delivery order is respected based on timestamped filenames
-    for MSG_FILE in $(ls "$INBOX"/*.msg 2>/dev/null | sort); do
-      [ -f "$MSG_FILE" ] || continue
-      echo ""
-      echo -e "${CYAN}── $(basename "$MSG_FILE") ──${RESET}"
-      cat "$MSG_FILE"
-      echo ""
-      mv "$MSG_FILE" "${MSG_FILE%.msg}.read"
-      log_action "BUS_RECV" "$(basename "$MSG_FILE")"
-    done
-    ;;
-
-  # ── ดู queue ──────────────────────────────────────────────────────
-  queue)
-    echo ""
-    echo -e "${BOLD}=== Message Bus Queue ===${RESET}"
-    echo -e "   Bus: $BUS_ROOT"
-    echo ""
-    TOTAL=0
-    for INBOX_DIR in "$BUS_ROOT"/*/; do
-      [ -d "$INBOX_DIR" ] || continue
-      AGENT=$(basename "$INBOX_DIR")
-      PENDING=$(ls "$INBOX_DIR"*.msg 2>/dev/null | wc -l)
-      READ=$(ls "$INBOX_DIR"*.read 2>/dev/null | wc -l)
-      TOTAL=$((TOTAL + PENDING))
-      if [ "$PENDING" -gt 0 ]; then
-        echo -e "   ${YELLOW}📬${RESET} $AGENT: $PENDING pending | $READ read"
-      else
-        echo -e "   ${GREEN}📭${RESET} $AGENT: ว่าง | $READ read"
+    # Process priorities in order: high -> med -> low
+    for p in high med low; do
+      dir="$BUS_ROOT/$agent/$p"
+      if [ -d "$dir" ]; then
+        # Files are naturally sorted by timestamp (filename)
+        for msg in $(ls "$dir" | sort); do
+          cat "$dir/$msg"
+          echo "--------------------------------------------------"
+          rm "$dir/$msg" # Consume message
+        done
       fi
     done
-    echo ""
-    echo "   Total pending: $TOTAL"
-    echo ""
     ;;
 
-  # ── broadcast ทุก agent ──────────────────────────────────────────
-  broadcast)
-    SUBJECT="$1"
-    shift || true
-    BODY="$*"
-    FROM="${AGENT_NAME:-system}"
-
-    # Identify target agents
-    AGENTS=$(ls -1 "$BUS_ROOT" | grep -v "^\.$" | grep -v "^\.\.$")
-
-    # Asynchronous delivery for broadcast to prevent blocking the main process
-    (
-      for AGENT in $AGENTS; do
-        [ "$AGENT" = "$FROM" ] && continue
-        TS=$(date +%s%3N)
-        INBOX_DIR="$BUS_ROOT/$AGENT"
-        cat > "$INBOX_DIR/${TS}_broadcast.msg" << EOF
-from:$FROM
-to:$AGENT
-subject:broadcast:$SUBJECT
-timestamp:$(date '+%Y-%m-%dT%H:%M:%S')
----
-$BODY
-EOF
-      done
-      log_action "BUS_BROADCAST" "$SUBJECT"
-    ) &
-
-    ACTUAL_COUNT=$(echo "$AGENTS" | wc -l)
-    ok "broadcast → ~$ACTUAL_COUNT agents: [$SUBJECT]"
-    ;;
-
-  # ── ล้าง read messages เก่า (> 24h) ──────────────────────────────
-  flush)
-    DELETED=0
-    find "$BUS_ROOT" -name "*.read" -mmin +1440 -delete -print 2>/dev/null | while read -r f; do
-      ((DELETED++))
+  queue)
+    # List all pending messages in the system
+    echo "--- Current Message Queue ---"
+    find "$BUS_ROOT" -name "*.msg" | while read msg; do
+      echo "File: $msg"
+      grep -E "subject:|to:|from:" "$msg"
+      echo "---"
     done
-    ok "ล้าง messages เก่าแล้ว"
-    log_action "BUS_FLUSH" "cleanup"
     ;;
 
-  # ── สถิติ ────────────────────────────────────────────────────────
+  flush)
+    # Clear all inboxes
+    echo "Flushing all message queues..."
+    rm -rf "$BUS_ROOT"/*
+    rm -rf "$STAGING_DIR"/*
+    _init_bus
+    echo "Done."
+    ;;
+
   stats)
-    TOTAL_MSGS=$(find "$BUS_ROOT" -name "*.msg" 2>/dev/null | wc -l)
-    TOTAL_READ=$(find "$BUS_ROOT" -name "*.read" 2>/dev/null | wc -l)
-    echo ""
-    echo -e "${BOLD}Bus Stats:${RESET}"
-    echo "   Pending: $TOTAL_MSGS"
-    echo "   Read:    $TOTAL_READ"
-    echo "   Path:    $BUS_ROOT"
-    echo ""
+    # Show basic bus statistics
+    count=$(find "$BUS_ROOT" -name "*.msg" | wc -l)
+    echo "Total pending messages: $count"
+    for agent in $(ls "$BUS_ROOT" 2>/dev/null); do
+      agent_count=$(find "$BUS_ROOT/$agent" -name "*.msg" | wc -l)
+      echo "  $agent: $agent_count"
+    done
     ;;
 
   *)
-    echo "Usage: bus.sh {send|recv|queue|broadcast|flush|stats}"
-    echo ""
-    echo "  send      <to> <subject> <body>  — ส่ง message"
-    echo "  recv      [agent]                — รับ messages"
-    echo "  queue                            — ดูสถานะ queue"
-    echo "  broadcast <subject> <body>       — ส่งทุก agent"
-    echo "  flush                            — ล้าง read messages เก่า"
-    echo "  stats                            — สถิติ"
+    echo "Unknown command: $CMD"
+    echo "Usage: $0 {send|broadcast|recv|queue|flush|stats}"
+    exit 1
     ;;
 esac
