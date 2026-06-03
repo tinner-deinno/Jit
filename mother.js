@@ -110,7 +110,7 @@ function help() {
 mother.js — innomcp front door
 
   node mother.js chat "<goal>"       run ONE Mother phase (live providers)
-  node mother.js run "<goal>" [N]    decompose into <=N phases (default 4) and run all
+  node mother.js run "<goal>" [--phases N]   decompose into <=N phases (default 4) and run all
   node mother.js status              unified status board (no quota)
   node mother.js probe               refresh provider liveness (no LLM)
   node mother.js events [N]          last N dispatch events (default 10)
@@ -127,11 +127,15 @@ switch (cmd) {
     break;
   }
   case 'run': {
-    // Last arg may be a phase count; everything else is the goal.
-    let max = 4; let parts = rest.slice();
-    if (parts.length > 1 && /^\d+$/.test(parts[parts.length - 1])) max = parseInt(parts.pop(), 10);
+    // Phase count via explicit --phases N (NOT a trailing digit, which would
+    // steal a number that's legitimately part of the goal, e.g. "fix bug 3").
+    let max = 4; const parts = [];
+    for (let i = 0; i < rest.length; i++) {
+      if ((rest[i] === '--phases' || rest[i] === '-n') && /^\d+$/.test(rest[i + 1] || '')) max = parseInt(rest[++i], 10);
+      else parts.push(rest[i]);
+    }
     const goal = parts.join(' ').trim();
-    if (!goal) { console.error('Usage: node mother.js run "<goal>" [maxPhases]'); process.exit(2); }
+    if (!goal) { console.error('Usage: node mother.js run "<goal>" [--phases N]'); process.exit(2); }
     run(goal, Math.max(1, Math.min(8, max))).catch(e => { console.error(`[Error] ${e && e.message || e}`); process.exit(1); });
     break;
   }

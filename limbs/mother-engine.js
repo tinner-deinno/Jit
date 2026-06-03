@@ -149,7 +149,7 @@ class MotherEngine {
   /**
    * The core "Infinity Loop" phase execution.
    */
-  async executePhase(phaseName, goal) {
+  async executePhase(phaseName, goal, context = '') {
     console.log(`\n--- Starting Phase: ${phaseName} ---`);
     const startTime = Date.now();
 
@@ -171,7 +171,7 @@ class MotherEngine {
       results = await spawnAgentParallel(
         squadNames.map(name => ({
           agent: name,
-          message: `Goal: ${goal}. Context: Phase ${phaseName}. Provide your specialized output.`,
+          message: `Goal: ${goal}. Context: Phase ${phaseName}.${context ? '\n' + context : ''} Provide your specialized output.`,
           options: this.liveProvider ? { overrideBackend: this.liveProvider.backend, overrideModel: this.liveProvider.model } : {}
         })),
         `Phase ${phaseName} Execution`
@@ -257,8 +257,15 @@ class MotherEngine {
     try { reply = (await spawnAgent('soma', prompt, opts)).reply || ''; }
     catch (e) { console.warn(`[Mother] decompose failed (${e.message}); single-phase fallback.`); }
 
-    const lines = reply.split(/\r?\n/)
-      .map(l => l.replace(/^\s*\d+[.)]\s*/, '').replace(/^[-*]\s*/, '').trim())
+    // Robust parse (per GPT-5.5 senior review): prefer marked list items
+    // (1. / 1) / - / *); if the model returned no markers, fall back to all
+    // substantive lines (keeps "Phase 1: Analyze..." and plain phases) while
+    // dropping pure preamble lines that just end with a colon ("Here is the plan:").
+    const raw = reply.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const marked = raw.filter(l => /^(\d+[.)]|[-*])\s+/.test(l));
+    const base = marked.length ? marked : raw.filter(l => !/:\s*$/.test(l));
+    const lines = base
+      .map(l => l.replace(/^(\d+[.)]|[-*])\s*/, '').trim())
       .filter(l => l.length > 3);
     if (!lines.length) return [{ title: 'Phase 1', goal }];
     return lines.slice(0, max).map((l, i) => {
@@ -279,10 +286,20 @@ class MotherEngine {
     const summaries = [];
     for (let i = 0; i < phases.length; i++) {
       const ph = phases[i];
-      const ctx = summaries.length ? `\n\n[Prior phases]\n${summaries.join('\n')}` : '';
-      const res = await this.executePhase(ph.title, ph.goal + ctx);
+      // Context goes as a SEPARATE arg (not concatenated to goal) so it doesn't
+      // pollute squad selection, which matches agents by keywords in the goal.
+      const ctx = summaries.length ? `[Prior phase outputs]\n${summaries.join('\n\n')}` : '';
+      const res = await this.executePhase(ph.title, ph.goal, ctx);
+      // Stop the chain on a real phase failure instead of silently continuing.
+      if (res && !Array.isArray(res) && res.error) {
+        summaries.push(`${ph.title}: FAILED — ${res.error}`);
+        console.error(`[Mother] Phase "${ph.title}" failed (${res.error}); stopping chain.`);
+        return { goal, phases: phases.map(p => p.title), summaries, failedAt: ph.title };
+      }
+      // Carry fuller prior output forward (800 chars) so dependent phases (e.g.
+      // "translate the haiku") see the actual artifact, not a 2-sentence stub.
       const first = (Array.isArray(res) && res[0] && res[0].reply) ? String(res[0].reply) : '(no output)';
-      summaries.push(`${ph.title}: ${first.replace(/\s+/g, ' ').slice(0, 140)}`);
+      summaries.push(`${ph.title}: ${first.replace(/\s+/g, ' ').slice(0, 800)}`);
     }
     return { goal, phases: phases.map(p => p.title), summaries };
   }
