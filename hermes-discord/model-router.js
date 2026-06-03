@@ -806,9 +806,20 @@ function callModel(messages, options, callback) {
 
     caller(messages, opts.model || null, function(err, reply) {
       if (!err) {
-        _errors[backend] = 0;
-        attempts.push({ backend: backend, ok: true });
-        return callback(null, { reply: reply, backend: backend, attempts: attempts });
+        // An empty/whitespace reply is NOT a usable success (GPT-5.5 + Copilot
+        // review): record it as a failure and rotate, instead of returning a
+        // blank answer and crediting the lane's reliability.
+        var okReply = !!(reply && String(reply).trim().length > 0);
+        if (okReply) {
+          _errors[backend] = 0;
+          attempts.push({ backend: backend, ok: true });
+          return callback(null, { reply: reply, backend: backend, attempts: attempts });
+        }
+        console.warn('[model-router] ' + backend + ' returned empty reply; rotating');
+        _errors[backend] = (_errors[backend] || 0) + 1;
+        attempts.push({ backend: backend, ok: false, error: 'empty reply' });
+        if (opts.noRotate) { var er = new Error('empty reply from ' + backend); er.attempts = attempts; return callback(er); }
+        return tryNext();
       }
       console.warn('[model-router] ' + backend + ' failed: ' + err.message);
       _errors[backend] = (_errors[backend] || 0) + 1;
