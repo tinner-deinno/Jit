@@ -7,89 +7,78 @@
   "fleet": {
     "jit": {
       "completed_tasks": 100,
-      "success_rate": 0.98,
-      "avg_latency": 1.2,
       "correctness_score": 97,
+      "success_rate": 0.98,
       "rank": 1,
       "provisional": false
     },
     "soma": {
-      "completed_tasks": 90,
+      "completed_tasks": 91,
+      "correctness_score": 94.24968955904004,
       "success_rate": 1,
-      "avg_latency": 2.5,
-      "correctness_score": 94.06211194880004,
       "rank": 3,
       "provisional": false
     },
     "innova": {
-      "completed_tasks": 160,
+      "completed_tasks": 161,
+      "correctness_score": 80.34132770816002,
       "success_rate": 1,
-      "avg_latency": 1.5,
-      "correctness_score": 78.42665963520002,
       "rank": 7,
       "provisional": false
     },
     "lak": {
-      "completed_tasks": 60,
+      "completed_tasks": 61,
+      "correctness_score": 81.65718876160003,
       "success_rate": 1,
-      "avg_latency": 3,
-      "correctness_score": 79.07148595200002,
       "rank": 6,
       "provisional": false
     },
     "neta": {
       "completed_tasks": 70,
-      "success_rate": 0.94,
-      "avg_latency": 2,
       "correctness_score": 92,
+      "success_rate": 0.94,
       "rank": 4,
       "provisional": false
     },
     "vaja": {
-      "completed_tasks": 210,
+      "completed_tasks": 211,
+      "correctness_score": 94.28302585856005,
       "success_rate": 1,
-      "avg_latency": 0.5,
-      "correctness_score": 94.85378232320005,
       "rank": 2,
       "provisional": false
     },
     "chamu": {
-      "completed_tasks": 130,
+      "completed_tasks": 131,
+      "correctness_score": 88.32935563264002,
       "success_rate": 1,
-      "avg_latency": 1,
-      "correctness_score": 85.91169454080003,
       "rank": 5,
       "provisional": false
     },
     "agent-mdes": {
       "completed_tasks": 1,
-      "success_rate": 1,
-      "avg_latency": 0,
       "correctness_score": 100,
+      "success_rate": 1,
       "rank": 8,
       "provisional": true
     },
     "agent-thaillm": {
       "completed_tasks": 0,
-      "success_rate": 1,
-      "avg_latency": 0,
       "correctness_score": 100,
+      "success_rate": 1,
       "rank": 9,
       "provisional": true
     },
     "agent-ollama": {
       "completed_tasks": 0,
-      "success_rate": 1,
-      "avg_latency": 0,
       "correctness_score": 100,
+      "success_rate": 1,
       "rank": 10,
       "provisional": true
     },
     "agent-copilot": {
       "completed_tasks": 0,
-      "success_rate": 1,
-      "avg_latency": 0,
       "correctness_score": 100,
+      "success_rate": 1,
       "rank": 11,
       "provisional": true
     }
