@@ -29,8 +29,14 @@ const DB_PATH = path.join(__dirname, '..', 'network', 'leaderboard.db');
 
 const COLS = ['completed_tasks', 'correctness_score', 'success_rate', 'rank', 'provisional'];
 
+/** Coerce to a finite number (rejects NaN/Infinity), else default. */
+function _finite(x, d = 0) { const n = Number(x); return Number.isFinite(n) ? n : d; }
+
 function _open() {
   const db = new DatabaseSync(DB_PATH);
+  // WAL + busy_timeout: tolerate concurrent writers instead of failing with
+  // SQLITE_BUSY ("database is locked") under multi-process access.
+  try { db.exec('PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;'); } catch (_) { /* best-effort */ }
   db.exec(`CREATE TABLE IF NOT EXISTS fleet (
     name TEXT PRIMARY KEY,
     completed_tasks INTEGER DEFAULT 0,
@@ -59,17 +65,26 @@ function persist(fleet) {
         provisional=excluded.provisional,
         updated=excluded.updated`);
     let n = 0;
-    for (const [name, v] of Object.entries(fleet)) {
-      stmt.run({
-        name,
-        completed_tasks: Math.trunc(Number(v.completed_tasks) || 0),
-        correctness_score: Number(v.correctness_score) || 0,
-        success_rate: Number(v.success_rate) || 0,
-        rank: v.rank === undefined || v.rank === null ? null : Math.trunc(Number(v.rank)),
-        provisional: v.provisional ? 1 : 0,
-        updated: now,
-      });
-      n++;
+    // Single transaction: without it every stmt.run() auto-commits (one fsync
+    // per agent), which is ~1600x slower at scale. Roll back on any error.
+    db.exec('BEGIN');
+    try {
+      for (const [name, v] of Object.entries(fleet)) {
+        stmt.run({
+          name,
+          completed_tasks: Math.trunc(_finite(v.completed_tasks)),
+          correctness_score: _finite(v.correctness_score),
+          success_rate: _finite(v.success_rate),
+          rank: v.rank === undefined || v.rank === null || !Number.isFinite(Number(v.rank)) ? null : Math.trunc(Number(v.rank)),
+          provisional: v.provisional ? 1 : 0,
+          updated: now,
+        });
+        n++;
+      }
+      db.exec('COMMIT');
+    } catch (e) {
+      try { db.exec('ROLLBACK'); } catch (_) {}
+      throw e;
     }
     return n;
   } finally {

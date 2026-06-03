@@ -65,5 +65,6 @@ Thumbs.db
 
 # Phase 36.5: local durable leaderboard store (JSON mirror is the portable seed)
 network/leaderboard.db
-network/leaderboard.db-journal
+network/leaderboard.db-wal
+network/leaderboard.db-shm
 network/mother-events.jsonl
