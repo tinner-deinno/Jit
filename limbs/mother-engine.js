@@ -4,6 +4,7 @@ const { spawnAgent, spawnAgentParallel, spawnAgentChain } = require('../hermes-d
 const { execSync } = require('child_process');
 const InnovaBotBridge = require('./innova-bot-bridge');
 const eventLog = require('./event-log');
+const leaderboardDB = require('./leaderboard-db');
 
 class MotherEngine {
   constructor() {
@@ -18,6 +19,7 @@ class MotherEngine {
     this.registry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
     this.leaderboard = JSON.parse(fs.readFileSync(this.leaderboardPath, 'utf8'));
     this.routing = JSON.parse(fs.readFileSync(this.routingPath, 'utf8'));
+    this.hydrateLeaderboard();
     this.liveProvider = this.pickLiveProvider();
 
     this.setupBotEventListeners();
@@ -83,6 +85,26 @@ class MotherEngine {
         break;
       default:
         console.log(`[Mother] Unhandled bot event: ${JSON.stringify(event)}`);
+    }
+  }
+
+  /**
+   * Phase 36.5: durable leaderboard. On first run, seed the DB from the JSON
+   * fleet. Thereafter the DB is the source of truth: hydrate memory from it and
+   * rewrite the JSON mirror so scores survive a leaderboard.json reset/revert.
+   */
+  hydrateLeaderboard() {
+    try {
+      if (leaderboardDB.count() > 0) {
+        this.leaderboard.fleet = leaderboardDB.hydrate();
+        fs.writeFileSync(this.leaderboardPath, JSON.stringify(this.leaderboard, null, 2));
+        console.log(`[Mother] Leaderboard hydrated from DB (${Object.keys(this.leaderboard.fleet).length} agents).`);
+      } else {
+        const n = leaderboardDB.persist(this.leaderboard.fleet);
+        console.log(`[Mother] Leaderboard DB seeded from JSON (${n} agents).`);
+      }
+    } catch (e) {
+      console.warn(`[Mother] Leaderboard DB unavailable (${e.message}); using JSON only.`);
     }
   }
 
@@ -216,6 +238,7 @@ class MotherEngine {
 
     this.rankFleet();
     fs.writeFileSync(this.leaderboardPath, JSON.stringify(this.leaderboard, null, 2));
+    try { leaderboardDB.persist(fleet); } catch (e) { console.warn(`[Mother] DB persist failed: ${e.message}`); }
     return scores;
   }
 
