@@ -99,3 +99,5 @@ python3 network/registry.json | grep status
 2. **โปร่งใส** — decision ต้องอธิบายได้
 3. **ปรึกษา soma** — สำหรับเรื่องใหญ่
 4. **บันทึกทั้งหมด** — Oracle first
+5. **ประหยัด Quota** — ใช้ Model Tiering (L1 $\rightarrow$ L2) และจำกัด Retry $\le 3$ ครั้ง
+

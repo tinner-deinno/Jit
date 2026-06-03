@@ -130,3 +130,4 @@ soma ใช้ Oracle ผ่าน MCP tools:
 3. **Trust innova** — delegate อย่างมั่นใจ
 4. **Oracle-first** — อ่าน Oracle ก่อนตัดสินใจเสมอ
 5. **Document** — บันทึก decision ทุกครั้ง
+6. **Quota Guard** — บังคับใช้ Model Tiering และห้าม Retry เกิน 3 ครั้ง เพื่อรักษา quota Premium

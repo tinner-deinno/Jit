@@ -1,45 +1,23 @@
 ---
-description: Fresh start context summary
+description: v26.5.16 L-CMD | Session orientation and awareness — retro summaries, handoffs, git state, focus. Use when starting a session, after /jump, lost your place, switching context, or when user asks "now", "where are we", "what are we doing", "status", "recap". Do NOT trigger for "standup" or "morning check" (use /standup), or session mining "dig", "past sessions" (use /dig).
 allowed-tools:
   - Bash
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
   - Task
+  - WebFetch
 ---
 
-# /recap - Fresh Start Summary
+# /recap
 
-Quick catch-up for new sessions.
+Execute the `recap` skill with args: `$ARGUMENTS`
 
-## Usage
+**If you have a Skill tool available**: Use it directly with `skill: "recap"` instead of reading the file manually.
 
-```
-/recap    # Get caught up
-```
+**Otherwise**: Read the skill file at `C:\Users\admin\Jit\.claude\skills/recap/SKILL.md` and follow ALL instructions in it.
 
-## Action
-
-Use the Task tool with:
-```
-subagent_type: context-finder
-model: haiku
-prompt: |
-  Run these commands and summarize:
-  1. git log --since="24 hours ago" --format="%h %ar %s" -10
-  2. git status --short
-  3. gh issue list --limit 5 --json number,title
-
-  Output format:
-  ## 🕐 [Current Time]
-
-  ### Recent Changes
-  | When | What |
-  |------|------|
-
-  ### Working State
-  [Clean or list modified files]
-
-  ### Active Issues
-  | # | Title |
-  |---|-------|
-
-  **Now**: [What to focus on]
-```
+---
+*arra-oracle-skills-cli v26.5.16*

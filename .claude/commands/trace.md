@@ -1,51 +1,23 @@
 ---
-description: Search git history, retrospectives, issues, codebase
+description: v26.5.16 L-CMD | Find projects, code, and knowledge across git history, repos, docs, and Oracle. Use when user asks "trace", "find project", "where is [project]", "search history", or needs to locate something across the codebase. Supports --oracle (fast), --smart (default), --deep (wave execution), --deep --dig (combo). Do NOT trigger for session mining or "past sessions" (use /dig), or codebase exploration "learn repo" (use /learn).
 allowed-tools:
   - Bash
-  - Grep
+  - Read
+  - Write
+  - Edit
   - Glob
+  - Grep
   - Task
+  - WebFetch
 ---
 
-# /trace - Find Anything
+# /trace
 
-Search across git history, issues, files, and retrospectives.
+Execute the `trace` skill with args: `$ARGUMENTS`
 
-## Usage
+**If you have a Skill tool available**: Use it directly with `skill: "trace"` instead of reading the file manually.
 
-```
-/trace [query]     # Search for something
-/trace incubation  # Show all projects
-```
+**Otherwise**: Read the skill file at `C:\Users\admin\Jit\.claude\skills/trace/SKILL.md` and follow ALL instructions in it.
 
-ARGUMENTS: $ARGUMENTS
-
-## Action
-
-Use the Task tool with:
-```
-subagent_type: context-finder
-model: haiku
-prompt: |
-  Search for "[query]" across:
-  1. git log --all --oneline --grep="[query]" | head -15
-  2. gh issue list --state all --search "[query]" --json number,title
-  3. find . -iname "*[query]*" -type f | head -20
-  4. grep -ril "[query]" --include="*.md" | head -20
-
-  Return: Locations found with context
-```
-
-## Output Format
-
-```markdown
-## 🔍 /trace: [query]
-
-### 📍 Found
-
-| Source | Location | Context |
-|--------|----------|---------|
-| git | commit abc123 | ... |
-| file | path/to/file.md | ... |
-| issue | #42 | ... |
-```
+---
+*arra-oracle-skills-cli v26.5.16*

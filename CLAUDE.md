@@ -326,12 +326,21 @@ netra (eye) + karn (ear) → jit (decision) → mue (execute)
 - **MDES Ollama** — `https://ollama.mdes-innova.online`, model: `gemma4:26b`, auth token in `.github/agents/innova.agent.md`
 
 ## Design Principles
-
+S
 The system is aligned to **Buddhist principles** — ศีล (integrity: no secrets in output, confirm before destructive actions) · สมาธิ (focus: one message = one intent, stay in role) · ปัญญา (wisdom: query Oracle before decisions, maximize token efficiency).
+
+### Quota & Model Tiering Policy (Request Efficiency)
+To prevent quota exhaustion (e.g., 300 requests/day limit), all agents MUST follow these rules:
+- **Strict Retry Cap**: Never retry a failing operation more than 3 times. If a task fails 3 times, STOP immediately and ask the human for guidance. Do NOT enter a loop of 10+ retries.
+- **Two-Tier Model Strategy**:
+    - **L1 (Light/Pre-process)**: Use `bash` (grep, find, ls), `Read`, or `MDES Ollama` (gemma4:26b) for data gathering, context preparation, and basic analysis.
+    - **L2 (Premium/Reasoning)**: Use `Soma` (Opus) or `Jit/Innova` (Sonnet) ONLY for high-level reasoning, architecture decisions, complex code synthesis, and final verification.
+- **Goal**: Maximize efficiency. "Gather cheap, reason expensive."
 
 **Oracle-first**: Query Oracle before major decisions to avoid duplicating stored knowledge.  
 **Bus-only**: No direct function calls between agents; always communicate via mouth→bus→ear.  
 **Reversible actions**: Design rollback paths; signal before destructive operations.
+
 
 ## Working with the System
 
