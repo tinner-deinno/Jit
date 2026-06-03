@@ -50,10 +50,13 @@ function classify(err) {
 // when its own backend is down). The ping asks for "OK", so a healthy reply
 // contains "ok"; treat error-sentinel replies as a degraded ERROR, not ALIVE.
 function isErrorReply(text) {
-  const t = String(text || '');
-  if (!t.trim()) return true;
-  if (/\bok\b/i.test(t)) return false; // echoed the ping → healthy
-  return /(system override|query failed|unavailable|not available|backend (failed|error)|i (cannot|can't|am unable)|error:)/i.test(t);
+  const t = String(text || '').trim();
+  if (!t) return true;
+  // Error sentinels take PRIORITY (per GPT-5.5 review): an error string can also
+  // contain "ok" (e.g. "OK: backend error", "...query failed, ok"), so checking
+  // "ok" first would let those slip through as healthy. Check errors first.
+  if (/(system override|query failed|unavailable|not available|backend (failed|error)|i (cannot|can't|am unable)|^error\b|:\s*error|\bnot ok\b)/i.test(t)) return true;
+  return false;
 }
 
 function probeOne(backend) {
