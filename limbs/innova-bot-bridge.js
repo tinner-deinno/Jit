@@ -31,6 +31,13 @@ class InnovaBotBridge extends EventEmitter {
     this.reconnectAttempts = 0;
     this.heartbeatTimer = null;
 
+    // MCP request/response correlation: the bot is MCP-over-SSE — POST /messages
+    // returns 202 "Accepted" and the real JSON-RPC response arrives on the SSE
+    // channel keyed by request id. Without this map, callers only saw "Accepted".
+    this.pending = new Map();
+    this._idCounter = 0;
+    this.initialized = false;
+
     this.httpAgent = new http.Agent({
       keepAlive: true,
       maxSockets: 100,
@@ -98,6 +105,18 @@ class InnovaBotBridge extends EventEmitter {
                 this.startHeartbeat();
                 this.emit('connected', this.sessionID);
                 resolve(true);
+              }
+
+              // MCP response correlation: if this carries a JSON-RPC id we're
+              // waiting on, settle that promise instead of emitting a generic
+              // event (the POST only returned "Accepted").
+              if (data && data.id != null && this.pending.has(data.id)) {
+                const { resolve: res, reject: rej, timer } = this.pending.get(data.id);
+                clearTimeout(timer);
+                this.pending.delete(data.id);
+                if (data.error) rej(new Error(`MCP error ${data.error.code}: ${data.error.message}`));
+                else res(data.result);
+                return;
               }
 
               this.emit('bot_event', data);
@@ -182,29 +201,36 @@ class InnovaBotBridge extends EventEmitter {
     // "/messages/?session_id=..."). Resolve it against the SSE endpoint origin
     // so axios receives an absolute URL instead of throwing "Invalid URL".
     const url = new URL(this.sessionID, this.endpoint);
+    const id = `m${Date.now()}-${++this._idCounter}`;
+
+    // Register the pending response BEFORE posting so we never miss a fast reply.
+    const responsePromise = new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(id);
+        reject(new Error(`MCP response timeout for ${method} (${RETRY_CONFIG.TIMEOUT}ms)`));
+      }, RETRY_CONFIG.TIMEOUT);
+      this.pending.set(id, { resolve, reject, timer });
+    });
 
     try {
-      const response = await axios.post(url.href, {
-        jsonrpc: '2.0',
-        id: Date.now(),
-        method: method,
-        params: params,
-      }, {
+      await axios.post(url.href, { jsonrpc: '2.0', id, method, params }, {
         timeout: RETRY_CONFIG.TIMEOUT,
         httpAgent: this.httpAgent,
-        httpsAgent: this.httpsAgent
+        httpsAgent: this.httpsAgent,
       });
-
-      return response.data;
     } catch (e) {
-      const isTransient = this.isTransientError(e);
-      if (isTransient && attempt < RETRY_CONFIG.MAX_RETRIES) {
-        const delay = Math.min(RETRY_CONFIG.INITIAL_DELAY * Math.pow(2, attempt - 1), RETRY_CONFIG.MAX_DELAY);
-        await this.sleep(delay);
+      // POST itself failed — clean up the pending entry and maybe retry.
+      const p = this.pending.get(id);
+      if (p) { clearTimeout(p.timer); this.pending.delete(id); }
+      if (this.isTransientError(e) && attempt < RETRY_CONFIG.MAX_RETRIES) {
+        await this.sleep(Math.min(RETRY_CONFIG.INITIAL_DELAY * Math.pow(2, attempt - 1), RETRY_CONFIG.MAX_DELAY));
         return this.sendCommand(method, params, attempt + 1);
       }
       throw e;
     }
+
+    // The POST returned 202 "Accepted"; the real JSON-RPC result arrives on SSE.
+    return responsePromise;
   }
 
   isTransientError(error) {
@@ -213,12 +239,42 @@ class InnovaBotBridge extends EventEmitter {
     return [429, 502, 503, 504].includes(status);
   }
 
-  async dispatchTask(taskDescription) {
-    return this.sendCommand('execute_task', {
-      task: taskDescription,
-      priority: 'high',
-      source: 'Mother-Orchestrator'
+  /** MCP handshake — required once before tools/call. Idempotent. */
+  async initialize() {
+    if (this.initialized) return true;
+    await this.sendCommand('initialize', {
+      protocolVersion: '2024-11-05',
+      capabilities: {},
+      clientInfo: { name: 'Mother-Orchestrator', version: '1.0' },
     });
+    this.initialized = true;
+    return true;
+  }
+
+  /** Call a named MCP tool and return its result. Ensures handshake first. */
+  async callTool(name, args = {}) {
+    if (!this.sessionID) await this.connect();
+    await this.initialize();
+    return this.sendCommand('tools/call', { name, arguments: args });
+  }
+
+  /**
+   * dispatchTask — report a Mother task to the bot. The previous implementation
+   * called a non-existent 'execute_task' method, which the bot rejected with
+   * -32602 (silently, since responses weren't correlated). Now publishes a real
+   * A2A event onto the bot's event bus targeting the innova role.
+   */
+  async dispatchTask(taskDescription) {
+    return this.callTool('publish_event', {
+      topic: 'mother.task',
+      target_role: 'innova',
+      payload: { task: taskDescription, source: 'Mother-Orchestrator', priority: 'high' },
+    });
+  }
+
+  /** Ask the bot's own AI backend (useful as an extra provider lane). */
+  async askBot(prompt, opts = {}) {
+    return this.callTool('ask_local_ai', { prompt, ...opts });
   }
 
   async disconnect() {
