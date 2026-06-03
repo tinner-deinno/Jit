@@ -38,13 +38,20 @@ class MotherEngine {
       // Exclude anything the probe saw as rate-limited even if it once answered.
       const usable = (ps.usable || []).filter(b => ps.results?.[b]?.status !== 'RATE_LIMITED');
       if (!usable.length) return null;
-      // Budget-aware: prefer the CHEAPEST usable lane, then fastest — keeps the
-      // expensive frontier provider (openai/gpt-5.5, advisor-only) out of the
-      // squad. Ties broken by recorded latency.
+      // Budget-aware + reliability-weighted: prefer CHEAPEST usable lane, then
+      // the one with the best learned success rate (Iteration 6), then fastest.
+      // Keeps the expensive frontier provider (openai/gpt-5.5) out of the squad
+      // while routing away from lanes that historically fail.
       const costRank = { local: 0, low: 1, medium: 2, high: 3 };
       const cost = b => costRank[this.routing?.providers?.[b]?.cost_tier] ?? 2;
+      let stats = {};
+      try { stats = leaderboardDB.getProviderStats(); } catch (_) { /* DB optional */ }
+      // Reliability: only trust it once a lane has >=3 calls; else neutral (1).
+      const reliability = b => { const s = stats[b]; return (s && s.calls >= 3) ? s.success_rate : 1; };
       const ranked = usable.slice().sort((a, b) =>
-        (cost(a) - cost(b)) || ((ps.results?.[a]?.ms ?? 1e9) - (ps.results?.[b]?.ms ?? 1e9)));
+        (cost(a) - cost(b)) ||
+        (reliability(b) - reliability(a)) ||
+        ((ps.results?.[a]?.ms ?? 1e9) - (ps.results?.[b]?.ms ?? 1e9)));
       const backend = ranked[0];
       // CRITICAL: a backend only accepts its own model. Routing config holds the
       // correct default_model per provider; passing the agent's model verbatim
@@ -196,6 +203,8 @@ class MotherEngine {
     // 5. Atomic Commit
     this.atomicCommit(phaseName, goal, results);
 
+    const durationMs = Date.now() - startTime;
+
     // 5b. Phase 38: append a dispatch event to the append-only event log.
     eventLog.record({
       phase: phaseName,
@@ -203,9 +212,20 @@ class MotherEngine {
       provider: this.liveProvider ? this.liveProvider.backend : 'router-rotation',
       squad: squadNames,
       verdicts: verdictScores,
-      durationMs: Date.now() - startTime,
+      durationMs,
       committed: true,
     });
+
+    // 5c. Iteration 6: learn provider reliability from this dispatch. Attribute
+    // by the backend that actually answered (results[].backend), success =
+    // non-empty reply. Lets pickLiveProvider favor lanes that really deliver.
+    try {
+      const perCallMs = Array.isArray(results) && results.length ? Math.round(durationMs / results.length) : durationMs;
+      for (const r of (Array.isArray(results) ? results : [])) {
+        const ok = !!(r && typeof r.reply === 'string' && r.reply.trim().length > 0);
+        leaderboardDB.recordProviderResult(r && r.backend, ok, perCallMs);
+      }
+    } catch (e) { console.warn(`[Mother] provider-stats record failed: ${e.message}`); }
 
     // 6. Final Report to innova-bot
     try {

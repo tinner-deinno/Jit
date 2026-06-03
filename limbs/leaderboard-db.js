@@ -46,6 +46,17 @@ function _open() {
     provisional INTEGER DEFAULT 1,
     updated TEXT
   )`);
+  // Provider reliability: learned from real dispatches so the engine can route
+  // to lanes that actually succeed, not just ones a point-in-time probe liked.
+  db.exec(`CREATE TABLE IF NOT EXISTS provider_stats (
+    name TEXT PRIMARY KEY,
+    calls INTEGER DEFAULT 0,
+    successes INTEGER DEFAULT 0,
+    total_latency_ms REAL DEFAULT 0,
+    last_ok_ts TEXT,
+    last_fail_ts TEXT,
+    updated TEXT
+  )`);
   return db;
 }
 
@@ -120,4 +131,53 @@ function count() {
   finally { db.close(); }
 }
 
-module.exports = { persist, hydrate, count, DB_PATH, COLS };
+/**
+ * recordProviderResult(name, ok, latencyMs) — accumulate one dispatch outcome
+ * for a provider. Upserts into provider_stats.
+ */
+function recordProviderResult(name, ok, latencyMs) {
+  if (!name) return;
+  const db = _open();
+  try {
+    const now = new Date().toISOString();
+    db.prepare(`INSERT INTO provider_stats (name, calls, successes, total_latency_ms, last_ok_ts, last_fail_ts, updated)
+      VALUES (@name, 1, @s, @lat, @okts, @failts, @now)
+      ON CONFLICT(name) DO UPDATE SET
+        calls = calls + 1,
+        successes = successes + @s,
+        total_latency_ms = total_latency_ms + @lat,
+        last_ok_ts = CASE WHEN @s = 1 THEN @now ELSE last_ok_ts END,
+        last_fail_ts = CASE WHEN @s = 0 THEN @now ELSE last_fail_ts END,
+        updated = @now`).run({
+      name, s: ok ? 1 : 0, lat: _finite(latencyMs), okts: ok ? now : null, failts: ok ? null : now, now,
+    });
+  } finally {
+    db.close();
+  }
+}
+
+/**
+ * getProviderStats() — { name: {calls, successes, success_rate, avg_latency_ms} }.
+ */
+function getProviderStats() {
+  const db = _open();
+  try {
+    const rows = db.prepare('SELECT * FROM provider_stats').all();
+    const out = {};
+    for (const r of rows) {
+      out[r.name] = {
+        calls: r.calls,
+        successes: r.successes,
+        success_rate: r.calls ? r.successes / r.calls : 0,
+        avg_latency_ms: r.calls ? Math.round(r.total_latency_ms / r.calls) : 0,
+        last_ok_ts: r.last_ok_ts,
+        last_fail_ts: r.last_fail_ts,
+      };
+    }
+    return out;
+  } finally {
+    db.close();
+  }
+}
+
+module.exports = { persist, hydrate, count, recordProviderResult, getProviderStats, DB_PATH, COLS };

@@ -65,6 +65,9 @@ function ageStr(ms) {
   const lb = readJSON(path.join(ROOT, 'network', 'leaderboard.json'), { fleet: {} });
   const events = readEvents();
   const bridge = await pingBridge();
+  // Learned provider reliability (Iteration 6) — optional, DB may be absent.
+  let provStats = {};
+  try { provStats = require(path.join(ROOT, 'limbs', 'leaderboard-db')).getProviderStats(); } catch (_) { provStats = {}; }
 
   // Provider usage counts from event history.
   const provUse = {};
@@ -84,9 +87,11 @@ function ageStr(ms) {
   console.log(`\n▍ INNOVA-BOT BRIDGE   ${bridge.up ? '🟢 UP' : '🔴 DOWN'}  (${bridge.detail})`);
 
   console.log(`\n▍ PROVIDERS   probed ${ageStr(ps.probed_at_ms)}   usable: ${(ps.usable || []).join(', ') || 'NONE'}`);
-  console.log('  ' + 'backend'.padEnd(15) + 'status'.padEnd(16) + 'latency'.padEnd(10) + 'phases');
+  console.log('  ' + 'backend'.padEnd(15) + 'status'.padEnd(16) + 'latency'.padEnd(10) + 'phases'.padEnd(8) + 'reliability');
   for (const [b, r] of Object.entries(ps.results || {})) {
-    console.log('  ' + b.padEnd(15) + `${icon[r.status] || ''} ${r.status}`.padEnd(16) + `${r.ms ?? '?'}ms`.padEnd(10) + (provUse[b] || 0));
+    const s = provStats[b];
+    const rel = s && s.calls ? `${Math.round(s.success_rate * 100)}% (${s.calls})` : '—';
+    console.log('  ' + b.padEnd(15) + `${icon[r.status] || ''} ${r.status}`.padEnd(16) + `${r.ms ?? '?'}ms`.padEnd(10) + String(provUse[b] || 0).padEnd(8) + rel);
   }
 
   const proven = Object.entries(lb.fleet || {})
