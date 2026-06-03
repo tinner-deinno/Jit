@@ -165,6 +165,20 @@ Two real bugs fixed, both surfaced by the **GPT-5.5 senior validation loop**:
 reviews each diff. GPT-5.5 has caught a real flaw in my fixes 3× this session
 (decompose regression, bridge false-green, isErrorReply ordering).
 
+## Iteration 14 — Squad resilience ✅
+`spawnAgentParallel` now uses `Promise.allSettled`: one agent whose backends all
+fail no longer aborts the whole phase — it yields an error-result and the phase
+continues with partial output (failed lanes still reliability-recorded).
+
+## Iteration 15 — Circuit breaker (run-informed) ✅
+Mother's own 3-phase self-analysis (architect agent) flagged the orchestrator→
+provider boundary as the critical failure point. Implemented: a lane failing
+BREAKER_THRESHOLD(3)× in a row opens for BREAKER_COOLDOWN_MS(60s) and is skipped
+during rotation — stops hammering a 504-storming MDES on every call (the thing
+that ate earlier run budgets). Success closes it; probes bypass; env-tunable.
+State-machine unit-verified. **Confirmed live: per-attempt `attempts[]` present
+in real squad results** (reliability fix working in production).
+
 ## Provider reality (degraded, 2026-06-04)
 MDES alive but very slow (~28–80s cold); GPT-5.5 alive ~15–80s; ollama_cloud
 quota-exhausted; ThaiLLM token expired; Copilot token now 404; local ollama down.
