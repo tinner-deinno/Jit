@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "updated": "2026-06-03",
+  "updated": "2026-06-03T12:06:27.335Z",
   "achievements": [
     "Bus Hardening Complete (2026-06-03)"
   ],
@@ -58,7 +58,7 @@
       "completed_tasks": 1,
       "success_rate": 1,
       "avg_latency": 0,
-      "correctness_score": 102.0,
+      "correctness_score": 102,
       "rank": 8
     },
     "agent-thaillm": {
@@ -86,6 +86,77 @@
   "global_metrics": {
     "total_tasks": 771,
     "system_reliability": 0.95,
-    "average_latency": 1.6
+    "average_latency": 1.6,
+    "usable_providers": [
+      "ollama_cloud",
+      "copilot",
+      "openai"
+    ],
+    "usable_provider_count": 3
+  },
+  "providers": {
+    "ollama_mdes": {
+      "name": "ollama_mdes",
+      "last_status": "UNREACHABLE",
+      "last_latency_ms": 25028,
+      "usable": false,
+      "probes": 1,
+      "alive_count": 0,
+      "last_probed_ms": 1780488387335
+    },
+    "ollama_local": {
+      "name": "ollama_local",
+      "last_status": "UNREACHABLE",
+      "last_latency_ms": 25002,
+      "usable": false,
+      "probes": 1,
+      "alive_count": 0,
+      "last_probed_ms": 1780488387335
+    },
+    "ollama_cloud": {
+      "name": "ollama_cloud",
+      "last_status": "ALIVE",
+      "last_latency_ms": 4065,
+      "usable": true,
+      "probes": 1,
+      "alive_count": 1,
+      "last_probed_ms": 1780488387335
+    },
+    "thaillm": {
+      "name": "thaillm",
+      "last_status": "ERROR",
+      "last_latency_ms": 5722,
+      "usable": false,
+      "probes": 1,
+      "alive_count": 0,
+      "last_probed_ms": 1780488387335
+    },
+    "copilot": {
+      "name": "copilot",
+      "last_status": "ALIVE",
+      "last_latency_ms": 21004,
+      "usable": true,
+      "probes": 1,
+      "alive_count": 1,
+      "last_probed_ms": 1780488387335
+    },
+    "openai": {
+      "name": "openai",
+      "last_status": "ALIVE",
+      "last_latency_ms": 13340,
+      "usable": true,
+      "probes": 1,
+      "alive_count": 1,
+      "last_probed_ms": 1780488387335
+    },
+    "openclaude": {
+      "name": "openclaude",
+      "last_status": "ERROR",
+      "last_latency_ms": 17,
+      "usable": false,
+      "probes": 1,
+      "alive_count": 0,
+      "last_probed_ms": 1780488387335
+    }
   }
 }
