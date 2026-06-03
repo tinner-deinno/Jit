@@ -1,0 +1,56 @@
+{
+  "probed_at_ms": 1780488387335,
+  "timeout_ms": 25000,
+  "usable": [
+    "ollama_cloud",
+    "copilot",
+    "openai"
+  ],
+  "results": {
+    "ollama_mdes": {
+      "backend": "ollama_mdes",
+      "status": "UNREACHABLE",
+      "ms": 25028,
+      "error": "timeout"
+    },
+    "ollama_local": {
+      "backend": "ollama_local",
+      "status": "UNREACHABLE",
+      "ms": 25002,
+      "error": "timeout"
+    },
+    "ollama_cloud": {
+      "backend": "ollama_cloud",
+      "status": "ALIVE",
+      "ms": 4065,
+      "served_by": "ollama_cloud",
+      "sample": "OK"
+    },
+    "thaillm": {
+      "backend": "thaillm",
+      "status": "ERROR",
+      "ms": 5722,
+      "error": "Ollama HTTP 404: {\"detail\":\"Not Found\"}"
+    },
+    "copilot": {
+      "backend": "copilot",
+      "status": "ALIVE",
+      "ms": 21004,
+      "served_by": "copilot",
+      "sample": "OK"
+    },
+    "openai": {
+      "backend": "openai",
+      "status": "ALIVE",
+      "ms": 13340,
+      "served_by": "openai",
+      "sample": "OK"
+    },
+    "openclaude": {
+      "backend": "openclaude",
+      "status": "ERROR",
+      "ms": 17,
+      "error": "OpenClaude request error: "
+    }
+  }
+}
