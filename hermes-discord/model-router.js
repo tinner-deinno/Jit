@@ -237,19 +237,30 @@ const BREAKER_COOLDOWN_MS = _posInt(process.env.BREAKER_COOLDOWN_MS, 60000);
 // invocations (each `mother chat`/`run` is a fresh process — without this the
 // breaker would reset every call and never protect a repeatedly-failing lane).
 const _BREAKER_FILE = path.join(__dirname, '..', 'network', 'breaker-state.json');
+let _breakerPruned = false;
 function _loadBreaker() {
   try {
     const raw = JSON.parse(fs.readFileSync(_BREAKER_FILE, 'utf8'));
     const out = {};
     const now = Date.now();
-    for (const k in raw) if (typeof raw[k] === 'number' && (now - raw[k]) < BREAKER_COOLDOWN_MS) out[k] = raw[k];
+    let total = 0, kept = 0;
+    for (const k in raw) { total++; if (typeof raw[k] === 'number' && (now - raw[k]) < BREAKER_COOLDOWN_MS) { out[k] = raw[k]; kept++; } }
+    if (kept < total) _breakerPruned = true; // stale entries present -> rewrite clean
     return out;
   } catch (e) { return {}; }
 }
-const _breakerOpenedAt = _loadBreaker(); // backend -> epoch ms when opened
 function _saveBreaker() {
-  try { fs.writeFileSync(_BREAKER_FILE, JSON.stringify(_breakerOpenedAt)); } catch (e) { /* best-effort */ }
+  // Atomic write (per GPT-5.5 review): temp file + rename so a concurrent reader
+  // never sees a truncated file — a torn read would wipe all open breakers via
+  // the {} fallback and defeat the feature. PID-scoped temp avoids collisions.
+  try {
+    const tmp = _BREAKER_FILE + '.' + process.pid + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(_breakerOpenedAt));
+    fs.renameSync(tmp, _BREAKER_FILE);
+  } catch (e) { /* best-effort */ }
 }
+const _breakerOpenedAt = _loadBreaker(); // backend -> epoch ms when opened
+if (_breakerPruned) _saveBreaker(); // persist the cleaned (pruned) set
 function _breakerOpen(backend) {
   const t = _breakerOpenedAt[backend];
   return t ? (Date.now() - t) < BREAKER_COOLDOWN_MS : false;
