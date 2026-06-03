@@ -224,8 +224,14 @@ class MotherEngine {
     try {
       const perCallMs = Array.isArray(results) && results.length ? Math.round(durationMs / results.length) : durationMs;
       for (const r of (Array.isArray(results) ? results : [])) {
-        const ok = !!(r && typeof r.reply === 'string' && r.reply.trim().length > 0);
-        leaderboardDB.recordProviderResult(r && r.backend, ok, perCallMs);
+        // Record EVERY lane attempt (incl. rotation failures like 504s), not just
+        // the final answering backend — otherwise reliability scoring is blind to
+        // lanes that fail and get rotated past.
+        const succeeded = !!(r && typeof r.reply === 'string' && r.reply.trim().length > 0);
+        const attempts = (Array.isArray(r && r.attempts) && r.attempts.length)
+          ? r.attempts
+          : [{ backend: r && r.backend, ok: succeeded }];
+        for (const a of attempts) leaderboardDB.recordProviderResult(a.backend, a.ok, perCallMs);
       }
     } catch (e) { console.warn(`[Mother] provider-stats record failed: ${e.message}`); }
 

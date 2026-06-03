@@ -784,10 +784,14 @@ function callModel(messages, options, callback) {
   }
 
   var attempt = 0;
+  var attempts = []; // per-lane outcomes so callers can record true reliability
+                     // (rotation failures, not just the final success).
 
   function tryNext() {
     if (attempt >= order.length) {
-      return callback(new Error('All backends exhausted (' + order.join(', ') + ')'));
+      var exhausted = new Error('All backends exhausted (' + order.join(', ') + ')');
+      exhausted.attempts = attempts;
+      return callback(exhausted);
     }
     var backend = _normalizeBackendName(order[attempt++]);
     console.log('[model-router] -> ' + backend + (opts.model ? ' model=' + opts.model : ''));
@@ -803,11 +807,13 @@ function callModel(messages, options, callback) {
     caller(messages, opts.model || null, function(err, reply) {
       if (!err) {
         _errors[backend] = 0;
-        return callback(null, { reply: reply, backend: backend });
+        attempts.push({ backend: backend, ok: true });
+        return callback(null, { reply: reply, backend: backend, attempts: attempts });
       }
       console.warn('[model-router] ' + backend + ' failed: ' + err.message);
       _errors[backend] = (_errors[backend] || 0) + 1;
-      if (opts.noRotate) return callback(err);
+      attempts.push({ backend: backend, ok: false, error: err.message });
+      if (opts.noRotate) { err.attempts = attempts; return callback(err); }
       tryNext();
     });
   }

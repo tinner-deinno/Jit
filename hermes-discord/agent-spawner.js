@@ -338,6 +338,7 @@ function spawnAgent(agentName, userMessage, options) {
     return {
       reply:   result.reply,
       backend: result.backend,
+      attempts: result.attempts || null,
       agent:   agentName,
       tier:    agentDef.tier,
       organ:   agentDef.organ,
