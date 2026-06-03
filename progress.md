@@ -45,12 +45,21 @@ squad → verify → leaderboard → commit cycle is durable with REAL (non-seed
 - `mother: complete phase LiveProof` (engine atomicCommit)
 - `mother: scope atomicCommit + write progress.md`
 
+## Iteration 3 — Phase 38 Event-Log Export ✅ (was vapor)
+
+| Task | How | Status | Evidence |
+|------|-----|--------|----------|
+| Event recorder in loop | `executePhase` → `eventLog.record()` | ✅ | append-only `network/mother-events.jsonl` |
+| JSON + CSV exporter | `limbs/event-log.js`, `eval/export-events.js` | ✅ | RFC-4180 + formula-injection guard |
+| Adversarial test | 3 Haiku agents (injection / unicode / robustness) | ✅ | found 1 real HIGH bug, rest clean |
+| Fix + regression | leading-whitespace bypass `/^\s*[=+\-@]/` | ✅ | `eval/event-log-check.js` all pass |
+
 ## innova-bot bridge
 **ALIVE & talking.** `eval/innova-bot-talk.js` round-trips: dispatch → `"Accepted"` in ~1.5s.
 Port 7010 listening; `/gui` (37KB) + `/sse` work; `/health` 404 (cosmetic).
 
 ## Known gaps / next
-- **Phase 38 event-log export = VAPOR** (claimed in retros, never coded). Real open loop.
+- ~~Phase 38 event-log export~~ ✅ DONE (iteration 3).
 - **Leaderboard DB hydration (Phase 36.5) = missing.** Scores persist to JSON only; no DB → vulnerable to reset.
 - **Provider widening (user action):** refresh ThaiLLM token; start local ollama; restore MDES quota/cloud; start openclaude. Then re-probe.
 - **Reliability scoring:** probe is point-in-time; cloud quota exhausts mid-run. Consider per-call health tracking in the leaderboard.
