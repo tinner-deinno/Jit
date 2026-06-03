@@ -290,6 +290,11 @@ class InnovaBotBridge extends EventEmitter {
     return this.callTool('ask_local_ai', { prompt, ...opts });
   }
 
+  /** Fetch UNREAD A2A events addressed to a role from the bot's event bus. */
+  async fetchPendingEvents(role = 'innova') {
+    return this.callTool('fetch_pending_events', { role });
+  }
+
   async disconnect() {
     this.stopHeartbeat();
     if (this.eventSource) {

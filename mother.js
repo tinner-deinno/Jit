@@ -125,6 +125,32 @@ function showArtifacts(runArg) {
   }
 }
 
+async function inbox(role) {
+  loadEnv();
+  const InnovaBotBridge = require('./limbs/innova-bot-bridge');
+  const bridge = new InnovaBotBridge();
+  const r = role || 'innova';
+  console.log(`\n📥 Mother inbox — A2A events for role "${r}" (from innova-bot bus)\n`);
+  try {
+    await bridge.connect();
+    const res = await bridge.fetchPendingEvents(r);
+    const events = (res && res.structuredContent && res.structuredContent.result)
+      || (res && Array.isArray(res.result) && res.result) || [];
+    if (!events.length) { console.log('  (no pending events)'); }
+    else events.forEach((e, i) => {
+      const o = typeof e === 'string' ? { raw: e } : (e || {});
+      console.log(`  ${i + 1}. topic=${o.topic || '?'}  from=${o.source || o.from || '?'}  ${o.ts || ''}`);
+      const payload = o.payload != null ? (typeof o.payload === 'string' ? o.payload : JSON.stringify(o.payload)) : (o.raw || '');
+      if (payload) console.log(`     ${String(payload).slice(0, 200)}`);
+    });
+    console.log('');
+  } catch (e) {
+    console.error(`  bridge error: ${e.message}`);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
 function help() {
   console.log(`
 mother.js — innomcp front door
@@ -137,6 +163,7 @@ mother.js — innomcp front door
   node mother.js probe               refresh provider liveness (no LLM)
   node mother.js events [N]          last N dispatch events (default 10)
   node mother.js artifacts [runId]   show phase output artifacts (latest run)
+  node mother.js inbox [role]        fetch pending A2A events from innova-bot (default role: innova)
   node mother.js help
 `);
 }
@@ -168,6 +195,7 @@ switch (cmd) {
   case 'probe': runScript('eval/provider-probe.js', rest); break;
   case 'events': showEvents(parseInt(rest[0], 10) || 10); break;
   case 'artifacts': showArtifacts(rest[0]); break;
+  case 'inbox': inbox(rest[0]).catch(e => { console.error(`[Error] ${e && e.message || e}`); process.exit(1); }); break;
   case 'help': case undefined: help(); break;
   default: console.error(`Unknown command: ${cmd}`); help(); process.exit(2);
 }
