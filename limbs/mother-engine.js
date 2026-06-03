@@ -203,10 +203,20 @@ class MotherEngine {
   }
 
   atomicCommit(phase, goal, results) {
-    const commitMsg = `mother: complete phase ${phase} - ${goal}\n\nResults summary: ${JSON.stringify(results).substring(0, 200)}...`;
+    // Commit ONLY the phase artifacts — NOT `git add .`, which sweeps unrelated
+    // working-tree changes into the phase commit and breaks atomicity.
+    const artifacts = [this.leaderboardPath, path.join(__dirname, '../network/provider-status.json')]
+      .filter(f => fs.existsSync(f));
+    // Shell-safe, single-line subject (strip quotes/newlines, cap length).
+    const subject = `mother: complete phase ${phase} - ${goal}`
+      .replace(/[\r\n"]+/g, ' ').slice(0, 140);
     try {
-      execSync(`git add . && git commit -m "${commitMsg}"`);
-      console.log(`[Mother] Atomic commit successful for phase ${phase}`);
+      execSync(`git add ${artifacts.map(f => `"${f}"`).join(' ')}`, { stdio: 'ignore' });
+      // Skip the commit if nothing was actually staged (avoids spurious failures).
+      const staged = execSync('git diff --cached --name-only', { encoding: 'utf8' }).trim();
+      if (!staged) { console.log(`[Mother] No artifact changes to commit for phase ${phase}`); return; }
+      execSync(`git commit -m "${subject}"`, { stdio: 'ignore' });
+      console.log(`[Mother] Atomic commit successful for phase ${phase} (${staged.split(/\n/).length} file(s))`);
     } catch (e) {
       console.error(`[Mother] Commit failed: ${e.message}`);
     }
