@@ -64,6 +64,15 @@ squad → verify → leaderboard → commit cycle is durable with REAL (non-seed
 | Verify swarm (5 Haiku) | concurrency/injection/scale/corruption/migration | ✅ | injection-safe, corruption-graceful, lossless |
 | Fixes from swarm | txn-wrap (630x), finite-guard, WAL+busy_timeout | ✅ | persist 5001 agents 43s→68ms |
 
+## Iteration 5 — Unified Status Board ✅ (Manus-like control surface)
+
+`node eval/status-board.js` — one read-only view: bridge health + provider
+status/usable + proven-agent leaderboard + recent dispatch phases. `--json` for
+machines. Burns no LLM quota. Verify swarm (5 Haiku): accuracy exact, bridge
+timeouts bounded, pipeline correct; fixed a null-artifact crash + data guards.
+**Live-proven:** ran a real phase → board shows `LiveProof ollama_mdes avg 93`,
+provider phases=1, leaderboard advanced, atomicCommit touched only 1 file.
+
 ## innova-bot bridge
 **ALIVE & talking.** `eval/innova-bot-talk.js` round-trips: dispatch → `"Accepted"` in ~1.5s.
 Port 7010 listening; `/gui` (37KB) + `/sse` work; `/health` 404 (cosmetic).
