@@ -83,9 +83,28 @@ accuracy + found a **gate-inversion bug** (untested neutral=1 beat proven 0.99);
 fixed to neutral=0.5 (proven-good > untested > proven-bad, verified A>B>C).
 **Live:** board shows ollama_mdes 100%(3), copilot 50%(2) from real runs.
 
+## Iteration 7 — Real MCP Bridge to innova-bot ✅ (genuine talk)
+
+debug-mantra discovery: bot is a full **MCP server (innova-bot v3.0.2, 31 tools)**.
+The old `dispatchTask` called a non-existent `execute_task` → bot rejected with
+`-32602` on SSE, which the bridge **ignored** (every task silently dropped — the
+"talking" was an illusion). Rebuilt: SSE request/response correlation (pending
+map by JSON-RPC id), `initialize()` handshake, `callTool()`, `askBot()`;
+`dispatchTask` now uses real `publish_event` on the A2A bus. Verify swarm (5
+Haiku) fixed 2 bugs (FastMCP `isError` not rejected; handshake not reset on
+reconnect), refuted the string-id risk. **Live-proven:** `publish_event`
+executed (event visible on bot's bus via `fetch_pending_events`), `ask_local_ai`
+returns real output, `jit_bridge_status` returns structured data.
+
+### Bot tools worth integrating next (all live-confirmed)
+- `ask_local_ai` — bot's own Gemma4/Qwen backend → extra provider lane.
+- `fetch_pending_events`/`publish_event` — real A2A inbox/outbox for Mother↔bot.
+- `what_should_i_do_next` — bot's task-suggestion brain.
+- `jit_runtime_snapshot` — one-call health/observability.
+
 ## innova-bot bridge
-**ALIVE & talking.** `eval/innova-bot-talk.js` round-trips: dispatch → `"Accepted"` in ~1.5s.
-Port 7010 listening; `/gui` (37KB) + `/sse` work; `/health` 404 (cosmetic).
+**ALIVE & genuinely talking (MCP).** `node eval/innova-bot-mcp-probe.js` lists the
+31 tools. Port 7010; `/gui` (37KB) + `/sse` work; `/health` 404 (cosmetic).
 
 ## Known gaps / next
 - ~~Phase 38 event-log export~~ ✅ DONE (iteration 3).
