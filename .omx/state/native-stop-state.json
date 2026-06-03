@@ -299,6 +299,16 @@
         "last_turn_id": "019e8bf9-32e3-7aa0-9b55-edb2259b2c28",
         "last_thread_id": null
       }
+    },
+    "019e8c74-69c8-7731-9140-7ad312a160e5": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|**soma / strategic lead output** - **target capability:** mother becomes a self-improving orchestrator that can detect its own failures, decompose them into repair goals, spawn specialist squads, validate fixes, and retain lessons. - **core loop:** 1. observe failure: test error, runtime exception, bad answer, failed tool call, regression, user correction. 2. convert failure into a structured `bugreport`. 3. decompose into hypotheses and repair goals. 4. spawn squads with bounded ownership. 5. compare proposed fixes against evidence. 6. integrate only after verification passes. 7. store the correction pattern in memory. - **goal decomposition model:** - `goal`: desired end state. - `successcriteria`: measurable proof of completion. - `constraints`: safety, scope, permissions, runtime limits. - `subgoals`: ordered or parallel task dag. - `verificationplan`: tests, probes, evaluator checks. - `stopcondition`: complete, blocked, unsafe, or needs human authority. - **self-correction architecture:** - **mother:** owns strategy, decomposition, squad spawning, merge decisions. - **debugger squad:** isolates root cause and produces evidence. - **executor squad:** implements the smallest viable fix. - **verifier squad:** runs tests, regression checks, and adversarial probes. - **critic squad:** checks whether the fix solves the real issue or only masks it. - **memory writer:** records reusable lessons after success. - **repair protocol:** - never let a squad mutate global state without a scoped task. - require every fix to include evidence: failing-before, passing-after. - reject fixes without a clear causal link to the bug. - prefer rollback or quarantine over speculative broad rewrites. - escalate only for destructive, credentialed, production, or scope-changing actions. - **autonomous agency safeguards:** - bounded workspaces per squad. - max concurrency limit. - shared task ledger. - patch review before integration. - verification gate before declaring success. - memory update only after validated completion. - human approval for irreversible actions. - **implementation phases:** - **phase 1:** structured bug/goal/task schemas. - **phase 2:** decomposition planner that turns failures into subgoals. - **phase 3:** squad spawning with role-specific prompts and ownership. - **phase 4:** verification-first repair loop. - **phase 5:** self-memory and recurring bug prevention. - **phase 6:** continuous autonomous improvement loop. - **acceptance criteria:** - mother detects a failing behavior automatically. - mother creates a repair dag with success criteria. - at least two squads work independently on diagnosis and verification. - a fix is accepted only with passing evidence. - failed fixes are rejected or retried with a new hypothesis. - the final lesson is stored for future prevention.",
+        "first_seen_at": "2026-06-03T07:48:47.079Z",
+        "last_seen_at": "2026-06-03T07:48:47.079Z",
+        "repeat_count": 1,
+        "last_turn_id": "019e8c74-6a67-79a0-b442-a966988f5ad2",
+        "last_thread_id": null
+      }
     }
   }
 }

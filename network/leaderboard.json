@@ -10,24 +10,24 @@
       "rank": 1
     },
     "soma": {
-      "completed_tasks": 87,
+      "completed_tasks": 88,
       "success_rate": 1,
       "avg_latency": 2.5,
-      "correctness_score": 94.46506240000001,
+      "correctness_score": 93.97204992000002,
       "rank": 2
     },
     "innova": {
-      "completed_tasks": 157,
-      "success_rate": 0,
+      "completed_tasks": 158,
+      "success_rate": 1,
       "avg_latency": 1.5,
-      "correctness_score": 62.36456960000002,
+      "correctness_score": 68.29165568000002,
       "rank": 3
     },
     "lak": {
-      "completed_tasks": 57,
+      "completed_tasks": 58,
       "success_rate": 1,
       "avg_latency": 3,
-      "correctness_score": 65.186496,
+      "correctness_score": 70.5491968,
       "rank": 4
     },
     "neta": {
@@ -38,17 +38,17 @@
       "rank": 5
     },
     "vaja": {
-      "completed_tasks": 207,
+      "completed_tasks": 208,
       "success_rate": 1,
       "avg_latency": 0.5,
-      "correctness_score": 94.44879360000004,
+      "correctness_score": 93.95903488000005,
       "rank": 6
     },
     "chamu": {
-      "completed_tasks": 127,
+      "completed_tasks": 128,
       "success_rate": 1,
       "avg_latency": 1,
-      "correctness_score": 78.54627840000002,
+      "correctness_score": 81.23702272000003,
       "rank": 7
     },
     "agent-mdes": {
