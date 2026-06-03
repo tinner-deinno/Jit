@@ -132,6 +132,7 @@ mother.js — innomcp front door
   node mother.js chat "<goal>"       run ONE Mother phase (live providers)
   node mother.js run "<goal>" [--phases N]   decompose into <=N phases (default 4) and run all
   node mother.js status              unified status board (no quota)
+  node mother.js doctor              health self-diagnostic + blockers (no quota)
   node mother.js probe               refresh provider liveness (no LLM)
   node mother.js events [N]          last N dispatch events (default 10)
   node mother.js artifacts [runId]   show phase output artifacts (latest run)
@@ -161,6 +162,7 @@ switch (cmd) {
     break;
   }
   case 'status': case 'board': runScript('eval/status-board.js'); break;
+  case 'doctor': runScript('eval/doctor.js'); break;
   case 'probe': runScript('eval/provider-probe.js', rest); break;
   case 'events': showEvents(parseInt(rest[0], 10) || 10); break;
   case 'artifacts': showArtifacts(rest[0]); break;
