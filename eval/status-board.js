@@ -24,7 +24,13 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-function readJSON(p, fallback) { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return fallback; } }
+function readJSON(p, fallback) {
+  // Note: JSON.parse('null') returns null without throwing, so an explicit
+  // object check is needed — otherwise a literal `null` artifact bypasses the
+  // catch and crashes downstream property access.
+  try { const v = JSON.parse(fs.readFileSync(p, 'utf8')); return (v && typeof v === 'object') ? v : fallback; }
+  catch { return fallback; }
+}
 
 function readEvents() {
   const p = path.join(ROOT, 'network', 'mother-events.jsonl');
@@ -47,7 +53,7 @@ function pingBridge(timeoutMs = 2500) {
 }
 
 function ageStr(ms) {
-  if (!ms) return '?';
+  if (!ms || isNaN(ms)) return '?';
   const s = Math.round((Date.now() - ms) / 1000);
   if (s < 90) return `${s}s ago`;
   if (s < 5400) return `${Math.round(s / 60)}m ago`;
@@ -80,7 +86,7 @@ function ageStr(ms) {
   console.log(`\n▍ PROVIDERS   probed ${ageStr(ps.probed_at_ms)}   usable: ${(ps.usable || []).join(', ') || 'NONE'}`);
   console.log('  ' + 'backend'.padEnd(15) + 'status'.padEnd(16) + 'latency'.padEnd(10) + 'phases');
   for (const [b, r] of Object.entries(ps.results || {})) {
-    console.log('  ' + b.padEnd(15) + `${icon[r.status] || ''} ${r.status}`.padEnd(16) + `${r.ms}ms`.padEnd(10) + (provUse[b] || 0));
+    console.log('  ' + b.padEnd(15) + `${icon[r.status] || ''} ${r.status}`.padEnd(16) + `${r.ms ?? '?'}ms`.padEnd(10) + (provUse[b] || 0));
   }
 
   const proven = Object.entries(lb.fleet || {})
@@ -92,7 +98,8 @@ function ageStr(ms) {
 
   console.log(`\n▍ RECENT PHASES   (${events.length} total)`);
   for (const e of events.slice(-5)) {
-    const v = Array.isArray(e.verdicts) && e.verdicts.length ? `avg ${(e.verdicts.reduce((a, b) => a + b, 0) / e.verdicts.length).toFixed(0)}` : 'no-verdict';
+    const nums = (Array.isArray(e.verdicts) ? e.verdicts : []).map(Number).filter(n => !isNaN(n));
+    const v = nums.length ? `avg ${(nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(0)}` : 'no-verdict';
     console.log(`  ${(e.ts || '').slice(5, 16)}  ${(e.phase || '?').padEnd(14)} ${(e.provider || '?').padEnd(13)} ${v.padEnd(11)} ${e.durationMs || '?'}ms`);
   }
   if (!events.length) console.log('  (no phases recorded yet — run a phase via mother-engine)');
