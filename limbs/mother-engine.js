@@ -17,9 +17,32 @@ class MotherEngine {
     this.registry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
     this.leaderboard = JSON.parse(fs.readFileSync(this.leaderboardPath, 'utf8'));
     this.routing = JSON.parse(fs.readFileSync(this.routingPath, 'utf8'));
+    this.liveProvider = this.pickLiveProvider();
 
     this.setupBotEventListeners();
     this.botBridge.connect().catch(e => console.warn(`[Mother] Initial bot connection failed: ${e.message}`));
+  }
+
+  /**
+   * Pick the fastest usable backend from the last provider probe so the squad
+   * dispatches to a LIVE provider instead of burning timeouts on dead ones
+   * (most agents are statically configured to ollama_mdes, which may be down).
+   * Returns null if no probe exists — callers then fall back to router rotation.
+   */
+  pickLiveProvider() {
+    try {
+      const ps = JSON.parse(fs.readFileSync(path.join(__dirname, '../network/provider-status.json'), 'utf8'));
+      const usable = ps.usable || [];
+      if (!usable.length) return null;
+      // Prefer fastest by last_latency: order by recorded ms ascending.
+      const ranked = usable.slice().sort((a, b) =>
+        (ps.results?.[a]?.ms ?? 1e9) - (ps.results?.[b]?.ms ?? 1e9));
+      console.log(`[Mother] Live providers (fastest-first): ${ranked.join(', ')}`);
+      return ranked[0];
+    } catch (e) {
+      console.warn(`[Mother] No provider-status probe found (${e.message}); falling back to router rotation.`);
+      return null;
+    }
   }
 
   setupBotEventListeners() {
@@ -105,7 +128,8 @@ class MotherEngine {
       results = await spawnAgentParallel(
         squadNames.map(name => ({
           agent: name,
-          message: `Goal: ${goal}. Context: Phase ${phaseName}. Provide your specialized output.`
+          message: `Goal: ${goal}. Context: Phase ${phaseName}. Provide your specialized output.`,
+          options: this.liveProvider ? { overrideBackend: this.liveProvider } : {}
         })),
         `Phase ${phaseName} Execution`
       );
@@ -122,7 +146,8 @@ class MotherEngine {
       verifications = await spawnAgentParallel(
         verifierSquad.map(name => ({
           agent: name,
-          message: `Review results for phase ${phaseName}. Score it 0-100. Goal was: ${goal}. Results: ${JSON.stringify(results)}`
+          message: `Review results for phase ${phaseName}. Score it 0-100. Goal was: ${goal}. Results: ${JSON.stringify(results)}`,
+          options: this.liveProvider ? { overrideBackend: this.liveProvider } : {}
         })),
         `Phase ${phaseName} Verification`
       );
