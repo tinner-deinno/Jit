@@ -13,44 +13,44 @@
       "provisional": false
     },
     "soma": {
-      "completed_tasks": 91,
-      "correctness_score": 94.24968955904004,
-      "success_rate": 1,
+      "completed_tasks": 92,
+      "correctness_score": 88.39975164723204,
+      "success_rate": 0,
       "rank": 3,
       "provisional": false
     },
     "innova": {
-      "completed_tasks": 161,
-      "correctness_score": 80.34132770816002,
-      "success_rate": 1,
-      "rank": 7,
+      "completed_tasks": 162,
+      "correctness_score": 77.27306216652802,
+      "success_rate": 0,
+      "rank": 6,
       "provisional": false
     },
     "lak": {
-      "completed_tasks": 61,
-      "correctness_score": 81.65718876160003,
-      "success_rate": 1,
-      "rank": 6,
+      "completed_tasks": 62,
+      "correctness_score": 74.32575100928003,
+      "success_rate": 0,
+      "rank": 7,
       "provisional": false
     },
     "neta": {
       "completed_tasks": 70,
       "correctness_score": 92,
       "success_rate": 0.94,
-      "rank": 4,
-      "provisional": false
-    },
-    "vaja": {
-      "completed_tasks": 211,
-      "correctness_score": 94.28302585856005,
-      "success_rate": 1,
       "rank": 2,
       "provisional": false
     },
+    "vaja": {
+      "completed_tasks": 212,
+      "correctness_score": 84.42642068684805,
+      "success_rate": 0,
+      "rank": 4,
+      "provisional": false
+    },
     "chamu": {
-      "completed_tasks": 131,
-      "correctness_score": 88.32935563264002,
-      "success_rate": 1,
+      "completed_tasks": 132,
+      "correctness_score": 79.66348450611201,
+      "success_rate": 0,
       "rank": 5,
       "provisional": false
     },
