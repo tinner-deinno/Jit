@@ -57,7 +57,9 @@ function readAll() {
 function escapeCSVField(value) {
   let s = (value === null || value === undefined) ? '' : String(value);
   // Formula-injection guard (CSV injection / "Excel macro" attacks).
-  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  // Use \s* so a leading-whitespace bypass (" =1+1", "\t=1") is also caught —
+  // spreadsheets trim leading whitespace before evaluating the formula.
+  if (/^\s*[=+\-@]/.test(s)) s = "'" + s;
   // RFC 4180: quote if it contains comma, double-quote, CR or LF; double quotes.
   if (/[",\r\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
   return s;
