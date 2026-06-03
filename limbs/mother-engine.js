@@ -324,7 +324,9 @@ class MotherEngine {
     try {
       const dir = path.join(__dirname, '../network/artifacts', runId);
       fs.mkdirSync(dir, { recursive: true });
-      const safe = String(title).replace(/[^\w-]+/g, '_').slice(0, 30) || 'phase';
+      // Unicode-aware (\p{L}) so Thai/CJK titles survive instead of becoming
+      // a row of underscores. Still strips path separators -> traversal-safe.
+      const safe = String(title).replace(/[^\p{L}\p{N}_-]+/gu, '_').slice(0, 30) || 'phase';
       const file = path.join(dir, `${String(idx).padStart(2, '0')}_${safe}.md`);
       let md = `# Phase ${idx}: ${title}\n\n`;
       for (const r of (Array.isArray(results) ? results : [])) {

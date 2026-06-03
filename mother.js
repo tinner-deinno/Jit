@@ -108,7 +108,10 @@ async function run(goal, max) {
 function showArtifacts(runArg) {
   const base = path.join(ROOT, 'network', 'artifacts');
   if (!fs.existsSync(base)) { console.log('No artifacts yet. Run: node mother.js run "<goal>"'); return; }
-  const runs = fs.readdirSync(base).filter(d => { try { return fs.statSync(path.join(base, d)).isDirectory(); } catch { return false; } }).sort();
+  const runs = fs.readdirSync(base).filter(d => { try { return fs.statSync(path.join(base, d)).isDirectory(); } catch { return false; } })
+    // Numeric sort by the run-<epoch> timestamp (lexicographic mis-orders a
+    // non-numeric run name); fall back to string compare on ties.
+    .sort((a, b) => ((+(a.match(/\d+/) || [0])[0]) - (+(b.match(/\d+/) || [0])[0])) || a.localeCompare(b));
   if (!runs.length) { console.log('No artifact runs yet.'); return; }
   const run = runArg && runs.includes(runArg) ? runArg : runs[runs.length - 1];
   const dir = path.join(base, run);
