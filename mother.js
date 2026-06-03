@@ -105,6 +105,23 @@ async function run(goal, max) {
   process.exit(0);
 }
 
+function showArtifacts(runArg) {
+  const base = path.join(ROOT, 'network', 'artifacts');
+  if (!fs.existsSync(base)) { console.log('No artifacts yet. Run: node mother.js run "<goal>"'); return; }
+  const runs = fs.readdirSync(base).filter(d => { try { return fs.statSync(path.join(base, d)).isDirectory(); } catch { return false; } }).sort();
+  if (!runs.length) { console.log('No artifact runs yet.'); return; }
+  const run = runArg && runs.includes(runArg) ? runArg : runs[runs.length - 1];
+  const dir = path.join(base, run);
+  const files = fs.readdirSync(dir).filter(f => f.endsWith('.md')).sort();
+  console.log(`\nArtifacts for ${run} (${files.length} phase file(s)) — ${runs.length} run(s) total:\n`);
+  for (const f of files) {
+    const txt = fs.readFileSync(path.join(dir, f), 'utf8');
+    console.log(`── ${f} ──`);
+    console.log(txt.slice(0, 700).replace(/\n{3,}/g, '\n\n'));
+    console.log(txt.length > 700 ? `… (${txt.length} chars total)\n` : '');
+  }
+}
+
 function help() {
   console.log(`
 mother.js — innomcp front door
@@ -114,6 +131,7 @@ mother.js — innomcp front door
   node mother.js status              unified status board (no quota)
   node mother.js probe               refresh provider liveness (no LLM)
   node mother.js events [N]          last N dispatch events (default 10)
+  node mother.js artifacts [runId]   show phase output artifacts (latest run)
   node mother.js help
 `);
 }
@@ -142,6 +160,7 @@ switch (cmd) {
   case 'status': case 'board': runScript('eval/status-board.js'); break;
   case 'probe': runScript('eval/provider-probe.js', rest); break;
   case 'events': showEvents(parseInt(rest[0], 10) || 10); break;
+  case 'artifacts': showArtifacts(rest[0]); break;
   case 'help': case undefined: help(); break;
   default: console.error(`Unknown command: ${cmd}`); help(); process.exit(2);
 }

@@ -68,3 +68,4 @@ network/leaderboard.db
 network/leaderboard.db-wal
 network/leaderboard.db-shm
 network/mother-events.jsonl
+network/artifacts/

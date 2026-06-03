@@ -283,25 +283,59 @@ class MotherEngine {
   async runGoal(goal, max = 4) {
     const phases = await this.decomposeGoal(goal, max);
     console.log(`[Mother] Decomposed into ${phases.length} phase(s): ${phases.map(p => p.title).join(' → ')}`);
+    const runId = `run-${Date.now()}`;
     const summaries = [];
+    let prevFull = '';
     for (let i = 0; i < phases.length; i++) {
       const ph = phases[i];
-      // Context goes as a SEPARATE arg (not concatenated to goal) so it doesn't
-      // pollute squad selection, which matches agents by keywords in the goal.
-      const ctx = summaries.length ? `[Prior phase outputs]\n${summaries.join('\n\n')}` : '';
+      // Context = FULL output of the immediately-prior phase (per GPT-5.5: a
+      // dependent phase like "translate the haiku" needs the actual haiku, not a
+      // stub) plus titles of earlier phases. Passed as a separate arg so it
+      // doesn't pollute keyword-based squad selection. Capped to stay bounded.
+      let ctx = '';
+      if (i > 0) {
+        const earlier = phases.slice(0, i - 1).map(p => p.title).join(', ');
+        ctx = (earlier ? `[Earlier phases: ${earlier}]\n` : '') +
+              `[Full output of previous phase "${phases[i - 1].title}"]\n${prevFull.slice(0, 3000)}`;
+      }
       const res = await this.executePhase(ph.title, ph.goal, ctx);
       // Stop the chain on a real phase failure instead of silently continuing.
       if (res && !Array.isArray(res) && res.error) {
         summaries.push(`${ph.title}: FAILED — ${res.error}`);
         console.error(`[Mother] Phase "${ph.title}" failed (${res.error}); stopping chain.`);
-        return { goal, phases: phases.map(p => p.title), summaries, failedAt: ph.title };
+        return { goal, runId, phases: phases.map(p => p.title), summaries, failedAt: ph.title };
       }
-      // Carry fuller prior output forward (800 chars) so dependent phases (e.g.
-      // "translate the haiku") see the actual artifact, not a 2-sentence stub.
+      const artifact = this.writePhaseArtifact(runId, i + 1, ph.title, res);
+      // Full prior output for the NEXT phase's context (best/first agent reply).
+      prevFull = (Array.isArray(res) ? res : [])
+        .map(r => `${r.agent}: ${String(r.reply || '').trim()}`).filter(s => s.length > 6).join('\n\n');
       const first = (Array.isArray(res) && res[0] && res[0].reply) ? String(res[0].reply) : '(no output)';
-      summaries.push(`${ph.title}: ${first.replace(/\s+/g, ' ').slice(0, 800)}`);
+      summaries.push(`${ph.title}${artifact ? ` [${path.basename(artifact)}]` : ''}: ${first.replace(/\s+/g, ' ').slice(0, 200)}`);
     }
-    return { goal, phases: phases.map(p => p.title), summaries };
+    return { goal, runId, phases: phases.map(p => p.title), summaries, artifactsDir: path.join('network/artifacts', runId) };
+  }
+
+  /**
+   * Persist a phase's full multi-agent output as a Markdown artifact so
+   * downstream phases (and humans) have the complete result, not a summary.
+   * Returns the file path, or null on failure (never throws into the loop).
+   */
+  writePhaseArtifact(runId, idx, title, results) {
+    try {
+      const dir = path.join(__dirname, '../network/artifacts', runId);
+      fs.mkdirSync(dir, { recursive: true });
+      const safe = String(title).replace(/[^\w-]+/g, '_').slice(0, 30) || 'phase';
+      const file = path.join(dir, `${String(idx).padStart(2, '0')}_${safe}.md`);
+      let md = `# Phase ${idx}: ${title}\n\n`;
+      for (const r of (Array.isArray(results) ? results : [])) {
+        md += `## ${r.agent} (${r.backend})\n\n${r.reply || '(empty)'}\n\n`;
+      }
+      fs.writeFileSync(file, md);
+      return file;
+    } catch (e) {
+      console.warn(`[Mother] artifact write failed: ${e.message}`);
+      return null;
+    }
   }
 
   async updateLeaderboard(squad, verifications) {
