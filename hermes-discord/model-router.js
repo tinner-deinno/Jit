@@ -693,6 +693,24 @@ function _postOllama(cfg, endpointPath, payload, callback) {
   req.end();
 }
 
+function _callThaiLLM(messages, model, callback) {
+  if (!THAILLM_TOKEN) return callback(new Error('THAILLM_TOKEN not set'));
+  _httpPost(THAILLM_URL, '/v1/chat/completions',
+    { 'Authorization': 'Bearer ' + THAILLM_TOKEN },
+    { model: model || THAILLM_MODEL, messages: messages, stream: false },
+    function(err, data) {
+      if (err) return callback(err);
+      try {
+        var j = JSON.parse(data);
+        var reply = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+        callback(null, String(reply || '').trim());
+      } catch (e) {
+        callback(new Error('ThaiLLM parse: ' + e.message + ' raw:' + data.slice(0, 100)));
+      }
+    }
+  );
+}
+
 function _callOpenClaude(messages, model, callback) {
   openClaudeAdapter.callOpenClaude(messages, { model: model || OPENCLAUDE_MODEL }, function(err, result) {
     if (err) return callback(err);
@@ -735,6 +753,7 @@ function callModel(messages, options, callback) {
     var caller;
     if (backend === 'openai')  caller = _callOpenAI;
     else if (backend === 'copilot') caller = _callCopilot;
+    else if (backend === 'thaillm') caller = _callThaiLLM;
     else if (backend === 'openclaude') caller = _callOpenClaude;
     else                        caller = function(msgs, mdl, cb) { _callOllama(msgs, mdl, cb, backend); };
 

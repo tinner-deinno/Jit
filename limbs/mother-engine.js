@@ -153,11 +153,13 @@ class MotherEngine {
 
     squad.forEach((name, idx) => {
       const verdict = verifications[idx]?.reply || "0";
-      const score = parseInt(verdict.match(/\d+/) ? verdict.match(/\d+/)[0] : "50");
+      let score = parseInt(verdict.match(/\d+/) ? verdict.match(/\d+/)[0] : "50", 10);
+      score = Math.max(0, Math.min(100, isNaN(score) ? 50 : score)); // clamp 0..100
 
       if (fleet[name]) {
         fleet[name].completed_tasks++;
-        fleet[name].correctness_score = (fleet[name].correctness_score * 0.8) + (score * 0.2);
+        const ema = (fleet[name].correctness_score * 0.8) + (score * 0.2);
+        fleet[name].correctness_score = Math.max(0, Math.min(100, ema)); // cap at 100
         fleet[name].success_rate = score >= 80 ? 1 : 0; // simplistic binary
       }
     });

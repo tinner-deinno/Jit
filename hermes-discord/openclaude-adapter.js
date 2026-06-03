@@ -196,7 +196,7 @@ function callOpenClaude(messages, opts, callback) {
     });
 
     req.on('error', (e) => {
-      reject(new Error('OpenClaude request error: ' + e.message));
+      reject(new Error('OpenClaude request error: ' + (e.message || e.code || 'unknown')));
     });
 
     req.write(body);

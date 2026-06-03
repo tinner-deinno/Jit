@@ -58,7 +58,7 @@
       "completed_tasks": 1,
       "success_rate": 1,
       "avg_latency": 0,
-      "correctness_score": 102,
+      "correctness_score": 100,
       "rank": 8
     },
     "agent-thaillm": {
