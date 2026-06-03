@@ -1,0 +1,17 @@
+# Root-cause fix for recurring Windows CRLF friction (flagged 3+ sessions in
+# ψ/memory/learnings/session-metrics.md). Normalize line endings to LF in the
+# repo so `git` stops rewriting CRLF<->LF and `.sh` scripts stay POSIX-clean.
+* text=auto eol=lf
+
+*.sh   text eol=lf
+*.js   text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.yaml text eol=lf
+*.yml  text eol=lf
+
+# Binary / generated — never normalize.
+*.db   binary
+*.png  binary
+*.jpg  binary
+*.ico  binary
