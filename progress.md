@@ -201,6 +201,13 @@ Usable-but-slow fleet = MDES, GPT-5.5 (and Copilot when its token is refreshed).
 **ALIVE & genuinely talking (MCP).** `node eval/innova-bot-mcp-probe.js` lists the
 31 tools. Port 7010; `/gui` (37KB) + `/sse` work; `/health` 404 (cosmetic).
 
+## ▶ NEXT SESSION — continuation pointers
+- **Push 4 local commits** (atomic-breaker fix, iter17, docs) → `git push origin main`. Bulk (through iter16) already on remote.
+- **Restore fleet creds** (then `node mother.js probe`): ThaiLLM token (401), Copilot token (intermittent 404), local `ollama serve`, ollama_cloud weekly quota.
+- **Quick health check on resume:** `node mother.js doctor` (shows blockers), `node mother.js test` (regression gate).
+- **Candidate next features** (validate each via `eval/model-validate.js` GPT-5.5): wire bot `what_should_i_do_next` into `mother run` for task suggestions; half-open single-flight guard on breaker IF concurrency grows; provider-reliability surfaced in the leaderboard table.
+- **Validator pattern:** every diff → `node eval/model-validate.js <files>` (GPT-5.5 senior). It caught 6 real bugs this session.
+
 ## Known gaps / next
 - ~~Phase 38 event-log export~~ ✅ DONE (iteration 3).
 - ~~Leaderboard DB hydration (Phase 36.5)~~ ✅ DONE (iteration 4).
