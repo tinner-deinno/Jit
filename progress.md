@@ -73,6 +73,16 @@ timeouts bounded, pipeline correct; fixed a null-artifact crash + data guards.
 **Live-proven:** ran a real phase → board shows `LiveProof ollama_mdes avg 93`,
 provider phases=1, leaderboard advanced, atomicCommit touched only 1 file.
 
+## Iteration 6 — Reliability-Weighted Dispatch ✅ (self-improving)
+
+`provider_stats` table learns per-provider success_rate + latency from real
+dispatches (attributed by `results[].backend`). `pickLiveProvider` ranks usable
+lanes: cost → learned reliability (≥3 calls) → latency. Status board shows a
+reliability column. Verify swarm (5 Haiku) confirmed math/attribution/board
+accuracy + found a **gate-inversion bug** (untested neutral=1 beat proven 0.99);
+fixed to neutral=0.5 (proven-good > untested > proven-bad, verified A>B>C).
+**Live:** board shows ollama_mdes 100%(3), copilot 50%(2) from real runs.
+
 ## innova-bot bridge
 **ALIVE & talking.** `eval/innova-bot-talk.js` round-trips: dispatch → `"Accepted"` in ~1.5s.
 Port 7010 listening; `/gui` (37KB) + `/sse` work; `/health` 404 (cosmetic).

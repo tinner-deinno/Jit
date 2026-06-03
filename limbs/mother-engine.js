@@ -46,8 +46,10 @@ class MotherEngine {
       const cost = b => costRank[this.routing?.providers?.[b]?.cost_tier] ?? 2;
       let stats = {};
       try { stats = leaderboardDB.getProviderStats(); } catch (_) { /* DB optional */ }
-      // Reliability: only trust it once a lane has >=3 calls; else neutral (1).
-      const reliability = b => { const s = stats[b]; return (s && s.calls >= 3) ? s.success_rate : 1; };
+      // Reliability: trust learned rate once a lane has >=3 calls; else treat as
+      // unknown=0.5 (NOT 1 — neutral must not let a barely-tested lane outrank a
+      // proven-but-imperfect one). So proven-good > untested > proven-bad.
+      const reliability = b => { const s = stats[b]; return (s && s.calls >= 3) ? s.success_rate : 0.5; };
       const ranked = usable.slice().sort((a, b) =>
         (cost(a) - cost(b)) ||
         (reliability(b) - reliability(a)) ||
