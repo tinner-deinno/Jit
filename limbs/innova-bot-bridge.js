@@ -37,6 +37,7 @@ class InnovaBotBridge extends EventEmitter {
     this.pending = new Map();
     this._idCounter = 0;
     this.initialized = false;
+    this.connectTimeout = null;
 
     this.httpAgent = new http.Agent({
       keepAlive: true,
@@ -52,6 +53,13 @@ class InnovaBotBridge extends EventEmitter {
 
   async sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  clearConnectTimeout() {
+    if (this.connectTimeout) {
+      clearTimeout(this.connectTimeout);
+      this.connectTimeout = null;
+    }
   }
 
   async connect() {
@@ -80,6 +88,7 @@ class InnovaBotBridge extends EventEmitter {
                 this.sessionID = endpointUrl;
                 this.state = ConnectionState.CONNECTED;
                 this.reconnectAttempts = 0;
+                this.clearConnectTimeout();
                 console.log(`[InnovaBotBridge] Session established via 'endpoint' event. Endpoint: ${this.sessionID}`);
                 this.startHeartbeat();
                 this.emit('connected', this.sessionID);
@@ -101,6 +110,7 @@ class InnovaBotBridge extends EventEmitter {
                 this.sessionID = data.endpoint || data.session_id;
                 this.state = ConnectionState.CONNECTED;
                 this.reconnectAttempts = 0;
+                this.clearConnectTimeout();
                 console.log(`[InnovaBotBridge] Session established via generic message. Endpoint: ${this.sessionID}`);
                 this.startHeartbeat();
                 this.emit('connected', this.sessionID);
@@ -141,7 +151,9 @@ class InnovaBotBridge extends EventEmitter {
             this.handleDisconnect();
           };
 
-          setTimeout(() => {
+          this.clearConnectTimeout();
+          this.connectTimeout = setTimeout(() => {
+            this.connectTimeout = null;
             if (!this.sessionID && this.state !== ConnectionState.CONNECTED) {
               console.error('[InnovaBotBridge] SSE connection timeout: Endpoint not received within 30s');
               this.handleDisconnect();
@@ -164,6 +176,7 @@ class InnovaBotBridge extends EventEmitter {
     this.state = ConnectionState.RECONNECTING;
     this.sessionID = null;
     this.initialized = false; // new session needs a fresh MCP handshake
+    this.clearConnectTimeout();
     this._rejectPending('InnovaBotBridge disconnected; pending MCP request cancelled');
     if (this.eventSource) {
       this.eventSource.close();
@@ -310,6 +323,7 @@ class InnovaBotBridge extends EventEmitter {
 
   async disconnect() {
     this.stopHeartbeat();
+    this.clearConnectTimeout();
     this._rejectPending('InnovaBotBridge disconnected; pending MCP request cancelled');
     if (this.eventSource) {
       this.eventSource.close();
