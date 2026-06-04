@@ -54,6 +54,7 @@ function fileIncludes(file, needles) {
 }
 
 function main() {
+  const noWrite = process.argv.includes('--no-write');
   const homeConfig = path.join(os.homedir(), '.antigravity', 'config.yaml');
   const status = {
     probed_at: new Date().toISOString(),
@@ -134,7 +135,9 @@ function main() {
     && status.checks.registry.ok;
 
   const outPath = path.join(ROOT, 'network', 'antigravity-status.json');
-  fs.writeFileSync(outPath, JSON.stringify(status, null, 2) + '\n');
+  if (!noWrite) {
+    fs.writeFileSync(outPath, JSON.stringify(status, null, 2) + '\n');
+  }
 
   console.log(JSON.stringify(status, null, 2));
   process.exit(status.ok ? 0 : 1);
