@@ -1,0 +1,412 @@
+#!/usr/bin/env node
+'use strict';
+
+/**
+ * Low-token Mother loop for innova-bot/Jit task clearing.
+ *
+ * One cycle:
+ * 1. Check OMX/MAW/provider readiness.
+ * 2. Select only currently usable low-cost lanes.
+ * 3. Fan out a bounded >50 worker fleet through eval/fleet-batch.js.
+ * 4. Report a compact artifact to innova-bot and local outbox.
+ */
+
+const fs = require('fs');
+const path = require('path');
+const childProcess = require('child_process');
+const http = require('http');
+const https = require('https');
+
+const ROOT = path.resolve(__dirname, '..');
+const LOOP_DIR = path.join(ROOT, 'network', 'loop');
+const OUTBOX_DIR = path.join(ROOT, 'ψ', 'outbox');
+const STATE_PATH = path.join(LOOP_DIR, 'innova-loop-state.json');
+const LATEST_REPORT = path.join(LOOP_DIR, 'latest-report.md');
+const LATEST_JSON = path.join(LOOP_DIR, 'latest-report.json');
+const CURRENT_GOAL = path.join(LOOP_DIR, 'current-goal.txt');
+
+function arg(name, fallback) {
+  const i = process.argv.indexOf(name);
+  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
+}
+
+function has(name) {
+  return process.argv.includes(name);
+}
+
+function intArg(name, fallback, min, max) {
+  const n = Math.floor(Number(arg(name, fallback)));
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, n));
+}
+
+const INTERVAL_MS = intArg('--interval-ms', 300000, 60000, 3600000);
+const MAX_CYCLES = intArg('--max-cycles', has('--once') ? 1 : 0, 0, 1000000);
+const COUNT = intArg('--count', 56, 51, 200);
+const CONCURRENCY = intArg('--concurrency', 6, 1, 12);
+const PROVIDER_TIMEOUT = intArg('--provider-timeout', 70000, 10000, 120000);
+const ADVISOR_THRESHOLD = intArg('--advisor-threshold', 8, 1, 100);
+const FLEET_TIMEOUT = intArg('--fleet-timeout-ms', 900000, 120000, 3600000);
+const DRY_RUN = has('--dry-run');
+
+function ensureDirs() {
+  fs.mkdirSync(LOOP_DIR, { recursive: true });
+  fs.mkdirSync(OUTBOX_DIR, { recursive: true });
+}
+
+function readJson(file, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function writeJson(file, value) {
+  fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n');
+}
+
+function run(command, args, options = {}) {
+  const started = Date.now();
+  const r = childProcess.spawnSync(command, args, {
+    cwd: options.cwd || ROOT,
+    encoding: 'utf8',
+    timeout: options.timeout || 120000,
+    shell: process.platform === 'win32',
+    env: { ...process.env, ...(options.env || {}) },
+  });
+  return {
+    command: [command].concat(args).join(' '),
+    ok: r.status === 0,
+    status: r.status,
+    ms: Date.now() - started,
+    stdout: String(r.stdout || '').trim(),
+    stderr: String(r.stderr || '').trim(),
+    error: r.error ? r.error.message : '',
+  };
+}
+
+function shortText(text, limit = 1200) {
+  return String(text || '').replace(/\s+\n/g, '\n').trim().slice(0, limit);
+}
+
+function loadState() {
+  return {
+    cycle: 0,
+    failureStreak: 0,
+    advisorCalls: 0,
+    lastStartedAt: null,
+    lastFinishedAt: null,
+    lastStatus: 'new',
+    ...readJson(STATE_PATH, {}),
+  };
+}
+
+function getUsableProviders() {
+  const provider = readJson(path.join(ROOT, 'network', 'provider-status.json'), { usable: [], results: {} });
+  const usable = new Set(Array.isArray(provider.usable) ? provider.usable : []);
+  const lowCostOrder = ['ollama_mdes', 'thaillm', 'ollama_local', 'ollama_cloud', 'innova_bot', 'copilot'];
+  const selected = lowCostOrder.filter(name => usable.has(name));
+
+  return { provider, selected };
+}
+
+function selectLanes(state) {
+  const { provider, selected } = getUsableProviders();
+  const lanes = selected.filter(name => name !== 'innova_bot');
+  const includeInnova = selected.includes('innova_bot');
+
+  let includeOpenAI = false;
+  if (state.failureStreak >= ADVISOR_THRESHOLD && provider.usable && provider.usable.includes('openai')) {
+    lanes.push('openai');
+    includeOpenAI = true;
+  }
+
+  const fallback = lanes.length ? lanes : ['ollama_mdes', 'thaillm', 'ollama_cloud'];
+  return {
+    lanes: Array.from(new Set(fallback)),
+    includeInnova,
+    includeOpenAI,
+    provider,
+  };
+}
+
+function latestFleetArtifact() {
+  const artifactsRoot = path.join(ROOT, 'network', 'artifacts');
+  try {
+    const dirs = fs.readdirSync(artifactsRoot)
+      .filter(name => name.startsWith('fleet-batch-'))
+      .map(name => path.join(artifactsRoot, name))
+      .filter(file => fs.existsSync(path.join(file, 'summary.json')))
+      .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+    return dirs[0] || '';
+  } catch (_) {
+    return '';
+  }
+}
+
+function makeGoal(cycle, snapshots, lanes) {
+  const teamStatus = shortText(snapshots.mawTeam.stdout || snapshots.mawTeam.stderr, 900);
+  const taskStatus = shortText(snapshots.mawTasks.stdout || snapshots.mawTasks.stderr, 900);
+  const statusBoard = shortText(snapshots.statusBoard.stdout || snapshots.statusBoard.stderr, 900);
+  return [
+    `Jit Mother loop cycle ${cycle}: clear innova-bot ticket/task backlog carefully.`,
+    '',
+    'Role routing:',
+    '- Mother strategy: GPT-5.4/Codex leader in this session; do not burn GPT-5.5 unless failure streak exceeds threshold.',
+    '- Worker limbs: MDES, ThaiLLM, Ollama local/cloud, Copilot only when content-usable, innova-bot when bridge answers.',
+    '- Advisor: OpenAI/frontier only after repeated failures; current loop threshold is ' + ADVISOR_THRESHOLD + '.',
+    '',
+    'Selected provider lanes: ' + lanes.join(', '),
+    '',
+    'MAW team status:',
+    teamStatus || '(none)',
+    '',
+    'MAW task status:',
+    taskStatus || '(none)',
+    '',
+    'Status-board snapshot:',
+    statusBoard || '(none)',
+    '',
+    'Worker output contract: identify one concrete next action, risk, or ticket-clearing move for innova-bot/Jit/innomcp. Include Confidence 0-100. No file edits.',
+  ].join('\n');
+}
+
+function parseFleetSummary(stdout) {
+  const text = String(stdout || '');
+  try {
+    return JSON.parse(text);
+  } catch (_) {
+    // fleet-batch logs progress first, then prints a final JSON block.
+  }
+  const start = text.lastIndexOf('\n{');
+  if (start < 0) return null;
+  try {
+    return JSON.parse(text.slice(start + 1));
+  } catch (_) {
+    return null;
+  }
+}
+
+function postJson(targetUrl, headers, payload, timeoutMs) {
+  return new Promise((resolve) => {
+    try {
+      const parsed = new URL(targetUrl);
+      const body = JSON.stringify(payload);
+      const transport = parsed.protocol === 'https:' ? https : http;
+      const req = transport.request(parsed, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+          ...headers,
+        },
+        timeout: timeoutMs || 20000,
+      }, res => {
+        let responseBody = '';
+        res.on('data', chunk => { responseBody += chunk; });
+        res.on('end', () => resolve({ ok: res.statusCode >= 200 && res.statusCode < 300, status: res.statusCode, body: responseBody.slice(0, 200) }));
+      });
+      req.on('error', error => resolve({ ok: false, status: 0, error: error.message }));
+      req.on('timeout', () => req.destroy(new Error('timeout')));
+      req.write(body);
+      req.end();
+    } catch (error) {
+      resolve({ ok: false, status: 0, error: String(error && error.message || error) });
+    }
+  });
+}
+
+async function notifyDiscord(text) {
+  const webhook = process.env.DISCORD_WEBHOOK_URL || '';
+  if (webhook) {
+    return postJson(webhook, {}, { content: text.slice(0, 1900), username: 'Jit Mother Loop' }, 20000);
+  }
+  const token = process.env.DISCORD_TOKEN || '';
+  const channel = process.env.JIT_REPORT_CHANNEL_ID || process.env.AUTO_REPORT_CHANNEL_ID || process.env.DISCORD_CHANNEL_ID || '';
+  if (!(token && channel)) return { ok: false, skipped: true, reason: 'no discord target' };
+  return postJson(
+    `https://discord.com/api/v10/channels/${encodeURIComponent(channel)}/messages`,
+    { Authorization: `Bot ${token}`, 'User-Agent': 'JitMotherLoop/1.0' },
+    { content: text.slice(0, 1900) },
+    20000
+  );
+}
+
+async function notifyInnovaBot(text) {
+  try {
+    const InnovaBotBridge = require('../limbs/innova-bot-bridge');
+    const bridge = new InnovaBotBridge();
+    await bridge.connect();
+    await bridge.dispatchTask(text.slice(0, 3500));
+    await bridge.disconnect();
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: String(error && error.message || error).slice(0, 200) };
+  }
+}
+
+function writeReportMarkdown(report) {
+  const lines = [
+    '# Jit Mother Loop Report',
+    '',
+    `Cycle: ${report.cycle}`,
+    `Started: ${report.startedAt}`,
+    `Finished: ${report.finishedAt}`,
+    `Status: ${report.status}`,
+    `Failure streak: ${report.failureStreak}`,
+    `Selected lanes: ${report.selectedLanes.join(', ')}`,
+    `Advisor used: ${report.advisorUsed ? 'yes' : 'no'}`,
+    '',
+    '## Providers',
+    '',
+  ];
+  for (const [name, row] of Object.entries(report.providers.results || {})) {
+    lines.push(`- ${name}: ${row.status}${row.error ? ' - ' + row.error : ''}`);
+  }
+  lines.push('', '## Fleet', '');
+  if (report.fleetSummary && report.fleetSummary.summary) {
+    const s = report.fleetSummary.summary;
+    lines.push(`- Run: ${s.runId}`);
+    lines.push(`- Result: ${s.ok}/${s.completed} OK, fail=${s.fail}, pending=${s.pending}, count=${s.count}`);
+    for (const [backend, row] of Object.entries(s.byBackend || {})) {
+      lines.push(`- ${backend}: ${row.ok}/${row.total} OK, avg ${row.avgLatencyMs}ms`);
+    }
+  } else {
+    lines.push(`- Fleet batch failed or dry-run: ${report.fleetError || 'none'}`);
+  }
+  lines.push('', '## Notifications', '');
+  lines.push(`- innova-bot: ${report.innovaNotify.ok ? 'ok' : 'failed'}${report.innovaNotify.error ? ' - ' + report.innovaNotify.error : ''}`);
+  lines.push(`- discord: ${report.discordNotify.ok ? 'ok' : 'skipped/failed'}${report.discordNotify.reason ? ' - ' + report.discordNotify.reason : ''}`);
+  lines.push('', '## Artifacts', '');
+  lines.push(`- latest JSON: ${path.relative(ROOT, LATEST_JSON).replace(/\\/g, '/')}`);
+  if (report.latestFleetArtifact) lines.push(`- fleet artifact: ${path.relative(ROOT, report.latestFleetArtifact).replace(/\\/g, '/')}`);
+  lines.push('');
+  fs.writeFileSync(LATEST_REPORT, lines.join('\n'));
+
+  const outboxName = `${new Date().toISOString().replace(/[:.]/g, '-')}_jit-mother-loop-cycle-${report.cycle}.md`;
+  fs.writeFileSync(path.join(OUTBOX_DIR, outboxName), lines.join('\n'));
+}
+
+async function runCycle(state) {
+  const cycle = Number(state.cycle || 0) + 1;
+  const startedAt = new Date().toISOString();
+  console.log(`[loop] cycle=${cycle} start ${startedAt}`);
+
+  const snapshots = {
+    omxStatus: run('omx', ['status', '--json'], { timeout: 20000 }),
+    mawTeam: run('maw', ['team', 'status'], { timeout: 30000 }),
+    mawTasks: run('maw', ['t', 'status'], { timeout: 30000 }),
+    statusBoard: run('node', ['eval/status-board.js', '--json'], { timeout: 30000 }),
+    quickFleet: run('node', ['.codex/skills/agent-fleet-budget/scripts/check-fleet.mjs'], { timeout: 120000 }),
+    providerProbe: run('node', ['eval/provider-probe.js', '--timeout', String(PROVIDER_TIMEOUT)], { timeout: PROVIDER_TIMEOUT + 30000 }),
+  };
+
+  const route = selectLanes(state);
+  const goal = makeGoal(cycle, snapshots, route.lanes);
+  fs.writeFileSync(CURRENT_GOAL, goal);
+
+  const fleetArgs = [
+    'eval/fleet-batch.js',
+    '--goal-file', path.relative(ROOT, CURRENT_GOAL).replace(/\\/g, '/'),
+    '--count', String(COUNT),
+    '--concurrency', String(CONCURRENCY),
+    '--lanes', route.lanes.join(','),
+    '--require-min-count', String(COUNT),
+    '--require-min-ok', String(Math.ceil(COUNT * 0.75)),
+    '--no-discord',
+  ];
+  if (route.includeInnova) fleetArgs.push('--include-innova-bot');
+  if (route.includeOpenAI) fleetArgs.push('--include-openai');
+
+  const fleet = DRY_RUN
+    ? { ok: true, status: 0, ms: 0, stdout: JSON.stringify({ summary: { runId: 'dry-run', count: COUNT, completed: 0, ok: 0, fail: 0, pending: COUNT, byBackend: {} } }), stderr: '', command: 'dry-run' }
+    : run('node', fleetArgs, { timeout: FLEET_TIMEOUT });
+
+  const fleetSummary = parseFleetSummary(fleet.stdout);
+  const summary = fleetSummary && fleetSummary.summary;
+  const ok = Boolean(fleet.ok && summary && summary.completed >= COUNT && summary.ok >= Math.ceil(COUNT * 0.75));
+  const nextFailureStreak = ok ? 0 : Number(state.failureStreak || 0) + 1;
+  const advisorUsed = route.includeOpenAI;
+  const finishedAt = new Date().toISOString();
+  const latestFleet = latestFleetArtifact();
+
+  const compact = [
+    `Jit Mother loop cycle ${cycle}: ${ok ? 'PASS' : 'DEGRADED'}`,
+    `lanes=${route.lanes.join(',')} count=${COUNT} ok=${summary ? summary.ok : 'n/a'}/${summary ? summary.completed : 'n/a'}`,
+    `failStreak=${nextFailureStreak} advisor=${advisorUsed ? 'openai' : 'off'}`,
+    `artifact=${latestFleet ? path.relative(ROOT, latestFleet).replace(/\\/g, '/') : 'none'}`,
+  ].join('\n');
+
+  const innovaNotify = await notifyInnovaBot(compact);
+  const discordNotify = await notifyDiscord(compact);
+
+  const report = {
+    cycle,
+    startedAt,
+    finishedAt,
+    status: ok ? 'pass' : 'degraded',
+    failureStreak: nextFailureStreak,
+    selectedLanes: route.lanes,
+    advisorUsed,
+    providers: route.provider,
+    snapshots: {
+      omxStatus: { ok: snapshots.omxStatus.ok, ms: snapshots.omxStatus.ms },
+      mawTeam: { ok: snapshots.mawTeam.ok, ms: snapshots.mawTeam.ms },
+      mawTasks: { ok: snapshots.mawTasks.ok, ms: snapshots.mawTasks.ms },
+      quickFleet: { ok: snapshots.quickFleet.ok, ms: snapshots.quickFleet.ms },
+      providerProbe: { ok: snapshots.providerProbe.ok, ms: snapshots.providerProbe.ms },
+    },
+    fleetCommand: ['node'].concat(fleetArgs).join(' '),
+    fleetOk: fleet.ok,
+    fleetMs: fleet.ms,
+    fleetError: shortText((fleet.stderr || fleet.error || '').trim(), 500),
+    fleetSummary,
+    latestFleetArtifact: latestFleet,
+    innovaNotify,
+    discordNotify,
+  };
+
+  writeJson(LATEST_JSON, report);
+  writeReportMarkdown(report);
+
+  const newState = {
+    ...state,
+    cycle,
+    failureStreak: nextFailureStreak,
+    advisorCalls: Number(state.advisorCalls || 0) + (advisorUsed ? 1 : 0),
+    lastStartedAt: startedAt,
+    lastFinishedAt: finishedAt,
+    lastStatus: report.status,
+    lastLanes: route.lanes,
+    lastReport: path.relative(ROOT, LATEST_REPORT).replace(/\\/g, '/'),
+    lastJson: path.relative(ROOT, LATEST_JSON).replace(/\\/g, '/'),
+  };
+  writeJson(STATE_PATH, newState);
+  console.log(`[loop] cycle=${cycle} ${report.status} lanes=${route.lanes.join(',')} report=${newState.lastReport}`);
+  return newState;
+}
+
+async function main() {
+  ensureDirs();
+  let state = loadState();
+  let cycles = 0;
+  while (true) {
+    state = await runCycle(state);
+    cycles++;
+    if (MAX_CYCLES && cycles >= MAX_CYCLES) break;
+    await new Promise(resolve => setTimeout(resolve, INTERVAL_MS));
+  }
+}
+
+main().catch(error => {
+  ensureDirs();
+  const state = loadState();
+  state.failureStreak = Number(state.failureStreak || 0) + 1;
+  state.lastStatus = 'fatal';
+  state.lastError = String(error && error.message || error).slice(0, 500);
+  state.lastFinishedAt = new Date().toISOString();
+  writeJson(STATE_PATH, state);
+  console.error('[loop] fatal:', error && error.message || error);
+  process.exit(1);
+});
