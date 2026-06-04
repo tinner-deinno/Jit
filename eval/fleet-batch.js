@@ -11,6 +11,8 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const https = require('https');
+const crypto = require('crypto');
+const childProcess = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
 const envPath = path.join(ROOT, '.env');
@@ -44,6 +46,16 @@ function splitCsv(value) {
   return String(value || '').split(',').map(s => s.trim()).filter(Boolean);
 }
 
+function normalizeLane(value) {
+  const v = String(value || '').trim().toLowerCase();
+  if (v === 'mdes' || v === 'ollama' || v === 'ollama-mdes') return 'ollama_mdes';
+  if (v === 'thai' || v === 'thai_llm' || v === 'thai-llm') return 'thaillm';
+  if (v === 'local' || v === 'ollama-local') return 'ollama_local';
+  if (v === 'cloud' || v === 'ollama-cloud') return 'ollama_cloud';
+  if (v === 'innova' || v === 'innova-bot') return 'innova_bot';
+  return v;
+}
+
 const COUNT = posInt(arg('--count', process.env.FLEET_BATCH_COUNT || 56), 56, 1, 200);
 const CONCURRENCY = posInt(arg('--concurrency', process.env.FLEET_BATCH_CONCURRENCY || 6), 6, 1, 12);
 function goalFromArgs() {
@@ -56,9 +68,14 @@ function goalFromArgs() {
 }
 const GOAL = goalFromArgs();
 const INCLUDE_OPENAI = has('--include-openai');
+const INCLUDE_INNOVA_BOT = has('--include-innova-bot');
+const REQUESTED_LANES = splitCsv(arg('--lanes', process.env.FLEET_BATCH_LANES || '')).map(normalizeLane);
+const EXCLUDED_LANES = splitCsv(arg('--exclude-lanes', process.env.FLEET_BATCH_EXCLUDE_LANES || '')).map(normalizeLane);
 const DISCORD = !has('--no-discord');
 const DISCORD_INTERVAL_MS = posInt(arg('--discord-interval-ms', process.env.FLEET_DISCORD_INTERVAL_MS || 600000), 600000, 60000, 3600000);
 const MAX_ATTEMPTS = posInt(arg('--attempts', process.env.FLEET_BATCH_ATTEMPTS || 2), 2, 1, 4);
+const REQUIRE_MIN_COUNT = posInt(arg('--require-min-count', process.env.FLEET_REQUIRE_MIN_COUNT || 0), 0, 0, 200);
+const REQUIRE_MIN_OK = posInt(arg('--require-min-ok', process.env.FLEET_REQUIRE_MIN_OK || REQUIRE_MIN_COUNT), REQUIRE_MIN_COUNT, 0, 200);
 const RUN_ID = 'fleet-batch-' + new Date().toISOString().replace(/[:.]/g, '-');
 const ARTIFACT_DIR = path.join(ROOT, 'network', 'artifacts', RUN_ID);
 const BACKEND_LIMITS = {
@@ -67,6 +84,7 @@ const BACKEND_LIMITS = {
   ollama_cloud: 4,
   copilot: 2,
   openai: 1,
+  innova_bot: 1,
 };
 
 const AGENTS = [
@@ -84,13 +102,23 @@ function laneDefinitions() {
     'thalle-0.2-thaillm-8b-fa',
   ];
   const cloudModels = splitCsv(process.env.OLLAMA_CLOUD_MODELS || 'gemma4:31b-cloud,nemotron-3-super:cloud');
-  const lanes = [
+  let lanes = [
     { backend: 'ollama_mdes', models: [status.backends.ollama_mdes?.model || 'gemma4:26b'], weight: 18 },
     { backend: 'thaillm', models: thaiModels, weight: 16 },
     { backend: 'ollama_cloud', models: cloudModels, weight: 16 },
     { backend: 'copilot', models: ['claude-sonnet-4.6', null], weight: 10 },
   ];
   if (INCLUDE_OPENAI) lanes.push({ backend: 'openai', models: [status.backends.openai?.model || null], weight: 2 });
+  if (INCLUDE_INNOVA_BOT) lanes.push({ backend: 'innova_bot', models: [status.backends.innova_bot?.model || null], weight: 2 });
+  if (REQUESTED_LANES.length) {
+    lanes = lanes.filter(lane => REQUESTED_LANES.includes(lane.backend));
+  }
+  if (EXCLUDED_LANES.length) {
+    lanes = lanes.filter(lane => !EXCLUDED_LANES.includes(lane.backend));
+  }
+  if (!lanes.length) {
+    throw new Error('No fleet lanes selected. Check --lanes/--exclude-lanes.');
+  }
   return lanes;
 }
 
@@ -266,7 +294,89 @@ function summarize(results, startedAt, totalCount) {
     concurrency: CONCURRENCY,
     durationMs: Date.now() - startedAt,
     byBackend,
+    proof: {
+      requireMinCount: REQUIRE_MIN_COUNT,
+      requireMinOk: REQUIRE_MIN_OK,
+      minCountSatisfied: !REQUIRE_MIN_COUNT || expectedCount >= REQUIRE_MIN_COUNT,
+      minCompletedSatisfied: !REQUIRE_MIN_COUNT || completed.length >= REQUIRE_MIN_COUNT,
+      minOkSatisfied: !REQUIRE_MIN_OK || completed.filter(r => r.ok).length >= REQUIRE_MIN_OK,
+      selectedLanes: Array.from(new Set(completed.map(r => r.backend))),
+      requestedLanes: REQUESTED_LANES,
+      excludedLanes: EXCLUDED_LANES,
+    },
   };
+}
+
+function sha256(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function gitInfo() {
+  function run(args) {
+    try {
+      return childProcess.execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+    } catch (_) {
+      return '';
+    }
+  }
+  return {
+    branch: run(['rev-parse', '--abbrev-ref', 'HEAD']),
+    commit: run(['rev-parse', 'HEAD']),
+    statusShort: run(['status', '--short']),
+  };
+}
+
+function writeProofManifest(summary, artifacts, startedAt, finishedAt) {
+  const manifestPath = path.join(ARTIFACT_DIR, 'proof-manifest.json');
+  const mdManifestPath = path.join(ARTIFACT_DIR, 'proof-manifest.md');
+  const manifest = {
+    runId: summary.runId,
+    createdAt: new Date(finishedAt).toISOString(),
+    command: process.argv.map(String),
+    cwd: ROOT,
+    node: process.version,
+    git: gitInfo(),
+    durationMs: finishedAt - startedAt,
+    requirement: {
+      requireMinCount: REQUIRE_MIN_COUNT,
+      requireMinOk: REQUIRE_MIN_OK,
+      count: summary.count,
+      completed: summary.completed,
+      ok: summary.ok,
+      pass: summary.proof.minCountSatisfied && summary.proof.minCompletedSatisfied && summary.proof.minOkSatisfied,
+    },
+    lanes: summary.byBackend,
+    artifacts: {
+      summaryJson: path.relative(ROOT, artifacts.jsonPath).replace(/\\/g, '/'),
+      summaryMd: path.relative(ROOT, artifacts.mdPath).replace(/\\/g, '/'),
+      summaryJsonSha256: sha256(artifacts.jsonPath),
+      summaryMdSha256: sha256(artifacts.mdPath),
+    },
+    providerStatusPath: fs.existsSync(path.join(ROOT, 'network', 'provider-status.json'))
+      ? 'network/provider-status.json'
+      : null,
+  };
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+  fs.writeFileSync(mdManifestPath, [
+    '# Fleet Proof Manifest',
+    '',
+    `Run: ${manifest.runId}`,
+    `Command: ${manifest.command.join(' ')}`,
+    `Requirement: count >= ${REQUIRE_MIN_COUNT || 0}, ok >= ${REQUIRE_MIN_OK || 0}`,
+    `Observed: count ${summary.count}, completed ${summary.completed}, ok ${summary.ok}`,
+    `Pass: ${manifest.requirement.pass ? 'yes' : 'no'}`,
+    '',
+    '## Artifact Hashes',
+    '',
+    `- summary.json: ${manifest.artifacts.summaryJsonSha256}`,
+    `- summary.md: ${manifest.artifacts.summaryMdSha256}`,
+    '',
+    '## Lanes',
+    '',
+    ...Object.entries(summary.byBackend).map(([backend, row]) => `- ${backend}: ${row.ok}/${row.total} OK, avg ${row.avgLatencyMs}ms`),
+    '',
+  ].join('\n'));
+  return { manifestPath, mdManifestPath };
 }
 
 function writeArtifacts(results, summary) {
@@ -387,8 +497,14 @@ async function sendDiscord(message) {
 async function main() {
   const startedAt = Date.now();
   const jobs = buildJobs();
+  if (REQUIRE_MIN_COUNT && jobs.length < REQUIRE_MIN_COUNT) {
+    throw new Error(`Fleet proof requires at least ${REQUIRE_MIN_COUNT} jobs, but only ${jobs.length} were built.`);
+  }
   console.log(`[fleet] run=${RUN_ID} count=${jobs.length} concurrency=${CONCURRENCY}`);
   console.log(`[fleet] goal=${GOAL}`);
+  if (REQUESTED_LANES.length) console.log(`[fleet] requestedLanes=${REQUESTED_LANES.join(',')}`);
+  if (EXCLUDED_LANES.length) console.log(`[fleet] excludedLanes=${EXCLUDED_LANES.join(',')}`);
+  if (REQUIRE_MIN_COUNT || REQUIRE_MIN_OK) console.log(`[fleet] proof requireMinCount=${REQUIRE_MIN_COUNT} requireMinOk=${REQUIRE_MIN_OK}`);
   console.log(`[fleet] discord=${JSON.stringify(discordConfigStatus())}`);
   if (DISCORD) {
     const startSummary = { runId: RUN_ID, goal: GOAL, count: jobs.length, completed: 0, pending: jobs.length, ok: 0, fail: 0, concurrency: CONCURRENCY, durationMs: 0, byBackend: {} };
@@ -423,6 +539,7 @@ async function main() {
   clearInterval(timer);
   const summary = summarize(results, startedAt, results.length);
   const artifacts = writeArtifacts(results, summary);
+  const proofArtifacts = writeProofManifest(summary, artifacts, startedAt, Date.now());
   eventLog.record({
     phase: 'Fleet Batch',
     goal: GOAL,
@@ -437,8 +554,10 @@ async function main() {
   const discordSent = await sendDiscord(finalMsg);
   router.shutdownInnovaBot && router.shutdownInnovaBot();
   console.log('');
-  console.log(JSON.stringify({ summary, artifacts, discordSent }, null, 2));
-  process.exit(summary.ok >= Math.ceil(summary.count * 0.75) ? 0 : 1);
+  console.log(JSON.stringify({ summary, artifacts: { ...artifacts, ...proofArtifacts }, discordSent }, null, 2));
+  const ratioOk = summary.ok >= Math.ceil(summary.count * 0.75);
+  const proofOk = summary.proof.minCountSatisfied && summary.proof.minCompletedSatisfied && summary.proof.minOkSatisfied;
+  process.exit(ratioOk && proofOk ? 0 : 1);
 }
 
 main().catch(error => {

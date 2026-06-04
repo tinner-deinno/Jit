@@ -43,3 +43,44 @@ The hardened run recovered a real transient ThaiLLM failure:
 The fleet harness now sends Discord status directly through Node HTTP/HTTPS and no longer depends on the CRLF-sensitive Bash reporter.
 
 Current `.env` has `DISCORD_TOKEN` set, but no `JIT_REPORT_CHANNEL_ID`, `DISCORD_CHANNEL_ID`, or `DISCORD_WEBHOOK_URL`, so fleet runs report `discordSent: false`. Add one report channel or webhook to enable the requested 10-minute Discord updates.
+
+## Codex Proof Addendum - 2026-06-04T07:24Z
+
+Command-level guardrails were added to `eval/fleet-batch.js`:
+
+- `--lanes` selects explicit provider lanes.
+- `--require-min-count` fails before provider calls if the built batch is too small.
+- `--require-min-ok` fails the run unless enough workers return usable replies.
+- Every run now writes `proof-manifest.json` and `proof-manifest.md` with command, git state, requirement verdict, lane split, and SHA-256 hashes for `summary.json` / `summary.md`.
+
+Fresh proof run:
+
+- Command: `node eval/fleet-batch.js --count 51 --concurrency 6 --attempts 2 --lanes ollama_mdes,thaillm,ollama_cloud --require-min-count 51 --require-min-ok 51`
+- Artifact: `network/artifacts/fleet-batch-2026-06-04T07-19-36-869Z/proof-manifest.json`
+- Log: `network/artifacts/fleet-proof-20260604-141936.log`
+- Result: `51/51 OK`, `0` failed, `0` pending, duration `295963 ms`
+- Requirement verdict: `count >= 51` pass, `ok >= 51` pass
+
+Provider split:
+
+- `ollama_mdes`: `19/19 OK`, model `gemma4:26b`, average `29422 ms`
+- `thaillm`: `16/16 OK`, all four ThaiLLM models, average `8722 ms`
+- `ollama_cloud`: `16/16 OK`, models `gemma4:31b-cloud` and `nemotron-3-super:cloud`, average `4238 ms`
+
+Current live lane notes:
+
+- `check-fleet --smoke` passed content calls for `ollama_mdes`, `thaillm`, `ollama_cloud`, and `openai`.
+- `copilot` is currently configured but not content-usable: router smoke saw GitHub API `404`, and direct `gh copilot -p` returned `402 quota_exceeded`.
+- `ollama_local` is reachable by tag list but content-smoke timed out.
+- `openclaude` is configured but refused connection.
+
+Coordination probes:
+
+- `node eval/innova-bot-talk.js` passed: `mother.task -> innova` via File Fallback in `1645 ms`.
+- `maw workspace status` ran and reported no configured workspaces.
+- `maw ui status` no longer crashes after the UI plugin import fix; it now reports `maw-ui not installed`.
+- `maw team status` remains blocked by CLI dispatch mismatch (`unknown command: team`) in this MAW install.
+
+Discord note:
+
+- The fleet harness attempted Discord reporting path but `discordSent: false` because no channel ID or webhook is configured.

@@ -55,6 +55,21 @@ function inlineChecks() {
     if (bridge.pending.size !== 0) throw new Error('pending map was not cleared');
   });
 
+  t('fleet-batch proof guardrails', () => {
+    const fs = require('fs');
+    const src = fs.readFileSync(path.join(ROOT, 'eval/fleet-batch.js'), 'utf8');
+    for (const needle of [
+      '--require-min-count',
+      '--require-min-ok',
+      '--lanes',
+      'proof-manifest.json',
+      'summaryJsonSha256',
+      'minOkSatisfied',
+    ]) {
+      if (!src.includes(needle)) throw new Error(`missing ${needle}`);
+    }
+  });
+
   return results;
 }
 
