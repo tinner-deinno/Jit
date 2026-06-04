@@ -2,7 +2,7 @@
   "version": "2.1",
   "system": "มนุษย์ Agent",
   "description": "Registry of all agents in the multiagent body system",
-  "updated": "2026-06-03",
+  "updated": "2026-06-05",
   "agents": [
     {
       "name": "soma",
@@ -314,7 +314,7 @@
   "runtime_subagents": {
     "config": "config/subagent-routing.json",
     "updated": "2026-06-03",
-    "description": "Runtime peers and execution lanes shared by Jit Codex, Jit ClaudeCode, innova-bot, Maw, Oracle, and Ollama providers.",
+    "description": "Runtime peers and execution lanes shared by Jit Codex, Jit ClaudeCode, Antigravity, innova-bot, Maw, Oracle, and Ollama providers.",
     "agents": [
       {
         "name": "jit-codex",
@@ -359,6 +359,18 @@
         "command": "maw",
         "cost_tier": "local",
         "policy": "Use for remote Oracle movement and node/fleet inspection."
+      },
+      {
+        "name": "antigravity-mission-control",
+        "runtime": "antigravity",
+        "role": "Google-authenticated mission control for wide coordination and parallel verification",
+        "provider": "antigravity",
+        "command": "scripts/antigravity-y.sh",
+        "windows_command": "scripts/antigravity-y.ps1",
+        "config": "C:\\Users\\USER-NT\\.antigravity\\config.yaml",
+        "mcp_servers": ["playwright", "chrome-devtools"],
+        "cost_tier": "local",
+        "policy": "Use Antigravity for wide coordination and browser MCP verification; Codex/Jit remains deep executor and final evidence owner."
       },
       {
         "name": "oracle-brain",
@@ -419,7 +431,7 @@
   "routing": {
     "config": "config/subagent-routing.json",
     "default_provider": "ollama_mdes",
-    "budget_order": ["ollama_mdes", "ollama_local", "ollama_cloud", "copilot", "openai"],
+    "budget_order": ["ollama_mdes", "thaillm", "ollama_local", "ollama_cloud", "antigravity", "copilot", "openai"],
     "advisor": {
       "provider": "openai",
       "model": "gpt-5.5",
@@ -427,6 +439,7 @@
     },
     "validation": [
       "node .codex/skills/agent-fleet-budget/scripts/check-fleet.mjs",
+      "node eval/antigravity-probe.js",
       "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/oracle-readiness.ps1 -Json",
       "maw doctor --json"
     ]

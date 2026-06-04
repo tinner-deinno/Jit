@@ -1,0 +1,47 @@
+{
+  "version": "1.0",
+  "updated": "2026-06-05",
+  "purpose": "Make Antigravity a Jit mission-control lane while Codex remains deep executor and evidence owner.",
+  "antigravity": {
+    "install_root": "C:\\Users\\USER-NT\\AppData\\Local\\Programs\\Antigravity",
+    "command": "antigravity",
+    "bash_wrapper": "scripts/antigravity-y.sh",
+    "powershell_wrapper": "scripts/antigravity-y.ps1",
+    "config": "C:\\Users\\USER-NT\\.antigravity\\config.yaml",
+    "mcp_config": "C:\\Users\\USER-NT\\AppData\\Roaming\\Antigravity\\User\\mcp.json",
+    "default_chat_mode": "agent",
+    "auth_source": "Antigravity Google account vault; no secrets are stored in this repo.",
+    "exec_plan_command": "antigravity --exec <plan.json> -y",
+    "exec_plan_status": "planned: current antigravity 1.107.0 help advertises chat/add-mcp, but not --exec."
+  },
+  "convergence": {
+    "jit_agents_md": "AGENTS.md",
+    "innomcp_agents_md": "C:\\Users\\USER-NT\\DEV\\innomcp\\AGENTS.md",
+    "skill": ".codex\\skills\\antigravity-orchestrator\\SKILL.md",
+    "role_contract": "Antigravity coordinates wide verification; Codex/Jit executes deep changes and owns evidence."
+  },
+  "mcp_servers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"],
+      "registration": "antigravity --add-mcp",
+      "purpose": "Browser automation through accessibility snapshots."
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"],
+      "registration": "antigravity --add-mcp",
+      "purpose": "Chrome DevTools inspection, screenshots, network, and performance debugging."
+    }
+  },
+  "gateway": {
+    "name": "bifrost",
+    "status": "planned",
+    "routing_policy": "Route wide coordination and parallel verification to Antigravity; route deep execution, code integration, and final evidence to Codex/Jit."
+  },
+  "validation": {
+    "probe": "node eval/antigravity-probe.js",
+    "antigravity_version": "antigravity --version",
+    "chat_help": "antigravity chat --help"
+  }
+}

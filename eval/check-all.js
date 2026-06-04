@@ -34,6 +34,17 @@ function inlineChecks() {
     for (const [inp, exp] of cases) if (fn(inp) !== exp) throw new Error(`isErrorReply(${JSON.stringify(inp)})=${fn(inp)} expected ${exp}`);
   });
 
+  t('provider-probe requires OK contract', () => {
+    const fs = require('fs');
+    const src = fs.readFileSync(path.join(ROOT, 'eval/provider-probe.js'), 'utf8');
+    const isErrorReply = eval('(' + src.match(/function isErrorReply[\s\S]*?\n}/)[0].replace('function isErrorReply', 'function') + ')');
+    const usableSrc = src.match(/function isUsableProbeReply[\s\S]*?\n}/)[0]
+      .replace('function isUsableProbeReply', 'function');
+    const fn = eval('(function(){ const isErrorReply = arguments[0]; return ' + usableSrc + '; })(isErrorReply)');
+    const cases = [['OK', true], ['Reply: OK', true], ['orchestration fine', false], ['query failed, ok', false], ['', false]];
+    for (const [inp, exp] of cases) if (fn(inp) !== exp) throw new Error(`isUsableProbeReply(${JSON.stringify(inp)})=${fn(inp)} expected ${exp}`);
+  });
+
   // leaderboard-db provider stats round-trip (no DB file mutation — uses in-mem path? it uses real DB; skip write here, just confirm API shape).
   t('leaderboard-db API', () => {
     const db = require('../limbs/leaderboard-db.js');
@@ -68,6 +79,16 @@ function inlineChecks() {
     ]) {
       if (!src.includes(needle)) throw new Error(`missing ${needle}`);
     }
+  });
+
+  t('antigravity routes as non-model mission-control lane', () => {
+    const spawner = require('../hermes-discord/agent-spawner.js');
+    const route = spawner.routeTask('use antigravity google pro mission control for innomcp playwright mcp parallel verification');
+    if (route.backend !== 'antigravity') throw new Error(`backend=${route.backend}`);
+    if (route.is_model_backend) throw new Error('antigravity should route as non-model backend');
+    const agent = spawner.listAgents().find((item) => item.name === 'antigravity-mission-control');
+    if (!agent) throw new Error('missing antigravity-mission-control agent');
+    if (agent.backend !== 'antigravity') throw new Error(`listed backend=${agent.backend}`);
   });
 
   return results;

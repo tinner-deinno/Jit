@@ -79,8 +79,59 @@ Coordination probes:
 - `node eval/innova-bot-talk.js` passed: `mother.task -> innova` via File Fallback in `1645 ms`.
 - `maw workspace status` ran and reported no configured workspaces.
 - `maw ui status` no longer crashes after the UI plugin import fix; it now reports `maw-ui not installed`.
-- `maw team status` remains blocked by CLI dispatch mismatch (`unknown command: team`) in this MAW install.
+- `maw team status` and `maw t status` now work after MAW commit `d170eac2`; both list the `innomcp`, `innova-bot-template`, and `jit` teams.
 
 Discord note:
 
 - The fleet harness attempted Discord reporting path but `discordSent: false` because no channel ID or webhook is configured.
+
+## Codex Probe Honesty Addendum - 2026-06-04T08:00Z
+
+Provider proof now distinguishes reachability from content usability:
+
+- `eval/provider-probe.js` treats a ping as `ALIVE` only when the backend answers the `OK` contract and the reply is not an in-band error.
+- `check-fleet --smoke` now records `contentUsable` for each backend smoke and publishes `contentUsableBackends` for routing decisions.
+- This prevents a non-empty but wrong/empty/error-shaped local or Copilot reply from being counted as a usable fleet lane.
+
+## Antigravity Mission-Control Addendum - 2026-06-05T01:00Z
+
+Antigravity is now wired as a local wide-coordination lane, separate from model content lanes:
+
+- `C:\Users\USER-NT\.antigravity\config.yaml` sets `defaults.auto_approve=true` and `defaults.skip_permissions=true`.
+- `scripts/antigravity-y.sh` and `scripts/antigravity-y.ps1` append the requested `-y` flag on every launch.
+- `config/subagent-routing.json` now has provider `antigravity`, agent `antigravity-mission-control`, and validation `node eval/antigravity-probe.js`.
+- `network/registry.json` now lists `antigravity-mission-control` as a runtime subagent with Playwright MCP and Chrome DevTools MCP candidates.
+- `C:\Users\USER-NT\AppData\Roaming\Antigravity\User\mcp.json` now registers `playwright` with `npx -y @playwright/mcp@latest` and `chrome-devtools` with `npx -y chrome-devtools-mcp@latest`.
+- `AGENTS.md` plus `.codex/skills/antigravity-orchestrator/SKILL.md` define the shared convergence contract: Antigravity coordinates wide verification, Codex/Jit executes deep changes and owns evidence.
+
+Current CLI reality:
+
+- `antigravity --version` works on Antigravity `1.107.0`.
+- `antigravity chat --help` advertises chat modes `ask`, `edit`, and `agent`.
+- `-y` is accepted by the wrapper path but the current CLI warns that it is not a documented `chat` option, so the durable auto-approve control is the config file above.
+
+## Live Provider and INNOMCP Recheck - 2026-06-05T01:18+07:00
+
+Fresh Jit proof:
+
+- `node eval/antigravity-probe.js` passed and wrote `network/antigravity-status.json`.
+- `node eval/provider-probe.js --timeout 70000` marked content-usable backends: `ollama_mdes`, `ollama_cloud`, `thaillm`, `openai`.
+- `node .codex/skills/agent-fleet-budget/scripts/check-fleet.mjs --smoke` passed and reported `contentUsableBackends`: `ollama_mdes`, `thaillm`, `ollama_cloud`, `openai`.
+- ThaiLLM four-model smoke passed for OpenThaiGPT, Pathumma, Typhoon, and THaLLE.
+- `node eval/innova-bot-talk.js` passed file-fallback dispatch in `2222ms`.
+
+Fresh innomcp proof:
+
+- MCP server restored on `3012`; `GET /health` returned `{"status":"ok"}`.
+- MCP `tools/list` returned `56` remote tools.
+- Backend `3011` was restarted and returned `{"status":"ok"}`.
+- Frontend `3000/api/health` reported `mcp_status=connected`, `remote_tools=56`, `local_tools=4`, `total_tools=60`, and MCP Server `healthy`.
+- `pnpm --filter innomcp-next exec playwright test e2e/chat.spec.ts --project=chromium` passed `11/11` in `1.2m`.
+
+Current blockers:
+
+- `ollama_local` content smoke still times out.
+- GitHub Copilot is still quota-blocked (`402 quota_exceeded`).
+- OpenClaude still refuses the local connection.
+- innova-bot SSE dispatch works, but the model lane can time out or return local-AI fallback when its own backend is degraded.
+- Redis/database are still unavailable, so frontend readiness remains `unhealthy` even while chat/MCP liveness is proven.

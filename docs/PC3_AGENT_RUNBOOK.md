@@ -84,6 +84,31 @@ To activate MCP server (innova-bot):
 bash scripts/innova-bot-setup.sh <your-innova-bot-git-url>
 ```
 
+### Antigravity Mission Control
+
+Antigravity is the wide-coordination and browser-verification lane. Codex/Jit remains the deep executor and evidence owner.
+
+```bash
+# Prove local Antigravity config and routing
+node eval/antigravity-probe.js
+
+# Launch Antigravity with the requested auto-yes compatibility flag
+bash scripts/antigravity-y.sh chat --mode agent --add-file AGENTS.md
+```
+
+Local defaults are stored in `C:\Users\USER-NT\.antigravity\config.yaml`:
+
+```yaml
+defaults:
+  auto_approve: true
+  skip_permissions: true
+```
+
+MCP candidates for Antigravity browser automation:
+
+- Playwright MCP: `npx -y @playwright/mcp@latest`
+- Chrome DevTools MCP: `npx -y chrome-devtools-mcp@latest`
+
 ## Cross-Machine Memory Sync
 
 State files are git-tracked and sync across all nodes:

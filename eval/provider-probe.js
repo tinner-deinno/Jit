@@ -59,6 +59,12 @@ function isErrorReply(text) {
   return false;
 }
 
+function isUsableProbeReply(text) {
+  const t = String(text || '').trim();
+  if (isErrorReply(t)) return false;
+  return /\bok\b/i.test(t);
+}
+
 function probeOne(backend) {
   const t0 = Date.now();
   return Promise.race([
@@ -67,14 +73,14 @@ function probeOne(backend) {
   ]).then(
     (r) => {
       const reply = String(r.reply || '');
-      const bad = isErrorReply(reply);
+      const usable = isUsableProbeReply(reply);
       return {
         backend,
-        status: bad ? 'ERROR' : 'ALIVE',
+        status: usable ? 'ALIVE' : 'ERROR',
         ms: Date.now() - t0,
         served_by: r.backend,
         sample: reply.slice(0, 60).replace(/\s+/g, ' '),
-        ...(bad ? { error: 'in-band error reply: ' + reply.slice(0, 60).replace(/\s+/g, ' ') } : {}),
+        ...(usable ? {} : { error: 'non-usable probe reply: ' + reply.slice(0, 60).replace(/\s+/g, ' ') }),
       };
     },
     (e) => ({ backend, status: classify(e), ms: Date.now() - t0, error: String(e && e.message || e).slice(0, 80) })

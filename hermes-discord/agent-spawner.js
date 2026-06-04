@@ -493,15 +493,16 @@ function listAgents() {
   }).map(function(name) {
     var def = _effectiveAgentDef(name);
     var route = _agentRoute(name);
+    var routeProvider = route && (route.provider || route.backend) || null;
     return {
       name: name,
-      backend: def.backend,
+      backend: routeProvider && !_isModelBackend(routeProvider) ? routeProvider : def.backend,
       model: def.model || '(default)',
       tier: def.tier,
       organ: def.organ,
       cost_tier: route && route.cost_tier || def.cost_tier || null,
       runtime: route && route.runtime || null,
-      route_provider: route && route.provider || null,
+      route_provider: routeProvider,
     };
   }).sort(function(a, b) { return a.tier - b.tier || a.name.localeCompare(b.name); });
 }

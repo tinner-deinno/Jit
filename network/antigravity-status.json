@@ -1,0 +1,48 @@
+{
+  "probed_at": "2026-06-04T18:11:38.053Z",
+  "root": "C:\\Users\\USER-NT\\Jit",
+  "checks": {
+    "config": {
+      "path": "C:\\Users\\USER-NT\\.antigravity\\config.yaml",
+      "ok": true
+    },
+    "wrappers": {
+      "bash": true,
+      "powershell": true
+    },
+    "orchestration": {
+      "ok": true,
+      "mcp_servers": [
+        "playwright",
+        "chrome-devtools"
+      ],
+      "exec_plan_status": "planned: current antigravity 1.107.0 help advertises chat/add-mcp, but not --exec."
+    },
+    "antigravity_mcp": {
+      "path": "C:\\Users\\USER-NT\\AppData\\Roaming\\Antigravity\\User\\mcp.json",
+      "playwright": true,
+      "chrome_devtools": true
+    },
+    "routing": {
+      "provider": true,
+      "agent": true,
+      "rule": true,
+      "validation": true
+    },
+    "registry": {
+      "ok": true
+    }
+  },
+  "antigravity": {
+    "version": [
+      "1.107.0",
+      "15487b3041e65228cae24980a3f796c905ef582c",
+      "x64"
+    ],
+    "version_ok": true,
+    "y_flag_exit_ok": true,
+    "y_flag_warning": true,
+    "chat_help_ok": true
+  },
+  "ok": true
+}

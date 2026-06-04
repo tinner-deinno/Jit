@@ -1,64 +1,64 @@
 {
-  "probed_at_ms": 1780515409907,
-  "timeout_ms": 45000,
+  "probed_at_ms": 1780596768063,
+  "timeout_ms": 70000,
   "usable": [
     "ollama_mdes",
     "ollama_cloud",
-    "thaillm"
+    "thaillm",
+    "openai"
   ],
   "results": {
     "ollama_mdes": {
       "backend": "ollama_mdes",
       "status": "ALIVE",
-      "ms": 7918,
+      "ms": 56958,
       "served_by": "ollama_mdes",
       "sample": "OK"
     },
     "ollama_local": {
       "backend": "ollama_local",
       "status": "UNREACHABLE",
-      "ms": 45013,
+      "ms": 70013,
       "error": "timeout"
     },
     "ollama_cloud": {
       "backend": "ollama_cloud",
       "status": "ALIVE",
-      "ms": 2324,
+      "ms": 2554,
       "served_by": "ollama_cloud",
       "sample": "OK"
     },
     "thaillm": {
       "backend": "thaillm",
       "status": "ALIVE",
-      "ms": 3364,
+      "ms": 2074,
       "served_by": "thaillm",
-      "sample": "<think> Okay, let's see. The user wants me to reply with exa"
+      "sample": "<think> Okay, the user wants me to respond with exactly \"OK\""
     },
     "copilot": {
       "backend": "copilot",
       "status": "RATE_LIMITED",
-      "ms": 12319,
+      "ms": 28827,
       "error": "Copilot CLI failed: 402 {\"error\":{\"message\":\"You have no quota\",\"code\":\"quota_ex"
     },
     "openai": {
       "backend": "openai",
-      "status": "ERROR",
-      "ms": 8541,
-      "error": "Codex CLI failed: 2026-06-03T19:36:09.067575Z  WARN codex_core::shell_snapshot: "
+      "status": "ALIVE",
+      "ms": 7720,
+      "served_by": "openai",
+      "sample": "OK"
     },
     "openclaude": {
       "backend": "openclaude",
       "status": "UNREACHABLE",
-      "ms": 107,
+      "ms": 103,
       "error": "OpenClaude request error: ECONNREFUSED"
     },
     "innova_bot": {
       "backend": "innova_bot",
-      "status": "ERROR",
-      "ms": 2998,
-      "served_by": "innova_bot",
-      "sample": "[SYSTEM OVERRIDE]: Local AI query failed (Ollama may be offl",
-      "error": "in-band error reply: [SYSTEM OVERRIDE]: Local AI query failed (Ollama may be offl"
+      "status": "UNREACHABLE",
+      "ms": 30132,
+      "error": "MCP response timeout for tools/call (30000ms)"
     }
   }
 }

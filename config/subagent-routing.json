@@ -1,13 +1,13 @@
 {
   "version": "1.1",
-  "updated": "2026-06-04",
-  "purpose": "Shared budget-aware routing map for Jit Codex, Jit ClaudeCode, innova-bot, Maw, Oracle, and Ollama lanes.",
+  "updated": "2026-06-05",
+  "purpose": "Shared budget-aware routing map for Jit Codex, Jit ClaudeCode, Antigravity, innova-bot, Maw, Oracle, and Ollama lanes.",
   "policy": {
     "lead_agent": "jit-codex",
     "parent_controller": true,
     "default_agent": "innova",
     "default_provider": "ollama_mdes",
-    "budget_order": ["ollama_mdes", "thaillm", "ollama_cloud", "copilot", "openai", "ollama_local"],
+    "budget_order": ["ollama_mdes", "thaillm", "ollama_local", "ollama_cloud", "antigravity", "copilot", "openai"],
     "advisor_provider": "openai",
     "advisor_model": "gpt-5.5",
     "advisor_policy": "Use GPT-5.5 only for high-risk architecture, hard blockers, final critical review, or user-facing synthesis that cheaper lanes cannot resolve.",
@@ -95,6 +95,19 @@
       "root": "http://127.0.0.1:47778",
       "cost_tier": "local",
       "use_for": ["shared memory", "arra-oracle-v3", "skills and lore lookup"]
+    },
+    "antigravity": {
+      "kind": "cli",
+      "command": "scripts/antigravity-y.sh",
+      "windows_command": "scripts/antigravity-y.ps1",
+      "install_root": "C:\\Users\\USER-NT\\AppData\\Local\\Programs\\Antigravity",
+      "config": "C:\\Users\\USER-NT\\.antigravity\\config.yaml",
+      "auth_source": "Antigravity Google account vault; no secrets are stored in this repo.",
+      "default_mode": "agent",
+      "mcp_servers": ["playwright", "chrome-devtools"],
+      "convergence": "AGENTS.md + SKILL.md",
+      "cost_tier": "local",
+      "use_for": ["wide coordination", "parallel verification", "mission control", "browser MCP automation"]
     }
   },
   "agents": {
@@ -135,6 +148,15 @@
       "call": "maw doctor --json, maw fleet, maw attach, and GUI flows from C:\\Users\\USER-NT\\DEV\\maw-js.",
       "capabilities": ["tmux-remote", "fleet", "gui", "node-movement"],
       "when_to_use": ["move work between machines", "inspect Oracle fleet", "open Oracle GUI"]
+    },
+    "antigravity-mission-control": {
+      "runtime": "antigravity",
+      "provider": "antigravity",
+      "role": "Google-authenticated mission control for wide coordination and parallel verification",
+      "cost_tier": "local",
+      "call": "scripts/antigravity-y.sh chat --mode agent --add-file AGENTS.md --add-file .codex/skills/antigravity-orchestrator/SKILL.md",
+      "capabilities": ["wide-coordination", "parallel-verification", "browser-mcp", "playwright", "chrome-devtools", "plan-exec"],
+      "when_to_use": ["parallel verification", "browser automation", "Gemini/Google account lane", "mission-control orchestration"]
     },
     "oracle-brain": {
       "runtime": "arra-oracle-v3",
@@ -250,6 +272,13 @@
   },
   "routing_rules": [
     {
+      "id": "antigravity-wide-coordination",
+      "match": ["antigravity", "google pro", "gemini", "mission control", "wide coordination", "parallel verification", "devtools mcp", "playwright mcp", "browser automation"],
+      "agent": "antigravity-mission-control",
+      "provider": "antigravity",
+      "reason": "Use Antigravity as Google-authenticated mission control for wide coordination and browser MCP verification while Codex owns deep execution."
+    },
+    {
       "id": "mcp-innomcp-live",
       "match": ["innomcp", "mcp", "sse", "workspace", "innova-bot", "7010"],
       "agent": "innova-bot",
@@ -354,6 +383,7 @@
     "registry_parse": "node -e \"JSON.parse(require('fs').readFileSync('network/registry.json','utf8')); console.log('registry ok')\"",
     "routing_parse": "node -e \"JSON.parse(require('fs').readFileSync('config/subagent-routing.json','utf8')); console.log('routing ok')\"",
     "fleet": "node .codex/skills/agent-fleet-budget/scripts/check-fleet.mjs",
+    "antigravity": "node eval/antigravity-probe.js",
     "readiness": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/oracle-readiness.ps1 -Json",
     "maw": "maw doctor --json"
   }

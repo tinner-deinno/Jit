@@ -11,6 +11,19 @@ const jitRoot = path.resolve(__dirname, "../../../..");
 const modelRouter = await import(pathToFileURL(path.join(jitRoot, "hermes-discord", "model-router.js")).href);
 const smokeMode = process.argv.includes("--smoke");
 
+function isErrorReply(text) {
+  const t = String(text || "").trim();
+  if (!t) return true;
+  return /(system override|query failed|unavailable|not available|backend (failed|error)|i (cannot|can't|am unable)|^error\b|:\s*error|\bnot ok\b)/i.test(t);
+}
+
+function isUsableProbeReply(text, backend) {
+  const t = String(text || "").trim();
+  if (isErrorReply(t)) return false;
+  const name = String(backend || "").replace(/[_-]/g, "[_-]?");
+  return /\bok\b/i.test(t) || (name && new RegExp(name, "i").test(t));
+}
+
 function requestJson(targetUrl, headers = {}, timeoutMs = 5000) {
   return new Promise((resolve) => {
     try {
@@ -302,10 +315,12 @@ async function main() {
         );
         smokeResults.push({
           backend,
-          ok: true,
+          ok: isUsableProbeReply(result.reply, backend),
           usedBackend: result.backend,
           latencyMs: Date.now() - startedAt,
           reply: String(result.reply || "").slice(0, 120),
+          contentUsable: isUsableProbeReply(result.reply, backend),
+          ...(isUsableProbeReply(result.reply, backend) ? {} : { error: "non-usable probe reply" }),
         });
       } catch (error) {
         smokeResults.push({
@@ -326,10 +341,12 @@ async function main() {
         smokeResults.push({
           backend: "thaillm",
           model,
-          ok: true,
+          ok: isUsableProbeReply(result.reply, "thaillm"),
           usedBackend: result.backend,
           latencyMs: Date.now() - startedAt,
           reply: String(result.reply || "").slice(0, 120),
+          contentUsable: isUsableProbeReply(result.reply, "thaillm"),
+          ...(isUsableProbeReply(result.reply, "thaillm") ? {} : { error: "non-usable probe reply" }),
         });
       } catch (error) {
         smokeResults.push({
@@ -342,6 +359,9 @@ async function main() {
       }
     }
     report.smoke = smokeResults;
+    report.contentUsableBackends = Array.from(
+      new Set(smokeResults.filter((item) => item.contentUsable && item.usedBackend === item.backend).map((item) => item.backend))
+    );
   }
 
   console.log(JSON.stringify(report, null, 2));
