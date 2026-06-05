@@ -34,6 +34,20 @@ function has(name) {
   return process.argv.includes(name);
 }
 
+function splitCsv(value) {
+  return String(value || '').split(',').map(s => s.trim()).filter(Boolean);
+}
+
+function normalizeLane(value) {
+  const v = String(value || '').trim().toLowerCase();
+  if (v === 'mdes' || v === 'ollama' || v === 'ollama-mdes') return 'ollama_mdes';
+  if (v === 'thai' || v === 'thai_llm' || v === 'thai-llm') return 'thaillm';
+  if (v === 'local' || v === 'ollama-local') return 'ollama_local';
+  if (v === 'cloud' || v === 'ollama-cloud') return 'ollama_cloud';
+  if (v === 'innova' || v === 'innova-bot') return 'innova_bot';
+  return v;
+}
+
 function intArg(name, fallback, min, max) {
   const n = Math.floor(Number(arg(name, fallback)));
   if (!Number.isFinite(n)) return fallback;
@@ -53,6 +67,8 @@ const FLEET_WORKER_TIMEOUT_MS = intArg('--fleet-worker-timeout-ms', 45000, 5000,
 const SLOW_LANE_MS = intArg('--slow-lane-ms', Math.max(30000, Math.floor(FLEET_WORKER_TIMEOUT_MS * 0.75)), 5000, 300000);
 const FULL_PROBE_EVERY = intArg('--full-probe-every', 6, 1, 1000);
 const QUICK_FLEET_EVERY = intArg('--quick-fleet-every', 6, 1, 1000);
+const FORCED_LANES = splitCsv(arg('--lanes', '')).map(normalizeLane);
+const EXCLUDED_LANES = splitCsv(arg('--exclude-lanes', '')).map(normalizeLane);
 const DRY_RUN = has('--dry-run');
 
 function ensureDirs() {
@@ -194,7 +210,19 @@ function selectLanes(state) {
   const unstable = new Set(unstableLanesFromLatest(latestFleetSummary()));
   const slow = new Set(slowLanesFromProvider(provider));
   let lanes = selected.filter(name => name !== 'innova_bot' && !unstable.has(name) && !slow.has(name));
+  if (FORCED_LANES.length) {
+    lanes = lanes.filter(name => FORCED_LANES.includes(name));
+  }
+  if (EXCLUDED_LANES.length) {
+    lanes = lanes.filter(name => !EXCLUDED_LANES.includes(name));
+  }
   if (!lanes.length) lanes = selected.filter(name => name !== 'innova_bot');
+  if (FORCED_LANES.length) {
+    lanes = lanes.filter(name => FORCED_LANES.includes(name));
+  }
+  if (EXCLUDED_LANES.length) {
+    lanes = lanes.filter(name => !EXCLUDED_LANES.includes(name));
+  }
   const includeInnova = selected.includes('innova_bot');
 
   let includeOpenAI = false;
