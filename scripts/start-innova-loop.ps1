@@ -3,6 +3,7 @@ param(
   [int] $Count = 56,
   [int] $Concurrency = 6,
   [int] $AdvisorThreshold = 8,
+  [double] $MaxHours = 0,
   [switch] $Once,
   [switch] $DryRun,
   [switch] $Help
@@ -10,7 +11,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 if ($Help) {
-  Write-Host "Usage: powershell -File scripts\start-innova-loop.ps1 [-IntervalSeconds 300] [-Count 56] [-Concurrency 6] [-AdvisorThreshold 8] [-Once] [-DryRun]"
+  Write-Host "Usage: powershell -File scripts\start-innova-loop.ps1 [-IntervalSeconds 300] [-Count 56] [-Concurrency 6] [-AdvisorThreshold 8] [-MaxHours 5] [-Once] [-DryRun]"
   exit 0
 }
 
@@ -37,8 +38,12 @@ $argsList = @(
 )
 if ($Once) { $argsList += "--once" }
 if ($DryRun) { $argsList += "--dry-run" }
+if ($MaxHours -gt 0) {
+  $maxRuntimeMs = [long][math]::Round($MaxHours * 3600 * 1000)
+  $argsList += @("--max-runtime-ms", ([string]$maxRuntimeMs))
+}
 
 $cmd = "Set-Location '$Root'; node $($argsList -join ' ') *> '$LogFile'"
 $p = Start-Process powershell -ArgumentList @("-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", $cmd) -WindowStyle Hidden -PassThru
 Set-Content -Path $PidFile -Value $p.Id
-Write-Host "innova loop started pid=$($p.Id) interval=${IntervalSeconds}s count=$Count concurrency=$Concurrency log=$LogFile"
+Write-Host "innova loop started pid=$($p.Id) interval=${IntervalSeconds}s count=$Count concurrency=$Concurrency maxHours=$MaxHours log=$LogFile"

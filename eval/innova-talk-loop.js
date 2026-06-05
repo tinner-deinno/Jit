@@ -39,6 +39,7 @@ function intArg(name, fallback, min, max) {
 
 const INTERVAL_MS = intArg('--interval-ms', 240000, 30000, 3600000);
 const MAX_CYCLES = intArg('--max-cycles', has('--once') ? 1 : 0, 0, 1000000);
+const MAX_RUNTIME_MS = intArg('--max-runtime-ms', 0, 0, 86400000);
 
 function ensureDirs() {
   fs.mkdirSync(LOOP_DIR, { recursive: true });
@@ -84,11 +85,16 @@ function latestFleetLine(report) {
 function providerLine(provider) {
   const results = provider && provider.results ? provider.results : {};
   const usable = Array.isArray(provider.usable) ? provider.usable : [];
+  const probeMode = provider && provider.full_probe === false ? 'partial' : 'full';
+  const probedBackends = Array.isArray(provider && provider.probed_backends) && provider.probed_backends.length
+    ? provider.probed_backends.join(',')
+    : 'all';
   const degraded = Object.entries(results)
     .filter(([, row]) => row && row.status && row.status !== 'ALIVE')
     .slice(0, 4)
     .map(([name, row]) => `${name}:${row.status}`);
   return [
+    `probe=${probeMode}:${probedBackends}`,
     `usable=${usable.length ? usable.join(',') : 'none'}`,
     degraded.length ? `degraded=${degraded.join(',')}` : 'degraded=none',
   ].join(' ');
@@ -152,7 +158,12 @@ async function main() {
   ensureDirs();
   let state = readJson(STATE_PATH, {});
   let cycles = 0;
+  const startedAtMs = Date.now();
   while (true) {
+    if (MAX_RUNTIME_MS && (Date.now() - startedAtMs) >= MAX_RUNTIME_MS) {
+      console.log(`[talk-loop] stopping after max-runtime-ms=${MAX_RUNTIME_MS}`);
+      break;
+    }
     try {
       state = await runHeartbeat(state);
     } catch (error) {
@@ -169,6 +180,10 @@ async function main() {
     }
     cycles++;
     if (MAX_CYCLES && cycles >= MAX_CYCLES) break;
+    if (MAX_RUNTIME_MS && (Date.now() - startedAtMs) >= MAX_RUNTIME_MS) {
+      console.log(`[talk-loop] stopping after max-runtime-ms=${MAX_RUNTIME_MS}`);
+      break;
+    }
     await new Promise(resolve => setTimeout(resolve, INTERVAL_MS));
   }
 }

@@ -1,17 +1,19 @@
 #!/usr/bin/env node
 /**
- * eval/provider-probe.js — Provider liveness probe for the Mother fleet.
+ * eval/provider-probe.js - Provider liveness probe for the Mother fleet.
  *
- * Answers the #1 unknown before any swarm: which model backends are alive,
- * which are rate-limited, which are dead — with latency. Reuses the real
- * call path in hermes-discord/model-router.js (noRotate isolates each backend),
- * so a green here means that backend actually answers a chat request.
+ * Answers the main routing question before any swarm: which model backends are
+ * alive, which are rate-limited, and which are down. It reuses the real call
+ * path in hermes-discord/model-router.js, so a green here means the backend
+ * answered a real chat request.
  *
  * Output:
  *   - markdown table to stdout
- *   - network/provider-status.json  { probed, results: { backend: {...} } }
+ *   - network/provider-status.json { usable, results: { backend: {...} } }
  *
- * Usage: node eval/provider-probe.js [--timeout 20000]
+ * Usage:
+ *   node eval/provider-probe.js [--timeout 20000]
+ *   node eval/provider-probe.js [--timeout 20000] [--backends ollama_mdes,thaillm,innova_bot]
  */
 const fs = require('fs');
 const path = require('path');
@@ -27,13 +29,23 @@ if (fs.existsSync(envPath)) {
 
 const router = require('../hermes-discord/model-router');
 
-const TIMEOUT = (() => {
-  const i = process.argv.indexOf('--timeout');
-  return i > -1 ? parseInt(process.argv[i + 1], 10) : 35000; // generous: ollama_mdes cold-start can take >20s
-})();
+function arg(name, fallback) {
+  const i = process.argv.indexOf(name);
+  return i > -1 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
+}
+
+const TIMEOUT = parseInt(arg('--timeout', '35000'), 10);
 
 // Backends to probe (keys in model-router BackendManager).
-const BACKENDS = ['ollama_mdes', 'ollama_local', 'ollama_cloud', 'thaillm', 'copilot', 'openai', 'openclaude', 'innova_bot'];
+const ALL_BACKENDS = ['ollama_mdes', 'ollama_local', 'ollama_cloud', 'thaillm', 'copilot', 'openai', 'openclaude', 'innova_bot'];
+const REQUESTED_BACKENDS = String(arg('--backends', ''))
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
+const SELECTED_BACKENDS = (REQUESTED_BACKENDS.length ? REQUESTED_BACKENDS : ALL_BACKENDS)
+  .filter((value, index, array) => array.indexOf(value) === index)
+  .filter((value) => ALL_BACKENDS.includes(value));
+const IS_PARTIAL = SELECTED_BACKENDS.length > 0 && SELECTED_BACKENDS.length < ALL_BACKENDS.length;
 
 const PING = [{ role: 'user', content: 'Reply with exactly: OK' }];
 
@@ -45,16 +57,12 @@ function classify(err) {
   return 'ERROR';
 }
 
-// A backend can answer HTTP-200 yet return an in-band error STRING (e.g.
-// innova-bot's ask_local_ai returns "[SYSTEM OVERRIDE]: Local AI query failed"
-// when its own backend is down). The ping asks for "OK", so a healthy reply
-// contains "ok"; treat error-sentinel replies as a degraded ERROR, not ALIVE.
+// A backend can answer HTTP-200 yet return an in-band error string (for example
+// innova-bot when its own backend is down). The ping asks for "OK", so a
+// healthy reply contains "ok"; treat error-sentinel replies as degraded.
 function isErrorReply(text) {
   const t = String(text || '').trim();
   if (!t) return true;
-  // Error sentinels take PRIORITY (per GPT-5.5 review): an error string can also
-  // contain "ok" (e.g. "OK: backend error", "...query failed, ok"), so checking
-  // "ok" first would let those slip through as healthy. Check errors first.
   if (/(system override|query failed|unavailable|not available|backend (failed|error)|i (cannot|can't|am unable)|^error\b|:\s*error|\bnot ok\b)/i.test(t)) return true;
   return false;
 }
@@ -66,50 +74,97 @@ function isUsableProbeReply(text) {
 }
 
 function probeOne(backend) {
-  const t0 = Date.now();
+  const startedAt = Date.now();
   return Promise.race([
     router.callModelPromise(PING, { preferBackend: backend, noRotate: true, model: null }),
-    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), TIMEOUT)),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), TIMEOUT)),
   ]).then(
-    (r) => {
-      const reply = String(r.reply || '');
+    (response) => {
+      const reply = String(response.reply || '');
       const usable = isUsableProbeReply(reply);
       return {
         backend,
         status: usable ? 'ALIVE' : 'ERROR',
-        ms: Date.now() - t0,
-        served_by: r.backend,
+        ms: Date.now() - startedAt,
+        served_by: response.backend,
         sample: reply.slice(0, 60).replace(/\s+/g, ' '),
         ...(usable ? {} : { error: 'non-usable probe reply: ' + reply.slice(0, 60).replace(/\s+/g, ' ') }),
       };
     },
-    (e) => ({ backend, status: classify(e), ms: Date.now() - t0, error: String(e && e.message || e).slice(0, 80) })
+    (error) => ({
+      backend,
+      status: classify(error),
+      ms: Date.now() - startedAt,
+      error: String(error && error.message || error).slice(0, 80),
+    })
   );
 }
 
-(async () => {
-  console.log(`\n[provider-probe] timeout=${TIMEOUT}ms  probing ${BACKENDS.length} backends...\n`);
-  const results = {};
-  // Probe in parallel — independent backends.
-  const arr = await Promise.all(BACKENDS.map(probeOne));
-  for (const r of arr) results[r.backend] = r;
+function readPrevious(outPath) {
+  try {
+    return JSON.parse(fs.readFileSync(outPath, 'utf8'));
+  } catch (_) {
+    return { results: {}, usable: [] };
+  }
+}
 
-  const icon = { ALIVE: '🟢', RATE_LIMITED: '🟡', AUTH: '🔑', UNREACHABLE: '🔌', ERROR: '🔴' };
-  console.log('| backend | status | latency | detail |');
-  console.log('|---|---|---|---|');
-  for (const b of BACKENDS) {
-    const r = results[b];
-    const detail = r.status === 'ALIVE'
-      ? `served_by=${r.served_by}${r.served_by !== b ? ' ⚠fell-back' : ''} "${r.sample}"`
-      : (r.error || '');
-    console.log(`| ${b} | ${icon[r.status] || ''} ${r.status} | ${r.ms}ms | ${detail} |`);
+function computeUsable(results) {
+  return Object.entries(results)
+    .filter(([backend, row]) => row && row.status === 'ALIVE' && row.served_by === backend)
+    .map(([backend]) => backend)
+    .sort();
+}
+
+(async () => {
+  if (!SELECTED_BACKENDS.length) {
+    console.error('[provider-probe] no valid backends selected');
+    process.exit(1);
   }
 
-  const alive = arr.filter(r => r.status === 'ALIVE' && r.served_by === r.backend).map(r => r.backend);
-  console.log(`\n[provider-probe] usable (answered as themselves): ${alive.length ? alive.join(', ') : 'NONE'}`);
+  console.log(`\n[provider-probe] timeout=${TIMEOUT}ms probing ${SELECTED_BACKENDS.length} backends...\n`);
+  const results = {};
+  const probedAtMs = Date.now();
+  const arr = await Promise.all(SELECTED_BACKENDS.map(probeOne));
+  for (const row of arr) {
+    results[row.backend] = {
+      ...row,
+      probed_at_ms: probedAtMs,
+    };
+  }
 
-  const out = { probed_at_ms: Date.now(), timeout_ms: TIMEOUT, usable: alive, results };
   const outPath = path.join(__dirname, '..', 'network', 'provider-status.json');
+  const previous = readPrevious(outPath);
+  const mergedResults = { ...(previous.results || {}), ...results };
+
+  const icon = { ALIVE: 'ok', RATE_LIMITED: 'limit', AUTH: 'auth', UNREACHABLE: 'down', ERROR: 'bad' };
+  console.log('| backend | status | latency | detail |');
+  console.log('|---|---|---|---|');
+  for (const backend of SELECTED_BACKENDS) {
+    const row = results[backend];
+    const detail = row.status === 'ALIVE'
+      ? `served_by=${row.served_by}${row.served_by !== backend ? ' fallback' : ''} "${row.sample}"`
+      : (row.error || '');
+    console.log(`| ${backend} | ${icon[row.status] || ''} ${row.status} | ${row.ms}ms | ${detail} |`);
+  }
+
+  const usable = computeUsable(results);
+  const cachedUsable = computeUsable(mergedResults);
+  console.log(`\n[provider-probe] usable (fresh probe): ${usable.length ? usable.join(', ') : 'NONE'}`);
+  if (IS_PARTIAL) {
+    const stale = ALL_BACKENDS.filter((backend) => !SELECTED_BACKENDS.includes(backend));
+    console.log(`[provider-probe] partial probe preserved cached rows for: ${stale.join(', ') || 'none'}`);
+    console.log(`[provider-probe] cached usable outside this probe: ${cachedUsable.filter((backend) => !usable.includes(backend)).join(', ') || 'none'}`);
+  }
+
+  const out = {
+    probed_at_ms: probedAtMs,
+    timeout_ms: TIMEOUT,
+    full_probe: !IS_PARTIAL,
+    probed_backends: SELECTED_BACKENDS,
+    usable,
+    cached_usable: cachedUsable,
+    results: mergedResults,
+  };
   fs.writeFileSync(outPath, JSON.stringify(out, null, 2));
   console.log(`[provider-probe] wrote ${path.relative(path.join(__dirname, '..'), outPath)}`);
   process.exit(0);

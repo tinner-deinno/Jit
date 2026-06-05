@@ -42,11 +42,14 @@ function intArg(name, fallback, min, max) {
 
 const INTERVAL_MS = intArg('--interval-ms', 300000, 60000, 3600000);
 const MAX_CYCLES = intArg('--max-cycles', has('--once') ? 1 : 0, 0, 1000000);
+const MAX_RUNTIME_MS = intArg('--max-runtime-ms', 0, 0, 86400000);
 const COUNT = intArg('--count', 56, 51, 200);
 const CONCURRENCY = intArg('--concurrency', 6, 1, 12);
 const PROVIDER_TIMEOUT = intArg('--provider-timeout', 70000, 10000, 120000);
 const ADVISOR_THRESHOLD = intArg('--advisor-threshold', 8, 1, 100);
 const FLEET_TIMEOUT = intArg('--fleet-timeout-ms', 900000, 120000, 3600000);
+const FULL_PROBE_EVERY = intArg('--full-probe-every', 6, 1, 1000);
+const QUICK_FLEET_EVERY = intArg('--quick-fleet-every', 6, 1, 1000);
 const DRY_RUN = has('--dry-run');
 
 function ensureDirs() {
@@ -83,6 +86,19 @@ function run(command, args, options = {}) {
     stdout: String(r.stdout || '').trim(),
     stderr: String(r.stderr || '').trim(),
     error: r.error ? r.error.message : '',
+  };
+}
+
+function skippedRun(label) {
+  return {
+    command: label,
+    ok: true,
+    status: 0,
+    ms: 0,
+    stdout: '',
+    stderr: '',
+    error: '',
+    skipped: true,
   };
 }
 
@@ -129,6 +145,25 @@ function selectLanes(state) {
     includeOpenAI,
     provider,
   };
+}
+
+function uniqueList(values) {
+  return Array.from(new Set((values || []).filter(Boolean)));
+}
+
+function planProviderProbe(state, cycle) {
+  const failureStreak = Number(state.failureStreak || 0);
+  const fullProbe = cycle === 1 || cycle % FULL_PROBE_EVERY === 0 || failureStreak >= ADVISOR_THRESHOLD;
+  const quickBackends = ['ollama_mdes', 'thaillm', 'innova_bot'];
+  if (failureStreak >= Math.max(1, ADVISOR_THRESHOLD - 1)) quickBackends.push('openai');
+  return {
+    fullProbe,
+    backends: fullProbe ? [] : uniqueList(quickBackends),
+  };
+}
+
+function shouldRefreshQuickFleet(state, cycle) {
+  return cycle === 1 || cycle % QUICK_FLEET_EVERY === 0 || Number(state.failureStreak || 0) > 0;
 }
 
 function latestFleetArtifact() {
@@ -291,6 +326,8 @@ function writeReportMarkdown(report) {
 async function runCycle(state) {
   const cycle = Number(state.cycle || 0) + 1;
   const startedAt = new Date().toISOString();
+  const probePlan = planProviderProbe(state, cycle);
+  const refreshQuickFleet = shouldRefreshQuickFleet(state, cycle);
   console.log(`[loop] cycle=${cycle} start ${startedAt}`);
 
   const snapshots = {
@@ -298,8 +335,14 @@ async function runCycle(state) {
     mawTeam: run('maw', ['team', 'status'], { timeout: 30000 }),
     mawTasks: run('maw', ['t', 'status'], { timeout: 30000 }),
     statusBoard: run('node', ['eval/status-board.js', '--json'], { timeout: 30000 }),
-    quickFleet: run('node', ['.codex/skills/agent-fleet-budget/scripts/check-fleet.mjs'], { timeout: 120000 }),
-    providerProbe: run('node', ['eval/provider-probe.js', '--timeout', String(PROVIDER_TIMEOUT)], { timeout: PROVIDER_TIMEOUT + 30000 }),
+    quickFleet: refreshQuickFleet
+      ? run('node', ['.codex/skills/agent-fleet-budget/scripts/check-fleet.mjs'], { timeout: 120000 })
+      : skippedRun('quickFleet skipped'),
+    providerProbe: (() => {
+      const args = ['eval/provider-probe.js', '--timeout', String(PROVIDER_TIMEOUT)];
+      if (!probePlan.fullProbe && probePlan.backends.length) args.push('--backends', probePlan.backends.join(','));
+      return run('node', args, { timeout: PROVIDER_TIMEOUT + 30000 });
+    })(),
   };
 
   const route = selectLanes(state);
@@ -354,8 +397,13 @@ async function runCycle(state) {
       omxStatus: { ok: snapshots.omxStatus.ok, ms: snapshots.omxStatus.ms },
       mawTeam: { ok: snapshots.mawTeam.ok, ms: snapshots.mawTeam.ms },
       mawTasks: { ok: snapshots.mawTasks.ok, ms: snapshots.mawTasks.ms },
-      quickFleet: { ok: snapshots.quickFleet.ok, ms: snapshots.quickFleet.ms },
-      providerProbe: { ok: snapshots.providerProbe.ok, ms: snapshots.providerProbe.ms },
+      quickFleet: { ok: snapshots.quickFleet.ok, ms: snapshots.quickFleet.ms, skipped: Boolean(snapshots.quickFleet.skipped) },
+      providerProbe: {
+        ok: snapshots.providerProbe.ok,
+        ms: snapshots.providerProbe.ms,
+        mode: probePlan.fullProbe ? 'full' : 'quick',
+        backends: probePlan.fullProbe ? ['all'] : probePlan.backends,
+      },
     },
     fleetCommand: ['node'].concat(fleetArgs).join(' '),
     fleetOk: fleet.ok,
@@ -391,10 +439,19 @@ async function main() {
   ensureDirs();
   let state = loadState();
   let cycles = 0;
+  const startedAtMs = Date.now();
   while (true) {
+    if (MAX_RUNTIME_MS && (Date.now() - startedAtMs) >= MAX_RUNTIME_MS) {
+      console.log(`[loop] stopping after max-runtime-ms=${MAX_RUNTIME_MS}`);
+      break;
+    }
     state = await runCycle(state);
     cycles++;
     if (MAX_CYCLES && cycles >= MAX_CYCLES) break;
+    if (MAX_RUNTIME_MS && (Date.now() - startedAtMs) >= MAX_RUNTIME_MS) {
+      console.log(`[loop] stopping after max-runtime-ms=${MAX_RUNTIME_MS}`);
+      break;
+    }
     await new Promise(resolve => setTimeout(resolve, INTERVAL_MS));
   }
 }
