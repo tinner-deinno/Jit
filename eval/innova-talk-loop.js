@@ -19,6 +19,8 @@ const LOOP_DIR = path.join(ROOT, 'network', 'loop');
 const STATE_PATH = path.join(LOOP_DIR, 'innova-talk-loop-state.json');
 const LATEST_JSON = path.join(LOOP_DIR, 'latest-report.json');
 const LATEST_MD = path.join(LOOP_DIR, 'latest-report.md');
+const LATEST_FLEET_PROGRESS = path.join(LOOP_DIR, 'latest-fleet-progress.json');
+const LATEST_VISUAL = path.join(LOOP_DIR, 'latest-visual.json');
 const PROVIDER_STATUS = path.join(ROOT, 'network', 'provider-status.json');
 const INNOMCP_ROOT = process.env.INNOMCP_ROOT || 'C:\\Users\\USER-NT\\DEV\\innomcp';
 
@@ -82,6 +84,29 @@ function latestFleetLine(report) {
   return `fleet=${summary.ok}/${summary.completed} ok fail=${summary.fail} run=${summary.runId || 'unknown'}`;
 }
 
+function fleetProgressLine(progress) {
+  const summary = progress && progress.summary;
+  if (!summary) return 'progress=none';
+  const latest = progress.latest;
+  const parts = [
+    `progress=${summary.completed}/${summary.count}`,
+    `ok=${summary.ok}`,
+    `fail=${summary.fail}`,
+    `label=${progress.label || 'unknown'}`,
+  ];
+  if (latest && latest.workerId) parts.push(`latest=${latest.workerId}:${latest.backend}:${latest.ok ? 'ok' : 'fail'}`);
+  return parts.join(' ');
+}
+
+function visualLine(visual) {
+  if (!visual) return 'visual=none';
+  if (visual.ok) {
+    return `visual=ok status=${visual.signal && visual.signal.status ? visual.signal.status : 0} title=${shortText(visual.signal && visual.signal.title || '', 60) || '(none)'}`;
+  }
+  const error = visual.fatal || visual.playwright && visual.playwright.error || visual.devtools && visual.devtools.error || 'unknown';
+  return `visual=fail error=${shortText(error, 120)}`;
+}
+
 function providerLine(provider) {
   const results = provider && provider.results ? provider.results : {};
   const usable = Array.isArray(provider.usable) ? provider.usable : [];
@@ -123,6 +148,8 @@ async function runHeartbeat(state) {
   const tick = Number(state.tick || 0) + 1;
   const startedAt = new Date().toISOString();
   const report = readJson(LATEST_JSON, {});
+  const progress = readJson(LATEST_FLEET_PROGRESS, {});
+  const visual = readJson(LATEST_VISUAL, null);
   const provider = readJson(PROVIDER_STATUS, {});
   const latestMd = fs.existsSync(LATEST_MD) ? shortText(fs.readFileSync(LATEST_MD, 'utf8'), 700) : '';
   const message = [
@@ -131,6 +158,8 @@ async function runHeartbeat(state) {
     `motherCycle=${report.cycle || 'unknown'} status=${report.status || 'unknown'} failureStreak=${report.failureStreak ?? 'unknown'}`,
     `lanes=${Array.isArray(report.selectedLanes) ? report.selectedLanes.join(',') : 'unknown'} advisor=${report.advisorUsed ? 'used' : 'off'}`,
     latestFleetLine(report),
+    fleetProgressLine(progress),
+    visualLine(visual),
     providerLine(provider),
     innomcpLine(),
     'instruction=continue innomcp ticket clearing; report blockers only with exact evidence.',
@@ -147,6 +176,8 @@ async function runHeartbeat(state) {
     lastOk: true,
     lastCycle: report.cycle || null,
     lastInnomcp: innomcpLine(),
+    lastProgress: fleetProgressLine(progress),
+    lastVisual: visualLine(visual),
     lastResponse: shortText(JSON.stringify(result), 500),
   };
   writeJson(STATE_PATH, nextState);

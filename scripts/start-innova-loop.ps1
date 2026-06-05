@@ -1,7 +1,7 @@
 param(
   [int] $IntervalSeconds = 300,
-  [int] $Count = 56,
-  [int] $Concurrency = 6,
+  [int] $Count = 84,
+  [int] $Concurrency = 8,
   [int] $AdvisorThreshold = 8,
   [double] $MaxHours = 0,
   [switch] $Once,
@@ -11,7 +11,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 if ($Help) {
-  Write-Host "Usage: powershell -File scripts\start-innova-loop.ps1 [-IntervalSeconds 300] [-Count 56] [-Concurrency 6] [-AdvisorThreshold 8] [-MaxHours 5] [-Once] [-DryRun]"
+  Write-Host "Usage: powershell -File scripts\start-innova-loop.ps1 [-IntervalSeconds 300] [-Count 84] [-Concurrency 8] [-AdvisorThreshold 8] [-MaxHours 5] [-Once] [-DryRun]"
   exit 0
 }
 

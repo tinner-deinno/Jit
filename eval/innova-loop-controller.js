@@ -24,6 +24,8 @@ const STATE_PATH = path.join(LOOP_DIR, 'innova-loop-state.json');
 const LATEST_REPORT = path.join(LOOP_DIR, 'latest-report.md');
 const LATEST_JSON = path.join(LOOP_DIR, 'latest-report.json');
 const CURRENT_GOAL = path.join(LOOP_DIR, 'current-goal.txt');
+const LATEST_VISUAL = path.join(LOOP_DIR, 'latest-visual.json');
+const ROUTING_PATH = path.join(ROOT, 'config', 'subagent-routing.json');
 
 function arg(name, fallback) {
   const i = process.argv.indexOf(name);
@@ -57,16 +59,21 @@ function intArg(name, fallback, min, max) {
 const INTERVAL_MS = intArg('--interval-ms', 300000, 60000, 3600000);
 const MAX_CYCLES = intArg('--max-cycles', has('--once') ? 1 : 0, 0, 1000000);
 const MAX_RUNTIME_MS = intArg('--max-runtime-ms', 0, 0, 86400000);
-const COUNT = intArg('--count', 56, 51, 200);
-const CONCURRENCY = intArg('--concurrency', 6, 1, 12);
+const COUNT = intArg('--count', 84, 51, 200);
+const CONCURRENCY = intArg('--concurrency', 8, 1, 12);
 const PROVIDER_TIMEOUT = intArg('--provider-timeout', 70000, 10000, 120000);
 const ADVISOR_THRESHOLD = intArg('--advisor-threshold', 8, 1, 100);
 const FLEET_TIMEOUT = intArg('--fleet-timeout-ms', 900000, 120000, 3600000);
 const FLEET_ATTEMPTS = intArg('--fleet-attempts', 1, 1, 4);
 const FLEET_WORKER_TIMEOUT_MS = intArg('--fleet-worker-timeout-ms', 45000, 5000, 180000);
+const NOTIFY_EVERY = intArg('--notify-every', Math.max(4, Math.min(CONCURRENCY, 8)), 1, 200);
 const SLOW_LANE_MS = intArg('--slow-lane-ms', Math.max(30000, Math.floor(FLEET_WORKER_TIMEOUT_MS * 0.75)), 5000, 300000);
 const FULL_PROBE_EVERY = intArg('--full-probe-every', 6, 1, 1000);
 const QUICK_FLEET_EVERY = intArg('--quick-fleet-every', 6, 1, 1000);
+const VISUAL_EVERY = intArg('--visual-every', 1, 0, 1000);
+const VISUAL_TIMEOUT_MS = intArg('--visual-timeout-ms', 90000, 10000, 300000);
+const VISUAL_URL = arg('--visual-url', process.env.INNOVA_VISUAL_URL || 'http://127.0.0.1:7010/gui');
+const INCLUDE_INNOVA_WORKER_LANE = has('--include-innova-worker-lane');
 const FORCED_LANES = splitCsv(arg('--lanes', '')).map(normalizeLane);
 const EXCLUDED_LANES = splitCsv(arg('--exclude-lanes', '')).map(normalizeLane);
 const DRY_RUN = has('--dry-run');
@@ -148,6 +155,14 @@ function shortText(text, limit = 1200) {
     .slice(0, limit);
 }
 
+function routingBudgetOrder() {
+  const config = readJson(ROUTING_PATH, {});
+  const configured = Array.isArray(config && config.policy && config.policy.budget_order)
+    ? config.policy.budget_order.map(normalizeLane)
+    : [];
+  return uniqueList(configured.concat(['ollama_mdes', 'thaillm', 'ollama_cloud', 'copilot', 'ollama_local', 'innova_bot', 'openai']));
+}
+
 function loadState() {
   return {
     cycle: 0,
@@ -163,8 +178,7 @@ function loadState() {
 function getUsableProviders() {
   const provider = readJson(path.join(ROOT, 'network', 'provider-status.json'), { usable: [], results: {} });
   const usable = new Set(Array.isArray(provider.usable) ? provider.usable : []);
-  const lowCostOrder = ['ollama_mdes', 'thaillm', 'ollama_local', 'ollama_cloud', 'innova_bot', 'copilot'];
-  const selected = lowCostOrder.filter(name => usable.has(name));
+  const selected = routingBudgetOrder().filter(name => usable.has(name));
 
   return { provider, selected };
 }
@@ -223,7 +237,7 @@ function selectLanes(state) {
   if (EXCLUDED_LANES.length) {
     lanes = lanes.filter(name => !EXCLUDED_LANES.includes(name));
   }
-  const includeInnova = selected.includes('innova_bot');
+  const includeInnova = INCLUDE_INNOVA_WORKER_LANE && selected.includes('innova_bot');
 
   let includeOpenAI = false;
   if (state.failureStreak >= ADVISOR_THRESHOLD && provider.usable && provider.usable.includes('openai')) {
@@ -259,6 +273,24 @@ function shouldRefreshQuickFleet(state, cycle) {
   return cycle === 1 || cycle % QUICK_FLEET_EVERY === 0 || Number(state.failureStreak || 0) > 0;
 }
 
+function shouldRunVisual(cycle) {
+  return VISUAL_EVERY > 0 && (cycle === 1 || cycle % VISUAL_EVERY === 0);
+}
+
+function parseTrailingJson(stdout) {
+  const text = String(stdout || '');
+  try {
+    return JSON.parse(text);
+  } catch (_) {}
+  const start = text.lastIndexOf('\n{');
+  if (start < 0) return null;
+  try {
+    return JSON.parse(text.slice(start + 1));
+  } catch (_) {
+    return null;
+  }
+}
+
 function makeGoal(cycle, snapshots, lanes) {
   const teamStatus = shortText(snapshots.mawTeam.stdout || snapshots.mawTeam.stderr, 550);
   const taskStatus = shortText(snapshots.mawTasks.stdout || snapshots.mawTasks.stderr, 550);
@@ -281,19 +313,7 @@ function makeGoal(cycle, snapshots, lanes) {
 }
 
 function parseFleetSummary(stdout) {
-  const text = String(stdout || '');
-  try {
-    return JSON.parse(text);
-  } catch (_) {
-    // fleet-batch logs progress first, then prints a final JSON block.
-  }
-  const start = text.lastIndexOf('\n{');
-  if (start < 0) return null;
-  try {
-    return JSON.parse(text.slice(start + 1));
-  } catch (_) {
-    return null;
-  }
+  return parseTrailingJson(stdout);
 }
 
 function postJson(targetUrl, headers, payload, timeoutMs) {
@@ -377,11 +397,24 @@ function writeReportMarkdown(report) {
     const s = report.fleetSummary.summary;
     lines.push(`- Run: ${s.runId}`);
     lines.push(`- Result: ${s.ok}/${s.completed} OK, fail=${s.fail}, pending=${s.pending}, count=${s.count}`);
+    if (s.roster) lines.push(`- Workers: ${s.roster.completedWorkers || 0}/${s.roster.plannedWorkers || s.count} done, personas=${s.roster.uniquePersonas || 0}`);
     for (const [backend, row] of Object.entries(s.byBackend || {})) {
       lines.push(`- ${backend}: ${row.ok}/${row.total} OK, avg ${row.avgLatencyMs}ms`);
     }
   } else {
     lines.push(`- Fleet batch failed or dry-run: ${report.fleetError || 'none'}`);
+  }
+  lines.push('', '## Visual', '');
+  if (report.visual && report.visual.ok) {
+    lines.push(`- Target: ${report.visual.url}`);
+    lines.push(`- Status: ok`);
+    if (report.visual.signal) lines.push(`- Signal: status=${report.visual.signal.status || 0} title=${report.visual.signal.title || '(none)'}`);
+  } else if (report.visual) {
+    lines.push(`- Target: ${report.visual.url || VISUAL_URL}`);
+    lines.push(`- Status: failed`);
+    lines.push(`- Error: ${report.visual.fatal || report.visual.playwright && report.visual.playwright.error || report.visual.devtools && report.visual.devtools.error || 'unknown'}`);
+  } else {
+    lines.push('- Visual probe skipped');
   }
   lines.push('', '## Notifications', '');
   lines.push(`- innova-bot: ${report.innovaNotify.ok ? 'ok' : 'failed'}${report.innovaNotify.error ? ' - ' + report.innovaNotify.error : ''}`);
@@ -427,6 +460,7 @@ async function runCycle(state) {
     '--goal-file', path.relative(ROOT, CURRENT_GOAL).replace(/\\/g, '/'),
     '--count', String(COUNT),
     '--concurrency', String(CONCURRENCY),
+    '--notify-every', String(NOTIFY_EVERY),
     '--attempts', String(FLEET_ATTEMPTS),
     '--worker-timeout-ms', String(FLEET_WORKER_TIMEOUT_MS),
     '--lanes', route.lanes.join(','),
@@ -448,11 +482,19 @@ async function runCycle(state) {
   const advisorUsed = route.includeOpenAI;
   const finishedAt = new Date().toISOString();
   const latestFleet = latestFleetArtifact();
+  const visualRun = shouldRunVisual(cycle)
+    ? run('node', ['eval/visual-probe.js', '--url', VISUAL_URL, '--run-id', `visual-cycle-${cycle}`, '--timeout-ms', String(VISUAL_TIMEOUT_MS)], { timeout: VISUAL_TIMEOUT_MS + 15000 })
+    : skippedRun('visual skipped');
+  const visualSummary = shouldRunVisual(cycle)
+    ? (parseTrailingJson(visualRun.stdout) || readJson(LATEST_VISUAL, null))
+    : null;
 
   const compact = [
     `Jit Mother loop cycle ${cycle}: ${ok ? 'PASS' : 'DEGRADED'}`,
     `lanes=${route.lanes.join(',')} count=${COUNT} ok=${summary ? summary.ok : 'n/a'}/${summary ? summary.completed : 'n/a'}`,
+    `workers=${summary && summary.roster ? `${summary.roster.completedWorkers || 0}/${summary.roster.plannedWorkers || COUNT}` : 'n/a'}`,
     `failStreak=${nextFailureStreak} advisor=${advisorUsed ? 'openai' : 'off'}`,
+    `visual=${visualSummary && visualSummary.ok ? 'ok' : (shouldRunVisual(cycle) ? 'failed' : 'skipped')}`,
     `artifact=${latestFleet ? path.relative(ROOT, latestFleet).replace(/\\/g, '/') : 'none'}`,
   ].join('\n');
 
@@ -485,6 +527,13 @@ async function runCycle(state) {
     fleetMs: fleet.ms,
     fleetError: shortText((fleet.stderr || fleet.error || '').trim(), 500),
     fleetSummary,
+    visual: visualSummary,
+    visualRun: {
+      ok: visualRun.ok,
+      ms: visualRun.ms,
+      skipped: Boolean(visualRun.skipped),
+      error: shortText((visualRun.stderr || visualRun.error || '').trim(), 300),
+    },
     latestFleetArtifact: latestFleet,
     innovaNotify,
     discordNotify,

@@ -4,9 +4,13 @@
 /**
  * eval/fleet-batch.js - bounded multi-provider worker batch for Mother.
  *
- * Exercises 50+ real model-lane workers without promoting GPT-5.5 to the main
- * worker lane. Outputs artifacts and appends one Mother event for continuity.
+ * Goals:
+ * - run an honest 80+ worker fleet when requested
+ * - keep GPT-5.5 out of the main worker lane
+ * - notify innova-bot on partial progress without waiting for full-cycle end
+ * - emit local progress artifacts for the heartbeat loop and reports
  */
+
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
@@ -15,6 +19,11 @@ const crypto = require('crypto');
 const childProcess = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
+const LOOP_DIR = path.join(ROOT, 'network', 'loop');
+const PROGRESS_PATH = path.join(LOOP_DIR, 'latest-fleet-progress.json');
+const REGISTRY_PATH = path.join(ROOT, 'network', 'registry.json');
+const ROUTING_PATH = path.join(ROOT, 'config', 'subagent-routing.json');
+
 const envPath = path.join(ROOT, '.env');
 if (fs.existsSync(envPath)) {
   for (const line of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
@@ -56,115 +65,34 @@ function normalizeLane(value) {
   return v;
 }
 
-const COUNT = posInt(arg('--count', process.env.FLEET_BATCH_COUNT || 56), 56, 1, 200);
-const CONCURRENCY = posInt(arg('--concurrency', process.env.FLEET_BATCH_CONCURRENCY || 6), 6, 1, 12);
-function goalFromArgs() {
-  const goalFile = arg('--goal-file', '');
-  if (goalFile) {
-    const resolved = path.resolve(ROOT, goalFile);
-    return fs.readFileSync(resolved, 'utf8').trim();
+function readJson(file, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (_) {
+    return fallback;
   }
-  return arg('--goal', 'Harden Jit Mother and innomcp tonight: find concrete risks, propose the next safe fix, and keep evidence concise.');
-}
-const GOAL = goalFromArgs();
-const INCLUDE_OPENAI = has('--include-openai');
-const INCLUDE_INNOVA_BOT = has('--include-innova-bot');
-const REQUESTED_LANES = splitCsv(arg('--lanes', process.env.FLEET_BATCH_LANES || '')).map(normalizeLane);
-const EXCLUDED_LANES = splitCsv(arg('--exclude-lanes', process.env.FLEET_BATCH_EXCLUDE_LANES || '')).map(normalizeLane);
-const DISCORD = !has('--no-discord');
-const DISCORD_INTERVAL_MS = posInt(arg('--discord-interval-ms', process.env.FLEET_DISCORD_INTERVAL_MS || 600000), 600000, 60000, 3600000);
-const MAX_ATTEMPTS = posInt(arg('--attempts', process.env.FLEET_BATCH_ATTEMPTS || 2), 2, 1, 4);
-const WORKER_TIMEOUT_MS = posInt(arg('--worker-timeout-ms', process.env.FLEET_WORKER_TIMEOUT_MS || 45000), 45000, 5000, 180000);
-const REQUIRE_MIN_COUNT = posInt(arg('--require-min-count', process.env.FLEET_REQUIRE_MIN_COUNT || 0), 0, 0, 200);
-const REQUIRE_MIN_OK = posInt(arg('--require-min-ok', process.env.FLEET_REQUIRE_MIN_OK || REQUIRE_MIN_COUNT), REQUIRE_MIN_COUNT, 0, 200);
-const RUN_ID = 'fleet-batch-' + new Date().toISOString().replace(/[:.]/g, '-');
-const ARTIFACT_DIR = path.join(ROOT, 'network', 'artifacts', RUN_ID);
-const BACKEND_LIMITS = {
-  ollama_mdes: 1,
-  thaillm: 4,
-  ollama_cloud: 4,
-  copilot: 2,
-  openai: 1,
-  innova_bot: 1,
-};
-
-const AGENTS = [
-  'jit', 'innova', 'soma', 'lak', 'neta', 'chamu', 'vaja', 'mue',
-  'pada', 'netra', 'karn', 'pran', 'sayanprasathan', 'agent-mdes',
-  'agent-thaillm', 'agent-copilot',
-];
-
-function laneDefinitions() {
-  const status = router.status();
-  const thaiModels = status.backends.thaillm?.models || [
-    'openthaigpt-thaillm-8b-instruct-v7.2',
-    'pathumma-thaillm-qwen3-8b-think-3.0.0',
-    'typhoon-s-thaillm-8b-instruct',
-    'thalle-0.2-thaillm-8b-fa',
-  ];
-  const cloudModels = splitCsv(process.env.OLLAMA_CLOUD_MODELS || 'gemma4:31b-cloud,nemotron-3-super:cloud');
-  let lanes = [
-    { backend: 'ollama_mdes', models: [status.backends.ollama_mdes?.model || 'gemma4:26b'], weight: 18 },
-    { backend: 'thaillm', models: thaiModels, weight: 16 },
-    { backend: 'ollama_cloud', models: cloudModels, weight: 16 },
-    { backend: 'copilot', models: ['claude-sonnet-4.6', null], weight: 10 },
-  ];
-  if (INCLUDE_OPENAI) lanes.push({ backend: 'openai', models: [status.backends.openai?.model || null], weight: 2 });
-  if (INCLUDE_INNOVA_BOT) lanes.push({ backend: 'innova_bot', models: [status.backends.innova_bot?.model || null], weight: 2 });
-  if (REQUESTED_LANES.length) {
-    lanes = lanes.filter(lane => REQUESTED_LANES.includes(lane.backend));
-  }
-  if (EXCLUDED_LANES.length) {
-    lanes = lanes.filter(lane => !EXCLUDED_LANES.includes(lane.backend));
-  }
-  if (!lanes.length) {
-    throw new Error('No fleet lanes selected. Check --lanes/--exclude-lanes.');
-  }
-  return lanes;
 }
 
-function buildJobs() {
-  const lanes = laneDefinitions();
-  const weighted = [];
-  const maxWeight = Math.max(...lanes.map(l => l.weight));
-  for (let round = 0; round < maxWeight; round++) {
-    for (const lane of lanes) {
-      if (round < lane.weight) weighted.push(lane);
-    }
-  }
-  const jobs = [];
-  const modelCursor = {};
-  for (let i = 0; i < COUNT; i++) {
-    const lane = weighted[i % weighted.length];
-    const cursorKey = lane.backend;
-    const cursor = modelCursor[cursorKey] || 0;
-    const model = lane.models[cursor % lane.models.length] || null;
-    modelCursor[cursorKey] = cursor + 1;
-    const agent = AGENTS[i % AGENTS.length];
-    jobs.push({ id: i + 1, backend: lane.backend, model, agent });
-  }
-  return jobs;
+function writeJson(file, value) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n');
 }
 
-function jobPrompt(job) {
-  return [
-    'Bounded Jit Mother worker. Reply concise and evidence-first in Thai or mixed Thai/English.',
-    '',
-    'Task:',
-    GOAL,
-    '',
-    'Lens: ' + job.agent,
-    'Lane: ' + job.backend + (job.model ? ' / ' + job.model : ' / default'),
-    'Give one actionable next step or risk with confidence 0-100. No file edits or commands.',
-  ].join('\n');
+function uniqueList(values) {
+  return Array.from(new Set((values || []).filter(Boolean)));
 }
 
-function classifyReply(reply) {
-  const text = String(reply || '').trim();
-  if (!text) return { ok: false, score: 0 };
-  const m = text.match(/\bconfidence\s*[:=]?\s*(\d{1,3})\b/i) || text.match(/\b(\d{1,3})\s*%/);
-  const score = Math.max(1, Math.min(100, m ? Number(m[1]) : 70));
-  return { ok: true, score };
+function safeSlug(value) {
+  const slug = String(value || 'default')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+  return slug || 'default';
+}
+
+function shortText(text, limit = 200) {
+  return String(text || '').replace(/\s+/g, ' ').trim().slice(0, limit);
 }
 
 function sleep(ms) {
@@ -179,6 +107,269 @@ function withTimeout(promise, timeoutMs, label) {
   return Promise.race([promise, timeout]).finally(() => {
     if (timer) clearTimeout(timer);
   });
+}
+
+const COUNT = posInt(arg('--count', process.env.FLEET_BATCH_COUNT || 84), 84, 1, 200);
+const CONCURRENCY = posInt(arg('--concurrency', process.env.FLEET_BATCH_CONCURRENCY || 8), 8, 1, 12);
+const NOTIFY_EVERY = posInt(arg('--notify-every', process.env.FLEET_NOTIFY_EVERY || Math.max(4, Math.min(CONCURRENCY, 8))), Math.max(4, Math.min(CONCURRENCY, 8)), 1, 200);
+const NOTIFY_MAX_REPLY = posInt(arg('--notify-max-reply', process.env.FLEET_NOTIFY_MAX_REPLY || 220), 220, 80, 800);
+const DISCORD = !has('--no-discord');
+const INNOVA_PROGRESS = !has('--no-innova-progress');
+const DISCORD_INTERVAL_MS = posInt(arg('--discord-interval-ms', process.env.FLEET_DISCORD_INTERVAL_MS || 600000), 600000, 60000, 3600000);
+const MAX_ATTEMPTS = posInt(arg('--attempts', process.env.FLEET_BATCH_ATTEMPTS || 2), 2, 1, 4);
+const WORKER_TIMEOUT_MS = posInt(arg('--worker-timeout-ms', process.env.FLEET_WORKER_TIMEOUT_MS || 45000), 45000, 5000, 180000);
+const REQUIRE_MIN_COUNT = posInt(arg('--require-min-count', process.env.FLEET_REQUIRE_MIN_COUNT || 0), 0, 0, 200);
+const REQUIRE_MIN_OK = posInt(arg('--require-min-ok', process.env.FLEET_REQUIRE_MIN_OK || REQUIRE_MIN_COUNT), REQUIRE_MIN_COUNT, 0, 200);
+const INCLUDE_OPENAI = has('--include-openai');
+const INCLUDE_INNOVA_BOT = has('--include-innova-bot');
+const REQUESTED_LANES = splitCsv(arg('--lanes', process.env.FLEET_BATCH_LANES || '')).map(normalizeLane);
+const EXCLUDED_LANES = splitCsv(arg('--exclude-lanes', process.env.FLEET_BATCH_EXCLUDE_LANES || '')).map(normalizeLane);
+const RUN_ID = 'fleet-batch-' + new Date().toISOString().replace(/[:.]/g, '-');
+const ARTIFACT_DIR = path.join(ROOT, 'network', 'artifacts', RUN_ID);
+
+function goalFromArgs() {
+  const goalFile = arg('--goal-file', '');
+  if (goalFile) {
+    const resolved = path.resolve(ROOT, goalFile);
+    return fs.readFileSync(resolved, 'utf8').trim();
+  }
+  return arg('--goal', 'Harden Jit Mother and innomcp tonight: find concrete risks, propose the next safe fix, and keep evidence concise.');
+}
+const GOAL = goalFromArgs();
+
+const BACKEND_LIMITS = {
+  ollama_mdes: 1,
+  thaillm: 4,
+  ollama_cloud: 2,
+  ollama_local: 2,
+  copilot: 1,
+  openai: 1,
+  innova_bot: 1,
+};
+
+const DEFAULT_ROUTE_ORDER = ['ollama_mdes', 'thaillm', 'ollama_cloud', 'copilot', 'ollama_local'];
+const DEFAULT_THAI_MODELS = [
+  'openthaigpt-thaillm-8b-instruct-v7.2',
+  'pathumma-thaillm-qwen3-8b-think-3.0.0',
+  'typhoon-s-thaillm-8b-instruct',
+  'thalle-0.2-thaillm-8b-fa',
+];
+const DEFAULT_PERSONAS = [
+  'jit', 'innova', 'soma', 'lak', 'neta', 'chamu', 'vaja', 'mue',
+  'pada', 'netra', 'karn', 'pran', 'sayanprasathan', 'agent-mdes',
+  'agent-thaillm', 'agent-copilot',
+];
+const DEFAULT_PERSPECTIVES = ['coordinator', 'analyst', 'executor', 'verifier', 'observer', 'critic', 'scribe', 'router'];
+
+function laneDefinitions() {
+  const status = router.status();
+  const routing = readJson(ROUTING_PATH, { policy: {}, providers: {} });
+  const thaiModels = status.backends.thaillm?.models || routing.providers?.thaillm?.models || DEFAULT_THAI_MODELS;
+  const cloudModels = splitCsv(process.env.OLLAMA_CLOUD_MODELS || 'gemma4:31b-cloud,nemotron-3-super:cloud');
+  const definitions = {
+    ollama_mdes: {
+      backend: 'ollama_mdes',
+      models: [status.backends.ollama_mdes?.model || routing.providers?.ollama_mdes?.default_model || 'gemma4:26b'],
+      weight: 30,
+      costTier: 'low',
+      external: true,
+    },
+    thaillm: {
+      backend: 'thaillm',
+      models: thaiModels,
+      weight: 26,
+      costTier: 'medium',
+      external: true,
+    },
+    ollama_cloud: {
+      backend: 'ollama_cloud',
+      models: cloudModels,
+      weight: 14,
+      costTier: 'medium',
+      external: true,
+    },
+    copilot: {
+      backend: 'copilot',
+      models: [routing.providers?.copilot?.default_model || 'claude-sonnet-4.6'],
+      weight: 6,
+      costTier: 'medium',
+      external: true,
+    },
+    ollama_local: {
+      backend: 'ollama_local',
+      models: [status.backends.ollama_local?.model || routing.providers?.ollama_local?.default_model || 'qwen2.5-coder:7b'],
+      weight: 6,
+      costTier: 'low',
+      external: false,
+    },
+    openai: {
+      backend: 'openai',
+      models: [status.backends.openai?.model || routing.policy?.advisor_model || 'gpt-5.5'],
+      weight: 2,
+      costTier: 'high',
+      external: true,
+    },
+    innova_bot: {
+      backend: 'innova_bot',
+      models: [status.backends.innova_bot?.model || null],
+      weight: 2,
+      costTier: 'local',
+      external: false,
+    },
+  };
+
+  let ordered = REQUESTED_LANES.length
+    ? REQUESTED_LANES
+    : uniqueList([].concat((routing.policy && routing.policy.budget_order) || [], DEFAULT_ROUTE_ORDER).map(normalizeLane));
+  if (!INCLUDE_OPENAI) ordered = ordered.filter(name => name !== 'openai');
+  if (!INCLUDE_INNOVA_BOT) ordered = ordered.filter(name => name !== 'innova_bot');
+  if (INCLUDE_OPENAI && !ordered.includes('openai')) ordered.push('openai');
+  if (INCLUDE_INNOVA_BOT && !ordered.includes('innova_bot')) ordered.push('innova_bot');
+  if (EXCLUDED_LANES.length) ordered = ordered.filter(name => !EXCLUDED_LANES.includes(name));
+
+  const lanes = ordered
+    .map(name => definitions[name])
+    .filter(Boolean)
+    .map(lane => ({
+      ...lane,
+      models: uniqueList(lane.models.length ? lane.models : [null]),
+    }));
+
+  if (!lanes.length) {
+    throw new Error('No fleet lanes selected. Check --lanes/--exclude-lanes.');
+  }
+  return lanes;
+}
+
+function loadPersonas() {
+  const registry = readJson(REGISTRY_PATH, { agents: [] });
+  const routing = readJson(ROUTING_PATH, { agents: {} });
+  const merged = new Map();
+
+  for (const item of Array.isArray(registry.agents) ? registry.agents : []) {
+    if (!item || !item.name) continue;
+    merged.set(item.name, {
+      name: item.name,
+      role: item.role || '',
+      capabilities: Array.isArray(item.capabilities) ? item.capabilities : [],
+      provider: item.provider || '',
+      model: item.model || '',
+    });
+  }
+
+  for (const [name, item] of Object.entries(routing.agents || {})) {
+    const prev = merged.get(name) || { name, role: '', capabilities: [] };
+    merged.set(name, {
+      ...prev,
+      role: prev.role || item.role || '',
+      capabilities: uniqueList([].concat(prev.capabilities || [], item.capabilities || [])),
+      provider: prev.provider || item.provider || '',
+      model: prev.model || item.model || '',
+    });
+  }
+
+  if (!merged.size) {
+    return DEFAULT_PERSONAS.map(name => ({ name, role: '', capabilities: [] }));
+  }
+
+  return Array.from(merged.values())
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .filter(item => item && item.name);
+}
+
+function perspectivesFor(persona) {
+  const caps = new Set((persona.capabilities || []).map(String));
+  const tags = [];
+  if (caps.has('orchestrate') || caps.has('coordinate') || caps.has('delegate-tasks')) tags.push('coordinator');
+  if (caps.has('reason') || caps.has('analyze') || caps.has('deep-engineering')) tags.push('analyst');
+  if (caps.has('execute') || caps.has('write-files') || caps.has('implement')) tags.push('executor');
+  if (caps.has('write-tests') || caps.has('regression-test') || caps.has('coverage-check') || caps.has('tests')) tags.push('verifier');
+  if (caps.has('observe') || caps.has('monitor') || caps.has('watch')) tags.push('observer');
+  if (caps.has('review') || caps.has('code-review') || caps.has('security-review')) tags.push('critic');
+  if (caps.has('summarize') || caps.has('report') || caps.has('communicate')) tags.push('scribe');
+  if (caps.has('route') || caps.has('signal-routing') || caps.has('navigate')) tags.push('router');
+  return tags.length ? uniqueList(tags) : DEFAULT_PERSPECTIVES;
+}
+
+function buildWorkerRoster(targetCount) {
+  const personas = loadPersonas();
+  const roster = [];
+  let round = 0;
+  while (roster.length < targetCount) {
+    for (const persona of personas) {
+      const perspectives = perspectivesFor(persona);
+      const perspective = perspectives[round % perspectives.length];
+      const slot = Math.floor(roster.length / personas.length) + 1;
+      roster.push({
+        workerId: `${safeSlug(persona.name)}-${perspective}-${String(slot).padStart(2, '0')}`,
+        agent: persona.name,
+        role: persona.role || perspective,
+        perspective,
+      });
+      if (roster.length >= targetCount) break;
+    }
+    round++;
+  }
+  return roster;
+}
+
+function buildJobs() {
+  const lanes = laneDefinitions();
+  const roster = buildWorkerRoster(COUNT);
+  const weighted = [];
+  const maxWeight = Math.max(...lanes.map(lane => lane.weight));
+  for (let round = 0; round < maxWeight; round++) {
+    for (const lane of lanes) {
+      if (round < lane.weight) weighted.push(lane);
+    }
+  }
+
+  const jobs = [];
+  const modelCursor = {};
+  for (let i = 0; i < COUNT; i++) {
+    const lane = weighted[i % weighted.length];
+    const cursor = modelCursor[lane.backend] || 0;
+    const model = lane.models[cursor % lane.models.length] || null;
+    modelCursor[lane.backend] = cursor + 1;
+    jobs.push({
+      id: i + 1,
+      backend: lane.backend,
+      model,
+      workerId: roster[i].workerId,
+      agent: roster[i].agent,
+      role: roster[i].role,
+      perspective: roster[i].perspective,
+      costTier: lane.costTier,
+      external: lane.external,
+    });
+  }
+  return jobs;
+}
+
+function jobPrompt(job) {
+  return [
+    'Bounded Jit Mother worker. Reply concise and evidence-first in Thai or mixed Thai/English.',
+    '',
+    'Task:',
+    GOAL,
+    '',
+    `Worker: ${job.workerId}`,
+    `Base persona: ${job.agent}`,
+    `Perspective: ${job.perspective}`,
+    `Role hint: ${job.role}`,
+    `Lane: ${job.backend}${job.model ? ' / ' + job.model : ' / default'}`,
+    `Cost tier: ${job.costTier}`,
+    'Give one actionable next step or one concrete risk with confidence 0-100.',
+    'No file edits. No commands. No preamble.',
+  ].join('\n');
+}
+
+function classifyReply(reply) {
+  const text = String(reply || '').trim();
+  if (!text) return { ok: false, score: 0 };
+  const m = text.match(/\bconfidence\s*[:=]?\s*(\d{1,3})\b/i) || text.match(/\b(\d{1,3})\s*%/);
+  const score = Math.max(1, Math.min(100, m ? Number(m[1]) : 70));
+  return { ok: true, score };
 }
 
 async function runOne(job) {
@@ -231,7 +422,7 @@ async function runOne(job) {
   };
 }
 
-async function runPool(jobs) {
+async function runPool(jobs, onResult) {
   const results = new Array(jobs.length);
   let next = 0;
   const activeByBackend = {};
@@ -262,7 +453,7 @@ async function runPool(jobs) {
     while (next < jobs.length) {
       const idx = next++;
       const job = jobs[idx];
-      process.stdout.write(`[fleet] ${job.id}/${jobs.length} ${job.backend}${job.model ? '/' + job.model : ''} ${job.agent} ... `);
+      process.stdout.write(`[fleet] ${job.id}/${jobs.length} ${job.backend}${job.model ? '/' + job.model : ''} ${job.workerId} ... `);
       const release = await acquireBackend(job.backend);
       let result;
       try {
@@ -272,23 +463,33 @@ async function runPool(jobs) {
       }
       results[idx] = result;
       console.log(result.ok ? `OK ${result.latencyMs}ms` : `FAIL ${result.latencyMs}ms ${result.error || ''}`);
+      if (typeof onResult === 'function') await onResult(result, idx, results);
     }
   }
+
   const pool = [];
   for (let i = 0; i < Math.min(CONCURRENCY, jobs.length); i++) pool.push(worker());
   await Promise.all(pool);
   return results;
 }
 
-function summarize(results, startedAt, totalCount) {
+function summarize(results, startedAt, totalCount, jobs) {
   const completed = results.filter(r => r && !r.pending);
   const expectedCount = totalCount || completed.length;
   const byBackend = {};
   for (const r of completed) {
-    const row = byBackend[r.backend] || (byBackend[r.backend] = { total: 0, ok: 0, fail: 0, latency: 0, models: {} });
+    const row = byBackend[r.backend] || (byBackend[r.backend] = {
+      total: 0,
+      ok: 0,
+      fail: 0,
+      latency: 0,
+      models: {},
+      workers: 0,
+    });
     row.total++;
     if (r.ok) row.ok++; else row.fail++;
     row.latency += r.latencyMs || 0;
+    row.workers++;
     const model = r.model || 'default';
     row.models[model] = (row.models[model] || 0) + 1;
   }
@@ -296,6 +497,17 @@ function summarize(results, startedAt, totalCount) {
     row.avgLatencyMs = row.total ? Math.round(row.latency / row.total) : 0;
     delete row.latency;
   }
+
+  const planned = Array.isArray(jobs) && jobs.length ? jobs : completed;
+  const plannedWorkers = uniqueList(planned.map(r => r.workerId || r.agent));
+  const completedWorkers = uniqueList(completed.map(r => r.workerId || r.agent));
+  const uniquePersonas = uniqueList(planned.map(r => r.agent));
+  const perspectiveCounts = {};
+  for (const row of planned) {
+    const key = row.perspective || 'general';
+    perspectiveCounts[key] = (perspectiveCounts[key] || 0) + 1;
+  }
+
   return {
     runId: RUN_ID,
     goal: GOAL,
@@ -306,18 +518,57 @@ function summarize(results, startedAt, totalCount) {
     fail: completed.filter(r => !r.ok).length,
     concurrency: CONCURRENCY,
     durationMs: Date.now() - startedAt,
+    notifyEvery: NOTIFY_EVERY,
     byBackend,
+    roster: {
+      plannedWorkers: plannedWorkers.length,
+      completedWorkers: completedWorkers.length,
+      uniquePersonas: uniquePersonas.length,
+      perspectives: perspectiveCounts,
+      sampleWorkers: plannedWorkers.slice(0, 12),
+    },
     proof: {
       requireMinCount: REQUIRE_MIN_COUNT,
       requireMinOk: REQUIRE_MIN_OK,
       minCountSatisfied: !REQUIRE_MIN_COUNT || expectedCount >= REQUIRE_MIN_COUNT,
       minCompletedSatisfied: !REQUIRE_MIN_COUNT || completed.length >= REQUIRE_MIN_COUNT,
       minOkSatisfied: !REQUIRE_MIN_OK || completed.filter(r => r.ok).length >= REQUIRE_MIN_OK,
-      selectedLanes: Array.from(new Set(completed.map(r => r.backend))),
+      selectedLanes: uniqueList(planned.map(r => r.backend)),
       requestedLanes: REQUESTED_LANES,
       excludedLanes: EXCLUDED_LANES,
+      backendLimits: BACKEND_LIMITS,
     },
   };
+}
+
+function latestResultForProgress(result) {
+  return {
+    id: result.id,
+    workerId: result.workerId,
+    agent: result.agent,
+    perspective: result.perspective,
+    backend: result.backend,
+    model: result.model,
+    ok: result.ok,
+    latencyMs: result.latencyMs,
+    error: result.error ? shortText(result.error, 180) : '',
+    reply: result.reply ? shortText(result.reply, NOTIFY_MAX_REPLY) : '',
+  };
+}
+
+function writeProgress(summary, extra) {
+  const payload = {
+    runId: summary.runId,
+    goal: GOAL,
+    updatedAt: new Date().toISOString(),
+    label: extra.label,
+    summary,
+    latest: extra.latest || null,
+    notify: extra.notify || null,
+    artifacts: extra.artifacts || null,
+  };
+  writeJson(PROGRESS_PATH, payload);
+  return payload;
 }
 
 function sha256(filePath) {
@@ -359,6 +610,7 @@ function writeProofManifest(summary, artifacts, startedAt, finishedAt) {
       pass: summary.proof.minCountSatisfied && summary.proof.minCompletedSatisfied && summary.proof.minOkSatisfied,
     },
     lanes: summary.byBackend,
+    roster: summary.roster,
     artifacts: {
       summaryJson: path.relative(ROOT, artifacts.jsonPath).replace(/\\/g, '/'),
       summaryMd: path.relative(ROOT, artifacts.mdPath).replace(/\\/g, '/'),
@@ -377,6 +629,7 @@ function writeProofManifest(summary, artifacts, startedAt, finishedAt) {
     `Command: ${manifest.command.join(' ')}`,
     `Requirement: count >= ${REQUIRE_MIN_COUNT || 0}, ok >= ${REQUIRE_MIN_OK || 0}`,
     `Observed: count ${summary.count}, completed ${summary.completed}, ok ${summary.ok}`,
+    `Workers: planned ${summary.roster.plannedWorkers}, completed ${summary.roster.completedWorkers}, personas ${summary.roster.uniquePersonas}`,
     `Pass: ${manifest.requirement.pass ? 'yes' : 'no'}`,
     '',
     '## Artifact Hashes',
@@ -403,6 +656,7 @@ function writeArtifacts(results, summary) {
     `Run: ${summary.runId}`,
     `Goal: ${summary.goal}`,
     `Result: ${summary.ok}/${summary.completed} completed OK, ${summary.fail} failed, ${summary.pending} pending, total ${summary.count}, duration ${summary.durationMs}ms`,
+    `Workers: planned ${summary.roster.plannedWorkers}, completed ${summary.roster.completedWorkers}, personas ${summary.roster.uniquePersonas}`,
     '',
     '## Backends',
     '',
@@ -412,7 +666,7 @@ function writeArtifacts(results, summary) {
   }
   lines.push('', '## Samples', '');
   for (const r of results.slice(0, 12)) {
-    lines.push(`### ${r.id}. ${r.agent} (${r.backend}${r.model ? ' / ' + r.model : ''})`);
+    lines.push(`### ${r.id}. ${r.workerId} (${r.agent} :: ${r.backend}${r.model ? ' / ' + r.model : ''})`);
     lines.push(r.ok ? r.reply.slice(0, 800) : `FAILED: ${r.error}`);
     lines.push('');
   }
@@ -420,28 +674,52 @@ function writeArtifacts(results, summary) {
   return { jsonPath, mdPath };
 }
 
-async function summarizeForDiscord(summary, label) {
-  const compact = {
-    label,
-    runId: summary.runId,
-    ok: summary.ok,
-    fail: summary.fail,
-    count: summary.count,
-    completed: summary.completed,
-    pending: summary.pending,
-    byBackend: summary.byBackend,
-  };
+function renderOpsSummary(summary, label, latest, artifactPath) {
+  const lanes = Object.keys(summary.byBackend || {});
+  const lines = [
+    `Jit fleet ${label}`,
+    `run=${summary.runId}`,
+    `progress=${summary.completed}/${summary.count} ok=${summary.ok} fail=${summary.fail} pending=${summary.pending}`,
+    `workers=${summary.roster.completedWorkers || summary.roster.plannedWorkers}/${summary.roster.plannedWorkers} personas=${summary.roster.uniquePersonas}`,
+    `lanes=${lanes.length ? lanes.join(',') : 'none'}`,
+  ];
+  if (latest) {
+    lines.push(`latest=${latest.workerId} ${latest.backend}${latest.model ? '/' + latest.model : ''} ${latest.ok ? 'OK' : 'FAIL'} ${latest.latencyMs}ms`);
+    if (latest.reply) lines.push(`reply=${latest.reply}`);
+    if (latest.error) lines.push(`error=${latest.error}`);
+  }
+  if (artifactPath) lines.push(`artifact=${artifactPath}`);
+  return lines.join('\n').slice(0, 3500);
+}
+
+let innovaBridge = null;
+
+async function getInnovaBridge() {
+  if (!innovaBridge) {
+    const InnovaBotBridge = require('../limbs/innova-bot-bridge');
+    innovaBridge = new InnovaBotBridge();
+    await innovaBridge.connect();
+  }
+  return innovaBridge;
+}
+
+async function closeInnovaBridge() {
+  if (innovaBridge && innovaBridge.disconnect) {
+    try {
+      await innovaBridge.disconnect();
+    } catch (_) {}
+  }
+  innovaBridge = null;
+}
+
+async function notifyInnovaBot(message) {
+  if (!INNOVA_PROGRESS) return { ok: false, skipped: true, reason: 'disabled' };
   try {
-    const result = await router.callModelPromise(
-      [
-        { role: 'system', content: 'Summarize this fleet status for Discord in Thai, under 900 characters, concise and operational.' },
-        { role: 'user', content: JSON.stringify(compact) },
-      ],
-      { preferBackend: 'ollama_cloud', model: process.env.OLLAMA_CLOUD_MODEL || 'gemma4:31b-cloud', noRotate: true }
-    );
-    return String(result.reply || '').trim().slice(0, 1500);
+    const bridge = await getInnovaBridge();
+    await bridge.dispatchTask(message.slice(0, 3500));
+    return { ok: true };
   } catch (error) {
-    return `[fleet] ${label}: ${summary.ok}/${summary.count} OK, ${summary.fail} failed. ${String(error.message || error).slice(0, 120)}`;
+    return { ok: false, error: shortText(error && error.message || error, 200) };
   }
 }
 
@@ -508,72 +786,114 @@ async function sendDiscord(message) {
 }
 
 async function main() {
+  fs.mkdirSync(LOOP_DIR, { recursive: true });
   const startedAt = Date.now();
   const jobs = buildJobs();
   if (REQUIRE_MIN_COUNT && jobs.length < REQUIRE_MIN_COUNT) {
     throw new Error(`Fleet proof requires at least ${REQUIRE_MIN_COUNT} jobs, but only ${jobs.length} were built.`);
   }
-  console.log(`[fleet] run=${RUN_ID} count=${jobs.length} concurrency=${CONCURRENCY}`);
+
+  console.log(`[fleet] run=${RUN_ID} count=${jobs.length} concurrency=${CONCURRENCY} notifyEvery=${NOTIFY_EVERY}`);
   console.log(`[fleet] goal=${GOAL}`);
   if (REQUESTED_LANES.length) console.log(`[fleet] requestedLanes=${REQUESTED_LANES.join(',')}`);
   if (EXCLUDED_LANES.length) console.log(`[fleet] excludedLanes=${EXCLUDED_LANES.join(',')}`);
   if (REQUIRE_MIN_COUNT || REQUIRE_MIN_OK) console.log(`[fleet] proof requireMinCount=${REQUIRE_MIN_COUNT} requireMinOk=${REQUIRE_MIN_OK}`);
   console.log(`[fleet] discord=${JSON.stringify(discordConfigStatus())}`);
+
+  const partialResults = new Array(jobs.length);
+  let lastInnovaCount = 0;
+  let lastDiscordAt = 0;
+  let progressQueue = Promise.resolve();
+
+  const startSummary = summarize([], startedAt, jobs.length, jobs);
+  writeProgress(startSummary, { label: 'start' });
   if (DISCORD) {
-    const startSummary = { runId: RUN_ID, goal: GOAL, count: jobs.length, completed: 0, pending: jobs.length, ok: 0, fail: 0, concurrency: CONCURRENCY, durationMs: 0, byBackend: {} };
-    const startMsg = await summarizeForDiscord(startSummary, 'start');
+    const startMsg = renderOpsSummary(startSummary, 'start');
     await sendDiscord(startMsg);
+    lastDiscordAt = Date.now();
+  }
+  if (INNOVA_PROGRESS) {
+    const startMsg = renderOpsSummary(startSummary, 'start');
+    const notify = await notifyInnovaBot(startMsg);
+    writeProgress(startSummary, { label: 'start', notify });
   }
 
-  let lastDiscord = Date.now();
-  const timer = setInterval(async () => {
-    const partial = summarize(partialResults, startedAt, jobs.length);
-    const msg = await summarizeForDiscord(partial, 'interval');
-    await sendDiscord(msg);
-    lastDiscord = Date.now();
-  }, DISCORD_INTERVAL_MS);
-  timer.unref();
+  const results = await runPool(jobs, async (result, idx) => {
+    partialResults[idx] = result;
+    const partial = summarize(partialResults, startedAt, jobs.length, jobs);
+    const latest = latestResultForProgress(result);
+    writeProgress(partial, { label: 'running', latest });
 
-  const partialResults = [];
-  const originalRunOne = runOne;
-  runOne = async function(job) {
-    const r = await originalRunOne(job);
-    partialResults[job.id - 1] = r;
-    if (Date.now() - lastDiscord >= DISCORD_INTERVAL_MS) {
-      const partial = summarize(partialResults, startedAt, jobs.length);
-      const msg = await summarizeForDiscord(partial, 'interval');
-      await sendDiscord(msg);
-      lastDiscord = Date.now();
-    }
-    return r;
-  };
+    const shouldNotifyInnova =
+      partial.completed === jobs.length ||
+      !result.ok ||
+      (partial.completed - lastInnovaCount) >= NOTIFY_EVERY;
+    const shouldNotifyDiscord =
+      DISCORD &&
+      (partial.completed === jobs.length || (Date.now() - lastDiscordAt) >= DISCORD_INTERVAL_MS);
 
-  const results = await runPool(jobs);
-  clearInterval(timer);
-  const summary = summarize(results, startedAt, results.length);
+    if (!shouldNotifyInnova && !shouldNotifyDiscord) return;
+
+    const partialMsg = renderOpsSummary(partial, 'partial', latest);
+    progressQueue = progressQueue.then(async () => {
+      let notify = null;
+      if (shouldNotifyInnova) {
+        notify = await notifyInnovaBot(partialMsg);
+        lastInnovaCount = partial.completed;
+      }
+      if (shouldNotifyDiscord) {
+        await sendDiscord(partialMsg);
+        lastDiscordAt = Date.now();
+      }
+      writeProgress(partial, { label: 'running', latest, notify });
+    });
+    await progressQueue;
+  });
+
+  await progressQueue;
+
+  const summary = summarize(results, startedAt, results.length, jobs);
   const artifacts = writeArtifacts(results, summary);
   const proofArtifacts = writeProofManifest(summary, artifacts, startedAt, Date.now());
+  const artifactPath = path.relative(ROOT, ARTIFACT_DIR).replace(/\\/g, '/');
+
   eventLog.record({
     phase: 'Fleet Batch',
     goal: GOAL,
     provider: 'multi-provider',
-    squad: Array.from(new Set(results.map(r => r.agent))),
+    squad: uniqueList(results.map(r => r.workerId || r.agent)).slice(0, 120),
     verdicts: results.map(r => r.score || 0),
     durationMs: summary.durationMs,
     committed: false,
     batch: summary,
   });
-  const finalMsg = await summarizeForDiscord(summary, 'complete');
+
+  const finalMsg = renderOpsSummary(summary, 'complete', null, artifactPath);
   const discordSent = await sendDiscord(finalMsg);
+  const innovaSent = await notifyInnovaBot(finalMsg);
+  writeProgress(summary, {
+    label: 'complete',
+    notify: { discordSent, innovaSent },
+    artifacts: {
+      dir: artifactPath,
+      summaryJson: path.relative(ROOT, artifacts.jsonPath).replace(/\\/g, '/'),
+      summaryMd: path.relative(ROOT, artifacts.mdPath).replace(/\\/g, '/'),
+    },
+  });
+
+  await closeInnovaBridge();
   router.shutdownInnovaBot && router.shutdownInnovaBot();
   console.log('');
-  console.log(JSON.stringify({ summary, artifacts: { ...artifacts, ...proofArtifacts }, discordSent }, null, 2));
+  console.log(JSON.stringify({ summary, artifacts: { ...artifacts, ...proofArtifacts }, discordSent, innovaSent }, null, 2));
   const ratioOk = summary.ok >= Math.ceil(summary.count * 0.75);
   const proofOk = summary.proof.minCountSatisfied && summary.proof.minCompletedSatisfied && summary.proof.minOkSatisfied;
   process.exit(ratioOk && proofOk ? 0 : 1);
 }
 
-main().catch(error => {
+main().catch(async (error) => {
+  try {
+    await closeInnovaBridge();
+  } catch (_) {}
   router.shutdownInnovaBot && router.shutdownInnovaBot();
   console.error('[fleet] fatal:', error && error.message || error);
   process.exit(1);
