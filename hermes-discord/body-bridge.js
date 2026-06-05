@@ -143,6 +143,15 @@ function writeTempPayload(payload, correlationId) {
   return filePath;
 }
 
+function shellQuote(value) {
+  const text = String(value || '');
+  if (!text) return '""';
+  if (process.platform === 'win32') {
+    return /[\s"&|<>^()]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  }
+  return /[\s"'\\$`]/.test(text) ? `'${text.replace(/'/g, `'\\''`)}'` : text;
+}
+
 function runExecutor(payload, correlationId) {
   if (!EXECUTOR_COMMAND) {
     return { skipped: true, reason: 'executor command not configured' };
@@ -150,7 +159,8 @@ function runExecutor(payload, correlationId) {
 
   const payloadFile = writeTempPayload(payload, correlationId);
   try {
-    const child = spawn(EXECUTOR_COMMAND, [payloadFile], {
+    const commandLine = EXECUTOR_COMMAND + ' ' + shellQuote(payloadFile);
+    const child = spawn(commandLine, [], {
       cwd: JIT_ROOT,
       detached: true,
       shell: true,
@@ -162,7 +172,7 @@ function runExecutor(payload, correlationId) {
       }),
     });
     child.unref();
-    return { skipped: false, pid: child.pid || 0, command: EXECUTOR_COMMAND, payloadFile: payloadFile };
+    return { skipped: false, pid: child.pid || 0, command: commandLine, payloadFile: payloadFile };
   } catch (error) {
     return { skipped: false, error: error.message, command: EXECUTOR_COMMAND, payloadFile: payloadFile };
   }

@@ -147,16 +147,14 @@ function buildJobs() {
 
 function jobPrompt(job) {
   return [
-    'You are a bounded Jit Mother worker.',
-    'Return concise evidence-first output in Thai or mixed Thai/English.',
-    'No file edits. No commands. One paragraph plus 2 bullets maximum.',
+    'Bounded Jit Mother worker. Reply concise and evidence-first in Thai or mixed Thai/English.',
     '',
     'Task:',
     GOAL,
     '',
-    'Worker lens: ' + job.agent,
-    'Provider lane: ' + job.backend + (job.model ? ' / ' + job.model : ' / default'),
-    'Find one actionable risk or next fix for Mother/Jit/innomcp, and include a confidence 0-100.',
+    'Lens: ' + job.agent,
+    'Lane: ' + job.backend + (job.model ? ' / ' + job.model : ' / default'),
+    'Give one actionable next step or risk with confidence 0-100. No file edits or commands.',
   ].join('\n');
 }
 

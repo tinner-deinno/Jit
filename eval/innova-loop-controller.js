@@ -69,13 +69,25 @@ function writeJson(file, value) {
   fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n');
 }
 
+function shellQuote(value) {
+  const text = String(value ?? '');
+  if (!text) return '""';
+  if (process.platform === 'win32') {
+    return /[\s"&|<>^()]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  }
+  return /[\s"'\\$`]/.test(text) ? `'${text.replace(/'/g, `'\\''`)}'` : text;
+}
+
 function run(command, args, options = {}) {
   const started = Date.now();
-  const r = childProcess.spawnSync(command, args, {
+  const useShell = process.platform === 'win32';
+  const spawnTarget = useShell ? [command].concat(args || []).map(shellQuote).join(' ') : command;
+  const spawnArgs = useShell ? [] : (args || []);
+  const r = childProcess.spawnSync(spawnTarget, spawnArgs, {
     cwd: options.cwd || ROOT,
     encoding: 'utf8',
     timeout: options.timeout || 120000,
-    shell: process.platform === 'win32',
+    shell: useShell,
     env: { ...process.env, ...(options.env || {}) },
   });
   return {
@@ -87,6 +99,10 @@ function run(command, args, options = {}) {
     stderr: String(r.stderr || '').trim(),
     error: r.error ? r.error.message : '',
   };
+}
+
+function stripAnsi(text) {
+  return String(text || '').replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, '');
 }
 
 function skippedRun(label) {
@@ -103,7 +119,14 @@ function skippedRun(label) {
 }
 
 function shortText(text, limit = 1200) {
-  return String(text || '').replace(/\s+\n/g, '\n').trim().slice(0, limit);
+  return stripAnsi(String(text || ''))
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+    .slice(0, limit);
 }
 
 function loadState() {
@@ -181,29 +204,23 @@ function latestFleetArtifact() {
 }
 
 function makeGoal(cycle, snapshots, lanes) {
-  const teamStatus = shortText(snapshots.mawTeam.stdout || snapshots.mawTeam.stderr, 900);
-  const taskStatus = shortText(snapshots.mawTasks.stdout || snapshots.mawTasks.stderr, 900);
-  const statusBoard = shortText(snapshots.statusBoard.stdout || snapshots.statusBoard.stderr, 900);
+  const teamStatus = shortText(snapshots.mawTeam.stdout || snapshots.mawTeam.stderr, 550);
+  const taskStatus = shortText(snapshots.mawTasks.stdout || snapshots.mawTasks.stderr, 550);
+  const statusBoard = shortText(snapshots.statusBoard.stdout || snapshots.statusBoard.stderr, 700);
   return [
-    `Jit Mother loop cycle ${cycle}: clear innova-bot ticket/task backlog carefully.`,
+    `Jit Mother cycle ${cycle}: clear the innova-bot/Jit/innomcp backlog carefully.`,
+    `Selected lanes: ${lanes.join(', ')}`,
     '',
-    'Role routing:',
-    '- Mother strategy: GPT-5.4/Codex leader in this session; do not burn GPT-5.5 unless failure streak exceeds threshold.',
-    '- Worker limbs: MDES, ThaiLLM, Ollama local/cloud, Copilot only when content-usable, innova-bot when bridge answers.',
-    '- Advisor: OpenAI/frontier only after repeated failures; current loop threshold is ' + ADVISOR_THRESHOLD + '.',
-    '',
-    'Selected provider lanes: ' + lanes.join(', '),
-    '',
-    'MAW team status:',
+    'MAW team:',
     teamStatus || '(none)',
     '',
-    'MAW task status:',
+    'MAW tasks:',
     taskStatus || '(none)',
     '',
-    'Status-board snapshot:',
+    'Status board:',
     statusBoard || '(none)',
     '',
-    'Worker output contract: identify one concrete next action, risk, or ticket-clearing move for innova-bot/Jit/innomcp. Include Confidence 0-100. No file edits.',
+    `Return one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=${ADVISOR_THRESHOLD}.`,
   ].join('\n');
 }
 
@@ -334,7 +351,6 @@ async function runCycle(state) {
     omxStatus: run('omx', ['status', '--json'], { timeout: 20000 }),
     mawTeam: run('maw', ['team', 'status'], { timeout: 30000 }),
     mawTasks: run('maw', ['t', 'status'], { timeout: 30000 }),
-    statusBoard: run('node', ['eval/status-board.js', '--json'], { timeout: 30000 }),
     quickFleet: refreshQuickFleet
       ? run('node', ['.codex/skills/agent-fleet-budget/scripts/check-fleet.mjs'], { timeout: 120000 })
       : skippedRun('quickFleet skipped'),
@@ -343,6 +359,7 @@ async function runCycle(state) {
       if (!probePlan.fullProbe && probePlan.backends.length) args.push('--backends', probePlan.backends.join(','));
       return run('node', args, { timeout: PROVIDER_TIMEOUT + 30000 });
     })(),
+    statusBoard: run('node', ['eval/status-board.js', '--json'], { timeout: 30000 }),
   };
 
   const route = selectLanes(state);
