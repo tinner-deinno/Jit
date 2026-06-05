@@ -93,6 +93,45 @@ function providerFreshness(ps, backend, row) {
   return ageStr(row && row.probed_at_ms ? row.probed_at_ms : ps.probed_at_ms);
 }
 
+function summarizeProviders(ps) {
+  const out = {};
+  for (const [backend, row] of Object.entries(ps.results || {})) {
+    out[backend] = {
+      status: row.status || 'UNKNOWN',
+      ms: row.ms ?? null,
+      fresh: providerFreshness(ps, backend, row),
+      ...(row.error ? { error: row.error } : {}),
+    };
+  }
+  return out;
+}
+
+function summarizeTopAgents(lb, limit) {
+  return Object.entries(lb.fleet || {})
+    .filter(([, value]) => !value.provisional)
+    .sort((a, b) => (b[1].correctness_score || 0) - (a[1].correctness_score || 0))
+    .slice(0, limit)
+    .map(([agent, value]) => ({
+      agent,
+      score: +Number(value.correctness_score || 0).toFixed(2),
+      tasks: value.completed_tasks || 0,
+    }));
+}
+
+function summarizeRecentEvents(events, limit) {
+  return events.slice(-limit).map((event) => {
+    const nums = (Array.isArray(event.verdicts) ? event.verdicts : []).map(Number).filter((n) => !Number.isNaN(n));
+    const avgVerdict = nums.length ? +((nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(0)) : null;
+    return {
+      ts: event.ts || '',
+      phase: event.phase || '?',
+      provider: event.provider || '?',
+      avgVerdict,
+      durationMs: event.durationMs || null,
+    };
+  });
+}
+
 (async () => {
   const ps = readJSON(path.join(ROOT, 'network', 'provider-status.json'), { results: {}, usable: [] });
   const lb = readJSON(path.join(ROOT, 'network', 'leaderboard.json'), { fleet: {} });
@@ -111,6 +150,18 @@ function providerFreshness(ps, backend, row) {
   for (const event of events) {
     const provider = event.provider || '?';
     provUse[provider] = (provUse[provider] || 0) + 1;
+  }
+
+  if (process.argv.includes('--summary-json')) {
+    console.log(JSON.stringify({
+      providerProbe: probeMeta,
+      usable: ps.usable,
+      bridge,
+      providers: summarizeProviders(ps),
+      topAgents: summarizeTopAgents(lb, 5),
+      recentPhases: summarizeRecentEvents(events, 3),
+    }, null, 2));
+    return;
   }
 
   if (process.argv.includes('--json')) {

@@ -48,6 +48,9 @@ const CONCURRENCY = intArg('--concurrency', 6, 1, 12);
 const PROVIDER_TIMEOUT = intArg('--provider-timeout', 70000, 10000, 120000);
 const ADVISOR_THRESHOLD = intArg('--advisor-threshold', 8, 1, 100);
 const FLEET_TIMEOUT = intArg('--fleet-timeout-ms', 900000, 120000, 3600000);
+const FLEET_ATTEMPTS = intArg('--fleet-attempts', 1, 1, 4);
+const FLEET_WORKER_TIMEOUT_MS = intArg('--fleet-worker-timeout-ms', 45000, 5000, 180000);
+const SLOW_LANE_MS = intArg('--slow-lane-ms', Math.max(30000, Math.floor(FLEET_WORKER_TIMEOUT_MS * 0.75)), 5000, 300000);
 const FULL_PROBE_EVERY = intArg('--full-probe-every', 6, 1, 1000);
 const QUICK_FLEET_EVERY = intArg('--quick-fleet-every', 6, 1, 1000);
 const DRY_RUN = has('--dry-run');
@@ -150,9 +153,48 @@ function getUsableProviders() {
   return { provider, selected };
 }
 
+function latestFleetArtifact() {
+  const artifactsRoot = path.join(ROOT, 'network', 'artifacts');
+  try {
+    const dirs = fs.readdirSync(artifactsRoot)
+      .filter(name => name.startsWith('fleet-batch-'))
+      .map(name => path.join(artifactsRoot, name))
+      .filter(file => fs.existsSync(path.join(file, 'summary.json')))
+      .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+    return dirs[0] || '';
+  } catch (_) {
+    return '';
+  }
+}
+
+function latestFleetSummary() {
+  const artifact = latestFleetArtifact();
+  if (!artifact) return null;
+  return readJson(path.join(artifact, 'summary.json'), null);
+}
+
+function unstableLanesFromLatest(summary) {
+  const byBackend = summary && summary.summary && summary.summary.byBackend;
+  if (!byBackend || typeof byBackend !== 'object') return [];
+  return Object.entries(byBackend)
+    .filter(([, row]) => row && row.total > 0 && row.fail > row.ok)
+    .map(([backend]) => backend);
+}
+
+function slowLanesFromProvider(provider) {
+  const results = provider && provider.results;
+  if (!results || typeof results !== 'object') return [];
+  return Object.entries(results)
+    .filter(([, row]) => row && row.status === 'ALIVE' && Number(row.ms || 0) >= SLOW_LANE_MS)
+    .map(([backend]) => backend);
+}
+
 function selectLanes(state) {
   const { provider, selected } = getUsableProviders();
-  const lanes = selected.filter(name => name !== 'innova_bot');
+  const unstable = new Set(unstableLanesFromLatest(latestFleetSummary()));
+  const slow = new Set(slowLanesFromProvider(provider));
+  let lanes = selected.filter(name => name !== 'innova_bot' && !unstable.has(name) && !slow.has(name));
+  if (!lanes.length) lanes = selected.filter(name => name !== 'innova_bot');
   const includeInnova = selected.includes('innova_bot');
 
   let includeOpenAI = false;
@@ -187,20 +229,6 @@ function planProviderProbe(state, cycle) {
 
 function shouldRefreshQuickFleet(state, cycle) {
   return cycle === 1 || cycle % QUICK_FLEET_EVERY === 0 || Number(state.failureStreak || 0) > 0;
-}
-
-function latestFleetArtifact() {
-  const artifactsRoot = path.join(ROOT, 'network', 'artifacts');
-  try {
-    const dirs = fs.readdirSync(artifactsRoot)
-      .filter(name => name.startsWith('fleet-batch-'))
-      .map(name => path.join(artifactsRoot, name))
-      .filter(file => fs.existsSync(path.join(file, 'summary.json')))
-      .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
-    return dirs[0] || '';
-  } catch (_) {
-    return '';
-  }
 }
 
 function makeGoal(cycle, snapshots, lanes) {
@@ -359,7 +387,7 @@ async function runCycle(state) {
       if (!probePlan.fullProbe && probePlan.backends.length) args.push('--backends', probePlan.backends.join(','));
       return run('node', args, { timeout: PROVIDER_TIMEOUT + 30000 });
     })(),
-    statusBoard: run('node', ['eval/status-board.js', '--json'], { timeout: 30000 }),
+    statusBoard: run('node', ['eval/status-board.js', '--summary-json'], { timeout: 30000 }),
   };
 
   const route = selectLanes(state);
@@ -371,6 +399,8 @@ async function runCycle(state) {
     '--goal-file', path.relative(ROOT, CURRENT_GOAL).replace(/\\/g, '/'),
     '--count', String(COUNT),
     '--concurrency', String(CONCURRENCY),
+    '--attempts', String(FLEET_ATTEMPTS),
+    '--worker-timeout-ms', String(FLEET_WORKER_TIMEOUT_MS),
     '--lanes', route.lanes.join(','),
     '--require-min-count', String(COUNT),
     '--require-min-ok', String(Math.ceil(COUNT * 0.75)),

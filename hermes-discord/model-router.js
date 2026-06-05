@@ -445,7 +445,7 @@ function _exchangeCopilotToken(oauthToken, callback) {
 }
 
 // ── Generic HTTP POST ─────────────────────────────────────────────────
-function _httpPost(baseUrl, apiPath, extraHeaders, bodyObj, callback) {
+function _httpPost(baseUrl, apiPath, extraHeaders, bodyObj, callback, timeoutMs) {
   var parsed  = new URL(String(baseUrl || '').replace(/\/$/, '') + apiPath);
   var isHttps = parsed.protocol === 'https:';
   var lib     = isHttps ? https : http;
@@ -479,13 +479,14 @@ function _httpPost(baseUrl, apiPath, extraHeaders, bodyObj, callback) {
     });
   });
   req.on('error', callback);
-  req.setTimeout(90000, function() { req.destroy(new Error('Request timeout')); });
+  req.setTimeout(timeoutMs || 90000, function() { req.destroy(new Error('Request timeout')); });
   req.write(bodyStr);
   req.end();
 }
 
 // ── Backend Callers ───────────────────────────────────────────────────
-function _callOpenAI(messages, model, callback) {
+function _callOpenAI(messages, model, callOptions, callback) {
+  callOptions = callOptions || {};
   function useCodexFallback(originalErr) {
     if (!_hasCodexCli()) return callback(originalErr || new Error('OPENAI_API_KEY not set'));
     return _callOpenAIViaCodexCli(messages, model, callback);
@@ -505,7 +506,8 @@ function _callOpenAI(messages, model, callback) {
       } catch (e) {
         callback(new Error('OpenAI parse: ' + e.message + ' raw:' + data.slice(0, 100)));
       }
-    }
+    },
+    callOptions.timeoutMs
   );
 }
 
@@ -588,7 +590,8 @@ function _callOpenAIViaCodexCli(messages, model, callback) {
   }, finish);
 }
 
-function _callCopilot(messages, model, callback) {
+function _callCopilot(messages, model, callOptions, callback) {
+  callOptions = callOptions || {};
   if (_hasCopilotCli()) {
     var prompt = messages.map(function(m) {
       return '[' + (m.role || 'user') + '] ' + String(m.content || '');
@@ -602,7 +605,7 @@ function _callCopilot(messages, model, callback) {
       ].filter(Boolean).join('; ');
       return childProcess.execFile('powershell.exe', ['-NoProfile', '-Command', psScript], {
         encoding: 'utf8',
-        timeout: 120000,
+        timeout: callOptions.timeoutMs || 120000,
         windowsHide: true,
         maxBuffer: 2 * 1024 * 1024,
         env: Object.assign({}, process.env, {
@@ -621,7 +624,7 @@ function _callCopilot(messages, model, callback) {
     if (model) args = args.concat(['--model', model]);
     return childProcess.execFile(_resolveCopilotCliBin(), args, {
       encoding: 'utf8',
-      timeout: 120000,
+      timeout: callOptions.timeoutMs || 120000,
       windowsHide: true,
       maxBuffer: 2 * 1024 * 1024,
     }, function(err, stdout, stderr) {
@@ -653,7 +656,7 @@ function _callCopilot(messages, model, callback) {
       } catch (e) {
         callback(new Error('Copilot parse: ' + e.message + ' raw:' + data.slice(0, 100)));
       }
-    });
+    }, callOptions.timeoutMs);
   });
 }
 
@@ -679,7 +682,8 @@ function _getOllamaConfig(backendName) {
   };
 }
 
-function _callOllama(messages, model, callback, backendName) {
+function _callOllama(messages, model, callOptions, callback, backendName) {
+  callOptions = callOptions || {};
   var cfg = _getOllamaConfig(backendName);
   var selectedModel = _modelForOllamaBackend(model || cfg.model, backendName, cfg.url);
 
@@ -701,7 +705,7 @@ function _callOllama(messages, model, callback, backendName) {
         } catch (e) {
           return callback(new Error('Ollama generate parse: ' + e.message + ' raw:' + generateData.slice(0, 100)));
         }
-      });
+      }, callOptions.timeoutMs);
     }
 
     try {
@@ -711,7 +715,7 @@ function _callOllama(messages, model, callback, backendName) {
     } catch (e) {
       callback(new Error('Ollama parse: ' + e.message + ' raw:' + data.slice(0, 100)));
     }
-  });
+  }, callOptions.timeoutMs);
 }
 
 function _messagesToPrompt(messages) {
@@ -722,7 +726,7 @@ function _messagesToPrompt(messages) {
   }).join('\n\n') + '\n\nASSISTANT:\n';
 }
 
-function _postOllama(cfg, endpointPath, payload, callback) {
+function _postOllama(cfg, endpointPath, payload, callback, timeoutMs) {
   var baseUrl = String(cfg.url || '').replace(/\/$/, '');
   var parsed  = new URL(baseUrl + endpointPath);
   var isHttps = parsed.protocol === 'https:';
@@ -757,12 +761,13 @@ function _postOllama(cfg, endpointPath, payload, callback) {
     });
   });
   req.on('error', callback);
-  req.setTimeout(90000, function() { req.destroy(new Error('Ollama timeout')); });
+  req.setTimeout(timeoutMs || 90000, function() { req.destroy(new Error('Ollama timeout')); });
   req.write(bodyStr);
   req.end();
 }
 
-function _callThaiLLM(messages, model, callback) {
+function _callThaiLLM(messages, model, callOptions, callback) {
+  callOptions = callOptions || {};
   if (!THAILLM_TOKEN) return callback(new Error('THAILLM_TOKEN not set'));
   _httpPost(THAILLM_URL, '/v1/chat/completions',
     { 'Authorization': 'Bearer ' + THAILLM_TOKEN },
@@ -782,11 +787,12 @@ function _callThaiLLM(messages, model, callback) {
       } catch (e) {
         callback(new Error('ThaiLLM parse: ' + e.message + ' raw:' + data.slice(0, 100)));
       }
-    }
+    },
+    callOptions.timeoutMs
   );
 }
 
-function _callOpenClaude(messages, model, callback) {
+function _callOpenClaude(messages, model, callOptions, callback) {
   openClaudeAdapter.callOpenClaude(messages, { model: model || OPENCLAUDE_MODEL }, function(err, result) {
     if (err) return callback(err);
     callback(null, result.text);
@@ -809,7 +815,7 @@ function _getInnovaBotBridge() {
 function shutdownInnovaBot() {
   if (_innovaBotBridge) { try { _innovaBotBridge.disconnect(); } catch (e) {} _innovaBotBridge = null; }
 }
-function _callInnovaBot(messages, model, callback) {
+function _callInnovaBot(messages, model, callOptions, callback) {
   var bridge = _getInnovaBotBridge();
   var sys = (messages.find(function (m) { return m.role === 'system'; }) || {}).content || null;
   var convo = messages.filter(function (m) { return m.role !== 'system'; });
@@ -877,9 +883,9 @@ function callModel(messages, options, callback) {
     else if (backend === 'thaillm') caller = _callThaiLLM;
     else if (backend === 'openclaude') caller = _callOpenClaude;
     else if (backend === 'innova_bot') caller = _callInnovaBot;
-    else                        caller = function(msgs, mdl, cb) { _callOllama(msgs, mdl, cb, backend); };
+    else                        caller = function(msgs, mdl, callOpts, cb) { _callOllama(msgs, mdl, callOpts, cb, backend); };
 
-    caller(messages, opts.model || null, function(err, reply) {
+    caller(messages, opts.model || null, opts, function(err, reply) {
       if (!err) {
         // An empty/whitespace reply is NOT a usable success (GPT-5.5 + Copilot
         // review): record it as a failure and rotate, instead of returning a

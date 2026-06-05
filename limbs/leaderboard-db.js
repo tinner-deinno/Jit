@@ -32,6 +32,10 @@ const COLS = ['completed_tasks', 'correctness_score', 'success_rate', 'rank', 'p
 /** Coerce to a finite number (rejects NaN/Infinity), else default. */
 function _finite(x, d = 0) { const n = Number(x); return Number.isFinite(n) ? n : d; }
 
+function _isBusyError(error) {
+  return /database is locked|SQLITE_BUSY/i.test(String(error && error.message || error || ''));
+}
+
 function _open() {
   const db = new DatabaseSync(DB_PATH);
   // WAL + busy_timeout: tolerate concurrent writers instead of failing with
@@ -151,6 +155,13 @@ function recordProviderResult(name, ok, latencyMs) {
         updated = @now`).run({
       name, s: ok ? 1 : 0, lat: _finite(latencyMs), okts: ok ? now : null, failts: ok ? null : now, now,
     });
+    return true;
+  } catch (error) {
+    // Provider stats are advisory telemetry. If another process still holds the
+    // SQLite write lock during a hot loop restart, do not fail the entire fleet
+    // batch over metrics only.
+    if (_isBusyError(error)) return false;
+    throw error;
   } finally {
     db.close();
   }

@@ -74,6 +74,7 @@ const EXCLUDED_LANES = splitCsv(arg('--exclude-lanes', process.env.FLEET_BATCH_E
 const DISCORD = !has('--no-discord');
 const DISCORD_INTERVAL_MS = posInt(arg('--discord-interval-ms', process.env.FLEET_DISCORD_INTERVAL_MS || 600000), 600000, 60000, 3600000);
 const MAX_ATTEMPTS = posInt(arg('--attempts', process.env.FLEET_BATCH_ATTEMPTS || 2), 2, 1, 4);
+const WORKER_TIMEOUT_MS = posInt(arg('--worker-timeout-ms', process.env.FLEET_WORKER_TIMEOUT_MS || 45000), 45000, 5000, 180000);
 const REQUIRE_MIN_COUNT = posInt(arg('--require-min-count', process.env.FLEET_REQUIRE_MIN_COUNT || 0), 0, 0, 200);
 const REQUIRE_MIN_OK = posInt(arg('--require-min-ok', process.env.FLEET_REQUIRE_MIN_OK || REQUIRE_MIN_COUNT), REQUIRE_MIN_COUNT, 0, 200);
 const RUN_ID = 'fleet-batch-' + new Date().toISOString().replace(/[:.]/g, '-');
@@ -170,6 +171,16 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function withTimeout(promise, timeoutMs, label) {
+  let timer = null;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timeout after ${timeoutMs}ms`)), timeoutMs);
+  });
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
+}
+
 async function runOne(job) {
   const started = Date.now();
   const attempts = [];
@@ -177,9 +188,13 @@ async function runOne(job) {
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const attemptStarted = Date.now();
     try {
-      const result = await router.callModelPromise(
-        [{ role: 'user', content: jobPrompt(job) }],
-        { preferBackend: job.backend, model: job.model, noRotate: true }
+      const result = await withTimeout(
+        router.callModelPromise(
+          [{ role: 'user', content: jobPrompt(job) }],
+          { preferBackend: job.backend, model: job.model, noRotate: true }
+        ),
+        WORKER_TIMEOUT_MS,
+        `${job.backend}${job.model ? '/' + job.model : ''}`
       );
       const verdict = classifyReply(result.reply);
       const attemptLatency = Date.now() - attemptStarted;
