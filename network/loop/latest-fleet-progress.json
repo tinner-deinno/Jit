@@ -1,0 +1,109 @@
+{
+  "runId": "fleet-batch-2026-06-06T03-59-27-308Z",
+  "goal": "Jit Mother cycle 154: clear the innova-bot/Jit/innomcp backlog carefully.\nSelected lanes: ollama_mdes, thaillm\n\nMAW team:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nMAW tasks:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nStatus board:\n{\n\"providerProbe\": {\n\"mode\": \"partial\",\n\"probedBackends\": [\n\"ollama_mdes\",\n\"thaillm\",\n\"innova_bot\"\n],\n\"cachedUsable\": [\n\"innova_bot\",\n\"ollama_local\",\n\"ollama_mdes\",\n\"thaillm\"\n]\n},\n\"usable\": [\n\"innova_bot\",\n\"ollama_mdes\",\n\"thaillm\"\n],\n\"bridge\": {\n\"up\": true,\n\"detail\": \"HTTP 200\"\n},\n\"providers\": {\n\"ollama_mdes\": {\n\"status\": \"ALIVE\",\n\"ms\": 1089,\n\"fresh\": \"21s ago\"\n},\n\"ollama_local\": {\n\"status\": \"ALIVE\",\n\"ms\": 20709,\n\"fresh\": \"cached\"\n},\n\"ollama_cloud\": {\n\"status\": \"RATE_LIMITED\",\n\"ms\": 1703,\n\"fresh\": \"cached\",\n\"error\": \"Ollama HTTP 429: {\\\"error\\\":\\\"you (tawin2502) have reached your weekly usage limit,\"\n},\n\"thaillm\": {\n\"status\": \"ALIVE\",\n\"ms\": 735,\n\"fresh\": \"21s ago\"\n},\n\"copilot\": {\n\"status\": \"\n\nReturn one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.",
+  "updatedAt": "2026-06-06T04:13:24.109Z",
+  "label": "complete",
+  "summary": {
+    "runId": "fleet-batch-2026-06-06T03-59-27-308Z",
+    "goal": "Jit Mother cycle 154: clear the innova-bot/Jit/innomcp backlog carefully.\nSelected lanes: ollama_mdes, thaillm\n\nMAW team:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nMAW tasks:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nStatus board:\n{\n\"providerProbe\": {\n\"mode\": \"partial\",\n\"probedBackends\": [\n\"ollama_mdes\",\n\"thaillm\",\n\"innova_bot\"\n],\n\"cachedUsable\": [\n\"innova_bot\",\n\"ollama_local\",\n\"ollama_mdes\",\n\"thaillm\"\n]\n},\n\"usable\": [\n\"innova_bot\",\n\"ollama_mdes\",\n\"thaillm\"\n],\n\"bridge\": {\n\"up\": true,\n\"detail\": \"HTTP 200\"\n},\n\"providers\": {\n\"ollama_mdes\": {\n\"status\": \"ALIVE\",\n\"ms\": 1089,\n\"fresh\": \"21s ago\"\n},\n\"ollama_local\": {\n\"status\": \"ALIVE\",\n\"ms\": 20709,\n\"fresh\": \"cached\"\n},\n\"ollama_cloud\": {\n\"status\": \"RATE_LIMITED\",\n\"ms\": 1703,\n\"fresh\": \"cached\",\n\"error\": \"Ollama HTTP 429: {\\\"error\\\":\\\"you (tawin2502) have reached your weekly usage limit,\"\n},\n\"thaillm\": {\n\"status\": \"ALIVE\",\n\"ms\": 735,\n\"fresh\": \"21s ago\"\n},\n\"copilot\": {\n\"status\": \"\n\nReturn one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.",
+    "count": 84,
+    "completed": 84,
+    "pending": 0,
+    "ok": 82,
+    "fail": 2,
+    "concurrency": 8,
+    "durationMs": 836677,
+    "notifyEvery": 8,
+    "byBackend": {
+      "ollama_mdes": {
+        "total": 44,
+        "ok": 43,
+        "fail": 1,
+        "models": {
+          "gemma4:26b": 44
+        },
+        "workers": 44,
+        "avgLatencyMs": 18975
+      },
+      "thaillm": {
+        "total": 40,
+        "ok": 39,
+        "fail": 1,
+        "models": {
+          "openthaigpt-thaillm-8b-instruct-v7.2": 10,
+          "pathumma-thaillm-qwen3-8b-think-3.0.0": 10,
+          "typhoon-s-thaillm-8b-instruct": 10,
+          "thalle-0.2-thaillm-8b-fa": 10
+        },
+        "workers": 40,
+        "avgLatencyMs": 5199
+      }
+    },
+    "roster": {
+      "plannedWorkers": 84,
+      "completedWorkers": 84,
+      "uniquePersonas": 26,
+      "perspectives": {
+        "coordinator": 20,
+        "analyst": 21,
+        "verifier": 8,
+        "executor": 18,
+        "critic": 4,
+        "observer": 7,
+        "router": 3,
+        "scribe": 3
+      },
+      "sampleWorkers": [
+        "agent-copilot-coordinator-01",
+        "agent-mdes-analyst-01",
+        "agent-ollama-coordinator-01",
+        "agent-thaillm-coordinator-01",
+        "antigravity-mission-control-coordinator-01",
+        "chamu-verifier-01",
+        "gemma4-31b-cloud-coordinator-01",
+        "innova-coordinator-01",
+        "innova-bot-coordinator-01",
+        "jit-coordinator-01",
+        "jit-claudecode-coordinator-01",
+        "jit-codex-coordinator-01"
+      ]
+    },
+    "proof": {
+      "requireMinCount": 84,
+      "requireMinOk": 63,
+      "minCountSatisfied": true,
+      "minCompletedSatisfied": true,
+      "minOkSatisfied": true,
+      "selectedLanes": [
+        "ollama_mdes",
+        "thaillm"
+      ],
+      "requestedLanes": [
+        "ollama_mdes",
+        "thaillm"
+      ],
+      "excludedLanes": [],
+      "backendLimits": {
+        "ollama_mdes": 1,
+        "thaillm": 4,
+        "ollama_cloud": 2,
+        "ollama_local": 2,
+        "copilot": 1,
+        "openai": 1,
+        "innova_bot": 1
+      }
+    }
+  },
+  "latest": null,
+  "notify": {
+    "discordSent": false,
+    "innovaSent": {
+      "ok": true
+    }
+  },
+  "artifacts": {
+    "dir": "network/artifacts/fleet-batch-2026-06-06T03-59-27-308Z",
+    "summaryJson": "network/artifacts/fleet-batch-2026-06-06T03-59-27-308Z/summary.json",
+    "summaryMd": "network/artifacts/fleet-batch-2026-06-06T03-59-27-308Z/summary.md"
+  }
+}

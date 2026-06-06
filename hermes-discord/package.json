@@ -13,12 +13,19 @@
     "test:multiagent": "node test-multiagent.js",
     "test:backend": "node -e \"const r=require('./model-router');console.log(JSON.stringify(r.status(),null,2))\""
   },
-  "keywords": ["discord", "bot", "innova", "hermes", "ollama", "mdes"],
+  "keywords": [
+    "discord",
+    "bot",
+    "innova",
+    "hermes",
+    "ollama",
+    "mdes"
+  ],
   "author": "innova (มนุษย์ Agent)",
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "discord.js": "^14.26.3",
-    "puppeteer": "^22.0.0"
+    "puppeteer": "^22.15.0"
   }
 }

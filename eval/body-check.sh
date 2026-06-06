@@ -7,6 +7,15 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 1
 JIT_ROOT="$(pwd)"
 source "$JIT_ROOT/limbs/lib.sh" 2>/dev/null || { echo "ERROR: lib.sh not found"; exit 1; }
 
+# Use Windows native curl.exe if running under Windows MSYS/Cygwin or WSL2 to avoid network stack blockages
+if grep -qE "(Microsoft|microsoft|WSL)" /proc/version 2>/dev/null || [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+  if command -v curl.exe &>/dev/null; then
+    curl() {
+      curl.exe "$@"
+    }
+  fi
+fi
+
 PASS=0; FAIL=0; WARN=0
 
 _pass() { echo -e "  ${GREEN}✅${RESET} $1"; ((PASS++)) || true; }

@@ -9,6 +9,15 @@ ORACLE_URL="${ORACLE_URL:-http://localhost:47778}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JIT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# Use Windows native curl.exe if running under Windows MSYS/Cygwin or WSL2 to avoid network stack blockages
+if grep -qE "(Microsoft|microsoft|WSL)" /proc/version 2>/dev/null || [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+  if command -v curl.exe &>/dev/null; then
+    curl() {
+      curl.exe "$@"
+    }
+  fi
+fi
+
 if [ -f "$JIT_ROOT/.env" ]; then
   set -a
   . "$JIT_ROOT/.env"

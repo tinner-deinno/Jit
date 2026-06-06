@@ -1,0 +1,12 @@
+{
+  "tick": 195,
+  "intervalMs": 240000,
+  "lastStartedAt": "2026-06-06T03:56:59.512Z",
+  "lastFinishedAt": "2026-06-06T03:56:59.620Z",
+  "lastOk": true,
+  "lastCycle": 153,
+  "lastInnomcp": "innomcp=clean head=fb41495 Record final innomcp regression pass",
+  "lastProgress": "progress=84/84 ok=83 fail=1 label=complete",
+  "lastVisual": "visual=ok status=200 title=Innova Bot GUI",
+  "lastResponse": "{\"content\":[{\"type\":\"text\",\"text\":\"Event published via File Fallback: mother.task → innova\"}],\"structuredContent\":{\"result\":\"Event published via File Fallback: mother.task → innova\"},\"isError\":false}"
+}

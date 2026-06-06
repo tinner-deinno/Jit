@@ -1,0 +1,1160 @@
+[
+  {
+    "ts": "2026-06-03T13:30:47.941Z",
+    "phase": "LiveProof",
+    "goal": "Summarize in ONE sentence what a multi-agent orchestration leaderboard is for.",
+    "provider": "ollama_mdes",
+    "squad": [
+      "vaja",
+      "soma",
+      "innova",
+      "lak",
+      "chamu"
+    ],
+    "verdicts": [
+      92,
+      95,
+      88,
+      92,
+      98
+    ],
+    "durationMs": 146220,
+    "committed": true
+  },
+  {
+    "ts": "2026-06-03T13:36:08.618Z",
+    "phase": "LiveProof",
+    "goal": "Summarize in ONE sentence what a multi-agent orchestration leaderboard is for.",
+    "provider": "ollama_mdes",
+    "squad": [
+      "vaja",
+      "soma",
+      "innova",
+      "lak",
+      "chamu"
+    ],
+    "verdicts": [
+      45,
+      65,
+      65,
+      45,
+      45
+    ],
+    "durationMs": 93895,
+    "committed": true
+  },
+  {
+    "ts": "2026-06-03T14:06:13.718Z",
+    "phase": "Chat",
+    "goal": "List three benefits of multi-agent orchestration in one short sentence each.",
+    "provider": "copilot",
+    "squad": [
+      "soma",
+      "innova",
+      "vaja",
+      "lak",
+      "chamu"
+    ],
+    "verdicts": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "durationMs": 42429,
+    "committed": true
+  },
+  {
+    "ts": "2026-06-03T14:12:57.318Z",
+    "phase": "Content Composition",
+    "goal": "Content Composition: Write the English haiku.",
+    "provider": "router-rotation",
+    "squad": [
+      "innova",
+      "soma",
+      "vaja",
+      "lak",
+      "chamu"
+    ],
+    "verdicts": [
+      95,
+      92,
+      92,
+      92,
+      92
+    ],
+    "durationMs": 85900,
+    "committed": true
+  },
+  {
+    "ts": "2026-06-03T14:15:55.192Z",
+    "phase": "Thai Translation",
+    "goal": "Thai Translation: Translate the text into Thai.\n\n[Prior phases]\nContent Composition: Implementing a structural `HaikuComposer` engine. This implementation uses a pattern-matching approach to ensure the content composition adh",
+    "provider": "router-rotation",
+    "squad": [
+      "soma",
+      "innova",
+      "vaja",
+      "lak",
+      "chamu"
+    ],
+    "verdicts": [
+      95,
+      95,
+      95,
+      95,
+      0
+    ],
+    "durationMs": 177511,
+    "committed": true
+  },
+  {
+    "ts": "2026-06-03T17:52:11.673Z",
+    "phase": "Compose Haiku",
+    "goal": "Compose Haiku: Write a three-line poem about multi-agent orchestration.",
+    "provider": "router-rotation",
+    "squad": [
+      "innova",
+      "soma",
+      "vaja",
+      "lak",
+      "chamu"
+    ],
+    "verdicts": [
+      92,
+      95,
+      95,
+      0,
+      0
+    ],
+    "durationMs": 248778,
+    "committed": true
+  },
+  {
+    "ts": "2026-06-03T18:01:49.235Z",
+    "phase": "Thai Translation",
+    "goal": "Thai Translation: Translate the completed English sentence into Thai.",
+    "provider": "ollama_mdes",
+    "squad": [
+      "soma",
+      "innova",
+      "vaja",
+      "lak",
+      "chamu"
+    ],
+    "verdicts": [
+      95,
+      95,
+      3,
+      95,
+      95
+    ],
+    "durationMs": 171346,
+    "committed": true
+  },
+  {
+    "ts": "2026-06-03T18:16:04.393Z",
+    "phase": "System Audit",
+    "goal": "System Audit: Map failure modes across all four architectural components.",
+    "provider": "ollama_mdes",
+    "squad": [
+      "soma",
+      "innova",
+      "vaja",
+      "lak",
+      "chamu"
+    ],
+    "verdicts": [
+      92,
+      88,
+      92,
+      5,
+      92
+    ],
+    "durationMs": 148397,
+    "committed": true
+  },
+  {
+    "ts": "2026-06-03T19:03:50.031Z",
+    "phase": "Fleet Batch",
+    "goal": "Smoke test the fleet batch harness after ThaiLLM routing fix.",
+    "provider": "multi-provider",
+    "squad": [
+      "jit",
+      "innova",
+      "soma",
+      "lak"
+    ],
+    "verdicts": [
+      85,
+      85,
+      85,
+      85
+    ],
+    "durationMs": 48543,
+    "committed": false,
+    "batch": {
+      "runId": "fleet-batch-2026-06-03T19-03-01-485Z",
+      "goal": "Smoke test the fleet batch harness after ThaiLLM routing fix.",
+      "count": 4,
+      "ok": 4,
+      "fail": 0,
+      "concurrency": 2,
+      "durationMs": 48543,
+      "byBackend": {
+        "ollama_mdes": {
+          "total": 4,
+          "ok": 4,
+          "fail": 0,
+          "models": {
+            "gemma4:26b": 4
+          },
+          "avgLatencyMs": 21154
+        }
+      }
+    }
+  },
+  {
+    "ts": "2026-06-03T19:05:18.174Z",
+    "phase": "Fleet Batch",
+    "goal": "Smoke test interleaved provider scheduling after ThaiLLM routing fix.",
+    "provider": "multi-provider",
+    "squad": [
+      "jit",
+      "innova",
+      "soma",
+      "lak",
+      "neta",
+      "chamu",
+      "vaja",
+      "mue"
+    ],
+    "verdicts": [
+      85,
+      70,
+      85,
+      100,
+      85,
+      70,
+      85,
+      70
+    ],
+    "durationMs": 64553,
+    "committed": false,
+    "batch": {
+      "runId": "fleet-batch-2026-06-03T19-04-13-618Z",
+      "goal": "Smoke test interleaved provider scheduling after ThaiLLM routing fix.",
+      "count": 8,
+      "ok": 8,
+      "fail": 0,
+      "concurrency": 4,
+      "durationMs": 64553,
+      "byBackend": {
+        "ollama_mdes": {
+          "total": 2,
+          "ok": 2,
+          "fail": 0,
+          "models": {
+            "gemma4:26b": 2
+          },
+          "avgLatencyMs": 14530
+        },
+        "thaillm": {
+          "total": 2,
+          "ok": 2,
+          "fail": 0,
+          "models": {
+            "pathumma-thaillm-qwen3-8b-think-3.0.0": 2
+          },
+          "avgLatencyMs": 9301
+        },
+        "ollama_cloud": {
+          "total": 2,
+          "ok": 2,
+          "fail": 0,
+          "models": {
+            "gemma4:31b-cloud": 2
+          },
+          "avgLatencyMs": 3499
+        },
+        "copilot": {
+          "total": 2,
+          "ok": 2,
+          "fail": 0,
+          "models": {
+            "default": 2
+          },
+          "avgLatencyMs": 45349
+        }
+      }
+    }
+  },
+  {
+    "ts": "2026-06-03T19:07:07.089Z",
+    "phase": "Fleet Batch",
+    "goal": "Smoke test per-provider model rotation for ThaiLLM and Ollama cloud.",
+    "provider": "multi-provider",
+    "squad": [
+      "jit",
+      "innova",
+      "soma",
+      "lak",
+      "neta",
+      "chamu",
+      "vaja",
+      "mue",
+      "pada",
+      "netra",
+      "karn",
+      "pran"
+    ],
+    "verdicts": [
+      0,
+      70,
+      85,
+      93,
+      0,
+      75,
+      85,
+      70,
+      85,
+      30,
+      85,
+      87
+    ],
+    "durationMs": 85756,
+    "committed": false,
+    "batch": {
+      "runId": "fleet-batch-2026-06-03T19-05-41-331Z",
+      "goal": "Smoke test per-provider model rotation for ThaiLLM and Ollama cloud.",
+      "count": 12,
+      "ok": 10,
+      "fail": 2,
+      "concurrency": 6,
+      "durationMs": 85756,
+      "byBackend": {
+        "ollama_mdes": {
+          "total": 3,
+          "ok": 1,
+          "fail": 2,
+          "models": {
+            "gemma4:26b": 3
+          },
+          "avgLatencyMs": 70481
+        },
+        "thaillm": {
+          "total": 3,
+          "ok": 3,
+          "fail": 0,
+          "models": {
+            "openthaigpt-thaillm-8b-instruct-v7.2": 1,
+            "pathumma-thaillm-qwen3-8b-think-3.0.0": 1,
+            "typhoon-s-thaillm-8b-instruct": 1
+          },
+          "avgLatencyMs": 3761
+        },
+        "ollama_cloud": {
+          "total": 3,
+          "ok": 3,
+          "fail": 0,
+          "models": {
+            "gemma4:31b-cloud": 2,
+            "nemotron-3-super:cloud": 1
+          },
+          "avgLatencyMs": 4311
+        },
+        "copilot": {
+          "total": 3,
+          "ok": 3,
+          "fail": 0,
+          "models": {
+            "claude-sonnet-4.6": 2,
+            "default": 1
+          },
+          "avgLatencyMs": 53686
+        }
+      }
+    }
+  },
+  {
+    "ts": "2026-06-03T19:08:47.528Z",
+    "phase": "Fleet Batch",
+    "goal": "Smoke test per-backend throttling before full 56-worker batch.",
+    "provider": "multi-provider",
+    "squad": [
+      "jit",
+      "innova",
+      "soma",
+      "lak",
+      "neta",
+      "chamu",
+      "vaja",
+      "mue"
+    ],
+    "verdicts": [
+      85,
+      95,
+      90,
+      87,
+      85,
+      1,
+      85,
+      70
+    ],
+    "durationMs": 66013,
+    "committed": false,
+    "batch": {
+      "runId": "fleet-batch-2026-06-03T19-07-41-512Z",
+      "goal": "Smoke test per-backend throttling before full 56-worker batch.",
+      "count": 8,
+      "ok": 8,
+      "fail": 0,
+      "concurrency": 6,
+      "durationMs": 66013,
+      "byBackend": {
+        "ollama_mdes": {
+          "total": 2,
+          "ok": 2,
+          "fail": 0,
+          "models": {
+            "gemma4:26b": 2
+          },
+          "avgLatencyMs": 31992
+        },
+        "thaillm": {
+          "total": 2,
+          "ok": 2,
+          "fail": 0,
+          "models": {
+            "openthaigpt-thaillm-8b-instruct-v7.2": 1,
+            "pathumma-thaillm-qwen3-8b-think-3.0.0": 1
+          },
+          "avgLatencyMs": 6595
+        },
+        "ollama_cloud": {
+          "total": 2,
+          "ok": 2,
+          "fail": 0,
+          "models": {
+            "gemma4:31b-cloud": 1,
+            "nemotron-3-super:cloud": 1
+          },
+          "avgLatencyMs": 6766
+        },
+        "copilot": {
+          "total": 2,
+          "ok": 2,
+          "fail": 0,
+          "models": {
+            "claude-sonnet-4.6": 1,
+            "default": 1
+          },
+          "avgLatencyMs": 47144
+        }
+      }
+    }
+  },
+  {
+    "ts": "2026-06-03T19:12:22.031Z",
+    "phase": "Fleet Batch",
+    "goal": "Tonight",
+    "provider": "multi-provider",
+    "squad": [
+      "jit",
+      "innova",
+      "soma",
+      "lak",
+      "neta",
+      "chamu",
+      "vaja",
+      "mue",
+      "pada",
+      "netra",
+      "karn",
+      "pran",
+      "sayanprasathan",
+      "agent-mdes",
+      "agent-thaillm",
+      "agent-copilot"
+    ],
+    "verdicts": [
+      85,
+      90,
+      85,
+      70,
+      85,
+      85,
+      88,
+      70,
+      85,
+      100,
+      85,
+      91,
+      85,
+      90,
+      85,
+      70,
+      85,
+      70,
+      85,
+      78,
+      85,
+      85,
+      84,
+      70,
+      85,
+      95,
+      85,
+      82,
+      85,
+      70,
+      12,
+      70,
+      88,
+      70,
+      85,
+      82,
+      85,
+      85,
+      70,
+      70,
+      70,
+      75,
+      85,
+      85,
+      70,
+      85,
+      85,
+      70,
+      85,
+      85,
+      80,
+      12,
+      85,
+      90,
+      85,
+      70
+    ],
+    "durationMs": 184179,
+    "committed": false,
+    "batch": {
+      "runId": "fleet-batch-2026-06-03T19-09-17-849Z",
+      "goal": "Tonight",
+      "count": 56,
+      "ok": 56,
+      "fail": 0,
+      "concurrency": 6,
+      "durationMs": 184179,
+      "byBackend": {
+        "ollama_mdes": {
+          "total": 16,
+          "ok": 16,
+          "fail": 0,
+          "models": {
+            "gemma4:26b": 16
+          },
+          "avgLatencyMs": 10697
+        },
+        "thaillm": {
+          "total": 15,
+          "ok": 15,
+          "fail": 0,
+          "models": {
+            "openthaigpt-thaillm-8b-instruct-v7.2": 4,
+            "pathumma-thaillm-qwen3-8b-think-3.0.0": 4,
+            "typhoon-s-thaillm-8b-instruct": 4,
+            "thalle-0.2-thaillm-8b-fa": 3
+          },
+          "avgLatencyMs": 5643
+        },
+        "ollama_cloud": {
+          "total": 15,
+          "ok": 15,
+          "fail": 0,
+          "models": {
+            "gemma4:31b-cloud": 8,
+            "nemotron-3-super:cloud": 7
+          },
+          "avgLatencyMs": 4825
+        },
+        "copilot": {
+          "total": 10,
+          "ok": 10,
+          "fail": 0,
+          "models": {
+            "claude-sonnet-4.6": 5,
+            "default": 5
+          },
+          "avgLatencyMs": 39921
+        }
+      }
+    }
+  },
+  {
+    "ts": "2026-06-03T19:18:27.384Z",
+    "phase": "Fleet Batch",
+    "goal": "Smoke fixed fleet reporter: prove pending accounting and Discord config handling.",
+    "provider": "multi-provider",
+    "squad": [
+      "jit",
+      "innova",
+      "soma",
+      "lak"
+    ],
+    "verdicts": [
+      85,
+      85,
+      85,
+      78
+    ],
+    "durationMs": 102188,
+    "committed": false,
+    "batch": {
+      "runId": "fleet-batch-2026-06-03T19-16-45-194Z",
+      "goal": "Smoke fixed fleet reporter: prove pending accounting and Discord config handling.",
+      "count": 4,
+      "completed": 4,
+      "pending": 0,
+      "ok": 4,
+      "fail": 0,
+      "concurrency": 4,
+      "durationMs": 102188,
+      "byBackend": {
+        "ollama_mdes": {
+          "total": 1,
+          "ok": 1,
+          "fail": 0,
+          "models": {
+            "gemma4:26b": 1
+          },
+          "avgLatencyMs": 22629
+        },
+        "thaillm": {
+          "total": 1,
+          "ok": 1,
+          "fail": 0,
+          "models": {
+            "openthaigpt-thaillm-8b-instruct-v7.2": 1
+          },
+          "avgLatencyMs": 11644
+        },
+        "ollama_cloud": {
+          "total": 1,
+          "ok": 1,
+          "fail": 0,
+          "models": {
+            "gemma4:31b-cloud": 1
+          },
+          "avgLatencyMs": 1800
+        },
+        "copilot": {
+          "total": 1,
+          "ok": 1,
+          "fail": 0,
+          "models": {
+            "claude-sonnet-4.6": 1
+          },
+          "avgLatencyMs": 95761
+        }
+      }
+    }
+  },
+  {
+    "ts": "2026-06-03T19:26:40.003Z",
+    "phase": "Fleet Batch",
+    "goal": "Harden Mother/Jit/innomcp tonight: each worker finds one evidence-backed risk or next fix, prioritizing router reliability, SSE/innova-bot health, provider fallback, ThaiLLM/cloud/Copilot orchestration, and low-token autonomous continuation.",
+    "provider": "multi-provider",
+    "squad": [
+      "jit",
+      "innova",
+      "soma",
+      "lak",
+      "neta",
+      "chamu",
+      "vaja",
+      "mue",
+      "pada",
+      "netra",
+      "karn",
+      "pran",
+      "sayanprasathan",
+      "agent-mdes",
+      "agent-thaillm",
+      "agent-copilot"
+    ],
+    "verdicts": [
+      85,
+      70,
+      85,
+      87,
+      88,
+      75,
+      85,
+      70,
+      85,
+      70,
+      92,
+      82,
+      85,
+      85,
+      85,
+      70,
+      85,
+      85,
+      85,
+      70,
+      85,
+      0,
+      30,
+      70,
+      85,
+      30,
+      92,
+      81,
+      85,
+      85,
+      85,
+      70,
+      85,
+      70,
+      85,
+      82,
+      85,
+      85,
+      88,
+      70,
+      85,
+      70,
+      85,
+      88,
+      75,
+      12,
+      85,
+      70,
+      85,
+      85,
+      85,
+      85,
+      85,
+      85,
+      85,
+      85
+    ],
+    "durationMs": 459828,
+    "committed": false,
+    "batch": {
+      "runId": "fleet-batch-2026-06-03T19-19-00-172Z",
+      "goal": "Harden Mother/Jit/innomcp tonight: each worker finds one evidence-backed risk or next fix, prioritizing router reliability, SSE/innova-bot health, provider fallback, ThaiLLM/cloud/Copilot orchestration, and low-token autonomous continuation.",
+      "count": 56,
+      "completed": 56,
+      "pending": 0,
+      "ok": 55,
+      "fail": 1,
+      "concurrency": 6,
+      "durationMs": 459828,
+      "byBackend": {
+        "ollama_mdes": {
+          "total": 16,
+          "ok": 16,
+          "fail": 0,
+          "models": {
+            "gemma4:26b": 16
+          },
+          "avgLatencyMs": 28511
+        },
+        "thaillm": {
+          "total": 15,
+          "ok": 14,
+          "fail": 1,
+          "models": {
+            "openthaigpt-thaillm-8b-instruct-v7.2": 4,
+            "pathumma-thaillm-qwen3-8b-think-3.0.0": 4,
+            "typhoon-s-thaillm-8b-instruct": 4,
+            "thalle-0.2-thaillm-8b-fa": 3
+          },
+          "avgLatencyMs": 11977
+        },
+        "ollama_cloud": {
+          "total": 15,
+          "ok": 15,
+          "fail": 0,
+          "models": {
+            "gemma4:31b-cloud": 8,
+            "nemotron-3-super:cloud": 7
+          },
+          "avgLatencyMs": 5860
+        },
+        "copilot": {
+          "total": 10,
+          "ok": 10,
+          "fail": 0,
+          "models": {
+            "claude-sonnet-4.6": 5,
+            "default": 5
+          },
+          "avgLatencyMs": 54128
+        }
+      }
+    }
+  },
+  {
+    "ts": "2026-06-03T19:28:35.343Z",
+    "phase": "Fleet Batch",
+    "goal": "Retry smoke: prove transient failures are retried and pending accounting stays correct.",
+    "provider": "multi-provider",
+    "squad": [
+      "jit",
+      "innova",
+      "soma",
+      "lak",
+      "neta",
+      "chamu",
+      "vaja",
+      "mue"
+    ],
+    "verdicts": [
+      85,
+      70,
+      85,
+      82,
+      85,
+      70,
+      85,
+      70
+    ],
+    "durationMs": 58932,
+    "committed": false,
+    "batch": {
+      "runId": "fleet-batch-2026-06-03T19-27-36-407Z",
+      "goal": "Retry smoke: prove transient failures are retried and pending accounting stays correct.",
+      "count": 8,
+      "completed": 8,
+      "pending": 0,
+      "ok": 8,
+      "fail": 0,
+      "concurrency": 6,
+      "durationMs": 58932,
+      "byBackend": {
+        "ollama_mdes": {
+          "total": 2,
+          "ok": 2,
+          "fail": 0,
+          "models": {
+            "gemma4:26b": 2
+          },
+          "avgLatencyMs": 25394
+        },
+        "thaillm": {
+          "total": 2,
+          "ok": 2,
+          "fail": 0,
+          "models": {
+            "openthaigpt-thaillm-8b-instruct-v7.2": 1,
+            "pathumma-thaillm-qwen3-8b-think-3.0.0": 1
+          },
+          "avgLatencyMs": 12090
+        },
+        "ollama_cloud": {
+          "total": 2,
+          "ok": 2,
+          "fail": 0,
+          "models": {
+            "gemma4:31b-cloud": 1,
+            "nemotron-3-super:cloud": 1
+          },
+          "avgLatencyMs": 2959
+        },
+        "copilot": {
+          "total": 2,
+          "ok": 2,
+          "fail": 0,
+          "models": {
+            "claude-sonnet-4.6": 1,
+            "default": 1
+          },
+          "avgLatencyMs": 48958
+        }
+      }
+    }
+  },
+  {
+    "ts": "2026-06-03T19:33:15.807Z",
+    "phase": "Fleet Batch",
+    "goal": "Final hardened fleet run: validate >50 Jit Mother workers across MDES, ThaiLLM 4 models, Ollama cloud gemma/nemotron, and Copilot; surface actionable innomcp next fixes with retry, pending accounting, and provider evidence.",
+    "provider": "multi-provider",
+    "squad": [
+      "jit",
+      "innova",
+      "soma",
+      "lak",
+      "neta",
+      "chamu",
+      "vaja",
+      "mue",
+      "pada",
+      "netra",
+      "karn",
+      "pran",
+      "sayanprasathan",
+      "agent-mdes",
+      "agent-thaillm",
+      "agent-copilot"
+    ],
+    "verdicts": [
+      88,
+      70,
+      92,
+      78,
+      85,
+      15,
+      12,
+      70,
+      85,
+      85,
+      85,
+      78,
+      85,
+      85,
+      12,
+      70,
+      70,
+      70,
+      85,
+      87,
+      88,
+      85,
+      70,
+      70,
+      88,
+      98,
+      92,
+      82,
+      92,
+      85,
+      70,
+      78,
+      85,
+      70,
+      92,
+      70,
+      70,
+      75,
+      12,
+      70,
+      88,
+      85,
+      92,
+      88,
+      70,
+      85,
+      88,
+      85,
+      92,
+      85,
+      85,
+      85,
+      85,
+      85,
+      92,
+      85
+    ],
+    "durationMs": 264810,
+    "committed": false,
+    "batch": {
+      "runId": "fleet-batch-2026-06-03T19-28-50-993Z",
+      "goal": "Final hardened fleet run: validate >50 Jit Mother workers across MDES, ThaiLLM 4 models, Ollama cloud gemma/nemotron, and Copilot; surface actionable innomcp next fixes with retry, pending accounting, and provider evidence.",
+      "count": 56,
+      "completed": 56,
+      "pending": 0,
+      "ok": 56,
+      "fail": 0,
+      "concurrency": 6,
+      "durationMs": 264810,
+      "byBackend": {
+        "ollama_mdes": {
+          "total": 16,
+          "ok": 16,
+          "fail": 0,
+          "models": {
+            "gemma4:26b": 16
+          },
+          "avgLatencyMs": 16659
+        },
+        "thaillm": {
+          "total": 15,
+          "ok": 15,
+          "fail": 0,
+          "models": {
+            "openthaigpt-thaillm-8b-instruct-v7.2": 4,
+            "pathumma-thaillm-qwen3-8b-think-3.0.0": 4,
+            "typhoon-s-thaillm-8b-instruct": 4,
+            "thalle-0.2-thaillm-8b-fa": 3
+          },
+          "avgLatencyMs": 10501
+        },
+        "ollama_cloud": {
+          "total": 15,
+          "ok": 15,
+          "fail": 0,
+          "models": {
+            "gemma4:31b-cloud": 8,
+            "nemotron-3-super:cloud": 7
+          },
+          "avgLatencyMs": 9947
+        },
+        "copilot": {
+          "total": 10,
+          "ok": 10,
+          "fail": 0,
+          "models": {
+            "claude-sonnet-4.6": 5,
+            "default": 5
+          },
+          "avgLatencyMs": 48873
+        }
+      }
+    }
+  },
+  {
+    "ts": "2026-06-04T07:24:32.954Z",
+    "phase": "Fleet Batch",
+    "goal": "Proof run for innomcp finish: 51 Jit Mother workers audit remaining orchestration risks using MDES, ThaiLLM, and Ollama cloud. Return one concise actionable fix with Confidence 0-100.",
+    "provider": "multi-provider",
+    "squad": [
+      "jit",
+      "innova",
+      "soma",
+      "lak",
+      "neta",
+      "chamu",
+      "vaja",
+      "mue",
+      "pada",
+      "netra",
+      "karn",
+      "pran",
+      "sayanprasathan",
+      "agent-mdes",
+      "agent-thaillm",
+      "agent-copilot"
+    ],
+    "verdicts": [
+      70,
+      95,
+      85,
+      85,
+      1,
+      85,
+      88,
+      14,
+      70,
+      85,
+      70,
+      70,
+      85,
+      85,
+      92,
+      85,
+      75,
+      85,
+      88,
+      15,
+      92,
+      88,
+      85,
+      40,
+      70,
+      70,
+      85,
+      85,
+      1,
+      70,
+      85,
+      85,
+      85,
+      85,
+      85,
+      70,
+      85,
+      70,
+      70,
+      88,
+      1,
+      85,
+      85,
+      3,
+      70,
+      85,
+      85,
+      85,
+      88,
+      85,
+      88
+    ],
+    "durationMs": 295963,
+    "committed": false,
+    "batch": {
+      "runId": "fleet-batch-2026-06-04T07-19-36-869Z",
+      "goal": "Proof run for innomcp finish: 51 Jit Mother workers audit remaining orchestration risks using MDES, ThaiLLM, and Ollama cloud. Return one concise actionable fix with Confidence 0-100.",
+      "count": 51,
+      "completed": 51,
+      "pending": 0,
+      "ok": 51,
+      "fail": 0,
+      "concurrency": 6,
+      "durationMs": 295963,
+      "byBackend": {
+        "ollama_mdes": {
+          "total": 19,
+          "ok": 19,
+          "fail": 0,
+          "models": {
+            "gemma4:26b": 19
+          },
+          "avgLatencyMs": 29422
+        },
+        "thaillm": {
+          "total": 16,
+          "ok": 16,
+          "fail": 0,
+          "models": {
+            "openthaigpt-thaillm-8b-instruct-v7.2": 4,
+            "pathumma-thaillm-qwen3-8b-think-3.0.0": 4,
+            "typhoon-s-thaillm-8b-instruct": 4,
+            "thalle-0.2-thaillm-8b-fa": 4
+          },
+          "avgLatencyMs": 8722
+        },
+        "ollama_cloud": {
+          "total": 16,
+          "ok": 16,
+          "fail": 0,
+          "models": {
+            "gemma4:31b-cloud": 8,
+            "nemotron-3-super:cloud": 8
+          },
+          "avgLatencyMs": 4238
+        }
+      },
+      "proof": {
+        "requireMinCount": 51,
+        "requireMinOk": 51,
+        "minCountSatisfied": true,
+        "minCompletedSatisfied": true,
+        "minOkSatisfied": true,
+        "selectedLanes": [
+          "ollama_mdes",
+          "thaillm",
+          "ollama_cloud"
+        ],
+        "requestedLanes": [
+          "ollama_mdes",
+          "thaillm",
+          "ollama_cloud"
+        ],
+        "excludedLanes": []
+      }
+    }
+  }
+]

@@ -1,0 +1,100 @@
+Jit Mother cycle 154: clear the innova-bot/Jit/innomcp backlog carefully.
+Selected lanes: ollama_mdes, thaillm
+
+MAW team:
+no tasks for team "innomcp"
+
+Team: innomcp (0 agents)
+
+Agent Status Task Pane
+
+Tasks: 0/0 done | Agents: 0 working, 0 idle
+no tasks for team "innova-bot-template"
+
+Team: innova-bot-template (0 agents)
+
+Agent Status Task Pane
+
+Tasks: 0/0 done | Agents: 0 working, 0 idle
+no tasks for team "jit"
+
+Team: jit (0 agents)
+
+Agent Status Task Pane
+
+Tasks: 0/0 done | Agents: 0 working, 0 idle
+
+MAW tasks:
+no tasks for team "innomcp"
+
+Team: innomcp (0 agents)
+
+Agent Status Task Pane
+
+Tasks: 0/0 done | Agents: 0 working, 0 idle
+no tasks for team "innova-bot-template"
+
+Team: innova-bot-template (0 agents)
+
+Agent Status Task Pane
+
+Tasks: 0/0 done | Agents: 0 working, 0 idle
+no tasks for team "jit"
+
+Team: jit (0 agents)
+
+Agent Status Task Pane
+
+Tasks: 0/0 done | Agents: 0 working, 0 idle
+
+Status board:
+{
+"providerProbe": {
+"mode": "partial",
+"probedBackends": [
+"ollama_mdes",
+"thaillm",
+"innova_bot"
+],
+"cachedUsable": [
+"innova_bot",
+"ollama_local",
+"ollama_mdes",
+"thaillm"
+]
+},
+"usable": [
+"innova_bot",
+"ollama_mdes",
+"thaillm"
+],
+"bridge": {
+"up": true,
+"detail": "HTTP 200"
+},
+"providers": {
+"ollama_mdes": {
+"status": "ALIVE",
+"ms": 1089,
+"fresh": "21s ago"
+},
+"ollama_local": {
+"status": "ALIVE",
+"ms": 20709,
+"fresh": "cached"
+},
+"ollama_cloud": {
+"status": "RATE_LIMITED",
+"ms": 1703,
+"fresh": "cached",
+"error": "Ollama HTTP 429: {\"error\":\"you (tawin2502) have reached your weekly usage limit,"
+},
+"thaillm": {
+"status": "ALIVE",
+"ms": 735,
+"fresh": "21s ago"
+},
+"copilot": {
+"status": "
+
+Return one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.

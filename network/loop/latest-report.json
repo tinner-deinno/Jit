@@ -1,0 +1,331 @@
+{
+  "cycle": 154,
+  "startedAt": "2026-06-06T03:59:04.478Z",
+  "finishedAt": "2026-06-06T04:13:24.123Z",
+  "status": "pass",
+  "failureStreak": 0,
+  "selectedLanes": [
+    "ollama_mdes",
+    "thaillm"
+  ],
+  "advisorUsed": false,
+  "providers": {
+    "probed_at_ms": 1780718345836,
+    "timeout_ms": 70000,
+    "full_probe": false,
+    "probed_backends": [
+      "ollama_mdes",
+      "thaillm",
+      "innova_bot"
+    ],
+    "usable": [
+      "innova_bot",
+      "ollama_mdes",
+      "thaillm"
+    ],
+    "cached_usable": [
+      "innova_bot",
+      "ollama_local",
+      "ollama_mdes",
+      "thaillm"
+    ],
+    "results": {
+      "ollama_mdes": {
+        "backend": "ollama_mdes",
+        "status": "ALIVE",
+        "ms": 1089,
+        "served_by": "ollama_mdes",
+        "sample": "OK",
+        "probed_at_ms": 1780718345836
+      },
+      "ollama_local": {
+        "backend": "ollama_local",
+        "status": "ALIVE",
+        "ms": 20709,
+        "served_by": "ollama_local",
+        "sample": "OK",
+        "probed_at_ms": 1780714259337
+      },
+      "ollama_cloud": {
+        "backend": "ollama_cloud",
+        "status": "RATE_LIMITED",
+        "ms": 1703,
+        "error": "Ollama HTTP 429: {\"error\":\"you (tawin2502) have reached your weekly usage limit,",
+        "probed_at_ms": 1780714259337
+      },
+      "thaillm": {
+        "backend": "thaillm",
+        "status": "ALIVE",
+        "ms": 735,
+        "served_by": "thaillm",
+        "sample": "<think> Okay, the user wants me to respond with exactly \"OK\"",
+        "probed_at_ms": 1780718345836
+      },
+      "copilot": {
+        "backend": "copilot",
+        "status": "RATE_LIMITED",
+        "ms": 11438,
+        "error": "Copilot CLI failed: 402 {\"error\":{\"message\":\"You have no quota\",\"code\":\"quota_ex",
+        "probed_at_ms": 1780714259337
+      },
+      "openai": {
+        "backend": "openai",
+        "status": "ERROR",
+        "ms": 11799,
+        "error": "Codex CLI failed: 2026-06-06T02:51:02.645667Z ERROR codex_core::session: failed ",
+        "probed_at_ms": 1780714259337
+      },
+      "openclaude": {
+        "backend": "openclaude",
+        "status": "UNREACHABLE",
+        "ms": 85,
+        "error": "OpenClaude request error: ECONNREFUSED",
+        "probed_at_ms": 1780714259337
+      },
+      "innova_bot": {
+        "backend": "innova_bot",
+        "status": "ALIVE",
+        "ms": 21272,
+        "served_by": "innova_bot",
+        "sample": "OK",
+        "probed_at_ms": 1780718345836
+      }
+    }
+  },
+  "snapshots": {
+    "omxStatus": {
+      "ok": true,
+      "ms": 297
+    },
+    "mawTeam": {
+      "ok": true,
+      "ms": 504
+    },
+    "mawTasks": {
+      "ok": true,
+      "ms": 472
+    },
+    "quickFleet": {
+      "ok": true,
+      "ms": 0,
+      "skipped": true
+    },
+    "providerProbe": {
+      "ok": true,
+      "ms": 21392,
+      "mode": "quick",
+      "backends": [
+        "ollama_mdes",
+        "thaillm",
+        "innova_bot"
+      ]
+    }
+  },
+  "fleetCommand": "node eval/fleet-batch.js --goal-file network/loop/current-goal.txt --count 84 --concurrency 8 --notify-every 8 --attempts 1 --worker-timeout-ms 45000 --lanes ollama_mdes,thaillm --require-min-count 84 --require-min-ok 63 --no-discord",
+  "fleetOk": true,
+  "fleetMs": 836870,
+  "fleetError": "[model-router] ollama_mdes failed: Ollama timeout\n[model-router] thaillm failed: HTTP 502: error code: 502",
+  "fleetSummary": {
+    "summary": {
+      "runId": "fleet-batch-2026-06-06T03-59-27-308Z",
+      "goal": "Jit Mother cycle 154: clear the innova-bot/Jit/innomcp backlog carefully.\nSelected lanes: ollama_mdes, thaillm\n\nMAW team:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nMAW tasks:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nStatus board:\n{\n\"providerProbe\": {\n\"mode\": \"partial\",\n\"probedBackends\": [\n\"ollama_mdes\",\n\"thaillm\",\n\"innova_bot\"\n],\n\"cachedUsable\": [\n\"innova_bot\",\n\"ollama_local\",\n\"ollama_mdes\",\n\"thaillm\"\n]\n},\n\"usable\": [\n\"innova_bot\",\n\"ollama_mdes\",\n\"thaillm\"\n],\n\"bridge\": {\n\"up\": true,\n\"detail\": \"HTTP 200\"\n},\n\"providers\": {\n\"ollama_mdes\": {\n\"status\": \"ALIVE\",\n\"ms\": 1089,\n\"fresh\": \"21s ago\"\n},\n\"ollama_local\": {\n\"status\": \"ALIVE\",\n\"ms\": 20709,\n\"fresh\": \"cached\"\n},\n\"ollama_cloud\": {\n\"status\": \"RATE_LIMITED\",\n\"ms\": 1703,\n\"fresh\": \"cached\",\n\"error\": \"Ollama HTTP 429: {\\\"error\\\":\\\"you (tawin2502) have reached your weekly usage limit,\"\n},\n\"thaillm\": {\n\"status\": \"ALIVE\",\n\"ms\": 735,\n\"fresh\": \"21s ago\"\n},\n\"copilot\": {\n\"status\": \"\n\nReturn one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.",
+      "count": 84,
+      "completed": 84,
+      "pending": 0,
+      "ok": 82,
+      "fail": 2,
+      "concurrency": 8,
+      "durationMs": 836677,
+      "notifyEvery": 8,
+      "byBackend": {
+        "ollama_mdes": {
+          "total": 44,
+          "ok": 43,
+          "fail": 1,
+          "models": {
+            "gemma4:26b": 44
+          },
+          "workers": 44,
+          "avgLatencyMs": 18975
+        },
+        "thaillm": {
+          "total": 40,
+          "ok": 39,
+          "fail": 1,
+          "models": {
+            "openthaigpt-thaillm-8b-instruct-v7.2": 10,
+            "pathumma-thaillm-qwen3-8b-think-3.0.0": 10,
+            "typhoon-s-thaillm-8b-instruct": 10,
+            "thalle-0.2-thaillm-8b-fa": 10
+          },
+          "workers": 40,
+          "avgLatencyMs": 5199
+        }
+      },
+      "roster": {
+        "plannedWorkers": 84,
+        "completedWorkers": 84,
+        "uniquePersonas": 26,
+        "perspectives": {
+          "coordinator": 20,
+          "analyst": 21,
+          "verifier": 8,
+          "executor": 18,
+          "critic": 4,
+          "observer": 7,
+          "router": 3,
+          "scribe": 3
+        },
+        "sampleWorkers": [
+          "agent-copilot-coordinator-01",
+          "agent-mdes-analyst-01",
+          "agent-ollama-coordinator-01",
+          "agent-thaillm-coordinator-01",
+          "antigravity-mission-control-coordinator-01",
+          "chamu-verifier-01",
+          "gemma4-31b-cloud-coordinator-01",
+          "innova-coordinator-01",
+          "innova-bot-coordinator-01",
+          "jit-coordinator-01",
+          "jit-claudecode-coordinator-01",
+          "jit-codex-coordinator-01"
+        ]
+      },
+      "proof": {
+        "requireMinCount": 84,
+        "requireMinOk": 63,
+        "minCountSatisfied": true,
+        "minCompletedSatisfied": true,
+        "minOkSatisfied": true,
+        "selectedLanes": [
+          "ollama_mdes",
+          "thaillm"
+        ],
+        "requestedLanes": [
+          "ollama_mdes",
+          "thaillm"
+        ],
+        "excludedLanes": [],
+        "backendLimits": {
+          "ollama_mdes": 1,
+          "thaillm": 4,
+          "ollama_cloud": 2,
+          "ollama_local": 2,
+          "copilot": 1,
+          "openai": 1,
+          "innova_bot": 1
+        }
+      }
+    },
+    "artifacts": {
+      "jsonPath": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-06T03-59-27-308Z\\summary.json",
+      "mdPath": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-06T03-59-27-308Z\\summary.md",
+      "manifestPath": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-06T03-59-27-308Z\\proof-manifest.json",
+      "mdManifestPath": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-06T03-59-27-308Z\\proof-manifest.md"
+    },
+    "discordSent": false,
+    "innovaSent": {
+      "ok": true
+    }
+  },
+  "visual": {
+    "runId": "visual-cycle-154",
+    "url": "http://127.0.0.1:7010/gui",
+    "startedAt": "2026-06-06T04:13:24.187Z",
+    "ok": true,
+    "playwright": {
+      "ok": true,
+      "title": "Innova Bot GUI",
+      "status": 200,
+      "finalUrl": "http://127.0.0.1:7010/gui",
+      "screenshot": "network/artifacts/visual-cycle-154/playwright-shot.png",
+      "stats": {
+        "buttons": 100,
+        "headings": 21,
+        "forms": 0,
+        "textLength": 2656
+      }
+    },
+    "devtools": {
+      "ok": true,
+      "navigate": {
+        "title": "Innova Bot GUI",
+        "status": 200,
+        "loadTime": 667,
+        "finalUrl": "http://127.0.0.1:7010/gui",
+        "url": "http://127.0.0.1:7010/gui"
+      },
+      "analyzeUI": {
+        "title": "Innova Bot GUI",
+        "description": "Innova Bot Realtime Control Center — single-page AI operations cockpit with responsive nav, monitoring, and StarMap suite.",
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "stats": {
+          "headings": 21,
+          "links": 0,
+          "images": 0,
+          "forms": 0,
+          "buttons": 100,
+          "paragraphs": 0,
+          "inputs": 23
+        },
+        "topHeadings": [
+          {
+            "tag": "h2",
+            "text": "🧭 Navigation"
+          },
+          {
+            "tag": "h2",
+            "text": "🧠 Command Deck"
+          },
+          {
+            "tag": "h2",
+            "text": "💬 Chat Interface"
+          },
+          {
+            "tag": "h2",
+            "text": "📡 Activity & Tool Calls"
+          },
+          {
+            "tag": "h2",
+            "text": "🧾 Server Stream (raw JSON)"
+          }
+        ],
+        "dominantColors": [
+          "rgb(3, 7, 18)",
+          "color(srgb 0.0666667 0.0941176 0.152941 / 0.450196)",
+          "color(srgb 0 0 0 / 0.226471)",
+          "rgba(15, 23, 42, 0.8)",
+          "rgba(0, 240, 255, 0.05)"
+        ],
+        "bodyFont": "Outfit, Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Arial, sans-serif",
+        "bodyBackground": "rgb(3, 7, 18)",
+        "bodyColor": "rgb(248, 250, 252)"
+      }
+    },
+    "finishedAt": "2026-06-06T04:13:33.347Z",
+    "signal": {
+      "title": "Innova Bot GUI",
+      "status": 200,
+      "hasDomStats": true,
+      "hasDevtoolsAnalysis": true
+    }
+  },
+  "visualRun": {
+    "ok": true,
+    "ms": 9230,
+    "skipped": false,
+    "error": ""
+  },
+  "latestFleetArtifact": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-06T03-59-27-308Z",
+  "innovaNotify": {
+    "ok": true
+  },
+  "discordNotify": {
+    "ok": false,
+    "skipped": true,
+    "reason": "no discord target"
+  }
+}

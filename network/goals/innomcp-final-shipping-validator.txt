@@ -1,0 +1,17 @@
+﻿Validate final InnoMCP shipping readiness from current live evidence. No file edits.
+
+Evidence snapshot:
+- Frontend build PASS: pnpm --filter innomcp-next run build.
+- Backend build PASS: pnpm --filter innomcp-node run build.
+- MCP build PASS: pnpm --filter innomcp-server-node run build.
+- Backend unit PASS: 77 suites / 743 tests.
+- MCP thaiGeo PASS: 10/10.
+- MCP weather typecheck PASS.
+- Runtime health artifact: C:\Users\USER-NT\DEV\innomcp\docs\reports\codex-final-live-20260605-150742\runtime-health.json.
+- Runtime live PASS: frontend /api/health HTTP 200 degraded mode_ready true; backend /health 200; backend /api/health/live 200; backend /api/health/ready 200 ready true status degraded; MCP /health 200; MCP tools/list 56.
+- Playwright chat PASS: pnpm --filter innomcp-next exec playwright test e2e/chat.spec.ts --project=chromium => 11/11.
+- innova-bot SSE round trip PASS via File Fallback.
+- Antigravity probe PASS and Chrome DevTools MCP help PASS.
+- Remaining known blockers: Git push credential/repository access, Docker engine pipe unavailable, frontend health degraded because Redis/DB infra not healthy, untracked docs/api generated docs need review before inclusion.
+
+Worker output contract: return one of PASS_WITH_ENV_BLOCKERS or FAIL, list top 3 remaining risks, and one concrete next action. Include Confidence 0-100.

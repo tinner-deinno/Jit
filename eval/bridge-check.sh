@@ -8,6 +8,15 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 1
 JIT_ROOT="$(pwd)"
 
+# Use Windows native curl.exe if running under Windows MSYS/Cygwin or WSL2 to avoid network stack blockages
+if grep -qE "(Microsoft|microsoft|WSL)" /proc/version 2>/dev/null || [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+  if command -v curl.exe &>/dev/null; then
+    curl() {
+      curl.exe "$@"
+    }
+  fi
+fi
+
 # Load environment variables
 if [ -f "$JIT_ROOT/.env" ]; then
   set +u
@@ -19,12 +28,13 @@ fi
 BRIDGE_PORT="${JIT_BODY_BRIDGE_PORT:-7011}"
 BRIDGE_HOST="${JIT_BODY_BRIDGE_HOST:-127.0.0.1}"
 BRIDGE_URL="http://$BRIDGE_HOST:$BRIDGE_PORT/health"
-PID_FILE="/tmp/innova-body-bridge.pid"
+PID_FILE="$JIT_ROOT/tmp/innova-body-bridge.pid"
 
 # Colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
 RESET='\033[0m'
 BOLD='\033[1m'
 
@@ -43,12 +53,32 @@ EXIT_CODE=0
 # 2. Process Check
 echo -e "\n[ Process ]"
 if [ -f "$PID_FILE" ]; then
-  PID=$(cat "$PID_FILE")
-  if kill -0 "$PID" 2>/dev/null; then
-    _pass "Bridge process is running (PID: $PID)"
+  PID=$(cat "$PID_FILE" | tr -d '\r\n')
+  
+  # Check if running under Windows MSYS/Cygwin or WSL2
+  if grep -qE "(Microsoft|microsoft|WSL)" /proc/version 2>/dev/null || [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+    # Convert PID to integer to verify
+    if [[ "$PID" =~ ^[0-9]+$ ]]; then
+      if tasklist.exe /FI "PID eq $PID" 2>/dev/null | grep -q "$PID"; then
+        _pass "Bridge process is running (Windows PID: $PID)"
+      elif curl -sf "$BRIDGE_URL" > /dev/null 2>&1; then
+        _pass "Bridge process is running and responding (Windows PID: $PID)"
+      else
+        _fail "Bridge process $PID is NOT running on Windows Host"
+        EXIT_CODE=1
+      fi
+    else
+      _fail "Invalid PID found in file: $PID"
+      EXIT_CODE=1
+    fi
   else
-    _fail "PID file exists but process $PID is NOT running"
-    EXIT_CODE=1
+    # Standard Unix check
+    if kill -0 "$PID" 2>/dev/null; then
+      _pass "Bridge process is running (PID: $PID)"
+    else
+      _fail "PID file exists but process $PID is NOT running"
+      EXIT_CODE=1
+    fi
   fi
 else
   _fail "PID file not found ($PID_FILE)"

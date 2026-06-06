@@ -1,64 +1,83 @@
 {
-  "probed_at_ms": 1780596768063,
+  "probed_at_ms": 1780718345836,
   "timeout_ms": 70000,
-  "usable": [
+  "full_probe": false,
+  "probed_backends": [
     "ollama_mdes",
-    "ollama_cloud",
     "thaillm",
-    "openai"
+    "innova_bot"
+  ],
+  "usable": [
+    "innova_bot",
+    "ollama_mdes",
+    "thaillm"
+  ],
+  "cached_usable": [
+    "innova_bot",
+    "ollama_local",
+    "ollama_mdes",
+    "thaillm"
   ],
   "results": {
     "ollama_mdes": {
       "backend": "ollama_mdes",
       "status": "ALIVE",
-      "ms": 56958,
+      "ms": 1089,
       "served_by": "ollama_mdes",
-      "sample": "OK"
+      "sample": "OK",
+      "probed_at_ms": 1780718345836
     },
     "ollama_local": {
       "backend": "ollama_local",
-      "status": "UNREACHABLE",
-      "ms": 70013,
-      "error": "timeout"
+      "status": "ALIVE",
+      "ms": 20709,
+      "served_by": "ollama_local",
+      "sample": "OK",
+      "probed_at_ms": 1780714259337
     },
     "ollama_cloud": {
       "backend": "ollama_cloud",
-      "status": "ALIVE",
-      "ms": 2554,
-      "served_by": "ollama_cloud",
-      "sample": "OK"
+      "status": "RATE_LIMITED",
+      "ms": 1703,
+      "error": "Ollama HTTP 429: {\"error\":\"you (tawin2502) have reached your weekly usage limit,",
+      "probed_at_ms": 1780714259337
     },
     "thaillm": {
       "backend": "thaillm",
       "status": "ALIVE",
-      "ms": 2074,
+      "ms": 735,
       "served_by": "thaillm",
-      "sample": "<think> Okay, the user wants me to respond with exactly \"OK\""
+      "sample": "<think> Okay, the user wants me to respond with exactly \"OK\"",
+      "probed_at_ms": 1780718345836
     },
     "copilot": {
       "backend": "copilot",
       "status": "RATE_LIMITED",
-      "ms": 28827,
-      "error": "Copilot CLI failed: 402 {\"error\":{\"message\":\"You have no quota\",\"code\":\"quota_ex"
+      "ms": 11438,
+      "error": "Copilot CLI failed: 402 {\"error\":{\"message\":\"You have no quota\",\"code\":\"quota_ex",
+      "probed_at_ms": 1780714259337
     },
     "openai": {
       "backend": "openai",
-      "status": "ALIVE",
-      "ms": 7720,
-      "served_by": "openai",
-      "sample": "OK"
+      "status": "ERROR",
+      "ms": 11799,
+      "error": "Codex CLI failed: 2026-06-06T02:51:02.645667Z ERROR codex_core::session: failed ",
+      "probed_at_ms": 1780714259337
     },
     "openclaude": {
       "backend": "openclaude",
       "status": "UNREACHABLE",
-      "ms": 103,
-      "error": "OpenClaude request error: ECONNREFUSED"
+      "ms": 85,
+      "error": "OpenClaude request error: ECONNREFUSED",
+      "probed_at_ms": 1780714259337
     },
     "innova_bot": {
       "backend": "innova_bot",
-      "status": "UNREACHABLE",
-      "ms": 30132,
-      "error": "MCP response timeout for tools/call (30000ms)"
+      "status": "ALIVE",
+      "ms": 21272,
+      "served_by": "innova_bot",
+      "sample": "OK",
+      "probed_at_ms": 1780718345836
     }
   }
 }
