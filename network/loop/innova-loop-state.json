@@ -1,13 +1,19 @@
 {
-  "cycle": 176,
+  "cycle": 177,
   "failureStreak": 0,
   "advisorCalls": 0,
-  "lastStartedAt": "2026-06-07T17:07:29.165Z",
-  "lastFinishedAt": "2026-06-07T17:09:24.542Z",
-  "lastStatus": "pass",
+  "lastStartedAt": "2026-06-07T17:34:59.509Z",
+  "lastFinishedAt": null,
+  "lastStatus": "running",
   "lastLanes": [
+    "ollama_mdes",
     "thaillm"
   ],
-  "lastReport": "network/loop/latest-report.md",
-  "lastJson": "network/loop/latest-report.json"
+  "lastReport": null,
+  "lastJson": null,
+  "mode": "mass-deployment",
+  "departments": 8,
+  "totalAgents": "400+",
+  "innovaStatus": "sleeping",
+  "autonomousMode": true
 }
