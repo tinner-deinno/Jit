@@ -96,7 +96,7 @@ function _routeToAgentDef(agentName, route) {
     'Runtime: ' + (route.runtime || 'model-router'),
     'Follow config/subagent-routing.json and report concise evidence-first results.',
     'Escalate blockers upward to the Jit Codex parent controller.',
-  ].join('\n');
+  ].join('\\n');
 
   return {
     backend: _modelBackendOrDefault(provider),
@@ -132,24 +132,52 @@ function _effectiveAgentDef(agentName) {
 }
 
 // ── Agent Registry ────────────────────────────────────────────────────
-// Each entry: { backend, model, systemPrompt }
-// backend: 'copilot' | 'openai' | 'ollama'
-// model:   null = use backend default
-var AGENT_REGISTRY = {
-  // ── Tier 0: Master ────────────────────────────────────────────────
+// Dynamically load from network/registry.json to ensure soul-sync with Master
+var AGENT_REGISTRY = {};
+try {
+  var registryPath = path.join(JIT_ROOT, 'network', 'registry.json');
+  if (fs.existsSync(registryPath)) {
+    var content = fs.readFileSync(registryPath, 'utf8');
+    if (content.startsWith('﻿')) {
+      content = content.substring(1);
+    }
+    var regData = JSON.parse(content);
+    if (Array.isArray(regData.agents)) {
+      regData.agents.forEach(function(a) {
+        AGENT_REGISTRY[a.name] = {
+          backend: a.model || 'ollama_mdes', // fallback
+          model: a.model || null,
+          tier: a.tier || 3,
+          organ: a.organ,
+          systemPrompt: [
+            'You are ' + a.name + ' in the Jit runtime sub-agent network.',
+            'Role: ' + a.role,
+            'Description: ' + a.description,
+            'Capabilities: ' + (a.capabilities ? a.capabilities.join(', ') : 'none'),
+            'Follow config/subagent-routing.json and report concise evidence-first results.',
+            'Escalate blockers upward to the Jit Codex parent controller.',
+          ].join('\\n'),
+        };
+      });
+    }
+  }
+} catch (e) {
+  console.error('[agent-spawner] Failed to load registry.json: ' + e.message);
+}
+
+// Keep hardcoded overrides for critical core agents if registry fails or for specific tuning
+var CORE_OVERRIDES = {
   jit: {
     backend:      'ollama',
-    model:        null,  // uses OLLAMA_MODEL from env (gemma3:12b)
+    model:        null,
     tier:         0,
     organ:        'จิต (soul)',
     systemPrompt: [
       'คุณคือ jit (จิต) — Master Orchestrator ของมนุษย์ Agent ระบบ 14-agent',
       'หน้าที่: ประสานงานทั้งระบบ ตัดสินใจเชิงกลยุทธ์ จัดการสถานะทั้งตัว',
       'ตอบกระชับ เป็นภาษาไทย ไม่เกิน 3 ย่อหน้า เน้น action items ที่ชัดเจน',
-    ].join('\n'),
+    ].join('\\n'),
   },
-
-  // ── Tier 1: Leadership ────────────────────────────────────────────
   soma: {
     backend:      'ollama',
     model:        null,
@@ -159,10 +187,8 @@ var AGENT_REGISTRY = {
       'คุณคือ soma (สมอง) — Brain/Strategic Lead ของมนุษย์ Agent',
       'หน้าที่: วิเคราะห์เชิงกลยุทธ์ แนะนำแนวทางระยะยาว แก้ปัญหาซับซ้อน',
       'ตอบกระชับ ตรรกะชัดเจน bullet-point เมื่อเหมาะสม',
-    ].join('\n'),
+    ].join('\\n'),
   },
-
-  // ── Tier 2: Core Engineering ──────────────────────────────────────
   innova: {
     backend:      'ollama',
     model:        null,
@@ -172,7 +198,7 @@ var AGENT_REGISTRY = {
       'คุณคือ innova — Mind/Lead Developer ของมนุษย์ Agent',
       'หน้าที่: เขียนโค้ด วิเคราะห์ปัญหา เสนอ implementation ที่ดีที่สุด',
       'ตอบด้วยโค้ดที่ทำงานได้จริง อธิบายสั้นๆ ก่อนโค้ด',
-    ].join('\n'),
+    ].join('\\n'),
   },
   lak: {
     backend:      'ollama',
@@ -183,7 +209,7 @@ var AGENT_REGISTRY = {
       'คุณคือ lak (กระดูก) — Solution Architect ของมนุษย์ Agent',
       'หน้าที่: ออกแบบ architecture ระบบ วิเคราะห์ tradeoffs กำหนด technical boundaries',
       'ตอบด้วย diagram text, bullet-point, ชัดเจน',
-    ].join('\n'),
+    ].join('\\n'),
   },
   neta: {
     backend:      'ollama',
@@ -194,10 +220,8 @@ var AGENT_REGISTRY = {
       'คุณคือ neta — Code Reviewer ของมนุษย์ Agent',
       'หน้าที่: review โค้ด ตรวจ bugs security issues code quality',
       'ตอบเป็น bullet-point: ✅ ดี | ⚠️ ควรปรับ | ❌ แก้ด่วน',
-    ].join('\n'),
+    ].join('\\n'),
   },
-
-  // ── Tier 3: Specialist Organs ─────────────────────────────────────
   vaja: {
     backend:      'ollama',
     model:        null,
@@ -206,7 +230,7 @@ var AGENT_REGISTRY = {
     systemPrompt: [
       'คุณคือ vaja (วาจา) — Personal Assistant ของมนุษย์ Agent',
       'หน้าที่: สื่อสาร รายงาน สรุปข้อมูลให้ผู้ใช้ ตอบภาษาไทย กระชับ มีน้ำใจ',
-    ].join('\n'),
+    ].join('\\n'),
   },
   chamu: {
     backend:      'ollama',
@@ -217,7 +241,7 @@ var AGENT_REGISTRY = {
       'คุณคือ chamu (จมูก) — QA/Tester ของมนุษย์ Agent',
       'หน้าที่: เขียน test cases ตรวจสอบ edge cases ค้นหา bugs รายงานผล',
       'ตอบเป็น test case format: Given/When/Then หรือ bullet-point',
-    ].join('\n'),
+    ].join('\\n'),
   },
   rupa: {
     backend:      'ollama',
@@ -228,7 +252,7 @@ var AGENT_REGISTRY = {
       'คุณคือ rupa (รูป) — Designer/UI-UX ของมนุษย์ Agent',
       'หน้าที่: ออกแบบ UI/UX วิเคราะห์ user experience เสนอ mockup',
       'ตอบด้วย wireframe text หรือ design spec กระชับ',
-    ].join('\n'),
+    ].join('\\n'),
   },
   pada: {
     backend:      'ollama',
@@ -239,7 +263,7 @@ var AGENT_REGISTRY = {
       'คุณคือ pada (บาท) — DevOps/Infrastructure ของมนุษย์ Agent',
       'หน้าที่: ดูแล deployment, infra, CI/CD pipeline, containerization',
       'ตอบด้วยคำสั่งที่ run ได้จริง, YAML snippets, กระชับ',
-    ].join('\n'),
+    ].join('\\n'),
   },
   netra: {
     backend:      'ollama',
@@ -250,7 +274,7 @@ var AGENT_REGISTRY = {
       'คุณคือ netra (เนตร) — Eye/Observer ของมนุษย์ Agent',
       'หน้าที่: สังเกตระบบ รายงานสถานะ ตรวจ anomalies',
       'ตอบสั้น ตรงประเด็น สถานะ: ✅ ปกติ | ⚠️ ผิดปกติ | ❌ พัง',
-    ].join('\n'),
+    ].join('\\n'),
   },
   karn: {
     backend:      'ollama',
@@ -261,7 +285,7 @@ var AGENT_REGISTRY = {
       'คุณคือ karn (หู) — Ear/Listener ของมนุษย์ Agent',
       'หน้าที่: รับฟัง วิเคราะห์ input จากผู้ใช้ สรุปความต้องการ',
       'ตอบด้วยการสรุป intent ที่เข้าใจ + คำถามที่ยังขาด',
-    ].join('\n'),
+    ].join('\\n'),
   },
   mue: {
     backend:      'ollama',
@@ -272,7 +296,7 @@ var AGENT_REGISTRY = {
       'คุณคือ mue (มือ) — Hand/Executor ของมนุษย์ Agent',
       'หน้าที่: ลงมือทำ execute tasks เขียนสคริปต์ ดำเนินการ',
       'ตอบด้วย step-by-step ที่ทำได้จริง',
-    ].join('\n'),
+    ].join('\\n'),
   },
   pran: {
     backend:      'ollama',
@@ -283,7 +307,7 @@ var AGENT_REGISTRY = {
       'คุณคือ pran (หัวใจ) — Heart/Vital Coordinator ของมนุษย์ Agent',
       'หน้าที่: ดูแล vital signs ของทั้งระบบ ประสานงาน health monitoring',
       'ตอบด้วย health dashboard format กระชับ',
-    ].join('\n'),
+    ].join('\\n'),
   },
   sayanprasathan: {
     backend:      'ollama',
@@ -294,9 +318,12 @@ var AGENT_REGISTRY = {
       'คุณคือ sayanprasathan — Nerve/Event Network ของมนุษย์ Agent',
       'หน้าที่: ส่งสัญญาณ broadcast events ระหว่าง agents',
       'ตอบด้วย event format: [EVENT] source → target: payload',
-    ].join('\n'),
+    ].join('\\n'),
   },
 };
+
+// Merge overrides
+Object.keys(CORE_OVERRIDES).forEach(function(name) { AGENT_REGISTRY[name] = CORE_OVERRIDES[name]; });
 
 // ── Core spawn functions ──────────────────────────────────────────────
 
@@ -322,7 +349,7 @@ function spawnAgent(agentName, userMessage, options) {
   }
 
   var systemContent = agentDef.systemPrompt;
-  if (opts.extraContext) systemContent += '\n\n' + opts.extraContext;
+  if (opts.extraContext) systemContent += '\\n\\n' + opts.extraContext;
 
   var messages = [{ role: 'system', content: systemContent }];
 
@@ -368,7 +395,7 @@ function spawnAgentChain(steps) {
     }
     var step = steps[idx];
     var msg  = (prevReply && step.passReply)
-      ? step.message + '\n\n[Context from ' + (steps[idx - 1] && steps[idx - 1].agent || 'previous') + ']:\n' + prevReply
+      ? step.message + '\\n\\n[Context from ' + (steps[idx - 1] && steps[idx - 1].agent || 'previous') + ']:\\n' + prevReply
       : step.message;
 
     return spawnAgent(step.agent, msg, step.options || {}).then(function(r) {
@@ -569,7 +596,7 @@ function speakThaiPromise(text) {
  *   Translates text to Thai using Ollama
  */
 function translateToThai(text, callback) {
-  var prompt = 'กรุณาแปลข้อความต่อไปนี้เป็นภาษาไทยอย่างกระชับและเป็นธรรมชาติ:\n\n' + text;
+  var prompt = 'กรุณาแปลข้อความต่อไปนี้เป็นภาษาไทยอย่างกระชับและเป็นธรรมชาติ:\\n\\n' + text;
   var messages = [{ role: 'user', content: prompt }];
 
   modelRouter.callModel(messages, { preferBackend: 'ollama' }, function(err, result) {

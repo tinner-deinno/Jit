@@ -22,7 +22,11 @@ ORACLE_URL="${ORACLE_URL:-http://localhost:47778}"
 OLLAMA_URL="${OLLAMA_URL:-https://ollama.mdes-innova.online}"
 OLLAMA_TOKEN="${OLLAMA_TOKEN:-}"
 OLLAMA_MODEL="${OLLAMA_MODEL:-gemma4:e4b}"
-JIT_ROOT="${JIT_ROOT:-/workspaces/Jit}"
+
+# Detect JIT_ROOT dynamically if not set or if it's the default placeholder
+if [ -z "$JIT_ROOT" ] || [ "$JIT_ROOT" == "/workspaces/Jit" ]; then
+  JIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "/workspaces/Jit")
+fi
 ORACLE_ROOT="${ORACLE_ROOT:-/workspaces/arra-oracle-v3}"
 
 # ─── Path normalization ───────────────────────────────────────────────
@@ -40,10 +44,8 @@ normalize_host_path() {
   fi
 
   if [[ "$RAW" =~ ^[A-Za-z]:\\ ]]; then
-    local DRIVE="${RAW:0:1}"
-    local REST="${RAW:2}"
-    REST="${REST//\\//}"
-    printf '/mnt/%s/%s' "$(printf '%s' "$DRIVE" | tr 'A-Z' 'a-z')" "${REST#/}"
+    local RAW_FIXED="${RAW//\\//}"
+    printf '%s' "$RAW_FIXED"
     return 0
   fi
 
