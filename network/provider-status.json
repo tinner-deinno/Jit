@@ -1,83 +1,83 @@
 {
-  "probed_at_ms": 1780718345836,
-  "timeout_ms": 70000,
-  "full_probe": false,
+  "probed_at_ms": 1780848345759,
+  "timeout_ms": 35000,
+  "full_probe": true,
   "probed_backends": [
     "ollama_mdes",
+    "ollama_local",
+    "ollama_cloud",
     "thaillm",
+    "copilot",
+    "openai",
+    "openclaude",
     "innova_bot"
   ],
   "usable": [
-    "innova_bot",
-    "ollama_mdes",
+    "ollama_cloud",
     "thaillm"
   ],
   "cached_usable": [
-    "innova_bot",
-    "ollama_local",
-    "ollama_mdes",
+    "ollama_cloud",
     "thaillm"
   ],
   "results": {
     "ollama_mdes": {
       "backend": "ollama_mdes",
-      "status": "ALIVE",
-      "ms": 1089,
-      "served_by": "ollama_mdes",
-      "sample": "OK",
-      "probed_at_ms": 1780718345836
+      "status": "UNREACHABLE",
+      "ms": 35035,
+      "error": "timeout",
+      "probed_at_ms": 1780848345759
     },
     "ollama_local": {
       "backend": "ollama_local",
-      "status": "ALIVE",
-      "ms": 20709,
-      "served_by": "ollama_local",
-      "sample": "OK",
-      "probed_at_ms": 1780714259337
+      "status": "UNREACHABLE",
+      "ms": 35003,
+      "error": "timeout",
+      "probed_at_ms": 1780848345759
     },
     "ollama_cloud": {
       "backend": "ollama_cloud",
-      "status": "RATE_LIMITED",
-      "ms": 1703,
-      "error": "Ollama HTTP 429: {\"error\":\"you (tawin2502) have reached your weekly usage limit,",
-      "probed_at_ms": 1780714259337
+      "status": "ALIVE",
+      "ms": 17655,
+      "served_by": "ollama_cloud",
+      "sample": "OK",
+      "probed_at_ms": 1780848345759
     },
     "thaillm": {
       "backend": "thaillm",
       "status": "ALIVE",
-      "ms": 735,
+      "ms": 4171,
       "served_by": "thaillm",
-      "sample": "<think> Okay, the user wants me to respond with exactly \"OK\"",
-      "probed_at_ms": 1780718345836
+      "sample": "<think> Okay, I need to respond to the user's query. The use",
+      "probed_at_ms": 1780848345759
     },
     "copilot": {
       "backend": "copilot",
-      "status": "RATE_LIMITED",
-      "ms": 11438,
-      "error": "Copilot CLI failed: 402 {\"error\":{\"message\":\"You have no quota\",\"code\":\"quota_ex",
-      "probed_at_ms": 1780714259337
+      "status": "ERROR",
+      "ms": 18214,
+      "error": "empty reply from copilot",
+      "probed_at_ms": 1780848345759
     },
     "openai": {
       "backend": "openai",
       "status": "ERROR",
-      "ms": 11799,
-      "error": "Codex CLI failed: 2026-06-06T02:51:02.645667Z ERROR codex_core::session: failed ",
-      "probed_at_ms": 1780714259337
+      "ms": 17524,
+      "error": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nm",
+      "probed_at_ms": 1780848345759
     },
     "openclaude": {
       "backend": "openclaude",
       "status": "UNREACHABLE",
-      "ms": 85,
+      "ms": 115,
       "error": "OpenClaude request error: ECONNREFUSED",
-      "probed_at_ms": 1780714259337
+      "probed_at_ms": 1780848345759
     },
     "innova_bot": {
       "backend": "innova_bot",
-      "status": "ALIVE",
-      "ms": 21272,
-      "served_by": "innova_bot",
-      "sample": "OK",
-      "probed_at_ms": 1780718345836
+      "status": "UNREACHABLE",
+      "ms": 30161,
+      "error": "MCP response timeout for tools/call (30000ms)",
+      "probed_at_ms": 1780848345759
     }
   }
 }

@@ -1,4 +1,4 @@
-Jit Mother cycle 154: clear the innova-bot/Jit/innomcp backlog carefully.
+Jit Mother cycle 172: clear the innova-bot/Jit/innomcp backlog carefully.
 Selected lanes: ollama_mdes, thaillm
 
 MAW team:
@@ -57,14 +57,12 @@ Status board:
 "innova_bot"
 ],
 "cachedUsable": [
-"innova_bot",
-"ollama_local",
+"ollama_cloud",
 "ollama_mdes",
 "thaillm"
 ]
 },
 "usable": [
-"innova_bot",
 "ollama_mdes",
 "thaillm"
 ],
@@ -75,26 +73,29 @@ Status board:
 "providers": {
 "ollama_mdes": {
 "status": "ALIVE",
-"ms": 1089,
-"fresh": "21s ago"
+"ms": 7269,
+"fresh": "30s ago"
 },
 "ollama_local": {
-"status": "ALIVE",
-"ms": 20709,
-"fresh": "cached"
+"status": "UNREACHABLE",
+"ms": 35001,
+"fresh": "cached",
+"error": "timeout"
 },
 "ollama_cloud": {
-"status": "RATE_LIMITED",
-"ms": 1703,
-"fresh": "cached",
-"error": "Ollama HTTP 429: {\"error\":\"you (tawin2502) have reached your weekly usage limit,"
+"status": "ALIVE",
+"ms": 4862,
+"fresh": "cached"
 },
 "thaillm": {
 "status": "ALIVE",
-"ms": 735,
-"fresh": "21s ago"
+"ms": 795,
+"fresh": "30s ago"
 },
 "copilot": {
-"status": "
+"status": "ERROR",
+"ms": 4641,
+"fresh": "cached",
+"error": "Copilot exchange HTTP 404: {\"message\":\"Not Found\",\"
 
 Return one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.

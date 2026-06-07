@@ -73,50 +73,54 @@ unset _LIB_MARKER
 
 # ─── ตรวจสอบ Oracle พร้อมหรือไม่ ─────────────────────────────────
 oracle_ready() {
-  curl -sf "$ORACLE_URL/api/health" | python3 -c \
-    "import json,sys; d=json.load(sys.stdin); exit(0 if d.get('oracle')=='connected' else 1)" 2>/dev/null
+  curl -sf "$ORACLE_URL/api/health" | node -e "
+    try {
+      const d = JSON.parse(require('fs').readFileSync(0, 'utf8'));
+      process.exit(d.oracle === 'connected' ? 0 : 1);
+    } catch(e) { process.exit(1); }
+  " 2>/dev/null
 }
 
 # ─── Oracle: บันทึกการเรียนรู้ ──────────────────────────────────────
 oracle_learn() {
   local PATTERN="$1" CONTENT="$2" CONCEPTS="${3:-general}" TYPE="${4:-learning}"
-  python3 -c "
-import json,sys,urllib.request
-data = json.dumps({
-  'pattern': sys.argv[1],
-  'content': sys.argv[2],
-  'type': sys.argv[4],
-  'concepts': sys.argv[3].split(','),
-  'origin': 'innova-limbs'
-}).encode()
-req = urllib.request.Request('$ORACLE_URL/api/learn',
-  data=data, headers={'Content-Type':'application/json'}, method='POST')
-with urllib.request.urlopen(req, timeout=10) as r:
-  d = json.load(r)
-  print(d.get('id','error'))
-" "$PATTERN" "$CONTENT" "$CONCEPTS" "$TYPE" 2>/dev/null
+  local JSON_DATA=$(node -e "
+    const [p, c, co, t] = process.argv.slice(1);
+    process.stdout.write(JSON.stringify({
+      pattern: p, content: c, type: t,
+      concepts: co.split(','),
+      origin: 'innova-limbs'
+    }));
+  " "$PATTERN" "$CONTENT" "$CONCEPTS" "$TYPE")
+  local ID=$(curl -s -X POST -H 'Content-Type: application/json' \
+    -d "$JSON_DATA" "$ORACLE_URL/api/learn" | node -e "
+    try {
+      const d = JSON.parse(require('fs').readFileSync(0, 'utf8'));
+      process.stdout.write(d.id || 'error');
+    } catch(e) { process.stdout.write('error'); }
+  " 2>/dev/null)
+  echo "$ID"
 }
 
 # ─── Oracle: ค้นหาความรู้ ───────────────────────────────────────────
 oracle_search() {
   local QUERY="$1" LIMIT="${2:-3}"
-  python3 -c "
-import json,sys,urllib.request,urllib.parse
-q = urllib.parse.quote(sys.argv[1])
-with urllib.request.urlopen('$ORACLE_URL/api/search?q='+q, timeout=5) as r:
-  d = json.load(r)
-results = d.get('results',[])[:int(sys.argv[2])]
-if not results:
-  print('(ไม่พบข้อมูลใน Oracle)')
-  sys.exit(0)
-for r in results:
-  print(f\"  [{r['type']}] {r['id']}\")
-  c = r.get('content','')[:120].replace(chr(10),' ')
-  print(f'    {c}...')
-" "$QUERY" "$LIMIT" 2>/dev/null || echo "  (Oracle ไม่พร้อม)"
+  local QUERY_ENC=$(node -e "process.stdout.write(encodeURIComponent(process.argv[1]))" "$QUERY")
+  curl -s "$ORACLE_URL/api/search?q=$QUERY_ENC" | node -e "
+    try {
+      const d = JSON.parse(require('fs').readFileSync(0, 'utf8'));
+      const results = d.results || [];
+      const limit = parseInt(process.argv[1]) || 3;
+      results.slice(0, limit).forEach(r => {
+        process.stdout.write('  [' + r.type + '] ' + r.id + '\n');
+        process.stdout.write('    ' + r.content.slice(0, 120).replace(/\n/g, ' ') + '...\n');
+      });
+      if (results.length === 0) process.stdout.write('(ไม่พบข้อมูลใน Oracle)\n');
+    } catch(e) { process.stdout.write('  (Oracle ไม่พร้อม)\n'); }
+  " "$LIMIT" 2>/dev/null
 }
 
 # ─── JSON encode ────────────────────────────────────────────────────
 json_str() {
-  python3 -c "import json,sys; print(json.dumps(sys.argv[1]))" "$1"
+  node -e "process.stdout.write(JSON.stringify(process.argv[1]))" "$1"
 }

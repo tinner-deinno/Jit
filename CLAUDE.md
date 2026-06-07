@@ -170,6 +170,13 @@ bash network/bus.sh queue    # Show all pending messages
 bash network/bus.sh stats    # Show bus statistics
 ```
 
+**From Claude Code (any session, no bash required):**
+```bash
+node ~/.claude/skills/organ-pulse/scripts/pulse.js <organ> "<message>" [prefix]
+node ~/.claude/skills/organ-pulse/scripts/pulse.js --inbox jit
+# prefix options: task: think: report: alert: reply: learn: request:
+```
+
 ### Oracle Knowledge Base
 
 **Search existing knowledge:**

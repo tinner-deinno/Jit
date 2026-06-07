@@ -1,3 +1,8 @@
+---
+name: innova-external-fleet-loop
+description: Run the Jit Mother loop as an external-first, budget-aware fleet with visual proof and innova-bot coordination.
+---
+
 # innova-external-fleet-loop
 
 Run the Jit Mother loop as an external-first, budget-aware fleet with visual proof and innova-bot coordination.

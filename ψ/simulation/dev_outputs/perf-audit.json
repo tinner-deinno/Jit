@@ -1,0 +1,6 @@
+{
+    "status": "completed",
+    "result": "Performance audit: Average tokens per route request is 450 tokens. Recommend introducing a caching layer to reduce cost.",
+    "tokens_burned": 4000,
+    "dev_note": "Clean-up task. Low burn."
+}

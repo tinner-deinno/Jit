@@ -1,0 +1,41 @@
+{
+  "snapshot_date": "2026-06-07",
+  "loop_iteration": 17,
+  "total_skills": 138,
+  "skills_with_scripts": 13,
+  "skills_with_fail": 0,
+  "skills_with_warn": 24,
+  "packed_blobs": 8,
+  "unguarded_gh": 0,
+  "unguarded_jq": 0,
+  "stale_30d": 25,
+  "avg_description_length": 211,
+  "tier_counts": {
+    "core": 13,
+    "standard": 4,
+    "full": 108,
+    "unknown": 13
+  },
+  "iter17_fixes": {
+    "feature_added": "--diff mode to skill-changelog",
+    "description": "Heuristic change classifier: scans SKILL.md + scripts/*.js for fix-artifact patterns (python3→node, gh-guard, jq-guard, readlink-fix, stat-fix). Categorized all 27 modified skills.",
+    "classification_summary": {
+      "python3_to_node": 19,
+      "gh_guard": 7,
+      "jq_guard": 6,
+      "readlink_fix": 3,
+      "stat_fix": 2,
+      "other": 1
+    },
+    "scripts_count_change": "12 → 13 (skill-changelog/scripts/changelog.js enhanced)"
+  },
+  "drift_vs_iter16": {
+    "total_skills": "138 (unchanged from iter16 run — iter16 showed 138 in report but snapshot stored 137, now corrected to live count)",
+    "scripts": "12 → 13 (skill-changelog script enhanced with --diff)",
+    "fail_count": "unchanged (0)",
+    "warn_count": "unchanged (24)",
+    "unguarded_gh": "unchanged (0)",
+    "unguarded_jq": "unchanged (0)",
+    "stale_30d": "17 → 25 (natural aging)"
+  }
+}

@@ -1,12 +1,11 @@
 {
-  "cycle": 154,
+  "cycle": 171,
   "failureStreak": 0,
   "advisorCalls": 0,
-  "lastStartedAt": "2026-06-06T03:59:04.478Z",
-  "lastFinishedAt": "2026-06-06T04:13:24.123Z",
+  "lastStartedAt": "2026-06-07T15:57:26.451Z",
+  "lastFinishedAt": "2026-06-07T16:01:08.814Z",
   "lastStatus": "pass",
   "lastLanes": [
-    "ollama_mdes",
     "thaillm"
   ],
   "lastReport": "network/loop/latest-report.md",

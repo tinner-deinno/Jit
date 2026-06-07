@@ -7,6 +7,7 @@ set -euo pipefail
 # 1. Setup Environment
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 1
 JIT_ROOT="$(pwd)"
+source "$JIT_ROOT/limbs/lib.sh" 2>/dev/null || { echo "ERROR: lib.sh not found"; exit 1; }
 
 # Use Windows native curl.exe if running under Windows MSYS/Cygwin or WSL2 to avoid network stack blockages
 if grep -qE "(Microsoft|microsoft|WSL)" /proc/version 2>/dev/null || [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
@@ -93,7 +94,7 @@ if curl -sf "$BRIDGE_URL" > /dev/null 2>&1; then
 
   # Analyze health payload
   echo "  Details:"
-  echo "$HEALTH_JSON" | python3 -m json.tool | sed 's/^/    /' || true
+  echo "$HEALTH_JSON" | node -e "console.log(JSON.stringify(JSON.parse(require('fs').readFileSync(0,'utf8')), null, 2))" | sed 's/^/    /' || true
 
   # Check for critical failures in the payload
   if echo "$HEALTH_JSON" | grep -q '"ok": false'; then
@@ -108,7 +109,8 @@ fi
 # 4. Directory & Permissions Check
 echo -e "\n[ Filesystem ]"
 # Use the bridge's own logic to find the bridge root if possible, or assume defaults
-BRIDGE_DIR="${INNOVA_BOT_BRIDGE_DIR:-$JIT_ROOT/.jit-bridge/inbox}"
+BRIDGE_DIR_RAW="${INNOVA_BOT_BRIDGE_DIR:-$JIT_ROOT/.jit-bridge/inbox}"
+BRIDGE_DIR=$(normalize_host_path "$BRIDGE_DIR_RAW")
 if [ -d "$BRIDGE_DIR" ]; then
   _pass "Bridge inbox exists: $BRIDGE_DIR"
 

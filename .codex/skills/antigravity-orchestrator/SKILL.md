@@ -13,8 +13,12 @@ Use this skill when the task mentions Antigravity, Google Pro account auth, Gemi
 2. Treat `AGENTS.md` as the convergence layer and this `SKILL.md` as the reusable skill contract.
 3. Route wide coordination and parallel verification to Antigravity.
 4. Route deep code edits, commits, and final evidence to Codex/Jit.
-5. Use `scripts/antigravity-y.sh` or `scripts/antigravity-y.ps1` so launches append `-y`.
+5. Use `scripts/antigravity-y.sh` or `scripts/antigravity-y.ps1` so launches append `-y` to skip permissions.
 6. Use Playwright MCP and Chrome DevTools MCP for browser evidence when Antigravity needs GUI automation.
+7. Run the visual layout test suite using:
+   ```bash
+   node C:/Users/USER-NT/Jit/automation_scripts/verify_all_views.js
+   ```
 
 ## Boundaries
 
@@ -22,6 +26,12 @@ Use this skill when the task mentions Antigravity, Google Pro account auth, Gemi
 - Do not count Antigravity as a content-usable model lane unless a live task returns usable content.
 - If `--exec plan.json` is requested, first confirm the current CLI advertises or accepts it; Antigravity 1.107.0 help does not currently advertise `--exec`.
 - Keep Codex as final verifier for innomcp completion claims.
+
+## JIT & Antigravity Tool Integration
+
+JIT can execute Antigravity automation sequences and utilize its web-browsing capabilities via the wrapper scripts:
+- **Command delegation**: `powershell -File C:\Users\USER-NT\Jit\scripts\antigravity-y.ps1 run "ask_local_ai --prompt '...'"`
+- **Headless check**: Run Playwright validation checks to capture screenshots and confirm visual alignment.
 
 ## Evidence
 

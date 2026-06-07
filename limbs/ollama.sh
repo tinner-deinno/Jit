@@ -32,7 +32,12 @@ _call_ollama() {
   local TIMEOUT="${2:-45}"
   log_action "OLLAMA_CALL" "${PROMPT:0:80}..."
 
-  local JSON_BODY=$(printf '%s' "$PROMPT" | OLLAMA_MODEL="$OLLAMA_MODEL" python3 -c "import os, sys, json; print(json.dumps({'model':os.environ.get('OLLAMA_MODEL','gemma4:26b'), 'prompt':sys.stdin.read(), 'stream':False}))")
+  local JSON_BODY=$(printf '%s' "$PROMPT" | node -e "
+    const fs = require('fs');
+    const prompt = fs.readFileSync(0, 'utf8');
+    const model = process.env.OLLAMA_MODEL || 'gemma4:26b';
+    process.stdout.write(JSON.stringify({ model, prompt, stream: false }));
+  ")
 
   local API_URL="${OLLAMA_BASE_URL%/}${OLLAMA_API_PATH}"
   local RESPONSE=$(curl -s --max-time "$TIMEOUT" "$API_URL" \
@@ -45,7 +50,13 @@ _call_ollama() {
     return 1
   fi
 
-  echo "$RESPONSE" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('response', ''))" 2>/dev/null
+  echo "$RESPONSE" | node -e "
+    const fs = require('fs');
+    try {
+      const data = JSON.parse(fs.readFileSync(0, 'utf8'));
+      process.stdout.write(data.response || '');
+    } catch(e) { process.exit(1); }
+  " 2>/dev/null
 }
 
 case "$CMD" in

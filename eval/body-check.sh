@@ -34,13 +34,11 @@ echo "  $(date '+%Y-%m-%d %H:%M:%S')"
 # ════════════════════════════════════════════════════════
 _section "Core Services"
 # Oracle
-curl -sf "$ORACLE_URL/api/health" | python3 -c \
-  "import json,sys; d=json.load(sys.stdin); exit(0 if d.get('oracle')=='connected' else 1)" 2>/dev/null \
+curl -sf "$ORACLE_URL/api/health" | node -e "const d=JSON.parse(require('fs').readFileSync(0,'utf8')); process.exit(d.oracle==='connected'?0:1)" 2>/dev/null \
   && _pass "Oracle connected ($ORACLE_URL)" || _fail "Oracle offline"
 
 # Oracle docs
-DOCS=$(curl -sf "$ORACLE_URL/api/stats" 2>/dev/null | python3 -c \
-  "import json,sys; d=json.load(sys.stdin); print(d.get('totalDocuments', d.get('total','?')))" 2>/dev/null || echo "?")
+DOCS=$(curl -sf "$ORACLE_URL/api/stats" 2>/dev/null | node -e "const d=JSON.parse(require('fs').readFileSync(0,'utf8')); console.log(d.totalDocuments || d.total || '?')" 2>/dev/null || echo "?")
 [ "$DOCS" != "?" ] && _pass "Oracle docs: $DOCS" || _warn "Oracle stats unavailable"
 
 # Ollama
@@ -136,8 +134,8 @@ done
 _section "Oracle Knowledge"
 CONCEPTS=("innova" "anatomy")
 for C in "${CONCEPTS[@]}"; do
-  RESULT=$(curl -sf "$ORACLE_URL/api/search?q=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$C'))" 2>/dev/null)" 2>/dev/null | \
-    python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('results',[])))" 2>/dev/null || echo "0")
+  RESULT=$(curl -sf "$ORACLE_URL/api/search?q=$(node -e "console.log(encodeURIComponent('$C'))")" 2>/dev/null | \
+    node -e "const d=JSON.parse(require('fs').readFileSync(0,'utf8')); console.log((d.results || []).length)" 2>/dev/null || echo "0")
   [ "${RESULT:-0}" -gt 0 ] && _pass "Oracle รู้จัก: $C" || _warn "Oracle ยังไม่รู้เรื่อง: $C"
 done
 

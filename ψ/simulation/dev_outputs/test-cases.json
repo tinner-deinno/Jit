@@ -1,0 +1,6 @@
+{
+    "status": "completed",
+    "result": "Generated 20 edge cases including: Homonyms, Ambiguous sentence breaks, and Multi-layered honorifics. All added to tests/thai_routing_edge_cases.json.",
+    "tokens_burned": 42000,
+    "dev_note": "Saturated the prompt to get the most diverse examples possible."
+}

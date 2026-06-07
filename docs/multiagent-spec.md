@@ -30,6 +30,7 @@ Each organ is a shell script in `organs/`:
 | `leg.sh` | ขา | Navigate, deploy, pipeline |
 | `heart.sh` | หัวใจ | Orchestrate, route, heartbeat |
 | `nerve.sh` | ระบบประสาท | Events, signals, inter-organ |
+| `vitals.sh` | สัญญาณชีพ | Monitoring and health checks |
 
 ---
 
@@ -64,11 +65,12 @@ WORKING   ←─ /tmp/innova-working-memory.json — Task context
 ```
 from: <sender>
 to: <recipient>
+priority: <high|med|low>
 subject: <type>:<description>
 timestamp: ISO-8601
 correlation-id: <uuid>
 ---
-<body>
+<body]
 ```
 
 **Subject Types:**
@@ -115,6 +117,8 @@ RECEIVE TASK (soma):
 5. **Log everything**: All actions logged for reflection
 6. **Emotional awareness**: State tracking prevents overwork/confusion
 
+---
+
 ## 9. Autonomous Selfhood and Sub-Agent Patterns
 
 - **Selfhood**: Every agent should maintain a minimal life signal (`heartbeat`, `presence`, `last_seen`) when active.
@@ -128,7 +132,10 @@ RECEIVE TASK (soma):
 - `task:detect-mcp-tools` → `innova` or `karn` detects missing tools
 - `task:install-mcp-tools` → `mue`/`pada` does install and verify
 - `task:report-life` → `pran` logs vitals and `vaja` reports status
+- `task:verify-ui` → `innova` or `rupa` runs `automation_scripts/verify_all_views.js` to capture layout screenshots and detect regressions.
 - `task:learn` → `oracle.sh learn` saves the lesson
+
+---
 
 ### Recommended lifecycle
 

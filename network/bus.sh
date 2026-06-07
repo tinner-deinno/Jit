@@ -27,19 +27,22 @@ _init_bus() {
   mkdir -p "$BUS_ROOT"
   mkdir -p "$STAGING_DIR"
   if [ -f "$REGISTRY" ]; then
-    # Use python to read registry and create directories
-    python3 -c "
-import json, os
-try:
-    with open('$REGISTRY') as f:
-        d = json.load(f)
-    for a in d.get('agents', []):
-        name = a['name']
-        for p in ['high', 'med', 'low']:
-            os.makedirs('$BUS_ROOT/' + name + '/' + p, exist_ok=True)
-except Exception as e:
-    print(f'Error initializing bus from registry: {e}')
-"
+    # Use node to read registry and create directories
+    node -e "
+    const fs = require('fs');
+    const [busRoot, registry] = process.argv.slice(1);
+    try {
+      const content = fs.readFileSync(registry, 'utf8').replace(/^﻿/, '');
+      const d = JSON.parse(content);
+      (d.agents || []).forEach(a => {
+        ['high', 'med', 'low'].forEach(p => {
+          fs.mkdirSync(busRoot + '/' + a.name + '/' + p, { recursive: true });
+        });
+      });
+    } catch (e) {
+      console.error('Error initializing bus from registry: ' + e.message);
+    }" "$(cygpath -w "$BUS_ROOT")" "$(cygpath -w "$REGISTRY")"
+
   else
     # Fallback for basic agents if registry is missing
     for a in "innova" "soma" "jit"; do
@@ -55,7 +58,7 @@ _deliver() {
   local subject="$3"
   local body="$4"
   local from="${5:-system}"
-  local corr_id="${6:-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -N 8 | head -n 1)}"
+  local corr_id="${6:-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)}"
 
   # Validate priority
   case "$priority" in
@@ -110,7 +113,7 @@ case "$CMD" in
     fi
     _init_bus
     if [ -f "$REGISTRY" ]; then
-      agents=$(python3 -c "import json; d=json.load(open('$REGISTRY')); print('\n'.join([a['name'] for a in d.get('agents', [])]))")
+      agents=$(node -e "const fs = require('fs'); const registry = process.argv[1]; const content = fs.readFileSync(registry, 'utf8').replace(/^﻿/, ''); const d = JSON.parse(content); console.log((d.agents || []).map(a => a.name).join('\n'))" "$(cygpath -w "$REGISTRY")")
       for agent in $agents; do
         _deliver "$agent" "$priority" "$subject" "$body" "$from"
       done
@@ -145,7 +148,7 @@ case "$CMD" in
   queue)
     # List all pending messages in the system
     echo "--- Current Message Queue ---"
-    find "$BUS_ROOT" -name "*.msg" | while read msg; do
+    find "$BUS_ROOT" -name "*.msg" | while read -r msg; do
       echo "File: $msg"
       grep -E "subject:|to:|from:" "$msg"
       echo "---"

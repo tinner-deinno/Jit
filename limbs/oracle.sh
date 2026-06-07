@@ -26,9 +26,9 @@ case "$CMD" in
     step "ตรวจสอบ Oracle..."
     RESULT=$(curl -sf "$ORACLE_URL/api/health" 2>/dev/null)
     if [ $? -eq 0 ]; then
-      STATUS=$(echo "$RESULT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('status','?'))" 2>/dev/null)
+      STATUS=$(echo "$RESULT" | node -e "process.stdout.write(JSON.parse(require('fs').readFileSync(0, 'utf8')).status || '?')")
       ok "Oracle: $STATUS"
-      echo "$RESULT" | python3 -m json.tool 2>/dev/null
+      echo "$RESULT" | node -e "console.log(JSON.stringify(JSON.parse(require('fs').readFileSync(0, 'utf8')), null, 2))"
     else
       err "Oracle ไม่ตอบสนอง (ลอง: act.sh start-oracle)"
       exit 1

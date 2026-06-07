@@ -1,0 +1,8 @@
+# Auto-Compact Metrics
+
+Self-improvement rule: handoff_lines > 100 → tune compression. fail > 2/5 sessions → adjust thresholds.
+
+| timestamp | session | pct_triggered | handoff_lines | result |
+|---|---|---|---|---|
+| 2026-06-07 20:16 | 1ec3f855 | 14% | 74 | ok |
+| 2026-06-07 20:17 | 1ec3f855 | 14% | 74 | ok |
