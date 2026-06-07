@@ -1,0 +1,17 @@
+id: JIT-005
+title: Add protocol-version field to bus messages
+priority: P2
+type: spec+code
+status: open
+owner: soma
+created: 2026-06-06
+updated: 2026-06-06
+spec_ref: network/protocol.md
+source_audit: PROTO-GAP-005
+acceptance:
+  - Add required `protocol-version:<semver>` header to message format, defaulting to `1.0` for backwards compatibility
+  - bus.sh `send` stamps current version (read from a single source-of-truth constant at the top of bus.sh)
+  - bus.sh `recv` warns (and optionally rejects) when a message's protocol-version is newer than the receiver's `BUS_MAX_PROTOCOL_VERSION`
+  - protocol.md Version History gains a migration guide section describing header changes per major version
+effort_hours: 3
+tags: [bus, versioning, compatibility, p2]

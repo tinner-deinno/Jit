@@ -1,0 +1,18 @@
+id: JIT-009
+title: Add circuit breaker and global Node error handlers
+priority: P2
+type: fix+reliability
+status: open
+owner: pada
+created: 2026-06-06
+updated: 2026-06-06
+spec_ref: hermes-discord/bot.js
+source_audit: DEVOPS-004
+acceptance:
+  - Add to bot.js: process.on('unhandledRejection', e => { console.error('UNHANDLED', e); webhookAlert(e); }); and same for uncaughtException
+  - In heartbeat-24h-daemon.sh do_beat failure path: when consecutive_failures >= MAX_CONSECUTIVE_FAILURES, write /tmp/jit-circuit-open flag, exit non-zero
+  - Add to both units: OnFailure=notify-failure@%n.service
+  - Add RestartPreventExitStatus=42 so the daemon can self-pause without forcing a restart loop
+  - Test: kill -9 the bot 4 times in 60s and verify a single Discord alert + halt
+effort_hours: 5
+tags: [reliability, circuit-breaker, crash-recovery, p2]

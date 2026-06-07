@@ -12,6 +12,13 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib.sh"
+source "$SCRIPT_DIR/agent_filter.sh"
+
+# ─── Agent filter: prepend role context to every think call ─────────────────
+# Reads AGENT_NAME from environment (set by the calling agent or parent shell).
+# Falls back to "innova" if unset.
+_THINK_AGENT="${AGENT_NAME:-innova}"
+_AGENT_FILTER_HEADER="$(get_agent_filter "$_THINK_AGENT" 2>/dev/null)"
 
 CMD="${1:-reflect}"
 shift || true
@@ -23,10 +30,15 @@ case "$CMD" in
     INTENT="${1:-ทบทวนสิ่งที่จะทำ}"
     echo ""
     echo -e "${CYAN}┌─ สติ: หยุดคิดก่อนลงมือ ─────────────────────────────┐${RESET}"
+    echo -e "${CYAN}│${RESET} Agent: $_THINK_AGENT"
     echo -e "${CYAN}│${RESET} เจตนา: $INTENT"
     echo -e "${CYAN}│${RESET} เวลา:  $(date '+%H:%M:%S %Z')"
     echo -e "${CYAN}└──────────────────────────────────────────────────────┘${RESET}"
-    log_action "THINK" "$INTENT"
+    echo ""
+    echo -e "${BOLD}── Prompt Filter ($_THINK_AGENT) ─────────────────────────${RESET}"
+    echo "$_AGENT_FILTER_HEADER"
+    echo -e "${BOLD}─────────────────────────────────────────────────────────${RESET}"
+    log_action "THINK[$_THINK_AGENT]" "$INTENT"
     echo ""
     ;;
 
@@ -34,13 +46,17 @@ case "$CMD" in
   reflect|oracle)
     TOPIC="${1:-wisdom}"
     echo ""
+    echo -e "${BOLD}── Prompt Filter ($_THINK_AGENT) ─────────────────────────${RESET}"
+    echo "$_AGENT_FILTER_HEADER"
+    echo -e "${BOLD}─────────────────────────────────────────────────────────${RESET}"
+    echo ""
     step "ค้นหาปัญญาจาก Oracle: '$TOPIC'"
     if oracle_ready; then
       oracle_search "$TOPIC" 3
     else
       warn "Oracle ไม่พร้อม — เริ่มด้วยความรู้ตัวเอง"
     fi
-    log_action "REFLECT" "$TOPIC"
+    log_action "REFLECT[$_THINK_AGENT]" "$TOPIC"
     echo ""
     ;;
 
@@ -49,7 +65,12 @@ case "$CMD" in
     TASK="${1:-task}"
     CONTEXT="${2:-}"
     echo ""
+    echo -e "${BOLD}── Prompt Filter ($_THINK_AGENT) ─────────────────────────${RESET}"
+    echo "$_AGENT_FILTER_HEADER"
+    echo -e "${BOLD}─────────────────────────────────────────────────────────${RESET}"
+    echo ""
     echo -e "${BOLD}┌─ วางแผน (สัมมาวายามะ) ──────────────────────────────┐${RESET}"
+    echo -e "${BOLD}│${RESET} Agent: $_THINK_AGENT"
     echo -e "${BOLD}│${RESET} งาน: $TASK"
     [ -n "$CONTEXT" ] && echo -e "${BOLD}│${RESET} บริบท: $CONTEXT"
     echo -e "${BOLD}│${RESET}"
@@ -66,7 +87,7 @@ case "$CMD" in
       step "Oracle บอกว่าเกี่ยวกับ '$TASK':"
       oracle_search "$TASK" 2
     fi
-    log_action "PLAN" "$TASK"
+    log_action "PLAN[$_THINK_AGENT]" "$TASK"
     echo ""
     ;;
 

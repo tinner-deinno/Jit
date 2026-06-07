@@ -1,0 +1,17 @@
+id: JIT-003
+title: Add retry policy with exponential backoff to bus
+priority: P1
+type: spec+code
+status: open
+owner: soma
+created: 2026-06-06
+updated: 2026-06-06
+spec_ref: network/protocol.md
+source_audit: PROTO-GAP-003
+acceptance:
+  - Add `max-retries:<n>` and `retry-after:<seconds>` headers to message format
+  - router.sh `route` wraps the organ call in a retry loop with exponential backoff (2s, 4s, 8s) and a configurable cap (default 3)
+  - bus.sh exposes `bus.sh retry` subcommand that scans `.failed` files and re-queues eligible ones whose `retry-after` has elapsed
+  - All retry attempts are logged via `log_action BUS_RETRY` with attempt number and reason
+effort_hours: 5
+tags: [bus, reliability, retry, p1]

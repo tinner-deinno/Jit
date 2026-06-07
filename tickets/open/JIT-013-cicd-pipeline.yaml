@@ -1,0 +1,17 @@
+id: JIT-013
+title: "Add GitHub Actions CI/CD pipeline for Jit system"
+priority: P1
+type: chore
+status: open
+owner: pada
+created: 2026-06-07
+updated: 2026-06-07
+spec_ref: specs/JIT-013-spec.md
+acceptance:
+  - .github/workflows/ci.yml runs on push/PR to main and heartbeat-* branches
+  - CI pipeline: lint shell scripts (shellcheck), run pytest test suite, check Oracle connectivity
+  - CD pipeline: on merge to main, auto-deploy heartbeat daemon service unit
+  - Pipeline status badge in README.md
+  - All 14-agent inbox directories verified present in CI environment setup step
+effort_hours: 8
+tags: [cicd, devops, pipeline, p1, pada]
