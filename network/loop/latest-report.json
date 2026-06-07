@@ -1,7 +1,7 @@
 {
-  "cycle": 171,
-  "startedAt": "2026-06-07T15:57:26.451Z",
-  "finishedAt": "2026-06-07T16:01:08.814Z",
+  "cycle": 176,
+  "startedAt": "2026-06-07T17:07:29.165Z",
+  "finishedAt": "2026-06-07T17:09:24.542Z",
   "status": "pass",
   "failureStreak": 0,
   "selectedLanes": [
@@ -9,7 +9,7 @@
   ],
   "advisorUsed": false,
   "providers": {
-    "probed_at_ms": 1780847848173,
+    "probed_at_ms": 1780852050828,
     "timeout_ms": 70000,
     "full_probe": false,
     "probed_backends": [
@@ -18,85 +18,86 @@
       "innova_bot"
     ],
     "usable": [
+      "ollama_mdes",
       "thaillm"
     ],
     "cached_usable": [
-      "ollama_cloud",
+      "ollama_mdes",
       "thaillm"
     ],
     "results": {
       "ollama_mdes": {
         "backend": "ollama_mdes",
-        "status": "UNREACHABLE",
-        "ms": 70042,
-        "error": "timeout",
-        "probed_at_ms": 1780847848173
+        "status": "ALIVE",
+        "ms": 2827,
+        "served_by": "ollama_mdes",
+        "sample": "OK",
+        "probed_at_ms": 1780852050828
       },
       "ollama_local": {
         "backend": "ollama_local",
         "status": "UNREACHABLE",
-        "ms": 35001,
-        "error": "timeout",
-        "probed_at_ms": 1780846025476
+        "ms": 5151,
+        "error": "Ollama timeout",
+        "probed_at_ms": 1780849996713
       },
       "ollama_cloud": {
         "backend": "ollama_cloud",
-        "status": "ALIVE",
-        "ms": 4862,
-        "served_by": "ollama_cloud",
-        "sample": "OK",
-        "probed_at_ms": 1780846025476
+        "status": "UNREACHABLE",
+        "ms": 5150,
+        "error": "Ollama timeout",
+        "probed_at_ms": 1780849996713
       },
       "thaillm": {
         "backend": "thaillm",
         "status": "ALIVE",
-        "ms": 634,
+        "ms": 664,
         "served_by": "thaillm",
-        "sample": "<think> Okay, the user wants me to respond with exactly \"OK\"",
-        "probed_at_ms": 1780847848173
+        "sample": "<think> Okay, I need to respond to the user's query with exa",
+        "probed_at_ms": 1780852050828
       },
       "copilot": {
         "backend": "copilot",
         "status": "ERROR",
-        "ms": 4641,
+        "ms": 5532,
         "error": "Copilot exchange HTTP 404: {\"message\":\"Not Found\",\"documentation_url\":\"https://d",
-        "probed_at_ms": 1780846025476
+        "probed_at_ms": 1780849996713
       },
       "openai": {
         "backend": "openai",
         "status": "ERROR",
-        "ms": 14611,
+        "ms": 19607,
         "error": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nm",
-        "probed_at_ms": 1780846025476
+        "probed_at_ms": 1780849996713
       },
       "openclaude": {
         "backend": "openclaude",
         "status": "UNREACHABLE",
-        "ms": 109,
+        "ms": 187,
         "error": "OpenClaude request error: ECONNREFUSED",
-        "probed_at_ms": 1780846025476
+        "probed_at_ms": 1780849996713
       },
       "innova_bot": {
         "backend": "innova_bot",
         "status": "UNREACHABLE",
-        "ms": 30125,
+        "ms": 30131,
         "error": "MCP response timeout for tools/call (30000ms)",
-        "probed_at_ms": 1780847848173
+        "probed_at_ms": 1780852050828
       }
     }
   },
   "snapshots": {
     "omxStatus": {
       "ok": true,
-      "ms": 472
+      "ms": 556
     },
     "mawTeam": {
       "ok": true,
-      "ms": 621
+      "ms": 501
     },
     "mawTasks": {
       "ok": true,
-      "ms": 541
+      "ms": 483
     },
     "quickFleet": {
       "ok": true,
@@ -105,7 +106,7 @@
     },
     "providerProbe": {
       "ok": true,
-      "ms": 70144,
+      "ms": 30298,
       "mode": "quick",
       "backends": [
         "ollama_mdes",
@@ -114,49 +115,49 @@
       ]
     }
   },
-  "fleetCommand": "node eval/fleet-batch.js --goal-file network/loop/current-goal.txt --count 84 --concurrency 8 --notify-every 8 --attempts 1 --worker-timeout-ms 45000 --lanes thaillm --require-min-count 84 --require-min-ok 63 --no-discord",
+  "fleetCommand": "node eval/fleet-batch.js --goal-file network/loop/current-goal.txt --count 51 --concurrency 6 --notify-every 6 --attempts 1 --worker-timeout-ms 45000 --lanes thaillm --require-min-count 51 --require-min-ok 39 --no-discord",
   "fleetOk": true,
-  "fleetMs": 150455,
-  "fleetError": "[model-router] thaillm failed: HTTP 502: error code: 502",
+  "fleetMs": 83374,
+  "fleetError": "[model-router] thaillm failed: HTTP 502: error code: 502\n[model-router] thaillm failed: HTTP 502: error code: 502\n[model-router] thaillm failed: HTTP 502: error code: 502",
   "fleetSummary": {
     "summary": {
-      "runId": "fleet-batch-2026-06-07T15-58-38-434Z",
-      "goal": "Jit Mother cycle 171: clear the innova-bot/Jit/innomcp backlog carefully.\nSelected lanes: thaillm\n\nMAW team:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nMAW tasks:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nStatus board:\n{\n\"providerProbe\": {\n\"mode\": \"partial\",\n\"probedBackends\": [\n\"ollama_mdes\",\n\"thaillm\",\n\"innova_bot\"\n],\n\"cachedUsable\": [\n\"ollama_cloud\",\n\"thaillm\"\n]\n},\n\"usable\": [\n\"thaillm\"\n],\n\"bridge\": {\n\"up\": true,\n\"detail\": \"HTTP 200\"\n},\n\"providers\": {\n\"ollama_mdes\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 70042,\n\"fresh\": \"70s ago\",\n\"error\": \"timeout\"\n},\n\"ollama_local\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 35001,\n\"fresh\": \"cached\",\n\"error\": \"timeout\"\n},\n\"ollama_cloud\": {\n\"status\": \"ALIVE\",\n\"ms\": 4862,\n\"fresh\": \"cached\"\n},\n\"thaillm\": {\n\"status\": \"ALIVE\",\n\"ms\": 634,\n\"fresh\": \"70s ago\"\n},\n\"copilot\": {\n\"status\": \"ERROR\",\n\"ms\": 4641,\n\"fresh\": \"cached\",\n\"error\": \"Copilot exchange HTTP 404: {\\\"message\\\":\\\"Not Found\\\",\\\"doc\n\nReturn one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.",
-      "count": 84,
-      "completed": 84,
+      "runId": "fleet-batch-2026-06-07T17-08-01-274Z",
+      "goal": "Jit Mother cycle 176: clear the innova-bot/Jit/innomcp backlog carefully.\nSelected lanes: thaillm\n\nMAW team:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nMAW tasks:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nStatus board:\n{\n\"providerProbe\": {\n\"mode\": \"partial\",\n\"probedBackends\": [\n\"ollama_mdes\",\n\"thaillm\",\n\"innova_bot\"\n],\n\"cachedUsable\": [\n\"ollama_mdes\",\n\"thaillm\"\n]\n},\n\"usable\": [\n\"ollama_mdes\",\n\"thaillm\"\n],\n\"bridge\": {\n\"up\": true,\n\"detail\": \"HTTP 200\"\n},\n\"providers\": {\n\"ollama_mdes\": {\n\"status\": \"ALIVE\",\n\"ms\": 2827,\n\"fresh\": \"30s ago\"\n},\n\"ollama_local\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 5151,\n\"fresh\": \"cached\",\n\"error\": \"Ollama timeout\"\n},\n\"ollama_cloud\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 5150,\n\"fresh\": \"cached\",\n\"error\": \"Ollama timeout\"\n},\n\"thaillm\": {\n\"status\": \"ALIVE\",\n\"ms\": 664,\n\"fresh\": \"30s ago\"\n},\n\"copilot\": {\n\"status\": \"ERROR\",\n\"ms\": 5532,\n\"fresh\": \"cached\",\n\"error\": \"Copilot exchange HTTP 404: {\\\"mes\n\nReturn one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.",
+      "count": 51,
+      "completed": 51,
       "pending": 0,
-      "ok": 83,
-      "fail": 1,
-      "concurrency": 8,
-      "durationMs": 150193,
-      "notifyEvery": 8,
+      "ok": 48,
+      "fail": 3,
+      "concurrency": 6,
+      "durationMs": 83063,
+      "notifyEvery": 6,
       "byBackend": {
         "thaillm": {
-          "total": 84,
-          "ok": 83,
-          "fail": 1,
+          "total": 51,
+          "ok": 48,
+          "fail": 3,
           "models": {
-            "openthaigpt-thaillm-8b-instruct-v7.2": 21,
-            "pathumma-thaillm-qwen3-8b-think-3.0.0": 21,
-            "typhoon-s-thaillm-8b-instruct": 21,
-            "thalle-0.2-thaillm-8b-fa": 21
+            "openthaigpt-thaillm-8b-instruct-v7.2": 13,
+            "pathumma-thaillm-qwen3-8b-think-3.0.0": 13,
+            "typhoon-s-thaillm-8b-instruct": 13,
+            "thalle-0.2-thaillm-8b-fa": 12
           },
-          "workers": 84,
-          "avgLatencyMs": 6816
+          "workers": 51,
+          "avgLatencyMs": 5654
         }
       },
       "roster": {
-        "plannedWorkers": 84,
-        "completedWorkers": 84,
+        "plannedWorkers": 51,
+        "completedWorkers": 51,
         "uniquePersonas": 18,
         "perspectives": {
-          "coordinator": 20,
-          "analyst": 17,
-          "verifier": 15,
-          "executor": 15,
-          "critic": 4,
-          "scribe": 4,
-          "observer": 9
+          "coordinator": 16,
+          "analyst": 14,
+          "verifier": 3,
+          "executor": 13,
+          "critic": 2,
+          "scribe": 2,
+          "observer": 1
         },
         "sampleWorkers": [
           "agent-copilot-coordinator-01",
@@ -174,8 +175,8 @@
         ]
       },
       "proof": {
-        "requireMinCount": 84,
-        "requireMinOk": 63,
+        "requireMinCount": 51,
+        "requireMinOk": 39,
         "minCountSatisfied": true,
         "minCompletedSatisfied": true,
         "minOkSatisfied": true,
@@ -198,10 +199,10 @@
       }
     },
     "artifacts": {
-      "jsonPath": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-07T15-58-38-434Z\\summary.json",
-      "mdPath": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-07T15-58-38-434Z\\summary.md",
-      "manifestPath": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-07T15-58-38-434Z\\proof-manifest.json",
-      "mdManifestPath": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-07T15-58-38-434Z\\proof-manifest.md"
+      "jsonPath": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-07T17-08-01-274Z\\summary.json",
+      "mdPath": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-07T17-08-01-274Z\\summary.md",
+      "manifestPath": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-07T17-08-01-274Z\\proof-manifest.json",
+      "mdManifestPath": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-07T17-08-01-274Z\\proof-manifest.md"
     },
     "discordSent": false,
     "innovaSent": {
@@ -209,16 +210,16 @@
     }
   },
   "visual": {
-    "runId": "visual-cycle-171",
+    "runId": "visual-cycle-176",
     "url": "http://127.0.0.1:7010/gui",
-    "startedAt": "2026-06-07T16:01:08.904Z",
+    "startedAt": "2026-06-07T17:09:24.650Z",
     "ok": true,
     "playwright": {
       "ok": true,
       "title": "Innova Bot GUI",
       "status": 200,
       "finalUrl": "http://127.0.0.1:7010/gui",
-      "screenshot": "network/artifacts/visual-cycle-171/playwright-shot.png",
+      "screenshot": "network/artifacts/visual-cycle-176/playwright-shot.png",
       "stats": {
         "buttons": 114,
         "headings": 21,
@@ -231,7 +232,7 @@
       "navigate": {
         "title": "Innova Bot GUI",
         "status": 200,
-        "loadTime": 669,
+        "loadTime": 943,
         "finalUrl": "http://127.0.0.1:7010/gui",
         "url": "http://127.0.0.1:7010/gui"
       },
@@ -285,7 +286,7 @@
         "bodyColor": "rgb(248, 250, 252)"
       }
     },
-    "finishedAt": "2026-06-07T16:01:18.072Z",
+    "finishedAt": "2026-06-07T17:09:34.384Z",
     "signal": {
       "title": "Innova Bot GUI",
       "status": 200,
@@ -295,11 +296,11 @@
   },
   "visualRun": {
     "ok": true,
-    "ms": 9263,
+    "ms": 9848,
     "skipped": false,
     "error": ""
   },
-  "latestFleetArtifact": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-07T15-58-38-434Z",
+  "latestFleetArtifact": "C:\\Users\\USER-NT\\Jit\\network\\artifacts\\fleet-batch-2026-06-07T17-08-01-274Z",
   "innovaNotify": {
     "ok": true
   },

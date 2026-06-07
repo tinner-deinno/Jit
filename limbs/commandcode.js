@@ -2,7 +2,7 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
-const API_KEY = process.env.CODEX_API_KEY || 'dummy';
+const API_KEY = process.env.COMMANDCODE_API_KEY || process.env.CODEX_API_KEY || 'dummy';
 const OPENAI_ENDPOINT = 'https://api.commandcode.ai/provider/v1/chat/completions';
 const ANTHROPIC_ENDPOINT = 'https://api.commandcode.ai/provider/v1/messages';
 const SIM_DIR = path.join(process.cwd(), 'ψ', 'simulation', 'dev_outputs');

@@ -1,5 +1,11 @@
-Jit Mother cycle 172: clear the innova-bot/Jit/innomcp backlog carefully.
+Jit Mother cycle 177: clear the innova-bot/Jit/innomcp backlog carefully.
 Selected lanes: ollama_mdes, thaillm
+
+OBJECTIVE — innomcp ready by morning (~6h):
+- Bootstrap MAW teams innomcp / innova-bot-template / jit (currently 0 agents each).
+- Drive the 5 innomcp tickets (TICKET-001..005: CommandCode bridge, Thai routing audit, geo, determinism, memory-symmetry).
+- Recover ollama_mdes/thaillm/ollama_cloud, prefer ALIVE lanes only.
+- Use thaillm as the safe fallback (19/19 OK, avg 6s).
 
 MAW team:
 no tasks for team "innomcp"
@@ -57,7 +63,6 @@ Status board:
 "innova_bot"
 ],
 "cachedUsable": [
-"ollama_cloud",
 "ollama_mdes",
 "thaillm"
 ]
@@ -73,29 +78,30 @@ Status board:
 "providers": {
 "ollama_mdes": {
 "status": "ALIVE",
-"ms": 7269,
-"fresh": "30s ago"
+"ms": 1602,
+"fresh": "2s ago"
 },
 "ollama_local": {
 "status": "UNREACHABLE",
-"ms": 35001,
+"ms": 5151,
 "fresh": "cached",
-"error": "timeout"
+"error": "Ollama timeout"
 },
 "ollama_cloud": {
-"status": "ALIVE",
-"ms": 4862,
-"fresh": "cached"
+"status": "UNREACHABLE",
+"ms": 5150,
+"fresh": "cached",
+"error": "Ollama timeout"
 },
 "thaillm": {
 "status": "ALIVE",
-"ms": 795,
-"fresh": "30s ago"
+"ms": 678,
+"fresh": "2s ago"
 },
 "copilot": {
 "status": "ERROR",
-"ms": 4641,
+"ms": 5532,
 "fresh": "cached",
-"error": "Copilot exchange HTTP 404: {\"message\":\"Not Found\",\"
+"error": "Copilot exchange HTTP 404: {\"messa
 
 Return one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.

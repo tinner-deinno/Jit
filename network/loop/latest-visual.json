@@ -1,14 +1,14 @@
 {
-  "runId": "visual-cycle-171",
+  "runId": "visual-cycle-176",
   "url": "http://127.0.0.1:7010/gui",
-  "startedAt": "2026-06-07T16:01:08.904Z",
+  "startedAt": "2026-06-07T17:09:24.650Z",
   "ok": true,
   "playwright": {
     "ok": true,
     "title": "Innova Bot GUI",
     "status": 200,
     "finalUrl": "http://127.0.0.1:7010/gui",
-    "screenshot": "network/artifacts/visual-cycle-171/playwright-shot.png",
+    "screenshot": "network/artifacts/visual-cycle-176/playwright-shot.png",
     "stats": {
       "buttons": 114,
       "headings": 21,
@@ -21,7 +21,7 @@
     "navigate": {
       "title": "Innova Bot GUI",
       "status": 200,
-      "loadTime": 669,
+      "loadTime": 943,
       "finalUrl": "http://127.0.0.1:7010/gui",
       "url": "http://127.0.0.1:7010/gui"
     },
@@ -75,7 +75,7 @@
       "bodyColor": "rgb(248, 250, 252)"
     }
   },
-  "finishedAt": "2026-06-07T16:01:18.072Z",
+  "finishedAt": "2026-06-07T17:09:34.384Z",
   "signal": {
     "title": "Innova Bot GUI",
     "status": 200,

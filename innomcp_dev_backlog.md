@@ -11,8 +11,10 @@ Advisors: Sonnet-4.6 / Opus-4.7
 - [ ] TICKET-005: Memory-Symmetry Check for Thai-Tokens
 
 ## 🎫 Batch #2 (Tickets 006-010)
-- [ ] TICKET-006: Implement 'Thai-Syllable-Splitter' prototype
-- [ ] TICKET-007: Refactor Routing Logic to use Splitter (Deterministic)
-- [ ] TICKET-008: Integrate Thai-Syllable-Splitter with 
-- [ ] TICKET-009: Run Regression tests on 20 edge cases
-- [ ] TICKET-010: Performance audit: Token usage per route request
+- [ ] TICKET-006a: Research and implement basic 'Thai-Syllable-Splitter' in limbs/thai-splitter.js (deterministic)
+- [ ] TICKET-006b: Create comprehensive Thai test-corpus (20+ edge cases) for routing verification
+- [ ] TICKET-007a: Refactor Routing Logic to replace token-based keys with Syllable-Splitter keys
+- [ ] TICKET-007b: Implement Route-Symmetry verification (ensure same input always hits same model)
+- [ ] TICKET-008: Integrate Thai-Syllable-Splitter with the Multi-Backend Proxy (port 4322)
+- [ ] TICKET-009: Run Regression tests on Thai-corpus and document variance
+- [ ] TICKET-010: Performance audit: Measure latency overhead of the new splitter

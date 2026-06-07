@@ -139,10 +139,16 @@ function _normalizeBackendName(name) {
   if (v === 'local' || v === 'ollama-local') return 'ollama_local';
   if (v === 'cloud' || v === 'ollama-cloud') return 'ollama_cloud';
   if (v === 'thai' || v === 'thai_llm' || v === 'thaillm') return 'thaillm';
+  if (v === 'commandcode' || v === 'command_code' || v === 'evergreen') return 'commandcode';
   return v;
 }
 
-const BACKEND_ORDER = (process.env.MULTI_BACKEND_ORDER || 'ollama_mdes,thaillm,ollama_local,ollama_cloud,copilot,openai,openclaude')
+const COMMANDCODE_BASE_URL = process.env.COMMANDCODE_BASE_URL || 'https://api.commandcode.ai/v1';
+const COMMANDCODE_API_KEY_RAW = process.env.COMMANDCODE_API_KEY || '';
+const COMMANDCODE_MODEL = process.env.COMMANDCODE_MODEL || 'commandcode-1';
+const COMMANDCODE_TOKEN = COMMANDCODE_API_KEY_RAW ? COMMANDCODE_API_KEY_RAW.replace(/^Bearer\s+/i, '').trim() : '';
+
+const BACKEND_ORDER = (process.env.MULTI_BACKEND_ORDER || 'ollama_mdes,thaillm,commandcode,ollama_local,ollama_cloud,copilot,openai,openclaude')
   .split(',')
   .map(function(s) { return _normalizeBackendName(s); })
   .filter(Boolean);
@@ -207,6 +213,13 @@ class BackendManager {
         token: null,
         model: process.env.INNOVA_BOT_MODEL || null,
         type: 'innova_bot'
+      },
+      commandcode: {
+        name: 'CommandCode (Evergreen-TH)',
+        url: COMMANDCODE_BASE_URL,
+        token: COMMANDCODE_TOKEN,
+        model: COMMANDCODE_MODEL,
+        type: 'commandcode'
       }
     };
   }
@@ -238,7 +251,7 @@ class BackendManager {
 const backendManager = new BackendManager();
 
 // ── Error counters (reset on success) ────────────────────────────────
-const _errors = { copilot: 0, openai: 0, ollama: 0, ollama_mdes: 0, ollama_local: 0, ollama_cloud: 0, thaillm: 0, openclaude: 0 };
+const _errors = { copilot: 0, openai: 0, ollama: 0, ollama_mdes: 0, ollama_local: 0, ollama_cloud: 0, thaillm: 0, openclaude: 0, commandcode: 0 };
 
 // Circuit breaker (per architect-agent review: protect the orchestrator→provider
 // boundary). A lane that fails BREAKER_THRESHOLD times in a row is "open" and
@@ -766,6 +779,30 @@ function _postOllama(cfg, endpointPath, payload, callback, timeoutMs) {
   req.end();
 }
 
+function _callCommandCode(messages, model, callOptions, callback) {
+  callOptions = callOptions || {};
+  if (!COMMANDCODE_TOKEN) return callback(new Error('COMMANDCODE_API_KEY not set'));
+  var url = COMMANDCODE_BASE_URL.replace(/\/+$/, '') + '/chat/completions';
+  var body = {
+    model: model || COMMANDCODE_MODEL,
+    messages: messages,
+    max_tokens: callOptions.maxTokens || 512,
+    temperature: callOptions.temperature || 0.7,
+  };
+  _httpPost(url, '', { 'Authorization': 'Bearer ' + COMMANDCODE_TOKEN }, body, function(err, body2) {
+    if (err) return callback(err);
+    try {
+      var data = typeof body2 === 'string' ? JSON.parse(body2) : body2;
+      var reply = data && data.choices && data.choices[0] && data.choices[0].message
+        ? data.choices[0].message.content
+        : (data && data.reply) || '';
+      return callback(null, String(reply || ''));
+    } catch (e) {
+      return callback(new Error('CommandCode parse error: ' + e.message));
+    }
+  });
+}
+
 function _callThaiLLM(messages, model, callOptions, callback) {
   callOptions = callOptions || {};
   if (!THAILLM_TOKEN) return callback(new Error('THAILLM_TOKEN not set'));
@@ -883,6 +920,7 @@ function callModel(messages, options, callback) {
     else if (backend === 'thaillm') caller = _callThaiLLM;
     else if (backend === 'openclaude') caller = _callOpenClaude;
     else if (backend === 'innova_bot') caller = _callInnovaBot;
+    else if (backend === 'commandcode') caller = _callCommandCode;
     else                        caller = function(msgs, mdl, callOpts, cb) { _callOllama(msgs, mdl, callOpts, cb, backend); };
 
     caller(messages, opts.model || null, opts, function(err, reply) {

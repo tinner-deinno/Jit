@@ -1,46 +1,56 @@
 {
-  "runId": "fleet-batch-2026-06-07T16-05-50-583Z",
-  "goal": "Jit Mother cycle 172: clear the innova-bot/Jit/innomcp backlog carefully.\nSelected lanes: ollama_mdes, thaillm\n\nMAW team:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nMAW tasks:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nStatus board:\n{\n\"providerProbe\": {\n\"mode\": \"partial\",\n\"probedBackends\": [\n\"ollama_mdes\",\n\"thaillm\",\n\"innova_bot\"\n],\n\"cachedUsable\": [\n\"ollama_cloud\",\n\"ollama_mdes\",\n\"thaillm\"\n]\n},\n\"usable\": [\n\"ollama_mdes\",\n\"thaillm\"\n],\n\"bridge\": {\n\"up\": true,\n\"detail\": \"HTTP 200\"\n},\n\"providers\": {\n\"ollama_mdes\": {\n\"status\": \"ALIVE\",\n\"ms\": 7269,\n\"fresh\": \"30s ago\"\n},\n\"ollama_local\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 35001,\n\"fresh\": \"cached\",\n\"error\": \"timeout\"\n},\n\"ollama_cloud\": {\n\"status\": \"ALIVE\",\n\"ms\": 4862,\n\"fresh\": \"cached\"\n},\n\"thaillm\": {\n\"status\": \"ALIVE\",\n\"ms\": 795,\n\"fresh\": \"30s ago\"\n},\n\"copilot\": {\n\"status\": \"ERROR\",\n\"ms\": 4641,\n\"fresh\": \"cached\",\n\"error\": \"Copilot exchange HTTP 404: {\\\"message\\\":\\\"Not Found\\\",\\\"\n\nReturn one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.",
-  "updatedAt": "2026-06-07T16:06:16.334Z",
+  "runId": "fleet-batch-2026-06-07T17-12-17-122Z",
+  "goal": "Jit Mother cycle 177: clear the innova-bot/Jit/innomcp backlog carefully.\nSelected lanes: ollama_mdes, thaillm\n\nOBJECTIVE — innomcp ready by morning (~6h):\n- Bootstrap MAW teams innomcp / innova-bot-template / jit (currently 0 agents each).\n- Drive the 5 innomcp tickets (TICKET-001..005: CommandCode bridge, Thai routing audit, geo, determinism, memory-symmetry).\n- Recover ollama_mdes/thaillm/ollama_cloud, prefer ALIVE lanes only.\n- Use thaillm as the safe fallback (19/19 OK, avg 6s).\n\nMAW team:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nMAW tasks:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nStatus board:\n{\n\"providerProbe\": {\n\"mode\": \"partial\",\n\"probedBackends\": [\n\"ollama_mdes\",\n\"thaillm\",\n\"innova_bot\"\n],\n\"cachedUsable\": [\n\"ollama_mdes\",\n\"thaillm\"\n]\n},\n\"usable\": [\n\"ollama_mdes\",\n\"thaillm\"\n],\n\"bridge\": {\n\"up\": true,\n\"detail\": \"HTTP 200\"\n},\n\"providers\": {\n\"ollama_mdes\": {\n\"status\": \"ALIVE\",\n\"ms\": 1602,\n\"fresh\": \"2s ago\"\n},\n\"ollama_local\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 5151,\n\"fresh\": \"cached\",\n\"error\": \"Ollama timeout\"\n},\n\"ollama_cloud\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 5150,\n\"fresh\": \"cached\",\n\"error\": \"Ollama timeout\"\n},\n\"thaillm\": {\n\"status\": \"ALIVE\",\n\"ms\": 678,\n\"fresh\": \"2s ago\"\n},\n\"copilot\": {\n\"status\": \"ERROR\",\n\"ms\": 5532,\n\"fresh\": \"cached\",\n\"error\": \"Copilot exchange HTTP 404: {\\\"messa\n\nReturn one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.",
+  "updatedAt": "2026-06-07T17:18:13.455Z",
   "label": "running",
   "summary": {
-    "runId": "fleet-batch-2026-06-07T16-05-50-583Z",
-    "goal": "Jit Mother cycle 172: clear the innova-bot/Jit/innomcp backlog carefully.\nSelected lanes: ollama_mdes, thaillm\n\nMAW team:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nMAW tasks:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nStatus board:\n{\n\"providerProbe\": {\n\"mode\": \"partial\",\n\"probedBackends\": [\n\"ollama_mdes\",\n\"thaillm\",\n\"innova_bot\"\n],\n\"cachedUsable\": [\n\"ollama_cloud\",\n\"ollama_mdes\",\n\"thaillm\"\n]\n},\n\"usable\": [\n\"ollama_mdes\",\n\"thaillm\"\n],\n\"bridge\": {\n\"up\": true,\n\"detail\": \"HTTP 200\"\n},\n\"providers\": {\n\"ollama_mdes\": {\n\"status\": \"ALIVE\",\n\"ms\": 7269,\n\"fresh\": \"30s ago\"\n},\n\"ollama_local\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 35001,\n\"fresh\": \"cached\",\n\"error\": \"timeout\"\n},\n\"ollama_cloud\": {\n\"status\": \"ALIVE\",\n\"ms\": 4862,\n\"fresh\": \"cached\"\n},\n\"thaillm\": {\n\"status\": \"ALIVE\",\n\"ms\": 795,\n\"fresh\": \"30s ago\"\n},\n\"copilot\": {\n\"status\": \"ERROR\",\n\"ms\": 4641,\n\"fresh\": \"cached\",\n\"error\": \"Copilot exchange HTTP 404: {\\\"message\\\":\\\"Not Found\\\",\\\"\n\nReturn one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.",
-    "count": 84,
-    "completed": 7,
-    "pending": 77,
-    "ok": 7,
-    "fail": 0,
-    "concurrency": 8,
-    "durationMs": 25749,
-    "notifyEvery": 8,
+    "runId": "fleet-batch-2026-06-07T17-12-17-122Z",
+    "goal": "Jit Mother cycle 177: clear the innova-bot/Jit/innomcp backlog carefully.\nSelected lanes: ollama_mdes, thaillm\n\nOBJECTIVE — innomcp ready by morning (~6h):\n- Bootstrap MAW teams innomcp / innova-bot-template / jit (currently 0 agents each).\n- Drive the 5 innomcp tickets (TICKET-001..005: CommandCode bridge, Thai routing audit, geo, determinism, memory-symmetry).\n- Recover ollama_mdes/thaillm/ollama_cloud, prefer ALIVE lanes only.\n- Use thaillm as the safe fallback (19/19 OK, avg 6s).\n\nMAW team:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nMAW tasks:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nStatus board:\n{\n\"providerProbe\": {\n\"mode\": \"partial\",\n\"probedBackends\": [\n\"ollama_mdes\",\n\"thaillm\",\n\"innova_bot\"\n],\n\"cachedUsable\": [\n\"ollama_mdes\",\n\"thaillm\"\n]\n},\n\"usable\": [\n\"ollama_mdes\",\n\"thaillm\"\n],\n\"bridge\": {\n\"up\": true,\n\"detail\": \"HTTP 200\"\n},\n\"providers\": {\n\"ollama_mdes\": {\n\"status\": \"ALIVE\",\n\"ms\": 1602,\n\"fresh\": \"2s ago\"\n},\n\"ollama_local\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 5151,\n\"fresh\": \"cached\",\n\"error\": \"Ollama timeout\"\n},\n\"ollama_cloud\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 5150,\n\"fresh\": \"cached\",\n\"error\": \"Ollama timeout\"\n},\n\"thaillm\": {\n\"status\": \"ALIVE\",\n\"ms\": 678,\n\"fresh\": \"2s ago\"\n},\n\"copilot\": {\n\"status\": \"ERROR\",\n\"ms\": 5532,\n\"fresh\": \"cached\",\n\"error\": \"Copilot exchange HTTP 404: {\\\"messa\n\nReturn one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.",
+    "count": 51,
+    "completed": 46,
+    "pending": 5,
+    "ok": 44,
+    "fail": 2,
+    "concurrency": 6,
+    "durationMs": 356329,
+    "notifyEvery": 6,
     "byBackend": {
-      "thaillm": {
-        "total": 7,
-        "ok": 7,
-        "fail": 0,
+      "ollama_mdes": {
+        "total": 21,
+        "ok": 20,
+        "fail": 1,
         "models": {
-          "openthaigpt-thaillm-8b-instruct-v7.2": 2,
-          "pathumma-thaillm-qwen3-8b-think-3.0.0": 2,
-          "typhoon-s-thaillm-8b-instruct": 2,
-          "thalle-0.2-thaillm-8b-fa": 1
+          "gemma4:26b": 21
         },
-        "workers": 7,
-        "avgLatencyMs": 6474
+        "workers": 21,
+        "avgLatencyMs": 16715
+      },
+      "thaillm": {
+        "total": 25,
+        "ok": 24,
+        "fail": 1,
+        "models": {
+          "openthaigpt-thaillm-8b-instruct-v7.2": 7,
+          "pathumma-thaillm-qwen3-8b-think-3.0.0": 6,
+          "typhoon-s-thaillm-8b-instruct": 6,
+          "thalle-0.2-thaillm-8b-fa": 6
+        },
+        "workers": 25,
+        "avgLatencyMs": 5240
       }
     },
     "roster": {
-      "plannedWorkers": 84,
-      "completedWorkers": 7,
+      "plannedWorkers": 51,
+      "completedWorkers": 46,
       "uniquePersonas": 18,
       "perspectives": {
-        "coordinator": 20,
-        "analyst": 17,
-        "verifier": 15,
-        "executor": 15,
-        "critic": 4,
-        "scribe": 4,
-        "observer": 9
+        "coordinator": 16,
+        "analyst": 14,
+        "verifier": 3,
+        "executor": 13,
+        "critic": 2,
+        "scribe": 2,
+        "observer": 1
       },
       "sampleWorkers": [
         "agent-copilot-coordinator-01",
@@ -58,11 +68,11 @@
       ]
     },
     "proof": {
-      "requireMinCount": 84,
-      "requireMinOk": 63,
+      "requireMinCount": 51,
+      "requireMinOk": 39,
       "minCountSatisfied": true,
       "minCompletedSatisfied": false,
-      "minOkSatisfied": false,
+      "minOkSatisfied": true,
       "selectedLanes": [
         "ollama_mdes",
         "thaillm"
@@ -84,16 +94,16 @@
     }
   },
   "latest": {
-    "id": 14,
-    "workerId": "maw-coordinator-01",
-    "agent": "maw",
-    "perspective": "coordinator",
-    "backend": "thaillm",
-    "model": "typhoon-s-thaillm-8b-instruct",
+    "id": 41,
+    "workerId": "antigravity-mission-control-executor-03",
+    "agent": "antigravity-mission-control",
+    "perspective": "executor",
+    "backend": "ollama_mdes",
+    "model": "gemma4:26b",
     "ok": true,
-    "latencyMs": 666,
+    "latencyMs": 15216,
     "error": "",
-    "reply": "Actionable next step: Re-enable ollama_local backend via manual probe with `probe-ollama-local --retry=3` to verify connectivity and restore service availability. Confidence: 95"
+    "reply": "Next Step: Bootstrap agents for `innomcp`, `innova-bot-template`, and `jit` teams เพื่อเริ่มขับเคลื่อน 5 backlog tickets (TICKET-001..005) เนื่องจากปัจจุบัน all teams show 0 agents and 0 tasks. Confidence: 95."
   },
   "notify": null,
   "artifacts": null

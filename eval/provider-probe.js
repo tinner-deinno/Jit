@@ -37,7 +37,7 @@ function arg(name, fallback) {
 const TIMEOUT = parseInt(arg('--timeout', '35000'), 10);
 
 // Backends to probe (keys in model-router BackendManager).
-const ALL_BACKENDS = ['ollama_mdes', 'ollama_local', 'ollama_cloud', 'thaillm', 'copilot', 'openai', 'openclaude', 'innova_bot'];
+const ALL_BACKENDS = ['ollama_mdes', 'ollama_local', 'ollama_cloud', 'thaillm', 'copilot', 'openai', 'openclaude', 'innova_bot', 'commandcode'];
 const REQUESTED_BACKENDS = String(arg('--backends', ''))
   .split(',')
   .map((value) => value.trim())
