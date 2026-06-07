@@ -1,0 +1,11 @@
+﻿{
+    "capabilities":  [
+                         "dep-audit",
+                         "safe-update",
+                         "version-conflict-resolution"
+                     ],
+    "organ":  "ขา-dep",
+    "description":  "Specialist for dependency management and auditing via codecommande.",
+    "name":  "cc-dependency",
+    "role":  "Dependency Manager"
+}

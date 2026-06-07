@@ -1,0 +1,11 @@
+﻿{
+    "capabilities":  [
+                         "pipeline-efficiency",
+                         "build-time-reduction",
+                         "cost-optimization"
+                     ],
+    "organ":  "ขา-ci",
+    "description":  "Specialist for CI/CD pipeline optimization via codecommande.",
+    "name":  "cc-ci-optimizer",
+    "role":  "CI/CD Optimizer"
+}

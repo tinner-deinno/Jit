@@ -1,0 +1,11 @@
+﻿{
+    "capabilities":  [
+                         "version-migration",
+                         "legacy-code-conversion",
+                         "api-update"
+                     ],
+    "organ":  "มือ-migrate",
+    "description":  "Specialist for codebase migration and updates via codecommande.",
+    "name":  "cc-migration",
+    "role":  "Migration Expert"
+}

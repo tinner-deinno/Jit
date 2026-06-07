@@ -1,0 +1,11 @@
+﻿{
+    "capabilities":  [
+                         "test-case-generation",
+                         "edge-case-analysis",
+                         "test-automation"
+                     ],
+    "organ":  "จมูก-test",
+    "description":  "Specialist for intelligent test generation via codecommande.",
+    "name":  "cc-test-gen",
+    "role":  "Test Engineer"
+}

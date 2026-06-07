@@ -1,0 +1,11 @@
+﻿{
+    "capabilities":  [
+                         "automated-code-review",
+                         "compliance-check",
+                         "best-practice-enforcement"
+                     ],
+    "organ":  "เนตร-review",
+    "description":  "Specialist for automated code review and compliance via codecommande.",
+    "name":  "cc-review-bot",
+    "role":  "Compliance Reviewer"
+}

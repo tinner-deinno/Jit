@@ -1,0 +1,11 @@
+﻿{
+    "capabilities":  [
+                         "profiling",
+                         "bottleneck-detection",
+                         "latency-optimization"
+                     ],
+    "organ":  "หัวใจ-perf",
+    "description":  "Specialist for performance profiling and tuning via codecommande.",
+    "name":  "cc-perf-tune",
+    "role":  "Performance Tuner"
+}

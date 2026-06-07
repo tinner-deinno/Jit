@@ -1,0 +1,11 @@
+﻿{
+    "capabilities":  [
+                         "system-design",
+                         "structural-analysis",
+                         "api-contract-gen"
+                     ],
+    "organ":  "กระดูกสันหลัง-cmd",
+    "description":  "Specialist for system architecture and structural commands via codecommande.",
+    "name":  "cc-architect",
+    "role":  "Structural Architect"
+}
