@@ -1,0 +1,11 @@
+﻿{
+    "capabilities":  [
+                         "deep-tracing",
+                         "root-cause-analysis",
+                         "bug-localization"
+                     ],
+    "organ":  "เนตร-bug",
+    "description":  "Specialist for deep bug hunting and analysis via codecommande.",
+    "name":  "cc-bug-hunter",
+    "role":  "Root Cause Analyst"
+}

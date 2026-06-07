@@ -1,0 +1,11 @@
+﻿{
+    "capabilities":  [
+                         "auto-doc-gen",
+                         "knowledge-sync",
+                         "api-documentation"
+                     ],
+    "organ":  "วาจา-doc",
+    "description":  "Specialist for maintaining live documentation via codecommande.",
+    "name":  "cc-doc-sync",
+    "role":  "Documentation Sync"
+}

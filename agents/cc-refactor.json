@@ -1,0 +1,11 @@
+﻿{
+    "capabilities":  [
+                         "code-cleanup",
+                         "tech-debt-reduction",
+                         "pattern-application"
+                     ],
+    "organ":  "มือ-refactor",
+    "description":  "Specialist for automated code refactoring and cleanup via codecommande.",
+    "name":  "cc-refactor",
+    "role":  "Refactoring Expert"
+}

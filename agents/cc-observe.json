@@ -1,0 +1,11 @@
+﻿{
+    "capabilities":  [
+                         "telemetry-analysis",
+                         "behavioral-tracking",
+                         "real-time-monitoring"
+                     ],
+    "organ":  "ตา-observe",
+    "description":  "Specialist for system telemetry and observation via codecommande.",
+    "name":  "cc-observe",
+    "role":  "System Observer"
+}
