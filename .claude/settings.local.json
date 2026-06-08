@@ -40,7 +40,9 @@
       "Bash(tmux capture-pane *)",
       "Bash(curl -s http://localhost:3333/status)",
       "Bash(bun *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(curl -s -X POST http://localhost:47778/api/search -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(curl *)"
     ]
   }
 }

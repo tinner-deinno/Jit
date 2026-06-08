@@ -1,0 +1,51 @@
+[1m→[0m [PRIMARY] ลอง claude/claude-opus-4-8 ...
+I have what I need. Before the brief, the critical thing my verification surfaced: I cross-checked Sonnet's claims against the *actual* `my-Plan.md` and the live repo, and found a structural mismatch Sonnet missed.
+
+---
+
+## Decision Brief — Opus Verification of Sonnet Round 1
+
+**Verdict: CONDITIONAL GO — but REJECT "Event Bus first."** Sonnet's gap-scan is useful; its architecture mapping and top recommendation are wrong against `my-Plan.md`.
+
+**Checklist**
+
+**1. Does oracle-v3 fit as "The Hub"? — NO (role conflict).**
+In `my-Plan.md` §4.1, The Hub = *Ollama Proxy*: a thin state/dashboard proxy explicitly **forbidden from deep processing** ("ห้ามประมวลผลงานเชิงลึก"). `arra-oracle-v3` is "Core orchestration + registry" — the opposite. oracle-v3 is the coordination substrate; the Hub is the proxy layer above it. Sonnet collapsed two distinct roles.
+
+**2. Does maw.js need an Event Bus to be the nervous system? — Chain doesn't hold.**
+`maw.js` doesn't exist (Sonnet's own map labels it "target"). `my-Plan.md` never mentions maw.js; its nervous system is **JSON state-files + the CAIO monitor loop**. So the dependency chain maw→bus→consumers rests on an unbuilt component plus a pub/sub paradigm the plan deliberately *didn't* adopt (it chose state-polling for token savings).
+
+**3. Priority — REORDER.**
+Plan's true foundation is the **Common Data Schema** (§3.1, called "กุญแจสำคัญ"), not an Event Bus. Order: (1) Common Data Schema v1 + state-file convention → (2) Hub/proxy dashboard → (3) Skill Discovery API (cheap, unblocks Office) → (4) WebSocket/event layer last, only if polling proves insufficient.
+
+**4. Build with existing models? — YES.**
+Live gateway = Claude (opus/sonnet) + Ollama only. ⚠️ `my-Plan.md`'s GPT-5.5/Copilot/Codecommand tiers are **not implemented** — the plan is partly aspirational. Repo already ships file-based `network/bus.sh` + `organs/nerve.sh` as a foundation. Schema v1: ~2–3 days (Sonnet drafts, Opus audits). Federation bus (extend bus.sh): ~3–4 days. No new providers needed.
+
+**5. Blockers to ship in 2 weeks.**
+🚩 Hub-vs-Core role conflict (decide first). 🚩 Plan references non-existent providers. 🚩 No Common Data Schema yet = the *real* critical path. ✅ Auth CLI↔Core mismatch — Sonnet's one solid finding.
+
+**Top 3 next steps**
+1. Resolve Hub(proxy) vs Core(oracle-v3) role split; document to Oracle.
+2. Draft **Common Data Schema v1** → delegate to innova, Opus audit.
+3. Fix CLI↔Core auth + ship Skill Discovery API.
+
+**Risk flags:** paradigm drift (pub/sub vs state-driven); plan partly fictional; building federation on unbuilt maw.js is speculative.
+
+*(~360 words)*
+
+---
+
+### สรุป (ไทย)
+
+**ผลตรวจสอบ: ไปต่อได้แบบมีเงื่อนไข — แต่ "ทำ Event Bus ก่อน" ผิด** ครับ
+
+- Sonnet จับ map ผิด: ในแผน "The Hub" คือ **Ollama Proxy** (พร็อกซีบางๆ ห้ามคิดลึก) ไม่ใช่ `arra-oracle-v3` ซึ่งเป็น Core orchestration — คนละบทบาท
+- แผนจริงใช้ **Common Data Schema (ไฟล์ JSON state)** เป็นหัวใจ ไม่ใช่ Event Bus — Sonnet เสนอ paradigm ที่แผนตั้งใจไม่ใช้
+- `maw.js` ยังไม่มีจริง และไม่ได้อยู่ในแผนเลย — เอามาเป็นฐานเสี่ยงเกินไป
+- Gateway จริงมีแค่ Claude + Ollama (GPT-5.5/Copilot ในแผนยังไม่ได้ทำ)
+
+**3 ก้าวถัดไป:** (1) ตัดสินบทบาท Hub vs Core (2) ร่าง Common Data Schema v1 (มอบ innova, Opus ตรวจ) (3) แก้ auth CLI↔Core + ทำ Skill Discovery API
+
+**Blocker จริง:** ยังไม่มี Common Data Schema — นี่คือ critical path ตัวจริง ไม่ใช่ Event Bus
+
+ต้องการให้ผมบันทึก decision นี้ลง Oracle KB และส่ง task ให้ innova ทาง bus เลยไหมครับ?

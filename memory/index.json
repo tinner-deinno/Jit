@@ -1,0 +1,94 @@
+{
+  "entries": {
+    "recent_high_access": {
+      "value": "This is a recent, frequently accessed memory",
+      "set_by": "test",
+      "created_date": "2026-06-07T04:10:02.036223",
+      "last_accessed": "2026-06-08T02:10:02.036234",
+      "access_count": 50,
+      "expiry_date": null,
+      "archived": false,
+      "decay_score": 0.95
+    },
+    "recent_low_access": {
+      "value": "This is a new memory with few accesses",
+      "set_by": "test",
+      "created_date": "2026-06-03T04:10:02.036239",
+      "last_accessed": "2026-06-04T04:10:02.036241",
+      "access_count": 2,
+      "expiry_date": null,
+      "archived": false,
+      "decay_score": 0.7
+    },
+    "old_high_access": {
+      "value": "Old but frequently accessed memory",
+      "set_by": "test",
+      "created_date": "2026-03-10T04:10:02.036243",
+      "last_accessed": "2026-05-29T04:10:02.036245",
+      "access_count": 100,
+      "expiry_date": null,
+      "archived": false,
+      "decay_score": 0.5
+    },
+    "old_low_access": {
+      "value": "Old and rarely accessed - should be archived",
+      "set_by": "test",
+      "created_date": "2026-02-28T04:10:02.036248",
+      "last_accessed": "2026-03-30T04:10:02.036249",
+      "access_count": 1,
+      "expiry_date": null,
+      "archived": true,
+      "decay_score": 0.2,
+      "archived_date": "2026-06-08T07:57:12.991281",
+      "archived_reason": "days_since_access=70"
+    },
+    "expiring_soon": {
+      "value": "This memory will expire soon",
+      "set_by": "test",
+      "created_date": "2026-05-14T04:10:02.036252",
+      "last_accessed": "2026-06-03T04:10:02.036253",
+      "access_count": 10,
+      "expiry_date": "2026-06-11",
+      "archived": false,
+      "decay_score": 0.6
+    },
+    "already_expired": {
+      "value": "This memory has expired",
+      "set_by": "test",
+      "created_date": "2026-04-09T04:10:02.036268",
+      "last_accessed": "2026-05-09T04:10:02.036270",
+      "access_count": 5,
+      "expiry_date": "2026-06-06",
+      "archived": false,
+      "decay_score": 0.3
+    },
+    "already_archived": {
+      "value": "This memory is already archived",
+      "set_by": "test",
+      "created_date": "2026-02-08T04:10:02.036277",
+      "last_accessed": "2026-03-10T04:10:02.036283",
+      "access_count": 3,
+      "expiry_date": null,
+      "archived": true,
+      "archived_date": "2026-05-09T04:10:02.036286",
+      "decay_score": 0.15
+    },
+    "oracle_learning_learning_2026-06-08_test-expiry": {
+      "value": "This is test content that expires",
+      "set_by": "oracle_learn_expires",
+      "created_date": "2026-06-08T07:57:10.319810",
+      "last_accessed": "2026-06-08T07:57:10.319817",
+      "access_count": 0,
+      "expiry_date": "2026-06-15",
+      "archived": false,
+      "decay_score": 1.0,
+      "oracle_id": "learning_2026-06-08_test-expiry",
+      "pattern": "test-expiry",
+      "concepts": [
+        "test",
+        "expiry"
+      ]
+    }
+  },
+  "archived": []
+}

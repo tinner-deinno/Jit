@@ -1,0 +1,5 @@
+- [Health Check False Positives Fixed](health_check_fixes.md) — body-check.sh & soul-check.sh now detect stale heartbeat, queue backlog, strict JSON validation
+- [Limb Test Coverage](test_limbs_coverage.md) — 106 tests for lib.sh, act.sh, speak.sh, index.sh; includes bug found in speak.sh summary fallback
+- [Test Coverage Audit (JIT-001-010)](test_coverage_audit.md) — 22 test stubs, P0 TTL blocker, 14-15h execution, 3 critical bugs
+- [Provider Latency Test](provider_latency_test.md) — eval/provider-latency-test.sh; measures Claude/OpenAI/Ollama response times, graded fast/ok/slow
+- [Provider Baseline (2026-06-08)](provider_test_baseline.md) — Ollama 1805ms, Claude 11092ms; both available; OpenAI/Codex need setup

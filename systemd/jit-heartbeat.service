@@ -1,0 +1,59 @@
+[Unit]
+Description=Jit 24/7 Heartbeat Daemon — จิตหัวใจที่ไม่ล้มลง
+Documentation=https://github.com/mdes-innova/Jit
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=innova
+Group=innova
+
+# Working directory
+WorkingDirectory=/workspaces/Jit
+
+# Environment
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/innova/.bun/bin"
+Environment="JIT_LOG_DIR=/var/log/jit"
+Environment="JIT_STATE_DIR=/var/lib/jit"
+
+# Directories — systemd manages creation and cleanup
+RuntimeDirectory=jit
+RuntimeDirectoryMode=0755
+LogsDirectory=jit
+LogsDirectoryMode=0755
+
+# Log handling — write to journal AND file
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jit-heartbeat
+
+# Size limits — prevent log explosion
+LogRateLimitIntervalSec=30s
+LogRateLimitBurst=1000
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+ReadWritePaths=/var/log/jit /var/lib/jit /workspaces/Jit/memory/heartbeats
+
+# Resource limits
+MemoryMax=512M
+CPUQuota=10%
+
+# Restart policy — restart on failure but NOT on exit code 42 (circuit breaker)
+Restart=on-failure
+RestartPreventExitStatus=42
+RestartSec=10
+
+# Watchdog
+WatchdogSec=60s
+
+# Exec
+ExecStart=/bin/bash /workspaces/Jit/scripts/heartbeat-24h-daemon.sh
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

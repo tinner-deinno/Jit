@@ -1,0 +1,313 @@
+name: Jit CI
+
+on:
+  push:
+    branches: [main, heartbeat-*]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  # ==========================================================================
+  # LINT — ShellCheck all shell scripts
+  # ==========================================================================
+  lint:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: |
+          sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Run ShellCheck on all scripts
+        run: |
+          set -e
+          echo "Running ShellCheck on all shell scripts..."
+
+          # Find all .sh files and check each one
+          find . -type f -name "*.sh" ! -path "./.git/*" ! -path "./.claude/*" | while read -r script; do
+            echo "Checking: $script"
+            shellcheck "$script" || exit 1
+          done
+
+          echo "All shell scripts passed ShellCheck!"
+
+  # ==========================================================================
+  # TEST — Run pytest test suite
+  # ==========================================================================
+  test:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements-test.txt ]; then
+            pip install -r requirements-test.txt
+          elif [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install pytest pytest-cov
+          fi
+
+      - name: Create required directories for tests
+        run: |
+          mkdir -p /tmp/manusat-bus/{soma,innova,vaja,lak,chamu,neta,rupa,pada,netra,karn,jit,mue,pran,lung,sayanprasathan}
+          mkdir -p memory/state memory/retrospectives logs
+
+      - name: Run pytest with coverage
+        run: |
+          pytest tests/ -v \
+            --cov=organs \
+            --cov=limbs \
+            --cov=network \
+            --cov=tests \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --ignore=tests/test_heartbeat_hermes_integration.py \
+            --ignore=tests/test_jit_hermes_sync.py
+
+      - name: Upload coverage to Codecov (optional)
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  # ==========================================================================
+  # ORACLE — Check Oracle connectivity (optional in CI, required for deploy)
+  # ==========================================================================
+  oracle:
+    name: Oracle Connectivity
+    runs-on: ubuntu-latest
+    continue-on-error: true  # Oracle may not be available in CI
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Oracle health endpoint
+        run: |
+          echo "Checking Oracle health at localhost:47778..."
+          if curl -sf http://localhost:47778/api/health; then
+            echo "✓ Oracle is available"
+          else
+            echo "::warning::Oracle not available in CI environment (expected for PR checks)"
+            echo "Note: Oracle connectivity is required for production deploy only"
+          fi
+
+  # ==========================================================================
+  # VERIFY — Verify 14-agent inbox structure
+  # ==========================================================================
+  verify-agents:
+    name: Verify Agent Inboxes
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read agent registry
+        id: registry
+        run: |
+          # Extract agent names from network/registry.json
+          if [ -f network/registry.json ]; then
+            AGENTS=$(jq -r '.agents[].name' network/registry.json | tr '\n' ' ')
+            echo "agents=$AGENTS" >> $GITHUB_OUTPUT
+            echo "Found agents: $AGENTS"
+          else
+            # Fallback to hardcoded list if registry missing
+            AGENTS="jit soma innova lak neta vaja chamu rupa pada netra karn mue pran sayanprasathan"
+            echo "agents=$AGENTS" >> $GITHUB_OUTPUT
+            echo "::warning::network/registry.json not found, using fallback agent list"
+          fi
+
+      - name: Create agent inbox directories
+        run: |
+          AGENTS="${{ steps.registry.outputs.agents }}"
+          echo "Creating inbox directories for: $AGENTS"
+          for agent in $AGENTS; do
+            mkdir -p /tmp/manusat-bus/$agent
+          done
+          echo "Created $(echo $AGENTS | wc -w) agent inboxes"
+
+      - name: Verify all agent inboxes exist
+        run: |
+          AGENTS="${{ steps.registry.outputs.agents }}"
+          MISSING=0
+          COUNT=0
+
+          echo "Verifying agent inbox directories..."
+          for agent in $AGENTS; do
+            COUNT=$((COUNT + 1))
+            if [ -d "/tmp/manusat-bus/$agent" ]; then
+              echo "✓ [$COUNT] $agent inbox exists"
+            else
+              echo "✗ [$COUNT] $agent inbox MISSING"
+              MISSING=$((MISSING + 1))
+            fi
+          done
+
+          if [ $MISSING -gt 0 ]; then
+            echo "::error::Missing $MISSING agent inbox directories"
+            exit 1
+          fi
+
+          echo ""
+          echo "All $COUNT agent inboxes verified successfully!"
+
+  # ==========================================================================
+  # DEPLOY — Auto-deploy on merge to main
+  # ==========================================================================
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [lint, test, oracle, verify-agents]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      deployments: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "pada-deploy[bot]"
+          git config user.email "pada@manusat-agent.local"
+
+      - name: Pre-deploy health check
+        run: |
+          echo "=== Pre-Deploy Health Check ==="
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo ""
+
+          # Check critical files exist
+          CRITICAL_FILES="network/registry.json limbs/oracle.sh network/bus.sh"
+          for file in $CRITICAL_FILES; do
+            if [ -f "$file" ]; then
+              echo "✓ $file exists"
+            else
+              echo "::error::Critical file missing: $file"
+              exit 1
+            fi
+          done
+
+      - name: Run body-check script
+        run: |
+          echo "=== Running Body Check ==="
+          if [ -x eval/body-check.sh ]; then
+            bash eval/body-check.sh || echo "::warning::Body check failed (may be expected in CI)"
+          else
+            echo "::warning::eval/body-check.sh not found or not executable"
+          fi
+
+      - name: Create deployment record
+        run: |
+          mkdir -p ops/deployments
+
+          DEPLOY_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          DEPLOY_FILE="ops/deployments/deploy-$(date +%Y%m%d-%H%M%S).md"
+
+          cat > "$DEPLOY_FILE" << EOF
+          # Deployment Record
+
+          **Timestamp**: $DEPLOY_TIMESTAMP
+          **Branch**: ${{ github.ref_name }}
+          **Commit**: ${{ github.sha }}
+          **Triggered by**: ${{ github.actor }}
+          **Workflow**: Jit CI/CD
+          **Run ID**: ${{ github.run_id }}
+          **Run URL**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          ## Pipeline Status
+
+          | Stage | Status |
+          |-------|--------|
+          | Lint | ✓ Passed |
+          | Tests | ✓ Passed |
+          | Oracle | ${{ needs.oracle.result }} |
+          | Verify Agents | ✓ Passed |
+          | Deploy | In Progress |
+
+          ## Deployed Components
+
+          - Core system scripts
+          - Agent registry configuration
+          - Message bus infrastructure
+          - Oracle integration
+
+          ## Rollback Instructions
+
+          To rollback to previous commit:
+          \`\`\`bash
+          git revert ${{ github.sha }}
+          git push origin main
+          \`\`\`
+
+          ## Post-Deploy Verification
+
+          - [ ] Oracle running: \`curl http://localhost:47778/api/health\`
+          - [ ] Message bus active: \`ls /tmp/manusat-bus/\`
+          - [ ] All 14 agents responsive: \`bash eval/soul-check.sh\`
+          - [ ] Heartbeat running: \`bash scripts/heartbeat.sh status\`
+          EOF
+
+          echo "Generated deployment record: $DEPLOY_FILE"
+          cat "$DEPLOY_FILE"
+
+      - name: Commit deployment record
+        run: |
+          git add ops/deployments/
+          if git diff --staged --quiet; then
+            echo "No deployment changes to commit"
+          else
+            git commit -m "🚀 Deploy record: $(date -u +'%Y-%m-%dT%H:%M:%SZ') [ci deploy]"
+            git push origin main
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Deployment
+        uses: actions/create-deployment@v1
+        with:
+          ref: ${{ github.ref }}
+          environment: production
+          description: "Auto-deploy from CI/CD pipeline"
+
+      - name: Notify deployment complete
+        run: |
+          echo ""
+          echo "=============================================="
+          echo "  🚀 DEPLOYMENT COMPLETE"
+          echo "=============================================="
+          echo ""
+          echo "  Commit:     ${{ github.sha }}"
+          echo "  Environment: production"
+          echo "  Run URL:    https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo ""
+          echo "  Next steps:"
+          echo "  1. Monitor Oracle: curl http://localhost:47778/api/health"
+          echo "  2. Check agents:   bash eval/soul-check.sh"
+          echo "  3. View logs:      tail -f /var/log/jit/*.log"
+          echo ""

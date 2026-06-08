@@ -1,0 +1,60 @@
+[Unit]
+Description=Jit 24/7 Heartbeat Monitor (จิต หัวใจ)
+After=network.target
+Wants=network-online.target
+StartLimitInterval=300
+StartLimitBurst=3
+OnFailure=notify-failure@%n.service
+
+[Service]
+Type=simple
+User=codespace
+Group=codespace
+WorkingDirectory=/workspaces/Jit
+
+# Environment setup
+Environment="PATH=/home/codespace/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+EnvironmentFile=/workspaces/Jit/.secrets/ollama.env
+
+# Runtime directories (auto-created with proper permissions)
+RuntimeDirectory=jit
+RuntimeDirectoryMode=0755
+
+# Log directories (systemd manages rotation)
+LogsDirectory=jit
+LogsDirectoryMode=0755
+LogsDirectoryMaximumSize=200M
+
+# Main heartbeat loop
+ExecStart=/bin/bash -c 'cd /workspaces/Jit && exec bash scripts/heartbeat-24h-daemon.sh'
+
+# Watchdog configuration — liveness probe
+WatchdogSec=30
+RuntimeMaxSec=86400
+
+# Restart policy
+Restart=always
+RestartSec=10
+RestartPreventExitStatus=42
+StartLimitAction=reboot
+
+# Process management
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jit-heartbeat
+KillMode=process
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+# Resource limits
+MemoryLimit=512M
+CPUQuota=50%
+
+# Security hardening
+ProtectSystem=strict
+ReadWritePaths=/workspaces/Jit /tmp /var/log/jit
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

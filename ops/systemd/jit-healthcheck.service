@@ -1,0 +1,20 @@
+[Unit]
+Description=Jit Health Check — Verify Hermes & Heartbeat liveness
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=codespace
+Group=codespace
+WorkingDirectory=/workspaces/Jit
+
+Environment="PATH=/home/codespace/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="HERMES_HEALTH_URL=http://localhost:47780/healthz"
+Environment="HEARTBEAT_STATUS_FILE=/tmp/innova-discord-heartbeat.status"
+
+ExecStart=/bin/bash /workspaces/Jit/ops/systemd/jit-healthcheck.sh
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jit-healthcheck

@@ -1,0 +1,12 @@
+{
+  "value": "Old and rarely accessed - should be archived",
+  "set_by": "test",
+  "created_date": "2026-02-28T04:10:02.036248",
+  "last_accessed": "2026-03-30T04:10:02.036249",
+  "access_count": 1,
+  "expiry_date": null,
+  "archived": true,
+  "decay_score": 0.2,
+  "archived_date": "2026-06-08T07:57:12.991281",
+  "archived_reason": "days_since_access=70"
+}
