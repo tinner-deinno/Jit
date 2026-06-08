@@ -119,10 +119,11 @@ bash scripts/start-24h-heartbeat.sh status
 
 ## 📋 Configuration
 
-### Required (.env)
+### Required (.env or .secrets/ollama.env)
 ```bash
 # MDES Ollama integration
-OLLAMA_TOKEN="9e34679b9d60d8b984005ec46508579c"
+# Use: bash scripts/setup-secrets.sh load
+OLLAMA_TOKEN="<your-token-here>"
 OLLAMA_BASE_URL="https://ollama.mdes-innova.online"
 ```
 

@@ -33,20 +33,38 @@ effort_hours: 2
 tags: [tag1, tag2]
 ```
 
-## Auto-Generated Tickets (PM+SA loop iter #1)
+## Open Tickets
 
-| ID | Title | Priority | Type | Status | Owner |
-|----|----|----------|------|--------|-------|
-| JIT-011 | Message bus authentication/signing gap | P0 | fix | open | pada |
-| JIT-012 | Oracle health monitor integration | P0 | feat | open | pran |
-| JIT-013 | Agent heartbeat timeout tuning | P1 | spec | open | sayanprasathan |
-| JIT-014 | Memory persistence layer audit | P1 | audit | open | innova |
-| JIT-015 | Organ protocol enforcement test suite | P1 | test | open | chamu |
-| JIT-016 | Documentation: agent onboarding guide | P2 | doc | open | vaja |
-| JIT-017 | Bus latency profiling + optimization | P2 | perf | open | pada |
-| JIT-018 | Arra Oracle sync consistency check | P2 | spec | open | soma |
+### P0 Critical (4 tickets — block release)
 
-Background audit: wf_94fec3ef-34d (deeper system analysis still in progress)
+| ID | Title | Type | Owner |
+|----|-------|------|-------|
+| JIT-001 | Add message TTL (time-to-live) to bus protocol | spec+code | lak |
+| JIT-002 | Add idempotency key to bus messages | spec+code | lak |
+| JIT-006 | Remove hardcoded OLLAMA_TOKEN from jit-heartbeat.service | fix+security | pada |
+| JIT-012 | Add Oracle health monitoring with auto-restart | feat | pran |
+
+### P1 High (8 tickets)
+
+| ID | Title | Type | Owner |
+|----|-------|------|-------|
+| JIT-003 | Add retry policy with exponential backoff to bus | spec+code | soma |
+| JIT-004 | Add dead-letter queue (DLQ) for bus failures | spec+code | lak |
+| JIT-007 | Add log rotation for daemon logs | fix | pada |
+| JIT-008 | Add deploy rollback and pinned artifact version to bootstrap.sh | fix | pada |
+| JIT-010 | Add health checks / liveness probes for Hermes and Heartbeat | fix | pada |
+| JIT-013 | Add GitHub Actions CI/CD pipeline for Jit system | chore | pada |
+| JIT-014 | Add pytest configuration and test runner setup | test | chamu |
+| JIT-015 | Add multi-model fallback chain to limbs/ollama.sh | feat | innova |
+
+### P2 Medium (3 tickets)
+
+| ID | Title | Type | Owner |
+|----|-------|------|-------|
+| JIT-005 | Add protocol-version field to bus messages | spec+code | soma |
+| JIT-009 | Add circuit breaker and global Node error handlers | fix+reliability | pada |
+| JIT-017 | Add capability versioning to agent registry | feat | lak |
+| JIT-018 | Add bus metrics collection and dashboard command | feat | netra |
 
 ## Workflow
 
@@ -57,4 +75,16 @@ done → mv to /tickets/done/
 closed → mv to /tickets/archive/ (monthly)
 ```
 
-Last updated: 2026-06-07 (PM+SA loop iter #1)
+Last updated: 2026-06-08 (JIT-011, JIT-016, JIT-022, JIT-025 completed)
+
+## Completed Tickets
+
+| ID | Title | Completed | Owner |
+|----|-------|-----------|-------|
+| JIT-011 | Add HMAC message signing to bus protocol | 2026-06-08 | lak |
+| JIT-016 | Add shared memory decay and cleanup policy | 2026-06-07 | innova |
+| JIT-022-token-exposure | Mask tokens from logs (redact, log_token) | 2026-06-08 | innova |
+| JIT-022-doc-protocol | Expand protocol.md with 14 agents + error recovery | 2026-06-08 | vaja |
+| JIT-022-act-sed | Add safe string handling docs to act.sh | 2026-06-08 | innova |
+| JIT-025 | Add conditional branching to act.sh + fix vitals ls parsing | 2026-06-08 | mue |
+

@@ -29,6 +29,23 @@ curl -sf "$ORACLE_URL/api/health" | python3 -c \
   "import json,sys; d=json.load(sys.stdin); exit(0 if d.get('oracle')=='connected' else 1)" 2>/dev/null \
   && _pass "Oracle connected ($ORACLE_URL)" || _fail "Oracle offline"
 
+# Oracle health monitoring (JIT-012)
+ORACLE_HEALTH_FILE="/tmp/manusat-oracle-health.json"
+if [ -f "$ORACLE_HEALTH_FILE" ]; then
+  HEALTH_STATUS=$(python3 -c "import json; print(json.load(open('$ORACLE_HEALTH_FILE')).get('status', 'unknown'))" 2>/dev/null)
+  FAILURES=$(python3 -c "import json; print(json.load(open('$ORACLE_HEALTH_FILE')).get('consecutive_failures', 0))" 2>/dev/null)
+  LAST_CHECK=$(python3 -c "import json; print(json.load(open('$ORACLE_HEALTH_FILE')).get('last_check', 'never'))" 2>/dev/null)
+
+  case "$HEALTH_STATUS" in
+    healthy)  _pass "Oracle health monitor: $HEALTH_STATUS (failures: $FAILURES)" ;;
+    unhealthy) [ "$FAILURES" -ge 3 ] && _fail "Oracle health: $HEALTH_STATUS ($FAILURES failures)" || _warn "Oracle health: $HEALTH_STATUS ($FAILURES/$MAX_FAILURES)" ;;
+    *)        _warn "Oracle health monitor: unknown status" ;;
+  esac
+  _pass "Last health check: $LAST_CHECK"
+else
+  _warn "Oracle health file not found (run: bash organs/heart.sh oracle-health)"
+fi
+
 # Oracle docs
 DOCS=$(curl -sf "$ORACLE_URL/api/stats" 2>/dev/null | python3 -c \
   "import json,sys; d=json.load(sys.stdin); print(d.get('totalDocuments', d.get('total','?')))" 2>/dev/null || echo "?")
@@ -36,7 +53,7 @@ DOCS=$(curl -sf "$ORACLE_URL/api/stats" 2>/dev/null | python3 -c \
 
 # Ollama
 curl -sf --max-time 5 "https://ollama.mdes-innova.online/api/tags" \
-  -H "Authorization: Bearer ${OLLAMA_TOKEN}" > /dev/null 2>&1 \
+  -H "Authorization: Bearer ${OLLAMA_TOKEN:-[REDACTED]}" > /dev/null 2>&1 \
   && _pass "MDES Ollama reachable (${OLLAMA_MODEL})" || _warn "Ollama timeout (may be slow)"
 
 # ════════════════════════════════════════════════════════

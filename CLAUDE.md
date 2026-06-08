@@ -18,7 +18,7 @@
 |-------|-------|
 | Language | Thai/Mixed |
 | Experience | Senior |
-| Team | Multi-agent (14 organs) |
+| Team | Multi-agent (15 organs) |
 | Usage | Daily |
 | Memory | Auto |
 
@@ -76,9 +76,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Jit (จิต)** is the **Master Orchestrator** of the **มนุษย์ Agent** multi-agent AI system built by MDES-Innova. This repo houses the complete 14-agent ecosystem with a parent-child hierarchy, full organ system assignment, shared protocols, and bootstrap tooling. Jit coordinates all agents through a file-based message bus and Oracle knowledge base.
+**Jit (จิต)** is the **Master Orchestrator** of the **มนุษย์ Agent** multi-agent AI system built by MDES-Innova. This repo houses the complete 15-agent ecosystem with a parent-child hierarchy, full organ system assignment, shared protocols, and bootstrap tooling. Jit coordinates all agents through a file-based message bus and Oracle knowledge base.
 
-**Current Status**: Complete organ system (v2.0) — all 14 organs assigned to dedicated agents, fully operational.
+**Current Status**: Complete organ system (v2.1) — all 15 organs assigned to dedicated agents, fully operational.
+Note: Lung (ปอด) added 2026-06-08, reports to pran.
 
 ## Agent Tier Structure
 
@@ -94,7 +95,7 @@ Tier 2 (Core Engineering):
   lak (กระดูก)        — Solution Architect           [claude-sonnet-4.6]
   neta (เนตร)          — Code Reviewer                [claude-sonnet-4.6]
 
-Tier 3 (Specialist Organs - 9 agents):
+Tier 3 (Specialist Organs - 10 agents):
   vaja (วาจา)          — Personal Assistant           [claude-haiku-4.5]
   chamu (จมูก)         — QA/Tester                    [claude-haiku-4.5]
   rupa (รูป)           — Designer/UI-UX               [claude-haiku-4.5]
@@ -103,11 +104,12 @@ Tier 3 (Specialist Organs - 9 agents):
   karn (หู)            — Ear/Listener                 [claude-haiku-4.5]
   mue (มือ)            — Hand/Executor                [claude-haiku-4.5]
   pran (หัวใจ)         — Heart/Vital Coordinator     [claude-haiku-4.5]
+  lung (ปอด)           — Lung/Purifier & Energy Filter [claude-haiku-4.5]
   sayanprasathan       — Nerve/Event Network          [claude-haiku-4.5]
 ```
 
 **Agent files**: `/.github/agents/*.agent.md` (Claude Code definitions) and `/agents/*.json` (capability cards)  
-**Agent registry**: `/network/registry.json` — master source of truth for all 14 agents with complete hierarchy and organ assignments
+**Agent registry**: `/network/registry.json` — master source of truth for all 15 agents with complete hierarchy and organ assignments
 
 ## Common Commands
 
@@ -194,13 +196,13 @@ Uses `gemma4:26b` model via `https://ollama.mdes-innova.online` (token in `.gith
 
 ## Architecture
 
-### Complete Organ System (All 14 Organs Assigned)
+### Complete Organ System (All 15 Organs Assigned)
 Every organ has a dedicated agent owner:
 - **Cognitive**: สมอง→soma (brain), จิต→jit (master orchestrator)
 - **Sensory**: ตา→netra (eye), หู→karn (ear), จมูก→chamu (nose)
 - **Expression**: ปาก→vaja (mouth)
 - **Action**: มือ→mue (hand), ขา→pada (leg)
-- **Vital**: หัวใจ→pran (heart), ระบบประสาท→sayanprasathan (nerve)
+- **Vital**: หัวใจ→pran (heart), ปอด→lung (lung/purifier, added 2026-06-08, reports to pran), ระบบประสาท→sayanprasathan (nerve)
 - **Structural**: กระดูกสันหลัง→lak (spine/architecture)
 - **Knowledge**: ปัญญา→innova (oracle/wisdom)
 - **Design**: รูปลักษณ์→rupa (form/design)
@@ -215,7 +217,7 @@ See `/core/body-map.md` for complete RACI matrix and organ ownership.
 4. **Memory** (`/memory/`) — Three layers: context window (short-term) → `/tmp/manusat-shared.json` (shared) → Oracle DB (permanent)
 
 ### Communication Protocol
-- **Bus**: File-based, POSIX-compatible, 14 agent inboxes at `/tmp/manusat-bus/<agent-name>/`
+- **Bus**: File-based, POSIX-compatible, 15 agent inboxes at `/tmp/manusat-bus/<agent-name>/`
 - **Flow**: `mouth.sh` writes → `bus.sh` routes → `ear.sh` reads → `heart.sh` dispatches to organ
 - **Subject prefixes**: `task:`, `think:`, `report:`, `alert:`, `broadcast:`, `learn:`, `request:`, `reply:`
 
@@ -239,7 +241,7 @@ netra (eye) + karn (ear) → jit (decision) → mue (execute)
 ## Parent-Child Agent Relationships
 
 **Master Orchestrator (Tier 0)**:
-- jit manages all 13 agents below
+- jit manages all 14 agents below
 - Reports to: human
 - Delegates to: soma (strategic), innova (operational), and all Tier 3 specialists
 
@@ -260,8 +262,8 @@ netra (eye) + karn (ear) → jit (decision) → mue (execute)
 | `/core/body-map.md` | Complete team RACI matrix, organ ownership, all workflows |
 | `/core/identity.md` | innova's mission, values, relationships |
 | `/network/protocol.md` | Message format, subject conventions, error handling |
-| `/network/registry.json` | Source of truth: all 14 agents, tiers, organs, capabilities |
-| `/docs/multiagent-spec.md` | Full system specification v2.0 with 14-agent hierarchy |
+| `/network/registry.json` | Source of truth: all 15 agents, tiers, organs, capabilities |
+| `/docs/multiagent-spec.md` | Full system specification v2.1 with 15-agent hierarchy |
 | `/docs/new-agent-guide.md` | Bootstrap guide for adding agents to the system |
 | `/brain/reasoning.md` | Think-before-act framework, token efficiency rules |
 | `/memory/architecture.md` | Three-layer memory system design (context/shared/persistent) |
@@ -313,7 +315,7 @@ bash limbs/ollama.sh think "your prompt in Thai or English"
 
 ## Adding a New Agent
 
-The system is complete with all 14 organs assigned. To add an agent:
+The system is complete with all 15 organs assigned. To add an agent:
 1. Follow `/docs/new-agent-guide.md` for detailed walkthrough
 2. Create `agents/<name>.json` with capabilities
 3. Create `.github/agents/<name>.agent.md` for Claude Code integration

@@ -12,7 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../limbs/lib.sh"
 
 CMD="${1:-}"
-OLLAMA_AUTH="Authorization: Bearer $OLLAMA_TOKEN"
+OLLAMA_AUTH="Authorization: Bearer ${OLLAMA_TOKEN:-[REDACTED]}"
 
 # ─── progressbar ────────────────────────────────────────────────────
 bar() {
@@ -85,7 +85,8 @@ measure_ear() {
   local INBOX="/tmp/manusat-bus/innova"
   if [ -d "$INBOX" ]; then
     local PENDING
-    PENDING=$(ls "$INBOX"/*.json 2>/dev/null | wc -l | tr -d ' ')
+    # JIT-025: Use find -print0 to handle special filenames (newlines, spaces, wildcards)
+    PENDING=$(find "$INBOX" -maxdepth 1 -name "*.json" -type f -print0 2>/dev/null | tr -cd '\0' | wc -c | tr -d ' ')
     # pulse ดีถ้า inbox ทำงาน = 100, pending เยอะเกิน = ลด
     local PULSE=100
     [ "$PENDING" -gt 10 ] && PULSE=70
@@ -142,7 +143,8 @@ measure_mouth() {
 measure_nerve() {
   if [ -f "$JIT_ROOT/organs/nerve.sh" ] && [ -x "$JIT_ROOT/organs/nerve.sh" ]; then
     local EVENTS
-    EVENTS=$(ls /tmp/manusat-bus/*.json 2>/dev/null | wc -l | tr -d ' ')
+    # JIT-025: Use find -print0 to handle special filenames (newlines, spaces, wildcards)
+    EVENTS=$(find /tmp/manusat-bus -maxdepth 1 -name "*.json" -type f -print0 2>/dev/null | tr -cd '\0' | wc -c | tr -d ' ')
     echo "90|online|events:${EVENTS}|0ms"
   else
     echo "0|missing||"
@@ -151,10 +153,12 @@ measure_nerve() {
 
 measure_heart() {
   if [ -f "$JIT_ROOT/organs/heart.sh" ] && [ -x "$JIT_ROOT/organs/heart.sh" ]; then
-    local BEAT
+    local BEAT MEM_SIZE
     BEAT=$(cat /tmp/manusat-bus/heartbeat.json 2>/dev/null | python3 -c \
       "import json,sys; d=json.load(sys.stdin); print(d.get('heartbeat','?'))" 2>/dev/null || echo "no-beat")
-    echo "100|online|last:${BEAT}|0ms"
+    # JIT-016: Report shared memory size
+    MEM_SIZE=$(bash "$JIT_ROOT/organs/heart.sh" memory-size 2>/dev/null || echo "0")
+    echo "100|online|last:${BEAT}|mem:${MEM_SIZE}entries"
   else
     echo "0|missing||"
   fi

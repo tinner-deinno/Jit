@@ -4,21 +4,25 @@ After=network.target git-daemon.service
 Wants=network-online.target
 StartLimitInterval=300
 StartLimitBurst=3
+OnFailure=notify-failure@%n.service
 
 [Service]
-Type=simple
+Type=notify
+WatchdogSec=60
+NotifyAccess=main
 User=codespace
 WorkingDirectory=/workspaces/Jit
 Environment="PATH=/home/codespace/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-Environment="OLLAMA_TOKEN=9e34679b9d60d8b984005ec46508579c"
-Environment="OLLAMA_BASE_URL=https://ollama.mdes-innova.online"
+EnvironmentFile=/workspaces/Jit/.secrets/ollama.env
 
 # Main heartbeat loop
 ExecStart=/bin/bash -c 'cd /workspaces/Jit && bash scripts/heartbeat-24h-daemon.sh'
+ExecStartPost=/usr/bin/systemd-notify --ready
 
 # Restart policy
 Restart=always
 RestartSec=10
+RestartPreventExitStatus=42
 StartLimitAction=reboot
 
 # Process management

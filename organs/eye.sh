@@ -58,7 +58,38 @@ case "$CMD" in
     if [ -z "$URL" ]; then err "ต้องระบุ URL"; exit 1; fi
     log_action "EYE_WEB" "$URL"
     step "ตา ดูเว็บ: $URL"
-    curl -sL "$URL" 2>/dev/null | python3 -c "
+
+    # Fetch with timeout and error logging
+    CONTENT=$(curl -sL --max-time 10 "$URL" 2>/tmp/curl-error.log)
+    CURL_STATUS=$?
+
+    # Verbose debug output if ORACLE_DEBUG is set
+    if [ "${ORACLE_DEBUG:-}" = "true" ]; then
+      info "[DEBUG] curl exit status: $CURL_STATUS"
+      if [ -s /tmp/curl-error.log ]; then
+        info "[DEBUG] curl stderr: $(cat /tmp/curl-error.log)"
+      fi
+    fi
+
+    # Check curl exit status with helpful error messages
+    if [ $CURL_STATUS -ne 0 ]; then
+      CURL_ERR=$(cat /tmp/curl-error.log 2>/dev/null)
+      case $CURL_STATUS in
+        6) err "curl failed: Could not resolve host (exit $CURL_STATUS) — $URL" ;;
+        7) err "curl failed: Connection refused (exit $CURL_STATUS) — $URL" ;;
+        28) err "curl failed: Timeout after 10s (exit $CURL_STATUS) — $URL" ;;
+        *) err "curl failed (exit $CURL_STATUS): $CURL_ERR" ;;
+      esac
+      exit 1
+    fi
+
+    # Check for empty content
+    if [ -z "$CONTENT" ]; then
+      warn "URL returned empty content: $URL"
+      exit 0
+    fi
+
+    echo "$CONTENT" | python3 -c "
 import sys, re
 html = sys.stdin.read()
 # strip tags

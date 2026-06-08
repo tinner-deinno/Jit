@@ -80,9 +80,23 @@ case "$CMD" in
       ((CURRENT++))
       CMD_STEP="$1"
       shift
+
+      # Validate command characters before execution (prevent injection)
+      # Block dangerous patterns: backticks, $(), <>, backslash
+      case "$CMD_STEP" in
+        *'`'*|*'$('*|*'<'*|*'>'*|*'\\'*)
+          echo -e "\r${RED}[SKIP]${RESET} ✗ ขั้น $CURRENT/$TOTAL: $CMD_STEP"
+          err "Dangerous characters not allowed: $CMD_STEP"
+          log_action "LEG_STEP_BLOCKED" "Injection attempt: $CMD_STEP"
+          continue
+          ;;
+      esac
+
       PCT=$(( (CURRENT * 100) / TOTAL ))
       echo -ne "\r${CYAN}[$PCT%]${RESET} ขั้น $CURRENT/$TOTAL: $CMD_STEP"
-      eval "$CMD_STEP" > /tmp/leg-step-${CURRENT}.log 2>&1
+
+      # Use bash -c instead of direct eval for safer execution
+      bash -c "$CMD_STEP" > /tmp/leg-step-${CURRENT}.log 2>&1
       if [ $? -eq 0 ]; then
         echo -e "\r${GREEN}[$PCT%]${RESET} ✓ ขั้น $CURRENT/$TOTAL: $CMD_STEP"
       else

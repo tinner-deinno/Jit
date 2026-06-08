@@ -212,6 +212,19 @@ _do_pulse() {
   _log_pulse_locally "OUT #$PULSE_COUNT mode=$MODE"
 
   # ═══════════════════════════════════════════════════════════════
+  # Memory Decay Archive Task (ทุก 10 pulses ≈ 2.5 ชม. ที่ normal mode)
+  # ═══════════════════════════════════════════════════════════════
+  if [ $(( PULSE_COUNT % 10 )) -eq 0 ]; then
+    echo -ne "  🧹 memory decay check "
+    if [ -x "$JIT_ROOT/mind/memory-decay.sh" ]; then
+      ARCHIVED_COUNT=$(bash "$JIT_ROOT/mind/memory-decay.sh" archive 2>&1 | grep "Archived" | awk '{print $2}' || echo "0")
+      printf "done (archived: %s entries)\n" "${ARCHIVED_COUNT:-0}"
+    else
+      printf "skipped (script not found)\n"
+    fi
+  fi
+
+  # ═══════════════════════════════════════════════════════════════
   # สรุป Pulse (local state only — no git commit, no push)
   # ═══════════════════════════════════════════════════════════════
   echo ""
@@ -227,6 +240,7 @@ Mode: $MODE
 Pending task msgs: $PENDING
 Repo changes: $CHANGES
 Next interval: ${PULSE_INTERVAL}s
+Memory decay check: $(( PULSE_COUNT % 10 == 0 ? 1 : 0 ))
 EOF
 
   log_action "HEARTBEAT_PULSE" \

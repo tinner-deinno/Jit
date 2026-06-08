@@ -69,44 +69,43 @@ send_discord_webhook() {
         emoji="🚨"
     fi
     
-    # Build Discord embed
-    local payload=$(cat <<EOF
-{
-  "content": "$emoji **Heartbeat #$BEAT_NUMBER** - $STATUS",
-  "embeds": [{
-    "title": "Jit Heartbeat #$BEAT_NUMBER",
-    "description": "$MESSAGE",
-    "color": $([ "$STATUS" = "ok" ] && echo "65280" || echo "16711680"),
-    "fields": [
-      {
-        "name": "Time",
-        "value": "$timestamp",
-        "inline": true
-      },
-      {
-        "name": "Status",
-        "value": "$STATUS",
-        "inline": true
-      },
-      {
-        "name": "Latest Commit",
-        "value": "[\`$commit_hash\`]($commit_url)",
-        "inline": false
-      },
-      {
-        "name": "Commit Message",
-        "value": "$commit_msg",
-        "inline": false
-      }
-    ],
-    "footer": {
-      "text": "Jit Agent System",
-      "icon_url": "https://avatars.githubusercontent.com/u/123456789?s=32"
-    }
-  }]
-}
-EOF
-)
+    # Build Discord embed with safe JSON encoding (prevents JSON injection)
+    # All user-controlled strings are escaped via jq to handle quotes, newlines, etc.
+    local color_code
+    if [[ "$STATUS" = "ok" ]]; then
+        color_code="65280"
+    else
+        color_code="16711680"
+    fi
+
+    local payload
+    payload=$(jq -n --arg emoji "$emoji" \
+                   --arg beat "$BEAT_NUMBER" \
+                   --arg status "$STATUS" \
+                   --arg msg "$MESSAGE" \
+                   --arg ts "$timestamp" \
+                   --arg hash "$commit_hash" \
+                   --arg url "$commit_url" \
+                   --arg commit_msg "$commit_msg" \
+                   --arg color "$color_code" \
+    '{
+      content: "\($emoji) **Heartbeat #\($beat)** - \($status)",
+      embeds: [{
+        title: "Jit Heartbeat #\($beat)",
+        description: $msg,
+        color: ($color | tonumber),
+        fields: [
+          { name: "Time", value: $ts, inline: true },
+          { name: "Status", value: $status, inline: true },
+          { name: "Latest Commit", value: "[`\($hash)`](\($url))", inline: false },
+          { name: "Commit Message", value: $commit_msg, inline: false }
+        ],
+        footer: {
+          text: "Jit Agent System",
+          icon_url: "https://avatars.githubusercontent.com/u/123456789?s=32"
+        }
+      }]
+    }')
     
     # Send to Discord
     local response=$(curl -s -X POST "$DISCORD_WEBHOOK" \

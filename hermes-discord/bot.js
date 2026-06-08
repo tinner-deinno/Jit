@@ -41,6 +41,7 @@ const MAX_HISTORY           = 30;
 const SUB_AGENT_NAME        = 'อนุ';
 const PARENT_AGENT_NAME     = 'innova';
 const SUB_AGENT_ROLE        = 'บริกร Discord sub-agent ที่ตอบคำถามภาษาไทยด้วยสไตล์มนุษย์';
+const HEALTH_PORT           = Number(process.env.HEALTH_PORT || '47780');
 
 let memoryStore = { channels: {}, users: {}, lastAutoEngage: {}, timeSyncOffset: 0 };
 
@@ -597,8 +598,10 @@ function startBot() {
     }
   }
 
+  clientGlobal = client;
+
   client.once('ready', async function() {
-    console.log('✅ อนุ Discord Bot พร้อมแล้ว! Logged in as: ' + client.user.tag);
+    console.log('✅ อนุ Discord Bot พรพร้อมแล้ว! Logged in as: ' + client.user.tag);
     console.log('   Model: ' + OLLAMA_MODEL + ' via ' + OLLAMA_URL);
     if (DISCORD_GUILD_ID) {
       console.log('   Registering commands in guild:', DISCORD_GUILD_ID);
@@ -606,6 +609,10 @@ function startBot() {
       console.log('   Using global slash commands (may take time to propagate)');
     }
     await registerSlashCommands();
+
+    // Start health check endpoint for liveness probe
+    startHealthServer();
+
     const statusChannel = await resolveStatusChannel(client);
     if (statusChannel) {
       console.log('   Heartbeat status will be reported to channel:', statusChannel.id);
@@ -763,6 +770,55 @@ function testOllama(cb) {
   const testMsg = 'สวัสดีครับ ทดสอบการเชื่อมต่อ Ollama';
   callOllama(testMsg, '__test__', cb);
 }
+
+// ── Health Check Endpoint (Liveness Probe) ────────────────────────
+let healthServer = null;
+function startHealthServer() {
+  healthServer = http.createServer((req, res) => {
+    if (req.url === '/healthz') {
+      res.writeHead(200);
+      res.end('ok');
+    } else {
+      res.writeHead(404);
+      res.end('not found');
+    }
+  });
+  healthServer.listen(HEALTH_PORT, () => {
+    console.log(`✅ Health endpoint listening on port ${HEALTH_PORT} (/healthz)`);
+  });
+  healthServer.on('error', (err) => {
+    console.warn('⚠️  Health server error:', err.message);
+  });
+}
+
+// ── Discord alert helper ─────────────────────────────────────────
+function sendDiscordAlert(eventType, error) {
+  if (!DISCORD_STATUS_CHANNEL_ID || !clientGlobal) {
+    console.warn('⚠️  Cannot send Discord alert: channel or client not available');
+    return;
+  }
+  const errorMsg = error && error.message ? error.message : String(error);
+  const stack = error && error.stack ? error.stack : '';
+  const alertMsg = `🚨 **CRITICAL ERROR**\n**Type**: ${eventType}\n**Error**: ${errorMsg.slice(0, 500)}${stack ? '\n**Stack**: \`\`\`${stack.slice(0, 1000)}\`\`\`` : ''}`;
+  clientGlobal.channels.fetch(DISCORD_STATUS_CHANNEL_ID).then(ch => {
+    if (ch && typeof ch.send === 'function') ch.send(alertMsg).catch(() => {});
+  }).catch(() => {});
+}
+
+// ── Global error handlers (JIT-009 circuit breaker) ───────────────
+let clientGlobal = null;
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('UNHANDLED REJECTION:', reason);
+  sendDiscordAlert('unhandledRejection', reason);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err);
+  sendDiscordAlert('uncaughtException', err);
+  process.exit(1);
+});
 
 // ── Entry point ───────────────────────────────────────────────────
 if (process.argv[2] === '--test-ollama') {

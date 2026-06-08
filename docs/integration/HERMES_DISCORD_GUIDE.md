@@ -101,7 +101,8 @@ systemctl status hermes-discord
 ```bash
 # Required for bot to work
 DISCORD_TOKEN="your_bot_token_here"
-OLLAMA_TOKEN="9e34679b9d60d8b984005ec46508579c"
+# Use: bash scripts/setup-secrets.sh load
+OLLAMA_TOKEN="<your-token-here>"
 
 # Optional: Discord channels for reports
 DISCORD_GUILD_ID=""              # Server ID (optional)

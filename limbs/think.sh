@@ -82,11 +82,17 @@ case "$CMD" in
     echo -e "${BOLD}│${RESET}   5. บันทึกสิ่งที่เรียนรู้กลับ Oracle"
     echo -e "${BOLD}└──────────────────────────────────────────────────────┘${RESET}"
 
+    # CoT logging: Step 1 — Understand & Plan
+    COT_SUBSTEPS='["understand","search_oracle","plan_approach"]'
+    COT_QUERIES="[]"
     if oracle_ready; then
       echo ""
       step "Oracle บอกว่าเกี่ยวกับ '$TASK':"
       oracle_search "$TASK" 2
+      COT_QUERIES='["task_analysis"]'
     fi
+    cot_log "วางแผน: $TASK" "1" "$COT_SUBSTEPS" "$COT_QUERIES" "proceed_with_plan"
+
     log_action "PLAN[$_THINK_AGENT]" "$TASK"
     echo ""
     ;;
@@ -100,8 +106,25 @@ case "$CMD" in
 
   # ── ดู log สติ ────────────────────────────────────────────────────
   log)
-    echo -e "${CYAN}=== innova Action Journal ===${RESET}"
-    tail -20 "$JIT_LOG" 2>/dev/null || echo "(ยังไม่มี log)"
+    SUBCMD="${1:-}"
+    case "$SUBCMD" in
+      --cot|-c)
+        LIMIT="${2:-10}"
+        echo -e "${CYAN}=== Chain-of-Thought Log (ล่าสุด $LIMIT chains) ===${RESET}"
+        echo ""
+        cot_format "$LIMIT"
+        echo ""
+        COT_TOTAL=$(cot_count)
+        info "CoT entries ทั้งหมด: $COT_TOTAL"
+        ;;
+      --clear)
+        cot_clear
+        ;;
+      *)
+        echo -e "${CYAN}=== innova Action Journal ===${RESET}"
+        tail -20 "$JIT_LOG" 2>/dev/null || echo "(ยังไม่มี log)"
+        ;;
+    esac
     ;;
 
   *)
@@ -109,8 +132,12 @@ case "$CMD" in
     echo ""
     echo "  pause  'เจตนา'         — หยุดสติ บันทึกว่าจะทำอะไร"
     echo "  reflect 'หัวข้อ'       — ถาม Oracle ก่อน"
-    echo "  plan 'งาน' 'บริบท'    — วางแผนอย่างมีสติ"
+    echo "  plan 'งาน' 'บริบท'    — วางแผนอย่างมีสติ (พร้อม CoT logging)"
     echo "  why 'เหตุผล'          — บันทึกเหตุผล"
-    echo "  log                    — ดูประวัติการกระทำ"
+    echo "  log [--cot|--clear]   — ดู log (CoT chains หรือ action journal)"
+    echo ""
+    echo "Options:"
+    echo "  log --cot [n]   — แสดงล่าสุด n CoT chains (ค่าเริ่มต้น: 10)"
+    echo "  log --clear     — ล้าง CoT log"
     ;;
 esac

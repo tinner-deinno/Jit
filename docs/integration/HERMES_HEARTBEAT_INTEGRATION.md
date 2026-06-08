@@ -192,7 +192,8 @@ Per day (24 hours):
 
 **Heartbeat**:
 ```
-OLLAMA_TOKEN=9e34679b9d60d8b984005ec46508579c
+# Use: bash scripts/setup-secrets.sh load
+OLLAMA_TOKEN=<your-token-here>
 OLLAMA_BASE_URL=https://ollama.mdes-innova.online
 PULSE_INTERVAL=900          # 15 minutes
 ```
@@ -200,7 +201,8 @@ PULSE_INTERVAL=900          # 15 minutes
 **Hermes Discord**:
 ```
 DISCORD_TOKEN=your_bot_token
-OLLAMA_TOKEN=9e34679b9d60d8b984005ec46508579c
+# Use: bash scripts/setup-secrets.sh load
+OLLAMA_TOKEN=<your-token-here>
 DISCORD_STATUS_CHANNEL_ID=your_channel_id (optional)
 OLLAMA_MODEL=gemma4:26b
 ```

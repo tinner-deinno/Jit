@@ -18,12 +18,18 @@
 #   bash organs/pran.sh release <agent>     — คืน slot
 #   bash organs/pran.sh queue               — ดู queue รอ
 #   bash organs/pran.sh pulse               — vital signs dashboard
+#   bash organs/pran.sh dlq-status          — ดู DLQ (Dead Letter Queue) status
+#   bash organs/pran.sh dlq-check           — check DLQ + alert if critical
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../limbs/lib.sh"
 
 CMD="${1:-status}"
 shift || true
+
+# JIT-016: Shared memory monitoring
+SHARED_MEMORY="/tmp/manusat-shared.json"
+ARCHIVE_FILE="/tmp/manusat-shared-archive.json"
 
 PRAN_STATE="/tmp/manusat-pran-state.json"
 PRAN_QUEUE="/tmp/manusat-pran-queue"
@@ -56,14 +62,14 @@ json.dump({
 
 _ollama_check() {
   curl -sf --max-time 5 "$OLLAMA_URL/api/tags" \
-    -H "Authorization: Bearer ${OLLAMA_TOKEN:-}" > /dev/null 2>&1
+    -H "Authorization: Bearer ${OLLAMA_TOKEN:-[REDACTED]}" > /dev/null 2>&1
 }
 
 _ollama_load() {
   # ดึง running processes จาก Ollama
   local RESULT
   RESULT=$(curl -sf --max-time 5 "$OLLAMA_URL/api/ps" \
-    -H "Authorization: Bearer ${OLLAMA_TOKEN:-}" 2>/dev/null)
+    -H "Authorization: Bearer ${OLLAMA_TOKEN:-[REDACTED]}" 2>/dev/null)
   if [ -z "$RESULT" ]; then echo "0"; return; fi
   echo "$RESULT" | python3 -c "
 import json,sys
@@ -203,6 +209,39 @@ except: pass
     fi
     ;;
 
+  # ── memory-size: Report shared memory size (JIT-016) ─────────────
+  memory-size)
+    if [ -f "$SHARED_MEMORY" ]; then
+      python3 -c "import json; print(len(json.load(open('$SHARED_MEMORY')).get('entries',[])))" 2>/dev/null || echo "0"
+    else
+      echo "0"
+    fi
+    ;;
+
+  # ── memory-status: Full shared memory status ─────────────────────
+  memory-status)
+    size=0
+    archive_size=0
+    archive_count=0
+
+    if [ -f "$SHARED_MEMORY" ]; then
+      size=$(python3 -c "import json; print(len(json.load(open('$SHARED_MEMORY')).get('entries',[])))" 2>/dev/null || echo "0")
+    fi
+
+    if [ -f "$SHARED_ARCHIVE" ]; then
+      archive_size=$(stat -c%s "$SHARED_ARCHIVE" 2>/dev/null || echo "0")
+      archive_count=$(wc -l < "$SHARED_ARCHIVE" 2>/dev/null || echo "0")
+    fi
+
+    echo ""
+    echo -e "${BOLD}${CYAN}[ Shared Memory Status (JIT-016) ]${RESET}"
+    echo ""
+    echo -e "  Active entries:  ${CYAN}$size${RESET} / ${MEMORY_MAX_ENTRIES:-500} max"
+    echo -e "  Archive size:    ${CYAN}$archive_size${RESET} bytes ($(numfmt --to=iec-i --suffix=B $archive_size 2>/dev/null || echo "${archive_size}B"))"
+    echo -e "  Archive entries: ${CYAN}$archive_count${RESET}"
+    echo ""
+    ;;
+
   # ── ปรับ allocation อัตโนมัติ ─────────────────────────────────────
   rebalance)
     echo -e "${BOLD}[ ปราณ — Rebalance Ollama Load ]${RESET}"
@@ -221,7 +260,16 @@ except: pass
     fi
     ;;
 
+  # ── DLQ (Dead Letter Queue) monitoring ──────────────────────────
+  dlq-status)
+    bash "$SCRIPT_DIR/dlq-handler.sh" status
+    ;;
+
+  dlq-check)
+    bash "$SCRIPT_DIR/dlq-handler.sh" remediate
+    ;;
+
   *)
-    echo "Usage: $0 [status|capacity|request <agent>|release <agent>|queue|pulse|rebalance]"
+    echo "Usage: $0 [status|capacity|request|release|queue|pulse|rebalance|dlq-status|dlq-check]"
     ;;
 esac
