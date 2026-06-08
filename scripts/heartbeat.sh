@@ -104,19 +104,22 @@ _cleanup_stale_messages() {
 _append_heartbeat_log() {
   local phase="$1"
   local ts="$2"
-  local file="$JIT_ROOT/memory/state/heartbeat.log"
+  # hostname-specific file prevents multi-machine merge conflicts
+  local host; host="$(hostname | tr '.' '-')"
+  local file="$JIT_ROOT/memory/state/heartbeat-${host}.log"
   mkdir -p "$(dirname "$file")"
   if [ "$phase" = "IN" ]; then
-    echo "$(date '+%Y-%m-%dT%H:%M:%S') | $(hostname) | #$PULSE_COUNT | phase=IN | mode=$MODE | changed=$CHANGES" >> "$file"
+    echo "$(date '+%Y-%m-%dT%H:%M:%S') | $host | #$PULSE_COUNT | phase=IN | mode=$MODE | changed=$CHANGES" >> "$file"
   else
-    echo "$(date '+%Y-%m-%dT%H:%M:%S') | $(hostname) | #$PULSE_COUNT | phase=OUT | mode=$MODE | changed=$CHANGES" >> "$file"
+    echo "$(date '+%Y-%m-%dT%H:%M:%S') | $host | #$PULSE_COUNT | phase=OUT | mode=$MODE | changed=$CHANGES" >> "$file"
   fi
 }
 
 _commit_heartbeat() {
   local phase="$1"
   local ts="$2"
-  local file="$JIT_ROOT/memory/state/heartbeat.log"
+  local host; host="$(hostname | tr '.' '-')"
+  local file="$JIT_ROOT/memory/state/heartbeat-${host}.log"
   local msg
   if [ "$phase" = "IN" ]; then
     msg="->💓 heartbeat (IN) ->#$PULSE_COUNT — $(hostname) @ $ts"
