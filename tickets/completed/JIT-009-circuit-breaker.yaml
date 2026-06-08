@@ -2,10 +2,11 @@ id: JIT-009
 title: Add circuit breaker and global Node error handlers
 priority: P2
 type: fix+reliability
-status: open
+status: completed
 owner: pada
 created: 2026-06-06
-updated: 2026-06-06
+updated: 2026-06-07
+completed: 2026-06-07
 spec_ref: hermes-discord/bot.js
 source_audit: DEVOPS-004
 acceptance:
@@ -16,3 +17,12 @@ acceptance:
   - Test: kill -9 the bot 4 times in 60s and verify a single Discord alert + halt
 effort_hours: 5
 tags: [reliability, circuit-breaker, crash-recovery, p2]
+completion_notes: |
+  Completed by pada on 2026-06-07.
+  
+  Verified implementations:
+  1. ✅ bot.js has unhandledRejection (line 811-815) and uncaughtException (line 817-821) handlers
+  2. ✅ heartbeat-24h-daemon.sh writes /tmp/jit-circuit-open when failures >= 3 (line 238)
+  3. ✅ jit-heartbeat.service has OnFailure and RestartPreventExitStatus=42
+  4. ✅ hermes-discord.service updated with OnFailure and RestartPreventExitStatus=42
+  5. ✅ Circuit breaker test passed - flag written after 3 failures

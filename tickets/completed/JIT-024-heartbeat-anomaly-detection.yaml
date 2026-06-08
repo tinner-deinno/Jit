@@ -1,0 +1,19 @@
+id: JIT-024
+title: "Add anomaly detection and agent health alerts to heartbeat"
+priority: P2
+type: feat
+status: open
+owner: pran
+created: 2026-06-07
+updated: 2026-06-07
+spec_ref: specs/JIT-024-spec.md
+acceptance:
+  - heartbeat.sh detects per-agent anomalies: stuck agents, slow responses, inbox growth
+  - Alert rules: response_time > 2x baseline, inbox_depth > 50, no heartbeat for 3 cycles
+  - Anomalies logged to /tmp/manusat-anomalies.jsonl with timestamp and severity
+  - pran.sh (heart) broadcasts alert:anomaly message if threshold exceeded
+  - netra.sh eye-check includes anomaly summary in health report
+  - Baseline metrics collected from first 5 heartbeats
+effort_hours: 6
+tags: [heartbeat, monitoring, anomaly, alerts, p2, pran]
+notes: "Currently heartbeat just pulses. Add detection of stuck/slow agents to enable automatic scaling/recovery."

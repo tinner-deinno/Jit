@@ -3,12 +3,12 @@
 > คู่มือการเพิ่ม Agent ใหม่ในระบบ มนุษย Agent
 
 เอกสารนี้อธิบาย **2 สถานการณ์** ในการเพิ่ม agent:
-1. **Scenario A**: เพิ่ม agent เข้าระบบ 14 agent ที่มีอยู่แล้ว (กรณีส่วนใหญ่)
+1. **Scenario A**: เพิ่ม agent เข้าระบบ 15 agent ที่มีอยู่แล้ว (กรณีส่วนใหญ่)
 2. **Scenario B**: สร้าง agent ใหม่ใน repo แยกต่างหาก (advanced)
 
 ---
 
-## Scenario A: เพิ่ม Agent เข้าระบบ Jit ที่มีอยู่แล้ว
+## Scenario A: เพิ่ม Agent เข้าระบบ Jit ที่มีอยู่แล้ว (15 agents)
 
 ใช้เมื่อ: ต้องการเพิ่ม agent ใหม่เป็น parte ของระบบ multi-agent ที่มีอยู่แล้ว โดยไม่ต้องสร้าง repo ใหม่
 
@@ -20,7 +20,7 @@
 cat network/registry.json | python3 -c "import json,sys; d=json.load(sys.stdin); print('\n'.join([f\"{k}: {v['agent']}\" for k,v in d.get('organs',{}).items()]))"
 ```
 
-**Organ ทั้งหมด (14 organs):**
+**Organ ทั้งหมด (15 organs):**
 | Organ | Agent | Status |
 |-------|-------|--------|
 | สมอง | soma | Taken |
@@ -32,13 +32,14 @@ cat network/registry.json | python3 -c "import json,sys; d=json.load(sys.stdin);
 | มือ | mue | Taken |
 | ขา | pada | Taken |
 | หัวใจ | pran | Taken |
-| ปอด | lung | Taken |
+| ปอด | lung | Taken (added 2026-06-08, reports to pran) |
 | ระบบประสาท | sayanprasathan | Taken |
 | กระดูกสันหลัง | lak | Taken |
 | เนตร | neta | Taken |
 | รูปลักษณ์ | rupa | Taken |
 
 หากต้องการเพิ่ม agent ใหม่ ต้องกำหนด organ ใหม่ หรือใช้ organ ร่วม (เช่น eye มี 2 agents)
+หมายเหตุ: ปอด (lung) เพิ่มเข้าระบบ 2026-06-08 โดยรายงานต่อ pran
 
 ### ขั้นตอนที่ 2: สร้าง Agent Definition File
 
@@ -360,7 +361,7 @@ bash limbs/oracle.sh learn \
 Tier 0 (Master):     jit
 Tier 1 (Leadership): soma
 Tier 2 (Core):       innova, lak, neta
-Tier 3 (Specialists): vaja, chamu, rupa, pada, netra, karn, mue, pran, sayanprasathan
+Tier 3 (Specialists): vaja, chamu, rupa, pada, netra, karn, mue, pran, lung, sayanprasathan
 ```
 
 ---
@@ -373,7 +374,7 @@ Tier 3 (Specialists): vaja, chamu, rupa, pada, netra, karn, mue, pran, sayanpras
 
 ### การตั้ง Organ ใหม่
 
-หากต้องการ organ ใหม่ที่ไม่อยู่ใน 14 organs เดิม:
+หากต้องการ organ ใหม่ที่ไม่อยู่ใน 15 organs เดิม:
 
 1. ตั้งชื่อ organ ที่สื่อความหมาย (ไทยหรืออังกฤษ)
 2. กำหนด type: `cognition`, `sense`, `action`, `expression`, `vital`, `structure`, `knowledge`, `design`, `review`, `network`

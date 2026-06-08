@@ -1,0 +1,50 @@
+---
+id: JIT-021
+organ: limbs/ollama
+title: Ollama authentication token exposed in process list
+severity: P1
+status: completed
+completed: "2026-06-07"
+location: limbs/ollama.sh:33-36
+description: |
+  The curl command with Authorization header containing the OLLAMA_TOKEN is visible
+  in the process list to other users on the same system.
+
+  Current code:
+  ```bash
+  curl -s --max-time "$TIMEOUT" "https://ollama.mdes-innova.online/api/generate" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $OLLAMA_TOKEN" \
+    --data "$JSON_BODY" 2>/dev/null
+  ```
+
+  Risk: Any user on the system can run `ps aux` and see the Bearer token.
+
+impact: |
+  - Token leakage to other unprivileged users
+  - Potential unauthorized access to MDES Ollama service
+  - Security audit failure
+  - Compliance issue with token storage best practices
+
+fix_approach: |
+  Use curl's --config file or environment variable redirection to hide the token:
+
+  Option 1: Use .netrc file (preferred):
+  ```bash
+  # Create ~/.netrc with machine and password
+  # Then use: curl -n "https://ollama.mdes-innova.online/..."
+  ```
+
+  Option 2: Use curl config file:
+  ```bash
+  # Store in file, use: curl --config /path/file
+  ```
+
+  Option 3: Redirect header through stdin:
+  ```bash
+  echo "Authorization: Bearer $OLLAMA_TOKEN" | \
+  curl -s ... -H @- --data "$JSON_BODY"
+  ```
+
+tags: [security, credential-exposure, token, ollama]
+---

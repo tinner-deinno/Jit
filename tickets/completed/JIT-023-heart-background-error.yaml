@@ -1,0 +1,61 @@
+---
+id: JIT-023
+organ: heart
+title: Background process error handling missing in heartbeat pulse operations
+severity: P1
+status: completed
+location: organs/heart.sh:213-215
+description: |
+  The _beat_out function backgrounds organ pulse calls without error checking or
+  timeout protection. If an organ script hangs or fails, the wait command may block.
+
+  Current code:
+  ```bash
+  for organ in "${organs[@]}"; do
+    local sc="$SCRIPT_DIR/$organ.sh"
+    [ -x "$sc" ] && bash "$sc" pulse "$energy" >/dev/null 2>&1 || true &
+  done
+  wait  # รอ organs ทั้งหมด (non-blocking: timeout ใน organ script เอง)
+  ```
+
+  Problems:
+  1. `wait` without job IDs waits for all background jobs, can block indefinitely
+  2. No timeout protection - commented "timeout ใน organ script เอง" is unreliable
+  3. Pipe into `|| true` suppresses errors without logging
+  4. No tracking of which organs timed out or failed
+
+impact: |
+  - Heartbeat can stall if any organ script hangs
+  - Silent failures in organ pulses go undetected
+  - System becomes unresponsive during beat cycles
+  - No visibility into which organs are problematic
+
+fix_approach: |
+  Implement proper background job management with timeout:
+
+  ```bash
+  declare -a PIDS=()
+  for organ in "${organs[@]}"; do
+    local sc="$SCRIPT_DIR/$organ.sh"
+    if [ -x "$sc" ]; then
+      bash "$sc" pulse "$energy" >/dev/null 2>&1 &
+      PIDS+=($!)
+    fi
+  done
+
+  # Wait with timeout (60 seconds max)
+  local timeout=60 elapsed=0
+  for pid in "${PIDS[@]}"; do
+    while kill -0 "$pid" 2>/dev/null && [ $elapsed -lt $timeout ]; do
+      sleep 1
+      elapsed=$((elapsed + 1))
+    done
+    if kill -0 "$pid" 2>/dev/null; then
+      warn "organ pulse timeout (PID $pid)"
+      kill -9 "$pid" 2>/dev/null || true
+    fi
+  done
+  ```
+
+tags: [reliability, timeout, background-jobs, error-handling]
+---

@@ -76,7 +76,7 @@ human
 
 ## 3. Organ System (รูปธรรม)
 
-All 14 organs have dedicated agent owners:
+All 15 organs have dedicated agent owners:
 
 | Organ | Thai | Script | Agent Owner | Type | Function |
 |-------|------|--------|-------------|------|----------|
@@ -89,7 +89,7 @@ All 14 organs have dedicated agent owners:
 | **มือ** | Hand | `organs/hand.sh` | mue | action | File ops, command execution, changes |
 | **ขา** | Leg | `organs/leg.sh` | pada | movement | Deployment, CI/CD, infrastructure |
 | **หัวใจ** | Heart | `organs/heart.sh` | pran | vital | Heartbeat, vital signs, task dispatch |
-| **ปอด** | Lung | `organs/lung.sh` | lung | vital | Clean energy distribution, purification |
+| **ปอด** | Lung | `organs/lung.sh` | lung | vital | Clean energy distribution, purification (added 2026-06-08, reports to pran) |
 | **ระบบประสาท** | Nerve | `organs/nerve.sh` | sayanprasathan | network | Event broadcasting, signal propagation |
 | **จิตใจ** | Mind | `limbs/oracle.sh` | innova | knowledge | Oracle queries, wisdom, implementation |
 | **กระดูกสันหลัง** | Spine | *(architectural)* | lak | structure | System architecture, ADRs, tech decisions |
@@ -261,7 +261,7 @@ Sense → Decide → Delegate → Execute → Observe → Learn
 
 ## 10. Adding a New Agent
 
-The system has all 14 organs assigned. To add a new agent (sub-specialist):
+The system has all 15 organs assigned. To add a new agent (sub-specialist):
 
 1. Create `agents/<name>.json` with capabilities and constraints
 2. Create `.github/agents/<name>.agent.md` for Claude Code integration
@@ -333,11 +333,11 @@ Registry v2.1 includes runtime health metrics per agent:
 | `core/body-map.md` | Complete RACI matrix, organ ownership |
 | `core/identity.md` | innova's mission, values, relationships |
 | `network/protocol.md` | Message format, error handling, security |
-| `network/registry.json` | Source of truth: all 14 agents with health tracking |
+| `network/registry.json` | Source of truth: all 15 agents with health tracking |
 | `brain/reasoning.md` | Think-before-act framework, token rules |
 | `memory/architecture.md` | Three-layer memory system design |
 
 ---
 
-*Last updated: 2026-06-07*  
-*Version: 2.0 — Complete 14-agent organ system with Tier 0-3 hierarchy*
+*Last updated: 2026-06-08*  
+*Version: 2.1 — Complete 15-agent organ system with Tier 0-3 hierarchy (lung/ปอด added)*

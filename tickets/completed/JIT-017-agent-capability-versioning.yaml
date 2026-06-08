@@ -2,10 +2,18 @@ id: JIT-017
 title: "Add capability versioning to agent registry"
 priority: P2
 type: feat
-status: open
+status: completed
 owner: lak
 created: 2026-06-07
 updated: 2026-06-07
+completed: 2026-06-07
+completion_notes: |
+  All acceptance criteria verified:
+  1. registry.json: All 14 agents have version "1.0.0"
+  2. .agent.md files: All have ## Version section with 1.0.0
+  3. bus.sh: x-agent-version header added (line 647), extracted from registry (lines 618-630)
+  4. router.sh: check_version() function checks MANUSAT_MIN_AGENT_VER (lines 60-108)
+  5. BUS_VERSION_MISMATCH logged, non-fatal unless MANUSAT_STRICT_VERSION=1
 spec_ref: specs/JIT-017-spec.md
 acceptance:
   - network/registry.json gains version field per agent (semver: "1.0.0")

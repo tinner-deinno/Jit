@@ -1,0 +1,18 @@
+id: JIT-026
+title: "Implement direct organ-to-organ messaging channels"
+priority: P2
+type: feat
+status: open
+owner: mue
+created: 2026-06-07
+updated: 2026-06-07
+spec_ref: specs/JIT-026-spec.md
+acceptance:
+  - New protocol: organs/ can call each other directly via named pipes (/tmp/manusat-pipes/<organ1>--<organ2>)
+  - hand.sh and leg.sh can coordinate without involving heart.sh (e.g. synchronized actions)
+  - Fallback to bus.sh if direct channel unavailable
+  - Each organ-pair channel has its own message queue (max 100 pending)
+  - bus.sh stats reports direct-channel utilization
+effort_hours: 5
+tags: [organs, messaging, architecture, federation, p2, mue]
+notes: "Currently all inter-organ communication goes through bus (central hub). Add direct channels for low-latency coordination."

@@ -2,7 +2,7 @@ id: JIT-005
 title: Add protocol-version field to bus messages
 priority: P2
 type: spec+code
-status: open
+status: completed
 owner: soma
 created: 2026-06-06
 updated: 2026-06-06

@@ -1,0 +1,77 @@
+---
+id: JIT-029
+organ: ear
+title: Unsafe metadata extraction from message headers using grep and cut
+severity: P2
+status: completed
+completed_date: 2026-06-07
+completion_note: |
+  Verified that ear.sh already has robust metadata parsing implemented:
+  - parse_message_header() function exists (lines 59-106) using case pattern matching
+  - _validate_message_headers() function exists (lines 43-57) for required field validation
+  - _trim() function exists (lines 34-39) for whitespace handling
+  - Properly handles colons in values (e.g., timestamps like 2026-06-08T00:25:18)
+  - Used in inbox command (line 271) with eval "$(parse_message_header "$MSG_FILE")"
+  Implementation is actually more robust than the fix_approach suggested in ticket.
+location: organs/ear.sh:85-86
+description: |
+  The ear.sh script extracts FROM and SUBJECT from message files using
+  unreliable grep and cut commands that fail with non-standard message formats.
+
+  Current code (in inbox command):
+  ```bash
+  FROM=$(head -1 "$MSG_FILE" | grep -o 'from:[^ ]*' | cut -d: -f2)
+  SUBJECT=$(head -2 "$MSG_FILE" | tail -1 | grep -o 'subject:.*' | cut -d: -f2-)
+  ```
+
+  Problems:
+  1. Depends on exact header format (no tolerance for variations)
+  2. grep -o assumes space-separated fields, fails with from:value:extra
+  3. SUBJECT cut -d: -f2- will fail if SUBJECT contains ':' characters
+  4. No validation that fields were actually found
+  5. Silent failures - if grep finds nothing, variables are empty
+
+  Example failures:
+  ```
+  from:agent-with:colon  # Fails because grep stops at space
+  subject:task:with:colons  # SUBJECT becomes "with" not full text
+  from:   # Extra spaces break the parse
+  ```
+
+impact: |
+  - Message inbox display shows incomplete or wrong from/subject
+  - Users can't identify message sources correctly
+  - Subject truncation at first colon is confusing
+  - Makes message routing/filtering unreliable
+
+fix_approach: |
+  Use a proper message parsing function with validation:
+
+  ```bash
+  parse_message_header() {
+    local MSG_FILE="$1"
+    local FROM="" SUBJECT="" TO="" TIMESTAMP=""
+
+    # Read header fields safely
+    while IFS='=' read -r key value; do
+      case "$key" in
+        from)      FROM="$value" ;;
+        subject)   SUBJECT="$value" ;;
+        to)        TO="$value" ;;
+        timestamp) TIMESTAMP="$value" ;;
+      esac
+    done < <(head -10 "$MSG_FILE" | grep -E '^[a-z]+:' | sed 's/:/ = /')
+
+    echo "FROM=$FROM"
+    echo "SUBJECT=$SUBJECT"
+    echo "TO=$TO"
+    echo "TIMESTAMP=$TIMESTAMP"
+  }
+
+  # In inbox command:
+  eval "$(parse_message_header "$MSG_FILE")"
+  echo "   📩 $BASENAME | from:${FROM:-?} | ${SUBJECT:-no subject}"
+  ```
+
+tags: [parsing, robustness, ear, message-format]
+---

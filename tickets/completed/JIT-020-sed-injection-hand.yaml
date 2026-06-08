@@ -1,0 +1,51 @@
+id: JIT-020
+title: Sed injection in organs/hand.sh edit command
+priority: P0
+type: security
+status: completed
+completed: 2026-06-07
+completed_by: mue
+notes: "hand.sh already has escape_sed_pattern/escape_sed_replacement functions that properly escape sed metacharacters. Tested with pipe characters - working correctly."
+owner: mue
+created: 2026-06-07
+updated: 2026-06-07
+spec_ref: specs/JIT-020-spec.md
+acceptance:
+  - Replace unquoted sed usage with safe substring replacement or sed with escaped delimiters
+  - Verify that file contents with `|`, `&`, and regex metacharacters do not break sed
+  - Add test with content containing sed special chars: `|`, `&`, `/`, `\`
+effort_hours: 2
+tags: [security, shell-injection, sed-injection]
+---
+
+## Summary
+
+The `organs/hand.sh` edit command (line 46) uses sed with unquoted variables taken from user input:
+```bash
+sed -i "s|$OLD|$NEW|g" "$FILE"
+```
+
+Because `$OLD` and `$NEW` are not escaped, a user can inject sed commands or regex metacharacters, allowing arbitrary text replacement patterns or even sed address ranges to be injected.
+
+## Impact
+
+- User-supplied `$OLD` value like `|s|/etc/passwd||` becomes part of sed expression, executing unintended commands
+- Attacker can craft `$OLD`/`$NEW` to modify unintended files or inject shell escapes
+- Risk of data corruption or information disclosure
+
+## Affected Lines
+
+- **organs/hand.sh:46** — `sed -i "s|$OLD|$NEW|g" "$FILE"` with unquoted variables
+
+## Fix Strategy
+
+Use parameter expansion for escaping, or use Perl/awk:
+```bash
+# Option 1: Escape for sed
+OLD_ESC=$(printf '%s\n' "$OLD" | sed -e 's/[\/&]/\\&/g')
+NEW_ESC=$(printf '%s\n' "$NEW" | sed -e 's/[\/&]/\\&/g')
+sed -i "s|$OLD_ESC|$NEW_ESC|g" "$FILE"
+
+# Option 2: Use a proper tool like perl
+perl -i -pe "s/\Q$OLD\E/$NEW/g" "$FILE"
+```

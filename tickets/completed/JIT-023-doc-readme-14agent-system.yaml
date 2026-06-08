@@ -1,0 +1,82 @@
+title: "Rewrite README.md for 14-agent system overview"
+epic: "documentation"
+owner: vaja
+assignees:
+  - vaja
+priority: "P3"
+status: "open"
+created: "2026-06-07"
+due_date: null
+
+description: |
+  README.md currently describes innova + Discord sub-agent (อนุ) as the main focus but does NOT explain the full 14-agent ecosystem or jit as master orchestrator.
+
+  **Current State:**
+  - Sections focus on: innova (parent orchestrator), อนุ (Discord sub-agent), child agents (ephemeral)
+  - Missing: jit as Tier 0 master orchestrator
+  - Missing: all 13 other permanent agents
+  - Missing: tier hierarchy (Tier 0-3 structure)
+  - No quick reference table for "who does what"
+  - No agent decision matrix (e.g., "who decides architecture?")
+  - No diagrams showing parent-child delegation flow
+  - Quick start doesn't explain system architecture before diving into commands
+
+  **Required Rewrite:**
+
+  ### 1. Update Overview section
+  - Clearly state: "Jit is a 14-agent ecosystem orchestrated by jit (master) → soma (strategic lead) → tier 2/3 specialists"
+  - Explain tier structure: Tier 0 (1), Tier 1 (1), Tier 2 (3), Tier 3 (9)
+  - Position innova correctly: "innova is a Tier 2 Lead Developer, not the top orchestrator"
+
+  ### 2. Add Agent Quick Reference table
+  - 14 rows (one per agent)
+  - Columns: Agent name, Thai name, Tier, Model, Role, Reports to, Key decisions
+  - Example: "innova | จิต | Tier 2 | sonnet-4.6 | Lead Developer | reports to soma | code impl, module design"
+
+  ### 3. Add Agent Decision Matrix section
+  - "Who decides architecture?" → lak (Tier 2)
+  - "Who approves code?" → neta (Tier 2)
+  - "Who schedules deploys?" → pada (Tier 3)
+  - "Who talks to humans?" → vaja (Tier 3)
+  - Shows decision authority hierarchy
+
+  ### 4. Add Hierarchy Diagram
+  - ASCII tree or Mermaid showing: jit → soma → {lak, neta, pada, innova} → {vaja, chamu, rupa}
+  - Shows communication flow and parent-child relationships
+
+  ### 5. Add "Key Workflows" section
+  - Feature development flow: human → vaja → soma → design → impl → test → review → deploy → report
+  - Bug hotfix flow: detect → triage → fix → review → deploy → notify
+  - Architecture decision flow: jit → soma → lak ← innova feedback
+
+  ### 6. Reorganize Quick start
+  1. First: explain the 14-agent system (what is Jit?)
+  2. Then: explain jit repo's role (one of many in the ecosystem)
+  3. Then: bootstrap steps (init-life, heartbeat, oracle)
+  4. Then: how to interact (send messages, check status)
+
+  ### 7. Add Architecture section
+  - Explain: jit repo = master orchestrator repo, other agents may have separate repos
+  - Explain: bus-based communication (file-based message passing)
+  - Explain: Oracle (shared knowledge base)
+  - Diagram showing: Jit repo ↔ Bus ↔ {other agent repos}
+
+  **Reference:**
+  - CLAUDE.md (complete agent list and tiers)
+  - core/body-map.md (RACI matrix, decision flows)
+  - docs/multiagent-spec.md (tier structure)
+
+acceptance_criteria:
+  - README clearly explains 14-agent ecosystem in first 2 paragraphs
+  - Agent Quick Reference table covers all 14 agents with tier + model + role + reports-to
+  - Agent Decision Matrix shows who decides what (architecture, code, deploy, communication, etc.)
+  - Hierarchy diagram shows jit → soma → tier 2 → tier 3 flow
+  - "Key Workflows" section has 3+ example decision flows
+  - Quick start reordered to explain system BEFORE commands
+  - Links to core/body-map.md and docs/multiagent-spec.md added early
+  - First reader understands: jit is master, not innova
+
+tags:
+  - documentation
+  - first-impression
+  - critical-reference

@@ -1,0 +1,62 @@
+---
+id: JIT-024
+organ: eye
+title: Missing error handling for curl operations in web reading
+severity: P2
+status: open
+location: organs/eye.sh:61-69
+description: |
+  The `web` command fetches URLs with curl but doesn't check if the request succeeded.
+  If curl fails, the python script receives empty input and fails silently.
+
+  Current code:
+  ```bash
+  curl -sL "$URL" 2>/dev/null | python3 -c "
+  import sys, re
+  html = sys.stdin.read()
+  # strip tags
+  text = re.sub(r'<[^>]+>', ' ', html)
+  text = re.sub(r'\s+', ' ', text).strip()
+  print(text[:2000])
+  print('...(ตัดที่ 2000 chars)')
+  "
+  ```
+
+  Problems:
+  1. curl errors are silently suppressed (-s flag)
+  2. No check if curl actually got data
+  3. Python receives empty string, prints nothing with no error message
+  4. User has no way to know if fetch failed
+
+impact: |
+  - Silent failures give false impression of success
+  - No feedback on network/URL issues
+  - Makes debugging difficult
+  - Agent doesn't know when URL is unreachable
+
+fix_approach: |
+  Add explicit error handling and logging:
+
+  ```bash
+  if [ -z "$URL" ]; then err "ต้องระบุ URL"; exit 1; fi
+  log_action "EYE_WEB" "$URL"
+  step "ตา ดูเว็บ: $URL"
+
+  CONTENT=$(curl -sL --max-time 10 "$URL" 2>/tmp/curl-error.log)
+  CURL_STATUS=$?
+
+  if [ $CURL_STATUS -ne 0 ]; then
+    err "curl failed (exit $CURL_STATUS): $(cat /tmp/curl-error.log)"
+    exit 1
+  fi
+
+  if [ -z "$CONTENT" ]; then
+    warn "URL returned empty content"
+    exit 0
+  fi
+
+  echo "$CONTENT" | python3 -c "..."
+  ```
+
+tags: [error-handling, networking, eye-organ, logging]
+---

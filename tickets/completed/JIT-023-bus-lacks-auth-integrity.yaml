@@ -1,0 +1,67 @@
+id: JIT-023
+title: Message bus lacks authentication and integrity checks
+priority: P1
+type: security
+status: completed
+owner: sayanprasathan
+created: 2026-06-07
+updated: 2026-06-08
+spec_ref: specs/JIT-023-spec.md
+acceptance:
+  - Add HMAC-SHA256 signature field to message protocol (message.sig)
+  - Implement signature generation in mouth.sh tell/broadcast
+  - Implement signature validation in ear.sh recv
+  - Verify heart.sh can detect and reject forged messages
+effort_hours: 5
+tags: [security, authentication, bus-protocol, integrity]
+---
+
+## Summary
+
+The file-based message bus (network/bus.sh, organs/mouth.sh, organs/ear.sh) implements zero authentication or integrity verification. Any process with write access to `/tmp/manusat-bus/` can craft arbitrary messages pretending to be any agent. The message format (lines 28-35 in mouth.sh) contains:
+
+```
+from:$AGENT_NAME
+to:$TO
+subject:$SUBJECT
+timestamp:$(date '+%Y-%m-%dT%H:%M:%S')
+---
+$BODY
+```
+
+With no signature or MAC, an attacker can:
+- Forge messages from jit (master orchestrator) to any agent
+- Send malicious task commands to critical organs (pada=deploy, mue=execute)
+- Modify heartbeat status messages to hide system failures
+
+## Impact
+
+- **Severity: CRITICAL** — affects multi-agent coordination and system control
+- Attacker on the same host can impersonate any agent and issue commands
+- Can trigger unintended deployments, file modifications, or system state changes
+
+## Affected Components
+
+- **network/bus.sh:52-60** — message creation lacks signature
+- **organs/mouth.sh:28-35** — no integrity field
+- **organs/ear.sh:38-86** — no signature validation
+- **organs/heart.sh:64-88** — accepts messages without verification
+
+## Fix Strategy
+
+1. Add shared secret or derive signing key from registry
+2. Generate HMAC-SHA256 signature of message headers + body
+3. Append signature as final field in .msg files
+4. Validate signature on recv before processing
+5. Reject messages with invalid or missing signatures
+
+Example format:
+```
+from:innova
+to:jit
+subject:task:deploy
+signature:sha256=abc123...
+timestamp:...
+---
+BODY
+```

@@ -1,0 +1,18 @@
+id: JIT-025
+title: "Add conditional branching and sequential execution to act.sh"
+priority: P2
+type: feat
+status: open
+owner: mue
+created: 2026-06-07
+updated: 2026-06-07
+spec_ref: specs/JIT-025-spec.md
+acceptance:
+  - act.sh branch <condition> <if-true-cmd> <if-false-cmd> executes conditionally
+  - act.sh sequence <cmd1> && <cmd2> || <cmd3> chains commands with error handling
+  - Conditions: file_exists, git_dirty, oracle_available, agent_online, last_status_ok
+  - Sequential execution preserves exit codes for proper branching
+  - Both store branch decisions to action journal for retrospectives
+effort_hours: 4
+tags: [action, execution, control-flow, p2, mue]
+notes: "Current act.sh is linear. Add if/else branching and command chaining for more complex workflows."

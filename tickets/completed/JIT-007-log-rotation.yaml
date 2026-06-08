@@ -2,10 +2,17 @@ id: JIT-007
 title: Add log rotation for daemon logs
 priority: P1
 type: fix
-status: open
+status: completed
 owner: pada
 created: 2026-06-06
-updated: 2026-06-06
+updated: 2026-06-07
+completed_by: pada
+completed_at: 2026-06-07
+implementation_notes: |
+  - Created systemd/jit-heartbeat.service with LogsDirectory=jit, RuntimeDirectory=jit
+  - Created systemd/logrotate-jit-heartbeat with: daily, rotate 14, compress, size 10M, maxage 30
+  - Refactored heartbeat-24h-daemon.sh to use $JIT_LOG_DIR (default /var/log/jit) instead of /tmp
+  - Added systemd/INSTALL.md with deployment instructions
 spec_ref: scripts/heartbeat-24h-daemon.sh
 source_audit: DEVOPS-002
 acceptance:

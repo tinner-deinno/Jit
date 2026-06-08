@@ -2,7 +2,7 @@
   "version": "2.1",
   "system": "มนุษยย์ Agent",
   "description": "Registry of all agents in the multiagent body system",
-  "updated": "2026-06-07",
+  "updated": "2026-06-08",
   "health_tracking": {
     "enabled": true,
     "offline_threshold_seconds": 300,
@@ -315,6 +315,7 @@
         "karn",
         "mue",
         "pran",
+        "lung",
         "sayanprasathan"
       ],
       "tier": "0-master",
@@ -376,7 +377,7 @@
       "reports_to": "innova",
       "manages": [],
       "health_status": "ok",
-      "last_heartbeat": "2026-06-08T08:55:33+07:00",
+      "last_heartbeat": "2026-06-08T09:00:37+07:00",
       "response_time_ms": null,
       "message_queue_depth": 0,
       "version": "1.0.0"
@@ -533,6 +534,7 @@
       "karn",
       "mue",
       "pran",
+      "lung",
       "sayanprasathan"
     ]
   },

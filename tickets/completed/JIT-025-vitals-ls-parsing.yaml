@@ -1,0 +1,49 @@
+---
+id: JIT-025
+organ: vitals
+title: Unsafe ls parsing with special filenames in vital measurement
+severity: P2
+status: open
+location: organs/vitals.sh:88, 145
+description: |
+  The vitals.sh script uses ls output parsing which fails with special filenames
+  (spaces, newlines, wildcards). Multiple locations affected:
+
+  Line 88 (measure_ear):
+  ```bash
+  PENDING=$(ls "$INBOX"/*.json 2>/dev/null | wc -l | tr -d ' ')
+  ```
+
+  Line 145 (measure_nerve):
+  ```bash
+  EVENTS=$(ls /tmp/manusat-bus/*.json 2>/dev/null | wc -l | tr -d ' ')
+  ```
+
+  Problems:
+  1. `ls` output is not reliable for counting (use find or globbing)
+  2. Filenames with newlines break the count
+  3. Filenames with spaces aren't properly quoted
+  4. Shell globbing expansion can fail with 0 matches (unless nullglob is set)
+
+impact: |
+  - Vital signs show incorrect counts with special filenames
+  - Health dashboard displays wrong metrics
+  - May cause false alerts if counts are wrong
+  - Unreliable system monitoring
+
+fix_approach: |
+  Use find or safe globbing with nullglob:
+
+  ```bash
+  # Option 1: Use find (safest)
+  PENDING=$(find "$INBOX" -maxdepth 1 -name "*.json" -type f 2>/dev/null | wc -l)
+
+  # Option 2: Use bash globbing with nullglob
+  shopt -s nullglob
+  files=("$INBOX"/*.json)
+  PENDING=${#files[@]}
+  shopt -u nullglob
+  ```
+
+tags: [robustness, shell-parsing, vitals, file-globbing]
+---

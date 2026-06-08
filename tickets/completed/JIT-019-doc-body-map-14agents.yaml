@@ -1,0 +1,58 @@
+title: "Update body-map.md for 14-agent ecosystem"
+epic: "documentation"
+owner: vaja
+assignees:
+  - vaja
+priority: "P2"
+status: "completed"
+created: "2026-06-07"
+completed_date: "2026-06-08"
+due_date: null
+
+description: |
+  body-map.md currently documents only 8 agents and is missing the complete 14-agent hierarchy.
+
+  **Current State:**
+  - Diagram shows 8 agents (soma, innova, lak, neta, vaja, chamu, rupa, pada)
+  - Missing: netra, karn, mue, pran, sayanprasathan, jit (master orchestrator)
+  - RACI matrix covers only 8 agents
+  - Bus paths list only 8 inboxes
+  - No Tier 0 / Tier 1 / Tier 2 / Tier 3 structure
+  - Current Status shows "Agents: 8" (should be "Agents: 14")
+
+  **Required Updates:**
+  1. Add jit as Tier 0 Master Orchestrator to hierarchy diagram
+  2. Add 6 missing agents to Team Roster table (netra, karn, mue, pran, sayanprasathan, jit)
+  3. Expand RACI matrix from 8 to 14 agents
+  4. Update Bus/Inbox Paths section to list all 14 inboxes
+  5. Expand Organ Ownership Map with 6 missing organs
+  6. Add parent-child relationships column (who reports to whom)
+  7. Update Current Status: "Agents: 14 ✅ registered"
+  8. Add Tier layer column to Team Roster
+
+  **Reference:**
+  - CLAUDE.md Agent Tier Structure (jit/soma hierarchy)
+  - network/registry.json (source of truth for all 14 agents)
+
+acceptance_criteria:
+  - All 14 agents listed in Team Roster with correct Tier, Thai name, role, model
+  - RACI matrix includes all 14 agents
+  - Bus paths show all 14 inboxes
+  - Organ Ownership Map lists all 14 organ scripts with owners
+  - Hierarchy diagram includes jit as master (Tier 0)
+  - Current Status shows "14 agents ✅ registered"
+  - Parent-child relationships clearly shown (e.g., jit → soma → {lak, neta, pada, innova})
+
+tags:
+  - documentation
+  - critical-reference
+  - on-deck
+
+notes: |
+  VERIFIED 2026-06-08: body-map.md already contains all 14 agents:
+  - Team Roster: 14 agents with Tier, Thai name, role, model, Reports To
+  - RACI matrix: 14 agents covered
+  - Bus/Inbox Paths: all 14 inboxes listed
+  - Organ Ownership Map: 14 organs documented
+  - Hierarchy diagram: jit as Tier 0 Master Orchestrator
+  - Parent-child relationships: fully documented
