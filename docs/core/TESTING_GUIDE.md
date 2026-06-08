@@ -446,7 +446,7 @@ Total: ~2 minutes per commit
 
 - [GSD (Jit Service Daemon)](../scripts/gsd.sh) — Service management
 - [Jit Master Skill](../.github/skills/jit-master/SKILL.md) — Orchestration details
-- [Hermes Discord Guide](../HERMES_AUTO_ENGAGE_CONFIG.md) — Bot configuration
+- [Hermes Discord Guide](../integration/HERMES_AUTO_ENGAGE_CONFIG.md) — Bot configuration
 - [Test Configuration](../tests/__init__.py) — Test runner details
 
 ---
