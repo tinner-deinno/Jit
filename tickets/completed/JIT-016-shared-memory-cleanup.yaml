@@ -2,10 +2,10 @@ id: JIT-016
 title: "Add shared memory decay and cleanup policy"
 priority: P2
 type: chore
-status: open
+status: done
 owner: innova
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-06-08
 spec_ref: specs/JIT-016-spec.md
 acceptance:
   - /tmp/manusat-shared.json entries older than 24h are pruned on each heartbeat

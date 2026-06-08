@@ -3,7 +3,7 @@ id: JIT-026
 organ: limbs/lib
 title: oracle_ready function doesn't capture error output for debugging
 severity: P2
-status: open
+status: done
 location: limbs/lib.sh:44-47
 description: |
   The oracle_ready function silently discards error output, making debugging difficult

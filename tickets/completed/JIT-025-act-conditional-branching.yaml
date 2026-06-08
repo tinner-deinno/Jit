@@ -2,10 +2,10 @@ id: JIT-025
 title: "Add conditional branching and sequential execution to act.sh"
 priority: P2
 type: feat
-status: open
+status: done
 owner: mue
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-06-08
 spec_ref: specs/JIT-025-spec.md
 acceptance:
   - act.sh branch <condition> <if-true-cmd> <if-false-cmd> executes conditionally

@@ -5,7 +5,7 @@ type: security
 status: completed
 owner: pada
 created: 2026-06-07
-updated: 2026-06-08T00:35:00Z
+updated: 2026-06-08
 completed_date: 2026-06-08
 verification: |
   - All 8/8 JSON injection tests pass

@@ -6,7 +6,7 @@ status: completed
 completed: "2026-06-07"
 owner: sayanprasathan
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-06-08
 spec_ref: specs/JIT-021-spec.md
 acceptance:
   - Escape $REGISTRY path using Python string literals or pass as argv

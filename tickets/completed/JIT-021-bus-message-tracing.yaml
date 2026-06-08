@@ -2,10 +2,10 @@ id: JIT-021
 title: "Implement message tracing and correlation IDs across bus"
 priority: P1
 type: feat
-status: open
+status: done
 owner: netra
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-06-08
 spec_ref: specs/JIT-021-spec.md
 acceptance:
   - Every message gets correlation-id (currently done) + trace-chain (path of hops)

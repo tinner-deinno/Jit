@@ -2,10 +2,10 @@ id: JIT-026
 title: "Implement direct organ-to-organ messaging channels"
 priority: P2
 type: feat
-status: open
+status: done
 owner: mue
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-06-08
 spec_ref: specs/JIT-026-spec.md
 acceptance:
   - New protocol: organs/ can call each other directly via named pipes (/tmp/manusat-pipes/<organ1>--<organ2>)

@@ -8,7 +8,7 @@ completed_by: netra
 notes: "registry.json v2.1 includes health_status, last_heartbeat, response_time_ms, message_queue_depth for all agents. Offline threshold set to 300s."
 owner: netra
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-06-08
 spec_ref: specs/JIT-020-spec.md
 acceptance:
   - registry.json schema includes: health_status (ok|degraded|offline), last_heartbeat (ISO timestamp), response_time_ms, message_queue_depth

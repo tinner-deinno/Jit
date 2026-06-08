@@ -212,6 +212,19 @@ _do_pulse() {
   _log_pulse_locally "OUT #$PULSE_COUNT mode=$MODE"
 
   # ═══════════════════════════════════════════════════════════════
+  # DLQ Health Check (ทุก 5 pulses — alert pran/innova ถ้า threshold exceeded)
+  # ═══════════════════════════════════════════════════════════════
+  if [ $(( PULSE_COUNT % 5 )) -eq 0 ]; then
+    echo -ne "  📬 DLQ check "
+    if [ -x "$JIT_ROOT/organs/dlq-handler.sh" ]; then
+      bash "$JIT_ROOT/organs/dlq-handler.sh" remediate 2>/dev/null > /dev/null
+      printf "done\n"
+    else
+      printf "skipped (dlq-handler.sh not found)\n"
+    fi
+  fi
+
+  # ═══════════════════════════════════════════════════════════════
   # Memory Decay Archive Task (ทุก 10 pulses ≈ 2.5 ชม. ที่ normal mode)
   # ═══════════════════════════════════════════════════════════════
   if [ $(( PULSE_COUNT % 10 )) -eq 0 ]; then

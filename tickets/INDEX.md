@@ -35,19 +35,15 @@ tags: [tag1, tag2]
 
 ## Open Tickets
 
-### P0 Critical (4 tickets — block release)
+### P0 Critical (0 tickets — all closed)
+
+*(All P0 tickets completed 2026-06-08)*
+
+### P1 High (9 tickets)
 
 | ID | Title | Type | Owner |
 |----|-------|------|-------|
-| JIT-001 | Add message TTL (time-to-live) to bus protocol | spec+code | lak |
-| JIT-002 | Add idempotency key to bus messages | spec+code | lak |
-| JIT-006 | Remove hardcoded OLLAMA_TOKEN from jit-heartbeat.service | fix+security | pada |
-| JIT-012 | Add Oracle health monitoring with auto-restart | feat | pran |
-
-### P1 High (8 tickets)
-
-| ID | Title | Type | Owner |
-|----|-------|------|-------|
+| JIT-030 | router.sh must reject expired messages (BUS_EXPIRED) | fix | lak |
 | JIT-003 | Add retry policy with exponential backoff to bus | spec+code | soma |
 | JIT-004 | Add dead-letter queue (DLQ) for bus failures | spec+code | lak |
 | JIT-007 | Add log rotation for daemon logs | fix | pada |
@@ -81,10 +77,26 @@ Last updated: 2026-06-08 (JIT-011, JIT-016, JIT-022, JIT-025 completed)
 
 | ID | Title | Completed | Owner |
 |----|-------|-----------|-------|
+| JIT-002 | Add idempotency key to bus messages | 2026-06-08 | lak |
+| JIT-003 | Add retry policy with exponential backoff to bus | 2026-06-08 | soma |
+| JIT-004 | Add dead-letter queue (DLQ) for bus failures | 2026-06-08 | lak |
+| JIT-005 | Add protocol-version field to bus messages | 2026-06-08 | soma |
+| JIT-006 | Remove hardcoded OLLAMA_TOKEN from service (EnvironmentFile) | 2026-06-08 | pada |
+| JIT-007 | Add log rotation for daemon logs | 2026-06-08 | pada |
+| JIT-008 | Add deploy rollback script (scripts/rollback.sh) | 2026-06-08 | pada |
+| JIT-009 | Add circuit breaker and global error handlers | 2026-06-08 | pada |
+| JIT-010 | Add health checks / liveness probes | 2026-06-08 | pada |
 | JIT-011 | Add HMAC message signing to bus protocol | 2026-06-08 | lak |
+| JIT-012 | Add Oracle health monitoring with auto-restart | 2026-06-08 | pran |
+| JIT-013 | Add GitHub Actions CI/CD pipeline | 2026-06-08 | pada |
+| JIT-014 | Add pytest configuration and test runner setup | 2026-06-08 | chamu |
+| JIT-015 | Add multi-model fallback chain to limbs/ollama.sh | 2026-06-08 | innova |
 | JIT-016 | Add shared memory decay and cleanup policy | 2026-06-07 | innova |
+| JIT-017 | Add capability versioning to agent registry | 2026-06-08 | lak |
+| JIT-018 | Add bus metrics collection and dashboard command | 2026-06-08 | netra |
 | JIT-022-token-exposure | Mask tokens from logs (redact, log_token) | 2026-06-08 | innova |
 | JIT-022-doc-protocol | Expand protocol.md with 14 agents + error recovery | 2026-06-08 | vaja |
 | JIT-022-act-sed | Add safe string handling docs to act.sh | 2026-06-08 | innova |
 | JIT-025 | Add conditional branching to act.sh + fix vitals ls parsing | 2026-06-08 | mue |
+| JIT-001 | Bus TTL: bus.sh+protocol done; router.sh gap → JIT-030 | 2026-06-08 (partial) | lak |
 

@@ -2,12 +2,18 @@ id: JIT-001
 title: Add message TTL (time-to-live) to bus protocol
 priority: P0
 type: spec+code
-status: open
+status: partial
 owner: lak
 created: 2026-06-06
-updated: 2026-06-06
+updated: 2026-06-08
 spec_ref: network/protocol.md
 source_audit: PROTO-GAP-001
+completion_note: |
+  3/4 acceptance criteria met (2026-06-08):
+  ✓ expires-at/ttl header in protocol.md
+  ✓ bus.sh send stamps TTL automatically with _get_default_ttl()
+  ✓ bus.sh sweep moves expired to DLQ
+  ✗ router.sh does NOT reject expired messages — tracked in JIT-030
 acceptance:
   - Add optional `expires-at:<ISO-8601>` (or `ttl:<seconds>`) header to message format in protocol.md
   - bus.sh `send` stamps the header automatically; default TTL is configurable (e.g. 1h for task, 24h for broadcast)

@@ -2,10 +2,10 @@ id: JIT-022
 title: OLLAMA_TOKEN and GITHUB_TOKEN exposed in logs and debug output
 priority: P1
 type: security
-status: open
+status: done
 owner: pada
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-06-08
 spec_ref: specs/JIT-022-spec.md
 acceptance:
   - Mask OLLAMA_TOKEN, GITHUB_TOKEN from all log output and debug statements

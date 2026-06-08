@@ -2,10 +2,10 @@ id: JIT-010
 title: Add health checks / liveness probes for Hermes and Heartbeat
 priority: P1
 type: fix
-status: open
+status: done
 owner: pada
 created: 2026-06-06
-updated: 2026-06-06
+updated: 2026-06-08
 spec_ref: hermes-discord/bot.js
 source_audit: DEVOPS-005
 acceptance:

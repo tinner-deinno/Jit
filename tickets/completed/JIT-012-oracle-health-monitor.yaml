@@ -2,10 +2,10 @@ id: JIT-012
 title: "Add Oracle health monitoring with auto-restart"
 priority: P0
 type: feat
-status: open
+status: done
 owner: pran
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-06-08
 spec_ref: specs/JIT-012-spec.md
 acceptance:
   - pran.sh polls http://localhost:47778/api/health every 60s

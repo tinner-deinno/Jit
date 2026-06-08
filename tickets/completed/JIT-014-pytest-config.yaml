@@ -2,10 +2,10 @@ id: JIT-014
 title: "Add pytest configuration and test runner setup"
 priority: P1
 type: test
-status: open
+status: done
 owner: chamu
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-06-08
 spec_ref: specs/JIT-014-spec.md
 acceptance:
   - pytest.ini or pyproject.toml [tool.pytest.ini_options] present at repo root

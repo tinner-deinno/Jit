@@ -5,7 +5,7 @@ type: feat
 status: completed
 owner: netra
 created: 2026-06-07
-updated: 2026-06-08T07:36
+updated: 2026-06-08
 completed: 2026-06-08
 spec_ref: specs/JIT-027-spec.md
 acceptance:

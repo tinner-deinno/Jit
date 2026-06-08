@@ -2,10 +2,10 @@ id: JIT-018
 title: "Add bus metrics collection and dashboard command"
 priority: P2
 type: feat
-status: open
+status: done
 owner: netra
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-06-08
 spec_ref: specs/JIT-018-spec.md
 acceptance:
   - bus.sh metrics subcommand outputs: messages_sent, messages_received, failed, expired, dlq_depth per agent

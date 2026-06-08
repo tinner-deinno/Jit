@@ -5,7 +5,7 @@ type: feat
 status: completed
 owner: innova
 created: 2026-06-07
-updated: 2026-06-08T00:45:00Z
+updated: 2026-06-08
 completed_date: 2026-06-08
 spec_ref: specs/JIT-019-spec.md
 acceptance:

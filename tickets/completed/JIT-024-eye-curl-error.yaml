@@ -3,7 +3,7 @@ id: JIT-024
 organ: eye
 title: Missing error handling for curl operations in web reading
 severity: P2
-status: open
+status: done
 location: organs/eye.sh:61-69
 description: |
   The `web` command fetches URLs with curl but doesn't check if the request succeeded.

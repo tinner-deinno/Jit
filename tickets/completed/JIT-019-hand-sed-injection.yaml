@@ -3,7 +3,7 @@ id: JIT-019
 organ: hand
 title: Unsafe sed command with unescaped user input
 severity: P1
-status: open
+status: done
 location: organs/hand.sh:46
 description: |
   The `edit` command uses sed with user-provided OLD and NEW strings without escaping.

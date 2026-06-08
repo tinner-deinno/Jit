@@ -2,10 +2,10 @@ id: JIT-024
 title: "Add anomaly detection and agent health alerts to heartbeat"
 priority: P2
 type: feat
-status: open
+status: done
 owner: pran
 created: 2026-06-07
-updated: 2026-06-07
+updated: 2026-06-08
 spec_ref: specs/JIT-024-spec.md
 acceptance:
   - heartbeat.sh detects per-agent anomalies: stuck agents, slow responses, inbox growth

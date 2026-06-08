@@ -5,7 +5,7 @@ type: spec+code
 status: completed
 owner: lak
 created: 2026-06-06
-updated: 2026-06-07
+updated: 2026-06-08
 spec_ref: network/protocol.md
 source_audit: PROTO-GAP-004
 acceptance:

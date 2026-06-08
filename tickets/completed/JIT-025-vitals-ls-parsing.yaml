@@ -3,7 +3,7 @@ id: JIT-025
 organ: vitals
 title: Unsafe ls parsing with special filenames in vital measurement
 severity: P2
-status: open
+status: done
 location: organs/vitals.sh:88, 145
 description: |
   The vitals.sh script uses ls output parsing which fails with special filenames

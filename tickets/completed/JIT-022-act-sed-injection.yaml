@@ -3,7 +3,7 @@ id: JIT-022
 organ: limbs/act
 title: Unsafe sed in act.sh write/edit operations vulnerable to injection
 severity: P1
-status: open
+status: done
 location: limbs/act.sh:none-currently
 description: |
   While act.sh itself doesn't contain sed, it's closely related to hand.sh issue JIT-019.

@@ -228,11 +228,11 @@ _dlq_clean() {
   mkdir -p "$archive_dir"
 
   local count=0
-  find "$DLQ_ROOT" -type f -mtime +"$days" | while read f; do
+  while IFS= read -r f; do
     cp "$f" "$archive_dir/"
     rm "$f"
     count=$((count + 1))
-  done
+  done < <(find "$DLQ_ROOT" -type f -mtime +"$days")
 
   ok "DLQ cleaned: archived files older than $days days"
   log_action "DLQ_CLEAN" "days=$days archived=$count"
