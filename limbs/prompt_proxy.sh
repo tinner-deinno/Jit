@@ -122,8 +122,13 @@ _check_api_key() {
 }
 
 # ─── proxy_call ─────────────────────────────────────────────────────────────
-# Main: format prompt → pick model → call Claude API → return result.
+# Main: format prompt → pick model → delegate to the unified gateway (llm.sh).
 # Args: proxy_call <raw_prompt> [model_hint: haiku|sonnet]
+#
+# Historically this called the Claude CLI directly. It now delegates to
+# limbs/llm.sh so the call inherits multi-provider routing + automatic fallback
+# (e.g. Claude unavailable → MDES Ollama) while keeping this script's
+# structured-prompt formatting and Thai-summary behaviour intact.
 proxy_call() {
   local RAW_PROMPT="$1"
   local MODEL_HINT="${2:-}"
@@ -133,9 +138,7 @@ proxy_call() {
     return 1
   fi
 
-  _check_api_key || return 1
-
-  # 1. Format the prompt
+  # 1. Format the prompt (structured [Role]/[Context]/[Task]/...)
   local STRUCTURED_PROMPT
   STRUCTURED_PROMPT="$(format_prompt "$RAW_PROMPT")"
 
@@ -144,33 +147,20 @@ proxy_call() {
   local SYSTEM_PROMPT
   SYSTEM_PROMPT="$(add_thai_summary_instruction "$BASE_SYSTEM")"
 
-  # 3. Pick model
-  local MODEL
-  MODEL="$(route_model "$RAW_PROMPT" "$MODEL_HINT")"
-
-  log_action "PROXY_CALL" "model=$MODEL prompt_words=$(printf '%s' "$RAW_PROMPT" | wc -w | tr -d '[:space:]')"
-  step "ส่งผ่าน CommandCode → claude CLI ($MODEL) — burning THEIR tokens..."
-
-  # 4. Build full prompt with system header prepended (claude -p takes single string)
-  local FULL_PROMPT
-  FULL_PROMPT="$(printf '%s\n\n---\n\n%s' "$SYSTEM_PROMPT" "$STRUCTURED_PROMPT")"
-
-  # 5. Call via claude CLI with COMMANDCODE as the API key — burns CommandCode tokens
-  local RESULT
-  RESULT=$(ANTHROPIC_API_KEY="$COMMANDCODE_API_KEY" \
-    claude -p \
-    --model "$MODEL" \
-    "$FULL_PROMPT" 2>/dev/null)
-
-  local EXIT_CODE=$?
-  if [ $EXIT_CODE -ne 0 ] || [ -z "$RESULT" ]; then
-    err "Claude CLI ผ่าน CommandCode ล้มเหลว (model=$MODEL)"
-    log_action "PROXY_ERROR" "exit=$EXIT_CODE model=$MODEL"
-    return 1
+  # 3. Pick Claude model alias (preserve word-count complexity routing)
+  local ALIAS="$MODEL_HINT"
+  if [ -z "$ALIAS" ]; then
+    local WC; WC=$(printf '%s' "$RAW_PROMPT" | wc -w | tr -d '[:space:]')
+    if [ "$WC" -ge "$COMPLEXITY_THRESHOLD" ]; then ALIAS="sonnet"; else ALIAS="haiku"; fi
   fi
 
-  echo "$RESULT"
-  log_action "PROXY_OK" "model=$MODEL chars=${#RESULT}"
+  log_action "PROXY_CALL" "delegate=llm.sh provider=claude model=$ALIAS"
+  step "ส่งผ่าน gateway (llm.sh) → claude/$ALIAS (fallback → ollama อัตโนมัติ)..." >&2
+
+  # 4. Delegate to the gateway. --provider claude keeps CommandCode-token billing;
+  #    if Claude is down the gateway walks the fallback chain (default_chain → ollama).
+  bash "$SCRIPT_DIR/llm.sh" call "$STRUCTURED_PROMPT" \
+    --provider claude --model "$ALIAS" --system "$SYSTEM_PROMPT"
 }
 
 # ─── CLI entrypoint ─────────────────────────────────────────────────────────

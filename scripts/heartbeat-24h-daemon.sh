@@ -13,10 +13,20 @@ set -euo pipefail
 
 source /workspaces/Jit/limbs/lib.sh
 
-HEARTBEAT_STATE="/tmp/innova-heartbeat-daemon.json"
-HEARTBEAT_LOG="/tmp/innova-heartbeat-daemon.log"
+# Log rotation support (JIT-007) — prefer env var, fall back to /var/log/jit, then /tmp for dev
+JIT_LOG_DIR="${JIT_LOG_DIR:-/var/log/jit}"
+JIT_STATE_DIR="${JIT_STATE_DIR:-/var/lib/jit}"
+
+# Create directories if they don't exist (systemd creates them in prod, but safe for dev)
+mkdir -p "$JIT_LOG_DIR" 2>/dev/null || JIT_LOG_DIR="/tmp"
+mkdir -p "$JIT_STATE_DIR" 2>/dev/null || JIT_STATE_DIR="/tmp"
+
+HEARTBEAT_STATE="$JIT_STATE_DIR/innova-heartbeat-daemon.json"
+HEARTBEAT_LOG="$JIT_LOG_DIR/innova-heartbeat-daemon.log"
 MAX_CONSECUTIVE_FAILURES=3
 PULSE_INTERVAL=900  # 15 minutes
+HERMES_HEALTH_URL="http://127.0.0.1:47780/healthz"
+HEARTBEAT_FRESH_FILE="/var/run/jit/heartbeat.fresh"
 
 # ═══════════════════════════════════════════════════════════════
 # Initialize state file
@@ -93,10 +103,14 @@ do_beat() {
     
     {
         echo "[Beat #$beat_num at $beat_timestamp]"
-        echo "Spawning MDES Ollama agent for system analysis..."
-        
-        # Query system state via Ollama
-        bash /workspaces/Jit/limbs/ollama.sh think "Heartbeat #$beat_num: Provide 1-line status of innova Agent system health. Format: 'Status: [OK|WARN|FAIL] — [brief reason]'" 2>&1 | head -20
+        echo "Spawning vital-signs agent for system analysis (via LLM gateway)..."
+
+        # Query system state through the unified gateway. Ollama stays primary (cheap,
+        # Thai-capable) but if MDES is unreachable the gateway falls back to Claude
+        # automatically — so the heartbeat loop never stalls on a single dead provider.
+        bash /workspaces/Jit/limbs/llm.sh call \
+            "Heartbeat #$beat_num: Provide 1-line status of innova Agent system health. Format: 'Status: [OK|WARN|FAIL] — [brief reason]'" \
+            --provider ollama 2>&1 | head -20
     } > "$in_file" 2>&1
     
     if [[ $? -eq 0 ]]; then
@@ -219,19 +233,43 @@ handle_beat_failure() {
         log_beat "CRITICAL" "🚨 CRITICAL: $MAX_CONSECUTIVE_FAILURES consecutive failures detected!"
         log_beat "CRITICAL" "🚨 Heartbeat entering CRITICAL state — manual intervention needed"
         update_state "status" "critical-failure"
-        
+
+        # Write circuit breaker flag (JIT-009)
+        echo "CIRCUIT_OPEN" > /tmp/jit-circuit-open
+        log_beat "CRITICAL" "⚡ Circuit breaker flag written: /tmp/jit-circuit-open"
+
         # Report critical failure to hermes
         bash /workspaces/Jit/scripts/hermes-report-status.sh "$beat_num" "critical" "🚨 Heartbeat FAILED: $error" 2>/dev/null || true
-        
+
         if [[ -n "${DISCORD_WEBHOOK:-}" ]]; then
             curl -s -X POST "$DISCORD_WEBHOOK" \
                 -H 'Content-Type: application/json' \
                 -d '{"content": "🚨 **CRITICAL**: Jit Heartbeat failed 3+ times — manual intervention needed"}' \
                 >/dev/null 2>&1 || true
         fi
-        
+
+        # Exit with code 42 to trigger RestartPreventExitStatus (JIT-009)
+        exit 42
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════
+# Check Hermes liveness probe
+# ═══════════════════════════════════════════════════════════════
+check_hermes_health() {
+    if curl -sf --max-time 5 "$HERMES_HEALTH_URL" >/dev/null 2>&1; then
+        return 0
+    else
         return 1
     fi
+}
+
+# ═══════════════════════════════════════════════════════════════
+# Touch heartbeat fresh file (for external monitoring)
+# ═══════════════════════════════════════════════════════════════
+touch_heartbeat_fresh() {
+    mkdir -p "$(dirname "$HEARTBEAT_FRESH_FILE")" 2>/dev/null || true
+    echo "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$HEARTBEAT_FRESH_FILE" 2>/dev/null || true
 }
 
 # ═══════════════════════════════════════════════════════════════
@@ -239,17 +277,34 @@ handle_beat_failure() {
 # ═══════════════════════════════════════════════════════════════
 main() {
     init_state
-    
+
     log_beat "INFO" "🫀 Jit Heartbeat Daemon started (PID: $$)"
     log_beat "INFO" "🫀 Pulse interval: ${PULSE_INTERVAL}s (15 min)"
     log_beat "INFO" "🫀 Status file: $HEARTBEAT_STATE"
-    
+    log_beat "INFO" "🫀 Hermes health URL: $HERMES_HEALTH_URL"
+    log_beat "INFO" "🫀 Fresh file: $HEARTBEAT_FRESH_FILE"
+
     local beat_count=0
     local start_time=$(date +%s)
-    
+
     while true; do
         beat_count=$((beat_count + 1))
-        
+
+        # ─────────────────────────────────────────────────────────────
+        # Check Hermes liveness before beat
+        # ─────────────────────────────────────────────────────────────
+        if check_hermes_health; then
+            log_beat "INFO" "✅ Hermes health check OK"
+        else
+            log_beat "WARN" "⚠️  Hermes health check FAILED — Hermes may be unresponsive"
+        fi
+
+        # ─────────────────────────────────────────────────────────────
+        # Touch fresh file to signal we're alive
+        # ─────────────────────────────────────────────────────────────
+        touch_heartbeat_fresh
+        log_beat "INFO" "✅ Touched fresh file: $HEARTBEAT_FRESH_FILE"
+
         # ─────────────────────────────────────────────────────────────
         # Try to execute beat
         # ─────────────────────────────────────────────────────────────
@@ -260,21 +315,23 @@ main() {
             update_state "consecutive_failures" "0"
             update_state "status" "healthy"
         else
-            # Failure: handle and potentially pause
+            # Failure: handle (will exit 42 if circuit breaker trips)
             handle_beat_failure "$beat_count" "Beat execution failed" || {
                 log_beat "CRITICAL" "🫀 Daemon pausing for manual recovery..."
                 sleep 300  # Pause for 5 minutes, then retry
                 continue
             }
+            # If handle_beat_failure returns (circuit not tripped), continue
+            log_beat "WARN" "⚠️  Beat failed but circuit breaker not tripped yet (failures: $(get_state 'consecutive_failures')/$MAX_CONSECUTIVE_FAILURES)"
         fi
-        
+
         # ─────────────────────────────────────────────────────────────
         # Calculate and log uptime
         # ─────────────────────────────────────────────────────────────
         local current_time=$(date +%s)
         local uptime_seconds=$((current_time - start_time))
         update_state "uptime_seconds" "$uptime_seconds"
-        
+
         log_beat "INFO" "⏰ Next heartbeat in ${PULSE_INTERVAL}s (Beat #$((beat_count + 1)))"
         log_beat "INFO" "📊 Uptime: ${uptime_seconds}s | Beats: $beat_count | Failures: $(get_state 'total_failures')"
         
