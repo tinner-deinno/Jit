@@ -50,6 +50,7 @@ const IS_PARTIAL = SELECTED_BACKENDS.length > 0 && SELECTED_BACKENDS.length < AL
 const PING = [{ role: 'user', content: 'Reply with exactly: OK' }];
 
 function classify(err) {
+  if (err && err.authError) return 'AUTH';
   const msg = String(err && err.message || err || '').toLowerCase();
   if (/\b(429|402|403|quota|rate.?limit|exhaust|too many)\b/.test(msg)) return 'RATE_LIMITED';
   if (/\b(401|unauthor|invalid.*(key|token)|missing.*(key|token))\b/.test(msg)) return 'AUTH';

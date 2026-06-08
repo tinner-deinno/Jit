@@ -1,5 +1,16 @@
 const https = require('https');
 const fs = require('fs');
+const path = require('path');
+
+// Load .env if not already loaded
+const envPath = path.join(__dirname, '.env');
+if (fs.existsSync(envPath)) {
+  for (const line of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+  }
+}
+
 const logFile = 'C:\\Users\\admin\\Jit\\node_out.txt';
 
 const data = JSON.stringify({
@@ -13,7 +24,7 @@ const options = {
   path: '/v1/chat/completions',
   method: 'POST',
   headers: {
-    'Authorization': 'Bearer 9e34679b9d60d8b984005ec46508579c',
+    'Authorization': 'Bearer ' + (process.env.OLLAMA_TOKEN || ''),
     'Content-Type': 'application/json',
     'Content-Length': data.length
   }

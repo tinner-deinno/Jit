@@ -1,12 +1,17 @@
 # Environment variables and secrets
+# Covers all .env variants in root and subdirectories
 .env
-.env.local
-.env.*.local
+.env.*
+*.env
+!.env.example
 
 # API tokens and credentials (NEVER commit these)
 secrets.json
 credentials.json
 tokens.json
+
+# Encrypted secrets vault (passphrase-protected, but don't commit the vault itself)
+.secrets/
 
 # IDE and editor files
 .vscode/

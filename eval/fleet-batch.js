@@ -23,6 +23,7 @@ const LOOP_DIR = path.join(ROOT, 'network', 'loop');
 const PROGRESS_PATH = path.join(LOOP_DIR, 'latest-fleet-progress.json');
 const REGISTRY_PATH = path.join(ROOT, 'network', 'registry.json');
 const ROUTING_PATH = path.join(ROOT, 'config', 'subagent-routing.json');
+const PROVIDER_STATUS_PATH = path.join(ROOT, 'network', 'provider-status.json');
 
 const envPath = path.join(ROOT, '.env');
 if (fs.existsSync(envPath)) {
@@ -62,6 +63,7 @@ function normalizeLane(value) {
   if (v === 'local' || v === 'ollama-local') return 'ollama_local';
   if (v === 'cloud' || v === 'ollama-cloud') return 'ollama_cloud';
   if (v === 'innova' || v === 'innova-bot') return 'innova_bot';
+  if (v === 'commandcode' || v === 'command_code' || v === 'evergreen') return 'commandcode';
   return v;
 }
 
@@ -122,6 +124,7 @@ const REQUIRE_MIN_COUNT = posInt(arg('--require-min-count', process.env.FLEET_RE
 const REQUIRE_MIN_OK = posInt(arg('--require-min-ok', process.env.FLEET_REQUIRE_MIN_OK || REQUIRE_MIN_COUNT), REQUIRE_MIN_COUNT, 0, 200);
 const INCLUDE_OPENAI = has('--include-openai');
 const INCLUDE_INNOVA_BOT = has('--include-innova-bot');
+const INCLUDE_COMMANDCODE = has('--include-commandcode');
 const REQUESTED_LANES = splitCsv(arg('--lanes', process.env.FLEET_BATCH_LANES || '')).map(normalizeLane);
 const EXCLUDED_LANES = splitCsv(arg('--exclude-lanes', process.env.FLEET_BATCH_EXCLUDE_LANES || '')).map(normalizeLane);
 const RUN_ID = 'fleet-batch-' + new Date().toISOString().replace(/[:.]/g, '-');
@@ -145,9 +148,10 @@ const BACKEND_LIMITS = {
   copilot: 1,
   openai: 1,
   innova_bot: 1,
+  commandcode: 2,
 };
 
-const DEFAULT_ROUTE_ORDER = ['ollama_mdes', 'thaillm', 'ollama_cloud', 'copilot', 'ollama_local'];
+const DEFAULT_ROUTE_ORDER = ['ollama_mdes', 'thaillm', 'commandcode', 'ollama_cloud', 'copilot', 'ollama_local'];
 const DEFAULT_THAI_MODELS = [
   'openthaigpt-thaillm-8b-instruct-v7.2',
   'pathumma-thaillm-qwen3-8b-think-3.0.0',
@@ -157,7 +161,7 @@ const DEFAULT_THAI_MODELS = [
 const DEFAULT_PERSONAS = [
   'jit', 'innova', 'soma', 'lak', 'neta', 'chamu', 'vaja', 'mue',
   'pada', 'netra', 'karn', 'pran', 'sayanprasathan', 'agent-mdes',
-  'agent-thaillm', 'agent-copilot',
+  'agent-thaillm', 'agent-copilot', 'agent-commandcode',
 ];
 const DEFAULT_PERSPECTIVES = ['coordinator', 'analyst', 'executor', 'verifier', 'observer', 'critic', 'scribe', 'router'];
 
@@ -178,6 +182,13 @@ function laneDefinitions() {
       backend: 'thaillm',
       models: thaiModels,
       weight: 26,
+      costTier: 'medium',
+      external: true,
+    },
+    commandcode: {
+      backend: 'commandcode',
+      models: splitCsv(process.env.COMMANDCODE_MODELS || routing.providers?.commandcode?.models?.join(',') || 'deepseek/deepseek-v4-flash,commandcode-1'),
+      weight: 18,
       costTier: 'medium',
       external: true,
     },
@@ -223,11 +234,21 @@ function laneDefinitions() {
     : uniqueList([].concat((routing.policy && routing.policy.budget_order) || [], DEFAULT_ROUTE_ORDER).map(normalizeLane));
   if (!INCLUDE_OPENAI) ordered = ordered.filter(name => name !== 'openai');
   if (!INCLUDE_INNOVA_BOT) ordered = ordered.filter(name => name !== 'innova_bot');
+  if (!INCLUDE_COMMANDCODE) ordered = ordered.filter(name => name !== 'commandcode');
   if (INCLUDE_OPENAI && !ordered.includes('openai')) ordered.push('openai');
   if (INCLUDE_INNOVA_BOT && !ordered.includes('innova_bot')) ordered.push('innova_bot');
+  if (INCLUDE_COMMANDCODE && !ordered.includes('commandcode')) ordered.push('commandcode');
   if (EXCLUDED_LANES.length) ordered = ordered.filter(name => !EXCLUDED_LANES.includes(name));
 
-  const lanes = ordered
+  // Task #10: Filter out UNREACHABLE/ERROR lanes based on provider-status.json probe.
+  // Lanes that are down get their weight redistributed to surviving lanes.
+  const providerStatus = readJson(path.join(ROOT, 'network', 'provider-status.json'), { usable: [], results: {} });
+  const aliveBackends = new Set((providerStatus.usable || []).filter(b => {
+    const r = providerStatus.results && providerStatus.results[b];
+    return r && r.status === 'ALIVE' && r.served_by === b;
+  }));
+
+  const unfilteredLanes = ordered
     .map(name => definitions[name])
     .filter(Boolean)
     .map(lane => ({
@@ -235,8 +256,27 @@ function laneDefinitions() {
       models: uniqueList(lane.models.length ? lane.models : [null]),
     }));
 
+  // Filter: keep only ALIVE lanes; redistribute weight from dead lanes proportionally.
+  let lanes = unfilteredLanes.filter(lane => aliveBackends.has(lane.backend));
+  const deadWeight = unfilteredLanes
+    .filter(lane => !aliveBackends.has(lane.backend))
+    .reduce((sum, lane) => sum + lane.weight, 0);
+
+  if (deadWeight > 0 && lanes.length > 0) {
+    const liveWeight = lanes.reduce((sum, lane) => sum + lane.weight, 0);
+    for (const lane of lanes) {
+      lane.weight += Math.round(deadWeight * (lane.weight / liveWeight));
+    }
+  }
+
+  // Log filtered lanes for observability.
+  const deadNames = unfilteredLanes.filter(l => !aliveBackends.has(l.backend)).map(l => l.backend);
+  if (deadNames.length) {
+    console.log(`[fleet] provider-status filter: dropped ${deadNames.join(', ')} (not ALIVE), redistributed ${deadWeight} weight`);
+  }
+
   if (!lanes.length) {
-    throw new Error('No fleet lanes selected. Check --lanes/--exclude-lanes.');
+    throw new Error('No fleet lanes selected. Check --lanes/--exclude-lanes and provider-status.json.');
   }
   return lanes;
 }

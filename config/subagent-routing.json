@@ -1,13 +1,13 @@
 {
   "version": "1.1",
-  "updated": "2026-06-05",
-  "purpose": "Shared budget-aware routing map for Jit Codex, Jit ClaudeCode, Antigravity, innova-bot, Maw, Oracle, and Ollama lanes.",
+  "updated": "2026-06-08",
+  "purpose": "Shared budget-aware routing map for Jit Codex, Jit ClaudeCode, Antigravity, innova-bot, Maw, Oracle, CommandCode, and Ollama lanes.",
   "policy": {
     "lead_agent": "jit-codex",
     "parent_controller": true,
     "default_agent": "innova",
     "default_provider": "ollama_mdes",
-    "budget_order": ["ollama_mdes", "thaillm", "ollama_local", "ollama_cloud", "antigravity", "copilot", "openai"],
+    "budget_order": ["ollama_mdes", "thaillm", "commandcode", "ollama_local", "ollama_cloud", "antigravity", "copilot", "openai"],
     "advisor_provider": "openai",
     "advisor_model": "gpt-5.5",
     "advisor_policy": "Use GPT-5.5 only for high-risk architecture, hard blockers, final critical review, or user-facing synthesis that cheaper lanes cannot resolve.",
@@ -68,6 +68,17 @@
       ],
       "cost_tier": "medium",
       "use_for": ["cultural nuance", "high-fidelity Thai translation", "local Thai context"]
+    },
+    "commandcode": {
+      "kind": "chat_completion",
+      "endpoint_env": "COMMANDCODE_BASE_URL",
+      "default_endpoint": "https://api.commandcode.ai/v1",
+      "default_model": "deepseek/deepseek-v4-flash",
+      "models": ["deepseek/deepseek-v4-flash", "commandcode-1"],
+      "auth_env": "COMMANDCODE_API_KEY",
+      "cost_tier": "medium",
+      "use_for": ["coordinator reasoning", "fleet worker routing", "Evergreen-TH lane", "structured code generation"],
+      "health_probe": "https://commandcode.ai/Evergreen-TH/settings/usage"
     },
     "innova_bot_sse": {
       "kind": "mcp_sse",
@@ -268,6 +279,15 @@
       "cost_tier": "medium",
       "capabilities": ["rapid-prototype", "boilerplate", "real-time-suggestion"],
       "when_to_use": ["starting new modules", "rapidly scaffolding features"]
+    },
+    "agent-commandcode": {
+      "runtime": "agent-spawner",
+      "provider": "commandcode",
+      "model": "deepseek/deepseek-v4-flash",
+      "role": "CommandCode Evergreen-TH Coordinator",
+      "cost_tier": "medium",
+      "capabilities": ["coordinator-reasoning", "fleet-routing", "structured-generation", "evergreen-th"],
+      "when_to_use": ["fleet worker coordination", "CommandCode lane tasks", "Evergreen-TH reasoning", "structured code generation via CommandCode API"]
     }
   },
   "routing_rules": [
@@ -377,6 +397,14 @@
       "provider": "copilot",
       "model": "claude-sonnet-4.6",
       "reason": "Copilot is the best for high-speed scaffolding and boilerplate generation."
+    },
+    {
+      "id": "commandcode-evergreen",
+      "match": ["commandcode", "evergreen", "evergreen-th", "fleet-coordination", "coordinator-lane"],
+      "agent": "agent-commandcode",
+      "provider": "commandcode",
+      "model": "deepseek/deepseek-v4-flash",
+      "reason": "CommandCode Evergreen-TH lane for fleet worker coordination and structured generation via CommandCode API."
     }
   ],
   "validation": {

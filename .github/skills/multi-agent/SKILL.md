@@ -63,7 +63,7 @@ COPILOT_TOKEN=tid_...
 COPILOT_MODEL=gpt-4o
 
 # MDES Ollama (fallback — มีอยู่แล้ว)
-OLLAMA_TOKEN=9e34679b9d60d8b984005ec46508579c
+OLLAMA_TOKEN=<your-ollama-token>
 ```
 
 ### 2. เริ่ม Multi-Proxy

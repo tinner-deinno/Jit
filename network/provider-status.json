@@ -1,12 +1,29 @@
 {
-  "probed_at_ms": 1780852680077,
-  "timeout_ms": 25000,
-  "full_probe": false,
+  "probed_at_ms": 1780919730492,
+  "timeout_ms": 35000,
+  "full_probe": true,
   "probed_backends": [
+    "ollama_mdes",
+    "ollama_local",
+    "ollama_cloud",
+    "thaillm",
+    "copilot",
+    "openai",
+    "openclaude",
+    "innova_bot",
     "commandcode"
   ],
-  "usable": [],
+  "usable": [
+    "commandcode",
+    "innova_bot",
+    "ollama_local",
+    "ollama_mdes",
+    "thaillm"
+  ],
   "cached_usable": [
+    "commandcode",
+    "innova_bot",
+    "ollama_local",
     "ollama_mdes",
     "thaillm"
   ],
@@ -14,69 +31,70 @@
     "ollama_mdes": {
       "backend": "ollama_mdes",
       "status": "ALIVE",
-      "ms": 1602,
+      "ms": 3269,
       "served_by": "ollama_mdes",
       "sample": "OK",
-      "probed_at_ms": 1780852335200
+      "probed_at_ms": 1780919730492
     },
     "ollama_local": {
       "backend": "ollama_local",
-      "status": "UNREACHABLE",
-      "ms": 5151,
-      "error": "Ollama timeout",
-      "probed_at_ms": 1780849996713
+      "status": "ALIVE",
+      "ms": 3070,
+      "served_by": "ollama_local",
+      "sample": "OK",
+      "probed_at_ms": 1780919730492
     },
     "ollama_cloud": {
       "backend": "ollama_cloud",
-      "status": "UNREACHABLE",
-      "ms": 5150,
-      "error": "Ollama timeout",
-      "probed_at_ms": 1780849996713
+      "status": "RATE_LIMITED",
+      "ms": 2487,
+      "error": "Ollama HTTP 429: {\"error\":\"you (tarpipnum) have reached your session usage limit",
+      "probed_at_ms": 1780919730492
     },
     "thaillm": {
       "backend": "thaillm",
       "status": "ALIVE",
-      "ms": 678,
+      "ms": 2560,
       "served_by": "thaillm",
       "sample": "<think> Okay, the user wants me to reply with exactly \"OK\". ",
-      "probed_at_ms": 1780852335200
+      "probed_at_ms": 1780919730492
     },
     "copilot": {
       "backend": "copilot",
       "status": "ERROR",
-      "ms": 5532,
-      "error": "Copilot exchange HTTP 404: {\"message\":\"Not Found\",\"documentation_url\":\"https://d",
-      "probed_at_ms": 1780849996713
+      "ms": 12906,
+      "error": "empty reply from copilot",
+      "probed_at_ms": 1780919730492
     },
     "openai": {
       "backend": "openai",
       "status": "ERROR",
-      "ms": 19607,
+      "ms": 7150,
       "error": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nm",
-      "probed_at_ms": 1780849996713
+      "probed_at_ms": 1780919730492
     },
     "openclaude": {
       "backend": "openclaude",
       "status": "UNREACHABLE",
-      "ms": 187,
+      "ms": 82,
       "error": "OpenClaude request error: ECONNREFUSED",
-      "probed_at_ms": 1780849996713
+      "probed_at_ms": 1780919730492
     },
     "innova_bot": {
       "backend": "innova_bot",
-      "status": "ERROR",
-      "ms": 168,
+      "status": "ALIVE",
+      "ms": 234,
       "served_by": "innova_bot",
-      "sample": "[SYSTEM OVERRIDE]: Local AI query failed (Ollama may be offl",
-      "error": "non-usable probe reply: [SYSTEM OVERRIDE]: Local AI query failed (Ollama may be offl",
-      "probed_at_ms": 1780852335200
+      "sample": "stub-ok: USER: Reply with exactly: OK ASSISTANT:",
+      "probed_at_ms": 1780919730492
     },
     "commandcode": {
       "backend": "commandcode",
-      "status": "ERROR",
-      "ms": 90,
-      "error": "HTTP 404: {\"success\":false,\"status\":404,\"message\":\"404 Not found. Check the docs",
-      "probed_at_ms": 1780852680077
+      "status": "ALIVE",
+      "ms": 1829,
+      "served_by": "commandcode",
+      "sample": "OK",
+      "probed_at_ms": 1780919730492
     }
   }
 }

@@ -88,7 +88,7 @@ bash minds/jit-life.sh sweep
 ## Env Vars Required (`.env`)
 
 ```bash
-OLLAMA_TOKEN=9e34679b9d60d8b984005ec46508579c
+OLLAMA_TOKEN=<your-ollama-token>
 OLLAMA_BASE_URL=https://ollama.mdes-innova.online
 DISCORD_TOKEN=<bot-token>
 JIT_REPORT_CHANNEL_ID=<channel-id>    # Discord channel for reports

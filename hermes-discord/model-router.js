@@ -143,9 +143,9 @@ function _normalizeBackendName(name) {
   return v;
 }
 
-const COMMANDCODE_BASE_URL = process.env.COMMANDCODE_BASE_URL || 'https://api.commandcode.ai/v1';
+const COMMANDCODE_BASE_URL = process.env.COMMANDCODE_BASE_URL || 'https://api.commandcode.ai/provider/v1';
 const COMMANDCODE_API_KEY_RAW = process.env.COMMANDCODE_API_KEY || '';
-const COMMANDCODE_MODEL = process.env.COMMANDCODE_MODEL || 'commandcode-1';
+const COMMANDCODE_MODEL = process.env.COMMANDCODE_MODEL || 'deepseek/deepseek-v4-flash';
 const COMMANDCODE_TOKEN = COMMANDCODE_API_KEY_RAW ? COMMANDCODE_API_KEY_RAW.replace(/^Bearer\s+/i, '').trim() : '';
 
 const BACKEND_ORDER = (process.env.MULTI_BACKEND_ORDER || 'ollama_mdes,thaillm,commandcode,ollama_local,ollama_cloud,copilot,openai,openclaude')
@@ -219,7 +219,12 @@ class BackendManager {
         url: COMMANDCODE_BASE_URL,
         token: COMMANDCODE_TOKEN,
         model: COMMANDCODE_MODEL,
-        type: 'commandcode'
+        type: 'commandcode',
+        endpoints: {
+          openai: '/chat/completions',
+          anthropic: '/messages',
+          models: '/models',
+        },
       }
     };
   }
@@ -297,6 +302,34 @@ function _breakerOpen(backend) {
 }
 function _tripBreaker(backend) { _breakerOpenedAt[backend] = Date.now(); _saveBreaker(); }
 function _resetBreaker(backend) { if (_breakerOpenedAt[backend]) { delete _breakerOpenedAt[backend]; _saveBreaker(); } }
+
+// ── AUTH error detection ────────────────────────────────────────────────
+// An AUTH error (401, expired token, invalid key) means the backend's
+// credentials are bad — retrying it is useless until a human fixes the token.
+// We detect this from both explicit error tags (authError: true set by
+// _httpPost / _postOllama) and by pattern-matching the error message (for
+// callers that construct errors without the tag, e.g. Copilot exchange).
+function _isAuthError(err) {
+  if (!err) return false;
+  if (err.authError) return true;
+  var msg = String(err.message || err || '').toLowerCase();
+  return /\b(401|unauthor|invalid.*(key|token|api.?key|credential)|expired.*(token|key)|auth.*fail|authentication.*fail|missing.*(key|token)|(key|token|api.?key).*(not set|not configured|empty|missing|absent))\b/.test(msg);
+}
+
+// AUTH-based degradation: when an AUTH error is hit, we inject thaillm as
+// the immediate next backend (if not already in the remaining rotation order).
+// ThaiLLM is the designated safe fallback because:
+//   - It has independent credentials (THAILLM_TOKEN, not shared with MDES/OpenAI)
+//   - Historically ALIVE 19/19 probes
+//   - Low latency (~678ms avg)
+//   - No quota limits
+function _injectThaiLLMFallback(remainingOrder) {
+  if (remainingOrder.indexOf('thaillm') !== -1) return remainingOrder; // already present
+  var be = backendManager.getBackend('thaillm');
+  if (!be || !be.url) return remainingOrder;
+  // Insert thaillm right after the current failing backend
+  return ['thaillm'].concat(remainingOrder);
+}
 
 function _isCopilotOAuthToken(token) {
   var t = String(token || '').trim();
@@ -479,6 +512,12 @@ function _httpPost(baseUrl, apiPath, extraHeaders, bodyObj, callback, timeoutMs)
     var data = '';
     res.on('data', function(c) { data += c; });
     res.on('end', function() {
+      if (res.statusCode === 401) {
+        var authErr = new Error('auth:' + res.statusCode);
+        authErr.authError  = true;
+        authErr.statusCode = res.statusCode;
+        return callback(authErr);
+      }
       if (res.statusCode === 429 || res.statusCode === 402 || res.statusCode === 403) {
         var qErr = new Error('quota:' + res.statusCode);
         qErr.quota      = true;
@@ -764,6 +803,13 @@ function _postOllama(cfg, endpointPath, payload, callback, timeoutMs) {
     var data = '';
     res.on('data', function(c) { data += c; });
     res.on('end', function() {
+      if (res.statusCode === 401) {
+        var authErr = new Error('Ollama auth:' + res.statusCode + ': ' + data.slice(0, 200));
+        authErr.authError  = true;
+        authErr.statusCode = res.statusCode;
+        authErr.response   = data;
+        return callback(authErr);
+      }
       if (res.statusCode && res.statusCode >= 400) {
         var err = new Error('Ollama HTTP ' + res.statusCode + ': ' + data.slice(0, 200));
         err.statusCode = res.statusCode;
@@ -782,25 +828,33 @@ function _postOllama(cfg, endpointPath, payload, callback, timeoutMs) {
 function _callCommandCode(messages, model, callOptions, callback) {
   callOptions = callOptions || {};
   if (!COMMANDCODE_TOKEN) return callback(new Error('COMMANDCODE_API_KEY not set'));
-  var url = COMMANDCODE_BASE_URL.replace(/\/+$/, '') + '/chat/completions';
-  var body = {
-    model: model || COMMANDCODE_MODEL,
-    messages: messages,
-    max_tokens: callOptions.maxTokens || 512,
-    temperature: callOptions.temperature || 0.7,
-  };
-  _httpPost(url, '', { 'Authorization': 'Bearer ' + COMMANDCODE_TOKEN }, body, function(err, body2) {
+  var selectedModel = model || COMMANDCODE_MODEL;
+  // Anthropic models must go to /messages; all others go to /chat/completions
+  var isAnthropic = /^claude/i.test(selectedModel);
+  var apiPath = isAnthropic ? '/messages' : '/chat/completions';
+  var body = isAnthropic
+    ? { model: selectedModel, max_tokens: callOptions.maxTokens || 1024, messages: messages }
+    : { model: selectedModel, messages: messages, max_tokens: callOptions.maxTokens || 512, temperature: callOptions.temperature || 0.7 };
+  _httpPost(COMMANDCODE_BASE_URL, apiPath, { 'Authorization': 'Bearer ' + COMMANDCODE_TOKEN }, body, function(err, body2) {
     if (err) return callback(err);
     try {
       var data = typeof body2 === 'string' ? JSON.parse(body2) : body2;
-      var reply = data && data.choices && data.choices[0] && data.choices[0].message
-        ? data.choices[0].message.content
-        : (data && data.reply) || '';
+      var reply;
+      if (isAnthropic) {
+        // Anthropic wire format: { content: [{ type: "text", text: "..." }] }
+        reply = data && data.content && data.content[0] && data.content[0].text
+          ? data.content[0].text
+          : (data && data.reply) || '';
+      } else {
+        reply = data && data.choices && data.choices[0] && data.choices[0].message
+          ? data.choices[0].message.content
+          : (data && data.reply) || '';
+      }
       return callback(null, String(reply || ''));
     } catch (e) {
       return callback(new Error('CommandCode parse error: ' + e.message));
     }
-  });
+  }, callOptions.timeoutMs);
 }
 
 function _callThaiLLM(messages, model, callOptions, callback) {
@@ -946,6 +1000,22 @@ function callModel(messages, options, callback) {
       _errors[backend] = (_errors[backend] || 0) + 1;
       if (_errors[backend] >= BREAKER_THRESHOLD) _tripBreaker(backend);
       attempts.push({ backend: backend, ok: false, error: err.message });
+
+      // AUTH degradation: if this is an authentication failure, immediately
+      // inject thaillm as the next backend in the rotation (if not already
+      // present) so the caller degrades gracefully instead of trying more
+      // backends that may share the same broken credentials. AUTH failures
+      // are credential-level — retrying the same backend is pointless, and
+      // backends sharing the same token (e.g. MDES Ollama) will also fail.
+      if (_isAuthError(err) && !opts.noRotate) {
+        var remaining = order.slice(attempt);
+        var withThaiLLM = _injectThaiLLMFallback(remaining);
+        if (withThaiLLM.length !== remaining.length) {
+          console.warn('[model-router] AUTH error on ' + backend + ' — degrading to ThaiLLM fallback');
+          order = order.slice(0, attempt).concat(withThaiLLM);
+        }
+      }
+
       if (opts.noRotate) { err.attempts = attempts; return callback(err); }
       tryNext();
     });
@@ -994,6 +1064,7 @@ function status() {
       },
       ollama_mdes: { available: !!OLLAMA_MDES_URL, url: OLLAMA_MDES_URL, model: OLLAMA_MDES_MODEL, errors: _errors.ollama || 0 },
       thaillm: { available: !!THAILLM_URL && !!THAILLM_TOKEN, url: THAILLM_URL, model: THAILLM_MODEL, models: THAILLM_MODELS, errors: _errors.thaillm || 0 },
+      commandcode: { available: !!COMMANDCODE_TOKEN, url: COMMANDCODE_BASE_URL, model: COMMANDCODE_MODEL, errors: _errors.commandcode || 0 },
       ollama_local: { available: !!OLLAMA_LOCAL_URL, url: OLLAMA_LOCAL_URL, model: OLLAMA_LOCAL_MODEL, errors: _errors.ollama || 0 },
       ollama_cloud: { available: !!OLLAMA_CLOUD_URL, url: OLLAMA_CLOUD_URL, resolvedUrl: cloudCfg.url, model: OLLAMA_CLOUD_MODEL, apiModel: _modelForOllamaBackend(OLLAMA_CLOUD_MODEL, 'ollama_cloud', cloudCfg.url), targetModel: JIT_CLOUD_MODEL, errors: _errors.ollama || 0 },
       // Backward-compatible alias for older callers.
@@ -1001,6 +1072,7 @@ function status() {
       openclaude: { available: ocStatus.available, configured: ocStatus.configured, host: ocStatus.host, port: ocStatus.port, model: ocStatus.model, healthEndpoint: ocStatus.healthEndpoint, errors: _errors.openclaude || 0 },
     },
     primary: BACKEND_ORDER[0] || 'ollama',
+    authFallback: 'thaillm',
   };
 }
 

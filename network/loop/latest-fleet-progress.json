@@ -1,58 +1,45 @@
 {
-  "runId": "fleet-batch-2026-06-07T17-12-17-122Z",
-  "goal": "Jit Mother cycle 177: clear the innova-bot/Jit/innomcp backlog carefully.\nSelected lanes: ollama_mdes, thaillm\n\nOBJECTIVE — innomcp ready by morning (~6h):\n- Bootstrap MAW teams innomcp / innova-bot-template / jit (currently 0 agents each).\n- Drive the 5 innomcp tickets (TICKET-001..005: CommandCode bridge, Thai routing audit, geo, determinism, memory-symmetry).\n- Recover ollama_mdes/thaillm/ollama_cloud, prefer ALIVE lanes only.\n- Use thaillm as the safe fallback (19/19 OK, avg 6s).\n\nMAW team:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nMAW tasks:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nStatus board:\n{\n\"providerProbe\": {\n\"mode\": \"partial\",\n\"probedBackends\": [\n\"ollama_mdes\",\n\"thaillm\",\n\"innova_bot\"\n],\n\"cachedUsable\": [\n\"ollama_mdes\",\n\"thaillm\"\n]\n},\n\"usable\": [\n\"ollama_mdes\",\n\"thaillm\"\n],\n\"bridge\": {\n\"up\": true,\n\"detail\": \"HTTP 200\"\n},\n\"providers\": {\n\"ollama_mdes\": {\n\"status\": \"ALIVE\",\n\"ms\": 1602,\n\"fresh\": \"2s ago\"\n},\n\"ollama_local\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 5151,\n\"fresh\": \"cached\",\n\"error\": \"Ollama timeout\"\n},\n\"ollama_cloud\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 5150,\n\"fresh\": \"cached\",\n\"error\": \"Ollama timeout\"\n},\n\"thaillm\": {\n\"status\": \"ALIVE\",\n\"ms\": 678,\n\"fresh\": \"2s ago\"\n},\n\"copilot\": {\n\"status\": \"ERROR\",\n\"ms\": 5532,\n\"fresh\": \"cached\",\n\"error\": \"Copilot exchange HTTP 404: {\\\"messa\n\nReturn one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.",
-  "updatedAt": "2026-06-07T17:18:13.455Z",
-  "label": "running",
+  "runId": "fleet-batch-2026-06-08T10-05-16-144Z",
+  "goal": "Verify Thai GeoTool integration: Query 'กรุงเทพมหานคร' and 'เชียงใหม่'. Verify if the results match the provincial data in limbs/thai-geo.js (e.g., BKK 10200, CNX 60000). Give a confidence score.",
+  "updatedAt": "2026-06-08T10:05:50.401Z",
+  "label": "complete",
   "summary": {
-    "runId": "fleet-batch-2026-06-07T17-12-17-122Z",
-    "goal": "Jit Mother cycle 177: clear the innova-bot/Jit/innomcp backlog carefully.\nSelected lanes: ollama_mdes, thaillm\n\nOBJECTIVE — innomcp ready by morning (~6h):\n- Bootstrap MAW teams innomcp / innova-bot-template / jit (currently 0 agents each).\n- Drive the 5 innomcp tickets (TICKET-001..005: CommandCode bridge, Thai routing audit, geo, determinism, memory-symmetry).\n- Recover ollama_mdes/thaillm/ollama_cloud, prefer ALIVE lanes only.\n- Use thaillm as the safe fallback (19/19 OK, avg 6s).\n\nMAW team:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nMAW tasks:\nno tasks for team \"innomcp\"\n\nTeam: innomcp (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"innova-bot-template\"\n\nTeam: innova-bot-template (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\nno tasks for team \"jit\"\n\nTeam: jit (0 agents)\n\nAgent Status Task Pane\n\nTasks: 0/0 done | Agents: 0 working, 0 idle\n\nStatus board:\n{\n\"providerProbe\": {\n\"mode\": \"partial\",\n\"probedBackends\": [\n\"ollama_mdes\",\n\"thaillm\",\n\"innova_bot\"\n],\n\"cachedUsable\": [\n\"ollama_mdes\",\n\"thaillm\"\n]\n},\n\"usable\": [\n\"ollama_mdes\",\n\"thaillm\"\n],\n\"bridge\": {\n\"up\": true,\n\"detail\": \"HTTP 200\"\n},\n\"providers\": {\n\"ollama_mdes\": {\n\"status\": \"ALIVE\",\n\"ms\": 1602,\n\"fresh\": \"2s ago\"\n},\n\"ollama_local\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 5151,\n\"fresh\": \"cached\",\n\"error\": \"Ollama timeout\"\n},\n\"ollama_cloud\": {\n\"status\": \"UNREACHABLE\",\n\"ms\": 5150,\n\"fresh\": \"cached\",\n\"error\": \"Ollama timeout\"\n},\n\"thaillm\": {\n\"status\": \"ALIVE\",\n\"ms\": 678,\n\"fresh\": \"2s ago\"\n},\n\"copilot\": {\n\"status\": \"ERROR\",\n\"ms\": 5532,\n\"fresh\": \"cached\",\n\"error\": \"Copilot exchange HTTP 404: {\\\"messa\n\nReturn one actionable next step or risk with Confidence 0-100. No file edits. Advisor threshold=8.",
-    "count": 51,
-    "completed": 46,
-    "pending": 5,
-    "ok": 44,
-    "fail": 2,
-    "concurrency": 6,
-    "durationMs": 356329,
-    "notifyEvery": 6,
+    "runId": "fleet-batch-2026-06-08T10-05-16-144Z",
+    "goal": "Verify Thai GeoTool integration: Query 'กรุงเทพมหานคร' and 'เชียงใหม่'. Verify if the results match the provincial data in limbs/thai-geo.js (e.g., BKK 10200, CNX 60000). Give a confidence score.",
+    "count": 10,
+    "completed": 10,
+    "pending": 0,
+    "ok": 10,
+    "fail": 0,
+    "concurrency": 8,
+    "durationMs": 34135,
+    "notifyEvery": 8,
     "byBackend": {
-      "ollama_mdes": {
-        "total": 21,
-        "ok": 20,
-        "fail": 1,
-        "models": {
-          "gemma4:26b": 21
-        },
-        "workers": 21,
-        "avgLatencyMs": 16715
-      },
       "thaillm": {
-        "total": 25,
-        "ok": 24,
-        "fail": 1,
+        "total": 10,
+        "ok": 10,
+        "fail": 0,
         "models": {
-          "openthaigpt-thaillm-8b-instruct-v7.2": 7,
-          "pathumma-thaillm-qwen3-8b-think-3.0.0": 6,
-          "typhoon-s-thaillm-8b-instruct": 6,
-          "thalle-0.2-thaillm-8b-fa": 6
+          "openthaigpt-thaillm-8b-instruct-v7.2": 3,
+          "pathumma-thaillm-qwen3-8b-think-3.0.0": 3,
+          "typhoon-s-thaillm-8b-instruct": 2,
+          "thalle-0.2-thaillm-8b-fa": 2
         },
-        "workers": 25,
-        "avgLatencyMs": 5240
+        "workers": 10,
+        "avgLatencyMs": 10191
       }
     },
     "roster": {
-      "plannedWorkers": 51,
-      "completedWorkers": 46,
-      "uniquePersonas": 18,
+      "plannedWorkers": 10,
+      "completedWorkers": 10,
+      "uniquePersonas": 10,
       "perspectives": {
-        "coordinator": 16,
-        "analyst": 14,
-        "verifier": 3,
-        "executor": 13,
-        "critic": 2,
-        "scribe": 2,
-        "observer": 1
+        "coordinator": 8,
+        "analyst": 1,
+        "verifier": 1
       },
       "sampleWorkers": [
+        "agent-commandcode-coordinator-01",
         "agent-copilot-coordinator-01",
         "agent-mdes-analyst-01",
         "agent-ollama-coordinator-01",
@@ -61,24 +48,19 @@
         "chamu-verifier-01",
         "gemma4-31b-cloud-coordinator-01",
         "innova-coordinator-01",
-        "innova-bot-coordinator-01",
-        "jit-coordinator-01",
-        "jit-claudecode-coordinator-01",
-        "jit-codex-coordinator-01"
+        "innova-bot-coordinator-01"
       ]
     },
     "proof": {
-      "requireMinCount": 51,
-      "requireMinOk": 39,
+      "requireMinCount": 0,
+      "requireMinOk": 0,
       "minCountSatisfied": true,
-      "minCompletedSatisfied": false,
+      "minCompletedSatisfied": true,
       "minOkSatisfied": true,
       "selectedLanes": [
-        "ollama_mdes",
         "thaillm"
       ],
       "requestedLanes": [
-        "ollama_mdes",
         "thaillm"
       ],
       "excludedLanes": [],
@@ -89,22 +71,21 @@
         "ollama_local": 2,
         "copilot": 1,
         "openai": 1,
-        "innova_bot": 1
+        "innova_bot": 1,
+        "commandcode": 2
       }
     }
   },
-  "latest": {
-    "id": 41,
-    "workerId": "antigravity-mission-control-executor-03",
-    "agent": "antigravity-mission-control",
-    "perspective": "executor",
-    "backend": "ollama_mdes",
-    "model": "gemma4:26b",
-    "ok": true,
-    "latencyMs": 15216,
-    "error": "",
-    "reply": "Next Step: Bootstrap agents for `innomcp`, `innova-bot-template`, and `jit` teams เพื่อเริ่มขับเคลื่อน 5 backlog tickets (TICKET-001..005) เนื่องจากปัจจุบัน all teams show 0 agents and 0 tasks. Confidence: 95."
+  "latest": null,
+  "notify": {
+    "discordSent": false,
+    "innovaSent": {
+      "ok": true
+    }
   },
-  "notify": null,
-  "artifacts": null
+  "artifacts": {
+    "dir": "network/artifacts/fleet-batch-2026-06-08T10-05-16-144Z",
+    "summaryJson": "network/artifacts/fleet-batch-2026-06-08T10-05-16-144Z/summary.json",
+    "summaryMd": "network/artifacts/fleet-batch-2026-06-08T10-05-16-144Z/summary.md"
+  }
 }

@@ -4,9 +4,9 @@ SA Lead: Jit (Clumsy Edition)
 Advisors: Sonnet-4.6 / Opus-4.7
 
 ## 🎫 Tickets (Pending)
-- [ ] TICKET-001: Setup CommandCode Provider Bridge
-- [ ] TICKET-002: Thai Knowledge Routing Audit (Phase 10.14)
-- [ ] TICKET-003: Thai GeoTool Verification
+- [x] TICKET-001: Setup CommandCode Provider Bridge
+- [x] TICKET-002: Thai Knowledge Routing Audit (Phase 10.14)
+- [x] TICKET-003: Thai GeoTool Verification
 - [ ] TICKET-004: Routing Determinism Test Suite
 - [ ] TICKET-005: Memory-Symmetry Check for Thai-Tokens
 
