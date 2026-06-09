@@ -1,0 +1,21 @@
+{
+  "ticket": "TICKET-012",
+  "title": "innomcp Team Charter YAML — Formalize Provider Dispatch Flow",
+  "source": "Oracle Pattern trace (the-oracle-pattern, mawjs-oracle) — Iteration 6",
+  "priority": "P2",
+  "effort": { "points": 3, "days": 2 },
+  "summary": "Define a YAML Team Charter for innomcp's innova_bot provider selection and escalation chain. MAW Engine pattern: YAML spec → standing multi-agent team with defined 5-stage pipeline. Makes routing/escalation (CMD→Sonnet→OPUS/GPT5.5) auditable and version-controlled.",
+  "acceptance_criteria": [
+    "1. Create .innomcp/team-charter.yaml with: provider order, escalation triggers (quality thresholds), stage definitions (plan→spec→dev→qa→approve)",
+    "2. Charter drives the loop: each ticket flows through stages with defined entry/exit criteria",
+    "3. Escalation path documented: CMD writes spec → Sonnet approves → DEV implements → chamu QA → OPUS/GPT5.5 fixes if QA fails",
+    "4. Version-controlled alongside tickets — charter changes auditable via git"
+  ],
+  "tasks": [
+    "Task 1: Create .innomcp/team-charter.yaml with provider roles and stage definitions",
+    "Task 2: Update innomcp_dev_backlog.md to reference charter for all future tickets",
+    "Task 3: Validate charter against current 009-011 ticket flow (retroactive fit check)"
+  ],
+  "owner": "innova (Lead Developer)",
+  "depends_on": "TICKET-010, TICKET-011 completion"
+}
