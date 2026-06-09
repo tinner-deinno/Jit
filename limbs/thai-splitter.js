@@ -12,10 +12,16 @@ const THAI_CONSONANTS = ['ก', 'ข', 'ค', 'ง', 'จ', 'ฉ', 'ช', 'ซ',
 function splitThaiSyllables(text) {
     if (!text) return [];
 
+    // NFC-normalize at entry point so that combining marks in non-canonical
+    // order (e.g. tone-mark before below-vowel) produce the same output as
+    // their canonically-ordered equivalents.  This is the fix for the
+    // SA Design Review gap (2026-06-08): "NFC Normalization Gap".
+    const normalized = String(text).normalize('NFC');
+
     // Simple deterministic split: current implementation uses a regex-based
     // heuristic for syllable boundaries to avoid tokenization variance.
     // This is a seed implementation to be refined by the CommandCode fleet.
-    const result = text.split(/([ก-ฮ][ะ-ู]+|[ก-ฮ]{2,})/);
+    const result = normalized.split(/([ก-ฮ][ะ-ู]+|[ก-ฮ]{2,})/);
     return result.filter(s => s.trim().length > 0);
 }
 

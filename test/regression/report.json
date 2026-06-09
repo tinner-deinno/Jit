@@ -1,7 +1,7 @@
 {
   "meta": {
     "ticket": "TICKET-009",
-    "generatedAt": "2026-06-09T09:52:41.276Z",
+    "generatedAt": "2026-06-09T10:12:04.044Z",
     "corpusPath": "C:\\Users\\USER-NT\\Jit\\test\\thai-test-corpus.json",
     "corpusSize": 26,
     "backends": [
@@ -38,8 +38,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -61,8 +61,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -87,8 +87,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -111,8 +111,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -134,8 +134,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -159,8 +159,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -187,8 +187,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -214,8 +214,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       },
       {
@@ -240,8 +240,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -262,8 +262,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -298,11 +298,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:hello-จิ-ต",
         "deterministicBackend": "openclaude",
         "liveBackend": "ollama_mdes",
-        "liveError": "Ollama timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -330,8 +330,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -356,8 +356,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -379,8 +379,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -401,8 +401,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -430,7 +430,7 @@
         "routingKey": "msgCount:1|lang:other",
         "deterministicBackend": "openclaude",
         "liveBackend": "ollama_mdes",
-        "liveError": null,
+        "liveError": "Ollama timeout",
         "variance": null
       },
       {
@@ -536,8 +536,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -572,8 +572,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_local"
         }
       },
       {
@@ -596,8 +596,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       }
     ],
@@ -619,8 +619,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -639,11 +639,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:นำ-กา-ย",
         "deterministicBackend": "thaillm",
         "liveBackend": "thaillm",
-        "liveError": null,
+        "liveError": "Request timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -668,8 +668,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -692,8 +692,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -715,8 +715,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -737,11 +737,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ภา-ษา-ไ-ทย",
         "deterministicBackend": "ollama_cloud",
         "liveBackend": "thaillm",
-        "liveError": "Request timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -768,8 +768,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -795,8 +795,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       },
       {
@@ -821,8 +821,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -843,8 +843,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -882,8 +882,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -908,11 +908,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:น้ำ-ขึ-้นให้-รี-บต-ัก",
         "deterministicBackend": "openai",
         "liveBackend": "thaillm",
-        "liveError": "HTTP 502: error code: 502",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -937,8 +937,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -960,8 +960,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -982,8 +982,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -1011,7 +1011,7 @@
         "routingKey": "msgCount:1|lang:other",
         "deterministicBackend": "openclaude",
         "liveBackend": "thaillm",
-        "liveError": null,
+        "liveError": "Request timeout",
         "variance": null
       },
       {
@@ -1043,7 +1043,7 @@
         "routingKey": "msgCount:1|lang:thai|prefix:แอ",
         "deterministicBackend": "innova_bot",
         "liveBackend": "thaillm",
-        "liveError": "Request timeout",
+        "liveError": null,
         "variance": null
       },
       {
@@ -1059,7 +1059,7 @@
         "routingKey": "msgCount:1|lang:thai|prefix:โอ",
         "deterministicBackend": "thaillm",
         "liveBackend": "thaillm",
-        "liveError": null,
+        "liveError": "Request timeout",
         "variance": null
       },
       {
@@ -1114,11 +1114,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:จิ-ตค-ื-ออ-ะไร",
         "deterministicBackend": "ollama_mdes",
         "liveBackend": "thaillm",
-        "liveError": "Request timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -1153,8 +1153,8 @@
         "liveError": "Request timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_local"
         }
       },
       {
@@ -1177,8 +1177,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       }
     ],
@@ -1200,8 +1200,8 @@
         "liveError": "Request timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -1223,8 +1223,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -1249,8 +1249,8 @@
         "liveError": "Request timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -1273,8 +1273,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -1296,8 +1296,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -1321,8 +1321,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -1349,8 +1349,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -1373,11 +1373,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:เ-ชี-ยง-ใ-หม-่",
         "deterministicBackend": "innova_bot",
         "liveBackend": "commandcode",
-        "liveError": "Request timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       },
       {
@@ -1402,8 +1402,8 @@
         "liveError": "Request timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -1424,8 +1424,8 @@
         "liveError": "Request timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -1463,8 +1463,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -1492,8 +1492,8 @@
         "liveError": "Request timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -1518,8 +1518,8 @@
         "liveError": "Request timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -1541,8 +1541,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -1563,8 +1563,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -1608,7 +1608,7 @@
         "routingKey": "msgCount:1|lang:thai|prefix:เอ",
         "deterministicBackend": "commandcode",
         "liveBackend": "commandcode",
-        "liveError": "Request timeout",
+        "liveError": null,
         "variance": null
       },
       {
@@ -1624,7 +1624,7 @@
         "routingKey": "msgCount:1|lang:thai|prefix:แอ",
         "deterministicBackend": "innova_bot",
         "liveBackend": "commandcode",
-        "liveError": "Request timeout",
+        "liveError": null,
         "variance": null
       },
       {
@@ -1656,7 +1656,7 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ใอ",
         "deterministicBackend": "openai",
         "liveBackend": "commandcode",
-        "liveError": null,
+        "liveError": "Request timeout",
         "variance": null
       },
       {
@@ -1672,7 +1672,7 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ไอ",
         "deterministicBackend": "ollama_mdes",
         "liveBackend": "commandcode",
-        "liveError": null,
+        "liveError": "Request timeout",
         "variance": null
       },
       {
@@ -1698,8 +1698,8 @@
         "liveError": "Request timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -1731,11 +1731,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:คว-ามแ-ตกต-่า-งร-ะ-หว-่างsomaแ-ละ-in",
         "deterministicBackend": "ollama_local",
         "liveBackend": "commandcode",
-        "liveError": "Request timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_local"
         }
       },
       {
@@ -1755,11 +1755,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ThaiSyllableSplitterแ-บบ-det",
         "deterministicBackend": "innova_bot",
         "liveBackend": "commandcode",
-        "liveError": "Request timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       }
     ],
@@ -1781,8 +1781,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -1804,8 +1804,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -1830,8 +1830,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -1854,8 +1854,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -1877,8 +1877,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -1902,8 +1902,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -1930,8 +1930,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -1957,8 +1957,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       },
       {
@@ -1983,8 +1983,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -2002,11 +2002,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ธรรม-ะ",
         "deterministicBackend": "openclaude",
         "liveBackend": "ollama_local",
-        "liveError": "Ollama timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -2022,7 +2022,7 @@
         "routingKey": "msgCount:1|lang:other",
         "deterministicBackend": "openclaude",
         "liveBackend": "ollama_local",
-        "liveError": "Ollama timeout",
+        "liveError": null,
         "variance": null
       },
       {
@@ -2044,8 +2044,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -2073,8 +2073,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -2099,8 +2099,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -2122,8 +2122,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -2144,8 +2144,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -2189,7 +2189,7 @@
         "routingKey": "msgCount:1|lang:thai|prefix:เอ",
         "deterministicBackend": "commandcode",
         "liveBackend": "ollama_local",
-        "liveError": "Ollama timeout",
+        "liveError": null,
         "variance": null
       },
       {
@@ -2279,8 +2279,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -2315,8 +2315,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "ollama_local"
         }
       },
       {
@@ -2339,8 +2339,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": null,
-          "goldenBackend": null
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       }
     ],
@@ -2359,7 +2359,7 @@
         "routingKey": "msgCount:1|lang:thai|prefix:จิ-ต",
         "deterministicBackend": "ollama_cloud",
         "liveBackend": "ollama_cloud",
-        "liveError": "Ollama timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
           "backendChanged": false,
@@ -2385,8 +2385,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -2411,8 +2411,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -2432,11 +2432,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:อว-ั-ยว-ะ",
         "deterministicBackend": "openai",
         "liveBackend": "ollama_cloud",
-        "liveError": "Ollama timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -2455,11 +2455,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:สม-า-ธิ",
         "deterministicBackend": "commandcode",
         "liveBackend": "ollama_cloud",
-        "liveError": "Ollama timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -2480,7 +2480,7 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ภา-ษา-ไ-ทย",
         "deterministicBackend": "ollama_cloud",
         "liveBackend": "ollama_cloud",
-        "liveError": "Ollama timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
           "backendChanged": false,
@@ -2508,11 +2508,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:กร-ุงเ-ทพมห-า-นคร",
         "deterministicBackend": "thaillm",
         "liveBackend": "ollama_cloud",
-        "liveError": null,
+        "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -2538,8 +2538,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       },
       {
@@ -2564,8 +2564,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -2586,8 +2586,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -2604,11 +2604,7 @@
         "deterministicBackend": "openclaude",
         "liveBackend": "ollama_cloud",
         "liveError": null,
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
-        }
+        "variance": null
       },
       {
         "id": "TH-012",
@@ -2626,11 +2622,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:hello-จิ-ต",
         "deterministicBackend": "openclaude",
         "liveBackend": "ollama_cloud",
-        "liveError": "Ollama timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -2658,8 +2654,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -2681,11 +2677,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:มน-ุ-ษย-์Agent",
         "deterministicBackend": "commandcode",
         "liveBackend": "ollama_cloud",
-        "liveError": "Ollama timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -2707,8 +2703,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -2726,11 +2722,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:20-คน",
         "deterministicBackend": "commandcode",
         "liveBackend": "ollama_cloud",
-        "liveError": "Ollama timeout",
+        "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -2747,11 +2743,7 @@
         "deterministicBackend": "thaillm",
         "liveBackend": "ollama_cloud",
         "liveError": null,
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
-        }
+        "variance": null
       },
       {
         "id": "TH-018",
@@ -2762,12 +2754,8 @@
         "routingKey": "msgCount:1|lang:other",
         "deterministicBackend": "openclaude",
         "liveBackend": "ollama_cloud",
-        "liveError": "Ollama timeout",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
-        }
+        "liveError": null,
+        "variance": null
       },
       {
         "id": "TH-019",
@@ -2782,12 +2770,8 @@
         "routingKey": "msgCount:1|lang:thai|prefix:เอ",
         "deterministicBackend": "commandcode",
         "liveBackend": "ollama_cloud",
-        "liveError": null,
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
-        }
+        "liveError": "Ollama timeout",
+        "variance": null
       },
       {
         "id": "TH-020",
@@ -2803,11 +2787,7 @@
         "deterministicBackend": "innova_bot",
         "liveBackend": "ollama_cloud",
         "liveError": null,
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
-        }
+        "variance": null
       },
       {
         "id": "TH-021",
@@ -2823,11 +2803,7 @@
         "deterministicBackend": "thaillm",
         "liveBackend": "ollama_cloud",
         "liveError": null,
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
-        }
+        "variance": null
       },
       {
         "id": "TH-022",
@@ -2842,12 +2818,8 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ใอ",
         "deterministicBackend": "openai",
         "liveBackend": "ollama_cloud",
-        "liveError": null,
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
-        }
+        "liveError": "Ollama timeout",
+        "variance": null
       },
       {
         "id": "TH-023",
@@ -2862,12 +2834,8 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ไอ",
         "deterministicBackend": "ollama_mdes",
         "liveBackend": "ollama_cloud",
-        "liveError": "Ollama timeout",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
-        }
+        "liveError": null,
+        "variance": null
       },
       {
         "id": "TH-024",
@@ -2889,11 +2857,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:จิ-ตค-ื-ออ-ะไร",
         "deterministicBackend": "ollama_mdes",
         "liveBackend": "ollama_cloud",
-        "liveError": null,
+        "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -2928,8 +2896,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "ollama_local"
         }
       },
       {
@@ -2952,8 +2920,8 @@
         "liveError": "Ollama timeout",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "ollama_cloud"
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       }
     ],
@@ -2975,8 +2943,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -2998,8 +2966,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -3024,8 +2992,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -3048,8 +3016,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -3071,8 +3039,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -3096,8 +3064,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -3124,8 +3092,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -3151,8 +3119,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       },
       {
@@ -3177,8 +3145,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -3199,8 +3167,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -3217,11 +3185,7 @@
         "deterministicBackend": "openclaude",
         "liveBackend": "copilot",
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
-        }
+        "variance": null
       },
       {
         "id": "TH-012",
@@ -3242,8 +3206,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -3271,8 +3235,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -3297,8 +3261,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -3320,8 +3284,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -3342,8 +3306,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -3360,11 +3324,7 @@
         "deterministicBackend": "thaillm",
         "liveBackend": "copilot",
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
-        }
+        "variance": null
       },
       {
         "id": "TH-018",
@@ -3376,11 +3336,7 @@
         "deterministicBackend": "openclaude",
         "liveBackend": "copilot",
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
-        }
+        "variance": null
       },
       {
         "id": "TH-019",
@@ -3396,11 +3352,7 @@
         "deterministicBackend": "commandcode",
         "liveBackend": "copilot",
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
-        }
+        "variance": null
       },
       {
         "id": "TH-020",
@@ -3416,11 +3368,7 @@
         "deterministicBackend": "innova_bot",
         "liveBackend": "copilot",
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
-        }
+        "variance": null
       },
       {
         "id": "TH-021",
@@ -3436,11 +3384,7 @@
         "deterministicBackend": "thaillm",
         "liveBackend": "copilot",
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
-        }
+        "variance": null
       },
       {
         "id": "TH-022",
@@ -3456,11 +3400,7 @@
         "deterministicBackend": "openai",
         "liveBackend": "copilot",
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
-        }
+        "variance": null
       },
       {
         "id": "TH-023",
@@ -3476,11 +3416,7 @@
         "deterministicBackend": "ollama_mdes",
         "liveBackend": "copilot",
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
-        }
+        "variance": null
       },
       {
         "id": "TH-024",
@@ -3505,8 +3441,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -3541,8 +3477,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "ollama_local"
         }
       },
       {
@@ -3565,8 +3501,8 @@
         "liveError": "Copilot CLI failed: Command failed: powershell.exe -NoProfile -Command $p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:COPILOT_PROMPT_B64)); $args=@(\"-s\",\"-p\",$p); & copilot @args",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "copilot"
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       }
     ],
@@ -3585,11 +3521,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:จิ-ต",
         "deterministicBackend": "ollama_cloud",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdc-c",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabee-3",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -3608,11 +3544,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:นำ-กา-ย",
         "deterministicBackend": "thaillm",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdc-e",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabee-5",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -3634,11 +3570,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:จิ-ตน-ำ-กา-ย",
         "deterministicBackend": "openclaude",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdc-f",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabee-6",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -3658,7 +3594,7 @@
         "routingKey": "msgCount:1|lang:thai|prefix:อว-ั-ยว-ะ",
         "deterministicBackend": "openai",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdd-1",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabee-8",
         "variance": {
           "syllableMismatch": true,
           "backendChanged": false,
@@ -3681,11 +3617,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:สม-า-ธิ",
         "deterministicBackend": "commandcode",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdd-3",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabee-a",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -3706,11 +3642,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ภา-ษา-ไ-ทย",
         "deterministicBackend": "ollama_cloud",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdd-4",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabee-c",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -3734,11 +3670,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:กร-ุงเ-ทพมห-า-นคร",
         "deterministicBackend": "thaillm",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdd-6",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabee-e",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -3761,11 +3697,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:เ-ชี-ยง-ใ-หม-่",
         "deterministicBackend": "innova_bot",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdd-8",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabee-f",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       },
       {
@@ -3787,11 +3723,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ปร-ะเ-ทศ-ไ-ทย",
         "deterministicBackend": "ollama_mdes",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdd-b",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabef-1",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -3809,11 +3745,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ธรรม-ะ",
         "deterministicBackend": "openclaude",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdd-d",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabef-2",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -3829,12 +3765,8 @@
         "routingKey": "msgCount:1|lang:other",
         "deterministicBackend": "openclaude",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdd-e",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "openai"
-        }
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabef-4",
+        "variance": null
       },
       {
         "id": "TH-012",
@@ -3852,11 +3784,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:hello-จิ-ต",
         "deterministicBackend": "openclaude",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabde-0",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabef-6",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -3881,7 +3813,7 @@
         "routingKey": "msgCount:1|lang:thai|prefix:น้ำ-ขึ-้นให้-รี-บต-ัก",
         "deterministicBackend": "openai",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabde-1",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabef-8",
         "variance": {
           "syllableMismatch": true,
           "backendChanged": false,
@@ -3907,11 +3839,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:มน-ุ-ษย-์Agent",
         "deterministicBackend": "commandcode",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabde-3",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabef-9",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -3930,11 +3862,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:รั-นnodemother.js",
         "deterministicBackend": "commandcode",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabde-4",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabef-b",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -3952,11 +3884,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:20-คน",
         "deterministicBackend": "commandcode",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabde-6",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabef-c",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -3972,12 +3904,8 @@
         "routingKey": "msgCount:1|lang:thai|prefix:๑๒๓",
         "deterministicBackend": "thaillm",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabde-7",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "openai"
-        }
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabef-e",
+        "variance": null
       },
       {
         "id": "TH-018",
@@ -3988,12 +3916,8 @@
         "routingKey": "msgCount:1|lang:other",
         "deterministicBackend": "openclaude",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabde-b",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "openai"
-        }
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabf0-0",
+        "variance": null
       },
       {
         "id": "TH-019",
@@ -4008,12 +3932,8 @@
         "routingKey": "msgCount:1|lang:thai|prefix:เอ",
         "deterministicBackend": "commandcode",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabde-d",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "openai"
-        }
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabf0-3",
+        "variance": null
       },
       {
         "id": "TH-020",
@@ -4028,12 +3948,8 @@
         "routingKey": "msgCount:1|lang:thai|prefix:แอ",
         "deterministicBackend": "innova_bot",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabde-e",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "openai"
-        }
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabf0-5",
+        "variance": null
       },
       {
         "id": "TH-021",
@@ -4048,12 +3964,8 @@
         "routingKey": "msgCount:1|lang:thai|prefix:โอ",
         "deterministicBackend": "thaillm",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdf-0",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "openai"
-        }
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabf0-6",
+        "variance": null
       },
       {
         "id": "TH-022",
@@ -4068,7 +3980,7 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ใอ",
         "deterministicBackend": "openai",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdf-1",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabf0-8",
         "variance": null
       },
       {
@@ -4084,12 +3996,8 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ไอ",
         "deterministicBackend": "ollama_mdes",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdf-2",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "openai"
-        }
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabf0-a",
+        "variance": null
       },
       {
         "id": "TH-024",
@@ -4111,11 +4019,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:จิ-ตค-ื-ออ-ะไร",
         "deterministicBackend": "ollama_mdes",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdf-4",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabf0-b",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -4147,11 +4055,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:คว-ามแ-ตกต-่า-งร-ะ-หว-่างsomaแ-ละ-in",
         "deterministicBackend": "ollama_local",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdf-5",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabf0-d",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "ollama_local"
         }
       },
       {
@@ -4171,11 +4079,11 @@
         "routingKey": "msgCount:1|lang:thai|prefix:ThaiSyllableSplitterแ-บบ-det",
         "deterministicBackend": "innova_bot",
         "liveBackend": "openai",
-        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabdf-7",
+        "liveError": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nmodel: gpt-5.5\nprovider: openai\napproval: never\nsandbox: read-only\nreasoning effort: xhigh\nreasoning summaries: none\nsession id: 019eabf0-f",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openai"
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       }
     ],
@@ -4197,8 +4105,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -4220,8 +4128,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -4270,8 +4178,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -4293,8 +4201,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -4318,8 +4226,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -4346,8 +4254,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -4373,8 +4281,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       },
       {
@@ -4399,8 +4307,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -4489,8 +4397,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -4515,8 +4423,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -4538,8 +4446,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -4560,8 +4468,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -4578,11 +4486,7 @@
         "deterministicBackend": "thaillm",
         "liveBackend": "openclaude",
         "liveError": "OpenClaude request error: ECONNREFUSED",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
-        }
+        "variance": null
       },
       {
         "id": "TH-018",
@@ -4610,11 +4514,7 @@
         "deterministicBackend": "commandcode",
         "liveBackend": "openclaude",
         "liveError": "OpenClaude request error: ECONNREFUSED",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
-        }
+        "variance": null
       },
       {
         "id": "TH-020",
@@ -4630,11 +4530,7 @@
         "deterministicBackend": "innova_bot",
         "liveBackend": "openclaude",
         "liveError": "OpenClaude request error: ECONNREFUSED",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
-        }
+        "variance": null
       },
       {
         "id": "TH-021",
@@ -4650,11 +4546,7 @@
         "deterministicBackend": "thaillm",
         "liveBackend": "openclaude",
         "liveError": "OpenClaude request error: ECONNREFUSED",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
-        }
+        "variance": null
       },
       {
         "id": "TH-022",
@@ -4670,11 +4562,7 @@
         "deterministicBackend": "openai",
         "liveBackend": "openclaude",
         "liveError": "OpenClaude request error: ECONNREFUSED",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
-        }
+        "variance": null
       },
       {
         "id": "TH-023",
@@ -4690,11 +4578,7 @@
         "deterministicBackend": "ollama_mdes",
         "liveBackend": "openclaude",
         "liveError": "OpenClaude request error: ECONNREFUSED",
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
-        }
+        "variance": null
       },
       {
         "id": "TH-024",
@@ -4719,8 +4603,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -4755,8 +4639,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "ollama_local"
         }
       },
       {
@@ -4779,8 +4663,8 @@
         "liveError": "OpenClaude request error: ECONNREFUSED",
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "openclaude"
+          "backendChanged": false,
+          "goldenBackend": "innova_bot"
         }
       }
     ],
@@ -4802,8 +4686,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -4825,8 +4709,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -4851,8 +4735,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -4875,8 +4759,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -4898,8 +4782,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -4923,8 +4807,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "ollama_cloud"
         }
       },
       {
@@ -4951,8 +4835,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "thaillm"
         }
       },
       {
@@ -5004,8 +4888,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -5026,8 +4910,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -5044,11 +4928,7 @@
         "deterministicBackend": "openclaude",
         "liveBackend": "innova_bot",
         "liveError": null,
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
-        }
+        "variance": null
       },
       {
         "id": "TH-012",
@@ -5069,8 +4949,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "openclaude"
         }
       },
       {
@@ -5098,8 +4978,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "openai"
         }
       },
       {
@@ -5124,8 +5004,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -5147,8 +5027,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -5169,8 +5049,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "commandcode"
         }
       },
       {
@@ -5187,11 +5067,7 @@
         "deterministicBackend": "thaillm",
         "liveBackend": "innova_bot",
         "liveError": null,
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
-        }
+        "variance": null
       },
       {
         "id": "TH-018",
@@ -5203,11 +5079,7 @@
         "deterministicBackend": "openclaude",
         "liveBackend": "innova_bot",
         "liveError": null,
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
-        }
+        "variance": null
       },
       {
         "id": "TH-019",
@@ -5223,11 +5095,7 @@
         "deterministicBackend": "commandcode",
         "liveBackend": "innova_bot",
         "liveError": null,
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
-        }
+        "variance": null
       },
       {
         "id": "TH-020",
@@ -5259,11 +5127,7 @@
         "deterministicBackend": "thaillm",
         "liveBackend": "innova_bot",
         "liveError": null,
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
-        }
+        "variance": null
       },
       {
         "id": "TH-022",
@@ -5279,11 +5143,7 @@
         "deterministicBackend": "openai",
         "liveBackend": "innova_bot",
         "liveError": null,
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
-        }
+        "variance": null
       },
       {
         "id": "TH-023",
@@ -5299,11 +5159,7 @@
         "deterministicBackend": "ollama_mdes",
         "liveBackend": "innova_bot",
         "liveError": null,
-        "variance": {
-          "syllableMismatch": false,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
-        }
+        "variance": null
       },
       {
         "id": "TH-024",
@@ -5328,8 +5184,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "ollama_mdes"
         }
       },
       {
@@ -5364,8 +5220,8 @@
         "liveError": null,
         "variance": {
           "syllableMismatch": true,
-          "backendChanged": true,
-          "goldenBackend": "innova_bot"
+          "backendChanged": false,
+          "goldenBackend": "ollama_local"
         }
       },
       {
@@ -5401,8 +5257,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -5411,8 +5267,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -5421,8 +5277,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -5431,8 +5287,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -5441,8 +5297,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -5451,8 +5307,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -5461,8 +5317,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -5471,8 +5327,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -5481,8 +5337,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -5491,8 +5347,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -5501,8 +5357,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -5511,8 +5367,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -5521,8 +5377,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -5531,8 +5387,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -5541,8 +5397,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -5551,8 +5407,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -5561,8 +5417,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_local"
       }
     },
     {
@@ -5571,8 +5427,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -5581,8 +5437,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -5591,8 +5447,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -5601,8 +5457,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -5611,8 +5467,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -5621,8 +5477,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -5631,8 +5487,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -5641,8 +5497,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -5651,8 +5507,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -5661,8 +5517,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -5671,8 +5527,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -5681,8 +5537,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -5691,8 +5547,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -5701,8 +5557,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -5711,8 +5567,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -5721,8 +5577,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -5731,8 +5587,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -5741,8 +5597,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_local"
       }
     },
     {
@@ -5751,8 +5607,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -5761,8 +5617,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -5771,8 +5627,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -5781,8 +5637,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -5791,8 +5647,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -5801,8 +5657,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -5811,8 +5667,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -5821,8 +5677,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -5831,8 +5687,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -5841,8 +5697,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -5851,8 +5707,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -5861,8 +5717,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -5871,8 +5727,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -5881,8 +5737,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -5891,8 +5747,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -5901,8 +5757,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -5911,8 +5767,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -5921,8 +5777,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_local"
       }
     },
     {
@@ -5931,8 +5787,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -5941,8 +5797,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -5951,8 +5807,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -5961,8 +5817,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -5971,8 +5827,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -5981,8 +5837,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -5991,8 +5847,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -6001,8 +5857,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -6011,8 +5867,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -6021,8 +5877,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -6031,8 +5887,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -6041,8 +5897,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -6051,8 +5907,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -6061,8 +5917,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6071,8 +5927,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6081,8 +5937,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6091,8 +5947,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -6101,8 +5957,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "ollama_local"
       }
     },
     {
@@ -6111,8 +5967,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": null,
-        "goldenBackend": null
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -6131,8 +5987,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -6141,8 +5997,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -6151,8 +6007,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -6161,8 +6017,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6181,8 +6037,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -6191,8 +6047,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -6201,8 +6057,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -6211,18 +6067,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
-      }
-    },
-    {
-      "id": "TH-011",
-      "backend": "ollama_cloud",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -6231,8 +6077,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -6241,8 +6087,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -6251,8 +6097,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6261,8 +6107,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6271,78 +6117,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
-      }
-    },
-    {
-      "id": "TH-017",
-      "backend": "ollama_cloud",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
-      }
-    },
-    {
-      "id": "TH-018",
-      "backend": "ollama_cloud",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
-      }
-    },
-    {
-      "id": "TH-019",
-      "backend": "ollama_cloud",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
-      }
-    },
-    {
-      "id": "TH-020",
-      "backend": "ollama_cloud",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
-      }
-    },
-    {
-      "id": "TH-021",
-      "backend": "ollama_cloud",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
-      }
-    },
-    {
-      "id": "TH-022",
-      "backend": "ollama_cloud",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
-      }
-    },
-    {
-      "id": "TH-023",
-      "backend": "ollama_cloud",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6351,8 +6127,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -6361,8 +6137,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "ollama_local"
       }
     },
     {
@@ -6371,8 +6147,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "ollama_cloud"
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -6381,8 +6157,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -6391,8 +6167,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -6401,8 +6177,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -6411,8 +6187,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -6421,8 +6197,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6431,8 +6207,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -6441,8 +6217,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -6451,8 +6227,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -6461,8 +6237,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -6471,18 +6247,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
-      }
-    },
-    {
-      "id": "TH-011",
-      "backend": "copilot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -6491,8 +6257,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -6501,8 +6267,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -6511,8 +6277,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6521,8 +6287,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6531,78 +6297,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
-      }
-    },
-    {
-      "id": "TH-017",
-      "backend": "copilot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
-      }
-    },
-    {
-      "id": "TH-018",
-      "backend": "copilot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
-      }
-    },
-    {
-      "id": "TH-019",
-      "backend": "copilot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
-      }
-    },
-    {
-      "id": "TH-020",
-      "backend": "copilot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
-      }
-    },
-    {
-      "id": "TH-021",
-      "backend": "copilot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
-      }
-    },
-    {
-      "id": "TH-022",
-      "backend": "copilot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
-      }
-    },
-    {
-      "id": "TH-023",
-      "backend": "copilot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6611,8 +6307,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -6621,8 +6317,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "ollama_local"
       }
     },
     {
@@ -6631,8 +6327,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "copilot"
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -6641,8 +6337,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -6651,8 +6347,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -6661,8 +6357,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -6681,8 +6377,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6691,8 +6387,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -6701,8 +6397,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -6711,8 +6407,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -6721,8 +6417,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -6731,18 +6427,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
-      }
-    },
-    {
-      "id": "TH-011",
-      "backend": "openai",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -6751,8 +6437,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -6771,8 +6457,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6781,8 +6467,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6791,68 +6477,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
-      }
-    },
-    {
-      "id": "TH-017",
-      "backend": "openai",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "openai"
-      }
-    },
-    {
-      "id": "TH-018",
-      "backend": "openai",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "openai"
-      }
-    },
-    {
-      "id": "TH-019",
-      "backend": "openai",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "openai"
-      }
-    },
-    {
-      "id": "TH-020",
-      "backend": "openai",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "openai"
-      }
-    },
-    {
-      "id": "TH-021",
-      "backend": "openai",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "openai"
-      }
-    },
-    {
-      "id": "TH-023",
-      "backend": "openai",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6861,8 +6487,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -6871,8 +6497,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "ollama_local"
       }
     },
     {
@@ -6881,8 +6507,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openai"
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -6891,8 +6517,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -6901,8 +6527,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -6921,8 +6547,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -6931,8 +6557,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -6941,8 +6567,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -6951,8 +6577,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -6961,8 +6587,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -6971,8 +6597,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -7001,8 +6627,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -7011,8 +6637,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -7021,8 +6647,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -7031,68 +6657,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
-      }
-    },
-    {
-      "id": "TH-017",
-      "backend": "openclaude",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
-      }
-    },
-    {
-      "id": "TH-019",
-      "backend": "openclaude",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
-      }
-    },
-    {
-      "id": "TH-020",
-      "backend": "openclaude",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
-      }
-    },
-    {
-      "id": "TH-021",
-      "backend": "openclaude",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
-      }
-    },
-    {
-      "id": "TH-022",
-      "backend": "openclaude",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
-      }
-    },
-    {
-      "id": "TH-023",
-      "backend": "openclaude",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -7101,8 +6667,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -7111,8 +6677,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "ollama_local"
       }
     },
     {
@@ -7121,8 +6687,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "openclaude"
+        "backendChanged": false,
+        "goldenBackend": "innova_bot"
       }
     },
     {
@@ -7131,8 +6697,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -7141,8 +6707,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -7151,8 +6717,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -7161,8 +6727,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -7171,8 +6737,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -7181,8 +6747,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "ollama_cloud"
       }
     },
     {
@@ -7191,8 +6757,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "thaillm"
       }
     },
     {
@@ -7211,8 +6777,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -7221,18 +6787,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
-      }
-    },
-    {
-      "id": "TH-011",
-      "backend": "innova_bot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -7241,8 +6797,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "openclaude"
       }
     },
     {
@@ -7251,8 +6807,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "openai"
       }
     },
     {
@@ -7261,8 +6817,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -7271,8 +6827,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -7281,68 +6837,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
-      }
-    },
-    {
-      "id": "TH-017",
-      "backend": "innova_bot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
-      }
-    },
-    {
-      "id": "TH-018",
-      "backend": "innova_bot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
-      }
-    },
-    {
-      "id": "TH-019",
-      "backend": "innova_bot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
-      }
-    },
-    {
-      "id": "TH-021",
-      "backend": "innova_bot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
-      }
-    },
-    {
-      "id": "TH-022",
-      "backend": "innova_bot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
-      }
-    },
-    {
-      "id": "TH-023",
-      "backend": "innova_bot",
-      "reason": "backend-shift",
-      "detail": {
-        "syllableMismatch": false,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "commandcode"
       }
     },
     {
@@ -7351,8 +6847,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "ollama_mdes"
       }
     },
     {
@@ -7361,8 +6857,8 @@
       "reason": "syllable-mismatch",
       "detail": {
         "syllableMismatch": true,
-        "backendChanged": true,
-        "goldenBackend": "innova_bot"
+        "backendChanged": false,
+        "goldenBackend": "ollama_local"
       }
     },
     {
@@ -7378,8 +6874,8 @@
   ],
   "summary": {
     "totalRuns": 234,
-    "passes": 80,
-    "failures": 154,
-    "variances": 198
+    "passes": 92,
+    "failures": 142,
+    "variances": 162
   }
 }

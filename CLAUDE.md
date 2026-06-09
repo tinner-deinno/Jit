@@ -214,6 +214,8 @@ Every organ has a dedicated agent owner:
 - **Quality**: เนตร→neta (code review)
 
 See `/core/body-map.md` for complete RACI matrix and organ ownership.
+See `/teams/team-charter.yaml` for the normalized team charter (TICKET-012, all 14 agents, tier structure, organ assignments).
+See `/teams/raci-matrix.json` for the full RACI matrix JSON (all workflows × 14 agents).
 
 ### Layered System (bottom → top)
 1. **Organs** (`/organs/`) — Sensory/motor I/O: eye, ear, mouth, nose, hand, leg, heart, nerve
@@ -264,10 +266,12 @@ netra (eye) + karn (ear) → jit (decision) → mue (execute)
 
 | File | Purpose |
 |------|---------|
+| `/teams/team-charter.yaml` | **Canonical team charter** — all 14 agents, tier structure, organ assignments, workflows (TICKET-012) |
+| `/teams/raci-matrix.json` | **RACI matrix** — all workflows × 14 agents responsibility map (TICKET-012) |
 | `/core/body-map.md` | Complete team RACI matrix, organ ownership, all workflows |
 | `/core/identity.md` | innova's mission, values, relationships |
 | `/network/protocol.md` | Message format, subject conventions, error handling |
-| `/network/registry.json` | Source of truth: all 14 agents, tiers, organs, capabilities |
+| `/network/registry.json` | Extended agent registry (30+ agents including runtime specialists) |
 | `/docs/multiagent-spec.md` | Full system specification v2.0 with 14-agent hierarchy |
 | `/docs/new-agent-guide.md` | Bootstrap guide for adding agents to the system |
 | `/brain/reasoning.md` | Think-before-act framework, token efficiency rules |

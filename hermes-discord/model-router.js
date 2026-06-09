@@ -1157,12 +1157,20 @@ function callModelOllamaFirstPromise(messages, options) {
  * These functions provide stable routing keys for Thai-aware model assignment.
  */
 
-// Route cache: maps (canonicalKey -> selectedBackend) so same input always routes same
-var _routeCache = {};
+// Route cache: bounded LRU Map (canonicalKey -> selectedBackend) so same input always
+// routes same while preventing unbounded memory growth in long-running processes.
+// TICKET-010 AC#4: 500-entry limit caps peak overhead at ~60 KB for adversarial workloads.
+// Realistic corpus (~26 Thai phrases) stays well within this; eviction is pure defence.
+// Env override: ROUTE_CACHE_MAX (positive integer, default 500).
+var ROUTE_CACHE_MAX = _posInt(process.env.ROUTE_CACHE_MAX, 500);
+var _routeCache = new Map();
 
 function _clearRouteCache() {
-  _routeCache = {};
+  _routeCache.clear();
 }
+
+// Expose for tests
+function _routeCacheSize() { return _routeCache.size; }
 
 /**
  * thaiCanonicalize(text) -> string
@@ -1172,7 +1180,10 @@ function _clearRouteCache() {
  *   'ทดลอง' -> 'ท-ด-ลอง' (syllable split)
  */
 function thaiCanonicalize(text) {
-  var value = String(text || '').trim();
+  // NFC-normalize at entry point (SA Design Review gap fix, 2026-06-08).
+  // Ensures combining marks in non-canonical order produce the same canonical
+  // form as their NFC-equivalent counterparts.
+  var value = String(text || '').normalize('NFC').trim();
   if (!value) return '';
 
   var hasThai = /[฀-๿]/.test(value);
@@ -1240,12 +1251,16 @@ function pickBackendByKey(key, backends, preferBackend) {
     return BACKEND_ORDER[0] || 'ollama_mdes';
   }
 
-  // Check cache first
-  if (_routeCache[key]) {
-    var cached = _routeCache[key];
+  // Check cache first (LRU: delete + re-insert promotes to MRU position)
+  if (_routeCache.has(key)) {
+    var cached = _routeCache.get(key);
     if (backendList.indexOf(cached) !== -1) {
+      _routeCache.delete(key);
+      _routeCache.set(key, cached);
       return cached;
     }
+    // Stale: cached backend no longer in list; recompute
+    _routeCache.delete(key);
   }
 
   // Hash key to deterministic index
@@ -1258,7 +1273,11 @@ function pickBackendByKey(key, backends, preferBackend) {
   var index = Math.abs(hash) % backendList.length;
   var selected = backendList[index];
 
-  _routeCache[key] = selected;
+  // Bounded insert: evict oldest (first) entry when at capacity
+  if (_routeCache.size >= ROUTE_CACHE_MAX) {
+    _routeCache.delete(_routeCache.keys().next().value);
+  }
+  _routeCache.set(key, selected);
   return selected;
 }
 
@@ -1291,4 +1310,7 @@ module.exports = {
   _routingKey: routingKey,
   _getThaiBackend: getThaiBackend,
   _clearRouteCache: _clearRouteCache,
+  // TICKET-010: LRU cache inspection helpers (for tests)
+  _routeCacheSize,
+  ROUTE_CACHE_MAX,
 };

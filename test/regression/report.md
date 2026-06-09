@@ -1,6 +1,6 @@
 # TICKET-009 Regression Report
 
-**Generated:** 2026-06-09T09:52:41.276Z  
+**Generated:** 2026-06-09T10:12:04.044Z  
 **Corpus:** C:\Users\USER-NT\Jit\test\thai-test-corpus.json (26 cases)  
 **Backends:** ollama_mdes, thaillm, commandcode, ollama_local, ollama_cloud, copilot, openai, openclaude, innova_bot  
 
@@ -9,9 +9,9 @@
 | Metric | Value |
 |---|---|
 | Total runs | 234 |
-| Passes | 80 |
-| Failures | 154 |
-| Variances | 198 |
+| Passes | 92 |
+| Failures | 142 |
+| Variances | 162 |
 
 ## Variance Detail
 
@@ -99,19 +99,11 @@
 | TH-008 | ollama_cloud | syllable-mismatch | Syllable split changed |
 | TH-009 | ollama_cloud | syllable-mismatch | Syllable split changed |
 | TH-010 | ollama_cloud | syllable-mismatch | Syllable split changed |
-| TH-011 | ollama_cloud | backend-shift | Backend shifted from ollama_cloud to current |
 | TH-012 | ollama_cloud | syllable-mismatch | Syllable split changed |
 | TH-013 | ollama_cloud | syllable-mismatch | Syllable split changed |
 | TH-014 | ollama_cloud | syllable-mismatch | Syllable split changed |
 | TH-015 | ollama_cloud | syllable-mismatch | Syllable split changed |
 | TH-016 | ollama_cloud | syllable-mismatch | Syllable split changed |
-| TH-017 | ollama_cloud | backend-shift | Backend shifted from ollama_cloud to current |
-| TH-018 | ollama_cloud | backend-shift | Backend shifted from ollama_cloud to current |
-| TH-019 | ollama_cloud | backend-shift | Backend shifted from ollama_cloud to current |
-| TH-020 | ollama_cloud | backend-shift | Backend shifted from ollama_cloud to current |
-| TH-021 | ollama_cloud | backend-shift | Backend shifted from ollama_cloud to current |
-| TH-022 | ollama_cloud | backend-shift | Backend shifted from ollama_cloud to current |
-| TH-023 | ollama_cloud | backend-shift | Backend shifted from ollama_cloud to current |
 | TH-024 | ollama_cloud | syllable-mismatch | Syllable split changed |
 | TH-025 | ollama_cloud | syllable-mismatch | Syllable split changed |
 | TH-026 | ollama_cloud | syllable-mismatch | Syllable split changed |
@@ -125,19 +117,11 @@
 | TH-008 | copilot | syllable-mismatch | Syllable split changed |
 | TH-009 | copilot | syllable-mismatch | Syllable split changed |
 | TH-010 | copilot | syllable-mismatch | Syllable split changed |
-| TH-011 | copilot | backend-shift | Backend shifted from copilot to current |
 | TH-012 | copilot | syllable-mismatch | Syllable split changed |
 | TH-013 | copilot | syllable-mismatch | Syllable split changed |
 | TH-014 | copilot | syllable-mismatch | Syllable split changed |
 | TH-015 | copilot | syllable-mismatch | Syllable split changed |
 | TH-016 | copilot | syllable-mismatch | Syllable split changed |
-| TH-017 | copilot | backend-shift | Backend shifted from copilot to current |
-| TH-018 | copilot | backend-shift | Backend shifted from copilot to current |
-| TH-019 | copilot | backend-shift | Backend shifted from copilot to current |
-| TH-020 | copilot | backend-shift | Backend shifted from copilot to current |
-| TH-021 | copilot | backend-shift | Backend shifted from copilot to current |
-| TH-022 | copilot | backend-shift | Backend shifted from copilot to current |
-| TH-023 | copilot | backend-shift | Backend shifted from copilot to current |
 | TH-024 | copilot | syllable-mismatch | Syllable split changed |
 | TH-025 | copilot | syllable-mismatch | Syllable split changed |
 | TH-026 | copilot | syllable-mismatch | Syllable split changed |
@@ -151,18 +135,11 @@
 | TH-008 | openai | syllable-mismatch | Syllable split changed |
 | TH-009 | openai | syllable-mismatch | Syllable split changed |
 | TH-010 | openai | syllable-mismatch | Syllable split changed |
-| TH-011 | openai | backend-shift | Backend shifted from openai to current |
 | TH-012 | openai | syllable-mismatch | Syllable split changed |
 | TH-013 | openai | syllable-mismatch | Syllable split changed |
 | TH-014 | openai | syllable-mismatch | Syllable split changed |
 | TH-015 | openai | syllable-mismatch | Syllable split changed |
 | TH-016 | openai | syllable-mismatch | Syllable split changed |
-| TH-017 | openai | backend-shift | Backend shifted from openai to current |
-| TH-018 | openai | backend-shift | Backend shifted from openai to current |
-| TH-019 | openai | backend-shift | Backend shifted from openai to current |
-| TH-020 | openai | backend-shift | Backend shifted from openai to current |
-| TH-021 | openai | backend-shift | Backend shifted from openai to current |
-| TH-023 | openai | backend-shift | Backend shifted from openai to current |
 | TH-024 | openai | syllable-mismatch | Syllable split changed |
 | TH-025 | openai | syllable-mismatch | Syllable split changed |
 | TH-026 | openai | syllable-mismatch | Syllable split changed |
@@ -181,12 +158,6 @@
 | TH-014 | openclaude | syllable-mismatch | Syllable split changed |
 | TH-015 | openclaude | syllable-mismatch | Syllable split changed |
 | TH-016 | openclaude | syllable-mismatch | Syllable split changed |
-| TH-017 | openclaude | backend-shift | Backend shifted from openclaude to current |
-| TH-019 | openclaude | backend-shift | Backend shifted from openclaude to current |
-| TH-020 | openclaude | backend-shift | Backend shifted from openclaude to current |
-| TH-021 | openclaude | backend-shift | Backend shifted from openclaude to current |
-| TH-022 | openclaude | backend-shift | Backend shifted from openclaude to current |
-| TH-023 | openclaude | backend-shift | Backend shifted from openclaude to current |
 | TH-024 | openclaude | syllable-mismatch | Syllable split changed |
 | TH-025 | openclaude | syllable-mismatch | Syllable split changed |
 | TH-026 | openclaude | syllable-mismatch | Syllable split changed |
@@ -200,18 +171,11 @@
 | TH-008 | innova_bot | syllable-mismatch | Syllable split changed |
 | TH-009 | innova_bot | syllable-mismatch | Syllable split changed |
 | TH-010 | innova_bot | syllable-mismatch | Syllable split changed |
-| TH-011 | innova_bot | backend-shift | Backend shifted from innova_bot to current |
 | TH-012 | innova_bot | syllable-mismatch | Syllable split changed |
 | TH-013 | innova_bot | syllable-mismatch | Syllable split changed |
 | TH-014 | innova_bot | syllable-mismatch | Syllable split changed |
 | TH-015 | innova_bot | syllable-mismatch | Syllable split changed |
 | TH-016 | innova_bot | syllable-mismatch | Syllable split changed |
-| TH-017 | innova_bot | backend-shift | Backend shifted from innova_bot to current |
-| TH-018 | innova_bot | backend-shift | Backend shifted from innova_bot to current |
-| TH-019 | innova_bot | backend-shift | Backend shifted from innova_bot to current |
-| TH-021 | innova_bot | backend-shift | Backend shifted from innova_bot to current |
-| TH-022 | innova_bot | backend-shift | Backend shifted from innova_bot to current |
-| TH-023 | innova_bot | backend-shift | Backend shifted from innova_bot to current |
 | TH-024 | innova_bot | syllable-mismatch | Syllable split changed |
 | TH-025 | innova_bot | syllable-mismatch | Syllable split changed |
 | TH-026 | innova_bot | syllable-mismatch | Syllable split changed |
@@ -233,13 +197,13 @@
 | TH-009 | `ประเทศไทย` | ollama_mdes | Ollama timeout | YES |
 | TH-010 | `ธรรมะ` | openclaude | Ollama timeout | YES |
 | TH-011 | `hello` | openclaude | — | — |
-| TH-012 | `helloจิต` | openclaude | Ollama timeout | YES |
+| TH-012 | `helloจิต` | openclaude | — | YES |
 | TH-013 | `น้ำขึ้นให้รีบตัก` | openai | Ollama timeout | YES |
 | TH-014 | `มนุษย์ Agent` | commandcode | Ollama timeout | YES |
 | TH-015 | `รัน node mother.js` | commandcode | Ollama timeout | YES |
 | TH-016 | `20 คน` | commandcode | Ollama timeout | YES |
 | TH-017 | `๑๒๓` | thaillm | Ollama timeout | — |
-| TH-018 | `` | openclaude | — | — |
+| TH-018 | `` | openclaude | Ollama timeout | — |
 | TH-019 | `เอ` | commandcode | — | — |
 | TH-020 | `แอ` | innova_bot | — | — |
 | TH-021 | `โอ` | thaillm | — | — |
@@ -254,29 +218,29 @@
 | Case | Input | Deterministic Backend | Live Error | Variance |
 |---|---|---|---|---|
 | TH-001 | `จิต` | ollama_cloud | — | YES |
-| TH-002 | `นำกาย` | thaillm | — | YES |
+| TH-002 | `นำกาย` | thaillm | Request timeout | YES |
 | TH-003 | `จิตนำกาย` | openclaude | — | YES |
 | TH-004 | `อวัยวะ` | openai | — | YES |
 | TH-005 | `สมาธิ` | commandcode | — | YES |
-| TH-006 | `ภาษาไทย` | ollama_cloud | Request timeout | YES |
+| TH-006 | `ภาษาไทย` | ollama_cloud | — | YES |
 | TH-007 | `กรุงเทพมหานคร` | thaillm | — | YES |
 | TH-008 | `เชียงใหม่` | innova_bot | — | YES |
 | TH-009 | `ประเทศไทย` | ollama_mdes | — | YES |
 | TH-010 | `ธรรมะ` | openclaude | — | YES |
 | TH-011 | `hello` | openclaude | — | — |
 | TH-012 | `helloจิต` | openclaude | — | YES |
-| TH-013 | `น้ำขึ้นให้รีบตัก` | openai | HTTP 502: error code: 502 | YES |
+| TH-013 | `น้ำขึ้นให้รีบตัก` | openai | — | YES |
 | TH-014 | `มนุษย์ Agent` | commandcode | — | YES |
 | TH-015 | `รัน node mother.js` | commandcode | — | YES |
 | TH-016 | `20 คน` | commandcode | — | YES |
 | TH-017 | `๑๒๓` | thaillm | — | — |
-| TH-018 | `` | openclaude | — | — |
+| TH-018 | `` | openclaude | Request timeout | — |
 | TH-019 | `เอ` | commandcode | — | — |
-| TH-020 | `แอ` | innova_bot | Request timeout | — |
-| TH-021 | `โอ` | thaillm | — | — |
+| TH-020 | `แอ` | innova_bot | — | — |
+| TH-021 | `โอ` | thaillm | Request timeout | — |
 | TH-022 | `ใอ` | openai | — | — |
 | TH-023 | `ไอ` | ollama_mdes | — | — |
-| TH-024 | `จิตคืออะไร` | ollama_mdes | Request timeout | YES |
+| TH-024 | `จิตคืออะไร` | ollama_mdes | — | YES |
 | TH-025 | `ความแตกต่างระหว่าง soma และ in` | ollama_local | Request timeout | YES |
 | TH-026 | `Thai-Syllable-Splitter แบบ det` | innova_bot | — | YES |
 
@@ -291,7 +255,7 @@
 | TH-005 | `สมาธิ` | commandcode | — | YES |
 | TH-006 | `ภาษาไทย` | ollama_cloud | — | YES |
 | TH-007 | `กรุงเทพมหานคร` | thaillm | — | YES |
-| TH-008 | `เชียงใหม่` | innova_bot | Request timeout | YES |
+| TH-008 | `เชียงใหม่` | innova_bot | — | YES |
 | TH-009 | `ประเทศไทย` | ollama_mdes | Request timeout | YES |
 | TH-010 | `ธรรมะ` | openclaude | Request timeout | YES |
 | TH-011 | `hello` | openclaude | — | — |
@@ -302,14 +266,14 @@
 | TH-016 | `20 คน` | commandcode | — | YES |
 | TH-017 | `๑๒๓` | thaillm | — | — |
 | TH-018 | `` | openclaude | HTTP 400: {"error":{"message":"{\"error\ | — |
-| TH-019 | `เอ` | commandcode | Request timeout | — |
-| TH-020 | `แอ` | innova_bot | Request timeout | — |
+| TH-019 | `เอ` | commandcode | — | — |
+| TH-020 | `แอ` | innova_bot | — | — |
 | TH-021 | `โอ` | thaillm | — | — |
-| TH-022 | `ใอ` | openai | — | — |
-| TH-023 | `ไอ` | ollama_mdes | — | — |
+| TH-022 | `ใอ` | openai | Request timeout | — |
+| TH-023 | `ไอ` | ollama_mdes | Request timeout | — |
 | TH-024 | `จิตคืออะไร` | ollama_mdes | Request timeout | YES |
-| TH-025 | `ความแตกต่างระหว่าง soma และ in` | ollama_local | Request timeout | YES |
-| TH-026 | `Thai-Syllable-Splitter แบบ det` | innova_bot | Request timeout | YES |
+| TH-025 | `ความแตกต่างระหว่าง soma และ in` | ollama_local | — | YES |
+| TH-026 | `Thai-Syllable-Splitter แบบ det` | innova_bot | — | YES |
 
 ### ollama_local
 
@@ -324,8 +288,8 @@
 | TH-007 | `กรุงเทพมหานคร` | thaillm | Ollama timeout | YES |
 | TH-008 | `เชียงใหม่` | innova_bot | Ollama timeout | YES |
 | TH-009 | `ประเทศไทย` | ollama_mdes | Ollama timeout | YES |
-| TH-010 | `ธรรมะ` | openclaude | Ollama timeout | YES |
-| TH-011 | `hello` | openclaude | Ollama timeout | — |
+| TH-010 | `ธรรมะ` | openclaude | — | YES |
+| TH-011 | `hello` | openclaude | — | — |
 | TH-012 | `helloจิต` | openclaude | Ollama timeout | YES |
 | TH-013 | `น้ำขึ้นให้รีบตัก` | openai | Ollama timeout | YES |
 | TH-014 | `มนุษย์ Agent` | commandcode | Ollama timeout | YES |
@@ -333,7 +297,7 @@
 | TH-016 | `20 คน` | commandcode | Ollama timeout | YES |
 | TH-017 | `๑๒๓` | thaillm | Ollama timeout | — |
 | TH-018 | `` | openclaude | — | — |
-| TH-019 | `เอ` | commandcode | Ollama timeout | — |
+| TH-019 | `เอ` | commandcode | — | — |
 | TH-020 | `แอ` | innova_bot | Ollama timeout | — |
 | TH-021 | `โอ` | thaillm | Ollama timeout | — |
 | TH-022 | `ใอ` | openai | Ollama timeout | — |
@@ -346,30 +310,30 @@
 
 | Case | Input | Deterministic Backend | Live Error | Variance |
 |---|---|---|---|---|
-| TH-001 | `จิต` | ollama_cloud | Ollama timeout | YES |
+| TH-001 | `จิต` | ollama_cloud | — | YES |
 | TH-002 | `นำกาย` | thaillm | — | YES |
 | TH-003 | `จิตนำกาย` | openclaude | Ollama timeout | YES |
-| TH-004 | `อวัยวะ` | openai | Ollama timeout | YES |
-| TH-005 | `สมาธิ` | commandcode | Ollama timeout | YES |
-| TH-006 | `ภาษาไทย` | ollama_cloud | Ollama timeout | YES |
-| TH-007 | `กรุงเทพมหานคร` | thaillm | — | YES |
+| TH-004 | `อวัยวะ` | openai | — | YES |
+| TH-005 | `สมาธิ` | commandcode | — | YES |
+| TH-006 | `ภาษาไทย` | ollama_cloud | — | YES |
+| TH-007 | `กรุงเทพมหานคร` | thaillm | Ollama timeout | YES |
 | TH-008 | `เชียงใหม่` | innova_bot | Ollama timeout | YES |
 | TH-009 | `ประเทศไทย` | ollama_mdes | Ollama timeout | YES |
 | TH-010 | `ธรรมะ` | openclaude | — | YES |
-| TH-011 | `hello` | openclaude | — | YES |
-| TH-012 | `helloจิต` | openclaude | Ollama timeout | YES |
+| TH-011 | `hello` | openclaude | — | — |
+| TH-012 | `helloจิต` | openclaude | — | YES |
 | TH-013 | `น้ำขึ้นให้รีบตัก` | openai | — | YES |
-| TH-014 | `มนุษย์ Agent` | commandcode | Ollama timeout | YES |
+| TH-014 | `มนุษย์ Agent` | commandcode | — | YES |
 | TH-015 | `รัน node mother.js` | commandcode | — | YES |
-| TH-016 | `20 คน` | commandcode | Ollama timeout | YES |
-| TH-017 | `๑๒๓` | thaillm | — | YES |
-| TH-018 | `` | openclaude | Ollama timeout | YES |
-| TH-019 | `เอ` | commandcode | — | YES |
-| TH-020 | `แอ` | innova_bot | — | YES |
-| TH-021 | `โอ` | thaillm | — | YES |
-| TH-022 | `ใอ` | openai | — | YES |
-| TH-023 | `ไอ` | ollama_mdes | Ollama timeout | YES |
-| TH-024 | `จิตคืออะไร` | ollama_mdes | — | YES |
+| TH-016 | `20 คน` | commandcode | — | YES |
+| TH-017 | `๑๒๓` | thaillm | — | — |
+| TH-018 | `` | openclaude | — | — |
+| TH-019 | `เอ` | commandcode | Ollama timeout | — |
+| TH-020 | `แอ` | innova_bot | — | — |
+| TH-021 | `โอ` | thaillm | — | — |
+| TH-022 | `ใอ` | openai | Ollama timeout | — |
+| TH-023 | `ไอ` | ollama_mdes | — | — |
+| TH-024 | `จิตคืออะไร` | ollama_mdes | Ollama timeout | YES |
 | TH-025 | `ความแตกต่างระหว่าง soma และ in` | ollama_local | Ollama timeout | YES |
 | TH-026 | `Thai-Syllable-Splitter แบบ det` | innova_bot | Ollama timeout | YES |
 
@@ -387,19 +351,19 @@
 | TH-008 | `เชียงใหม่` | innova_bot | Copilot CLI failed: Command failed: powe | YES |
 | TH-009 | `ประเทศไทย` | ollama_mdes | Copilot CLI failed: Command failed: powe | YES |
 | TH-010 | `ธรรมะ` | openclaude | Copilot CLI failed: Command failed: powe | YES |
-| TH-011 | `hello` | openclaude | Copilot CLI failed: Command failed: powe | YES |
+| TH-011 | `hello` | openclaude | Copilot CLI failed: Command failed: powe | — |
 | TH-012 | `helloจิต` | openclaude | Copilot CLI failed: Command failed: powe | YES |
 | TH-013 | `น้ำขึ้นให้รีบตัก` | openai | Copilot CLI failed: Command failed: powe | YES |
 | TH-014 | `มนุษย์ Agent` | commandcode | Copilot CLI failed: Command failed: powe | YES |
 | TH-015 | `รัน node mother.js` | commandcode | Copilot CLI failed: Command failed: powe | YES |
 | TH-016 | `20 คน` | commandcode | Copilot CLI failed: Command failed: powe | YES |
-| TH-017 | `๑๒๓` | thaillm | Copilot CLI failed: Command failed: powe | YES |
-| TH-018 | `` | openclaude | Copilot CLI failed: Command failed: powe | YES |
-| TH-019 | `เอ` | commandcode | Copilot CLI failed: Command failed: powe | YES |
-| TH-020 | `แอ` | innova_bot | Copilot CLI failed: Command failed: powe | YES |
-| TH-021 | `โอ` | thaillm | Copilot CLI failed: Command failed: powe | YES |
-| TH-022 | `ใอ` | openai | Copilot CLI failed: Command failed: powe | YES |
-| TH-023 | `ไอ` | ollama_mdes | Copilot CLI failed: Command failed: powe | YES |
+| TH-017 | `๑๒๓` | thaillm | Copilot CLI failed: Command failed: powe | — |
+| TH-018 | `` | openclaude | Copilot CLI failed: Command failed: powe | — |
+| TH-019 | `เอ` | commandcode | Copilot CLI failed: Command failed: powe | — |
+| TH-020 | `แอ` | innova_bot | Copilot CLI failed: Command failed: powe | — |
+| TH-021 | `โอ` | thaillm | Copilot CLI failed: Command failed: powe | — |
+| TH-022 | `ใอ` | openai | Copilot CLI failed: Command failed: powe | — |
+| TH-023 | `ไอ` | ollama_mdes | Copilot CLI failed: Command failed: powe | — |
 | TH-024 | `จิตคืออะไร` | ollama_mdes | Copilot CLI failed: Command failed: powe | YES |
 | TH-025 | `ความแตกต่างระหว่าง soma และ in` | ollama_local | Copilot CLI failed: Command failed: powe | YES |
 | TH-026 | `Thai-Syllable-Splitter แบบ det` | innova_bot | Copilot CLI failed: Command failed: powe | YES |
@@ -429,7 +393,7 @@
 | TH-010 | `ธรรมะ` | openclaude | Codex CLI failed: OpenAI Codex v0.132.0
  | YES |
 | TH-011 | `hello` | openclaude | Codex CLI failed: OpenAI Codex v0.132.0
- | YES |
+ | — |
 | TH-012 | `helloจิต` | openclaude | Codex CLI failed: OpenAI Codex v0.132.0
  | YES |
 | TH-013 | `น้ำขึ้นให้รีบตัก` | openai | Codex CLI failed: OpenAI Codex v0.132.0
@@ -441,19 +405,19 @@
 | TH-016 | `20 คน` | commandcode | Codex CLI failed: OpenAI Codex v0.132.0
  | YES |
 | TH-017 | `๑๒๓` | thaillm | Codex CLI failed: OpenAI Codex v0.132.0
- | YES |
+ | — |
 | TH-018 | `` | openclaude | Codex CLI failed: OpenAI Codex v0.132.0
- | YES |
+ | — |
 | TH-019 | `เอ` | commandcode | Codex CLI failed: OpenAI Codex v0.132.0
- | YES |
+ | — |
 | TH-020 | `แอ` | innova_bot | Codex CLI failed: OpenAI Codex v0.132.0
- | YES |
+ | — |
 | TH-021 | `โอ` | thaillm | Codex CLI failed: OpenAI Codex v0.132.0
- | YES |
+ | — |
 | TH-022 | `ใอ` | openai | Codex CLI failed: OpenAI Codex v0.132.0
  | — |
 | TH-023 | `ไอ` | ollama_mdes | Codex CLI failed: OpenAI Codex v0.132.0
- | YES |
+ | — |
 | TH-024 | `จิตคืออะไร` | ollama_mdes | Codex CLI failed: OpenAI Codex v0.132.0
  | YES |
 | TH-025 | `ความแตกต่างระหว่าง soma และ in` | ollama_local | Codex CLI failed: OpenAI Codex v0.132.0
@@ -481,13 +445,13 @@
 | TH-014 | `มนุษย์ Agent` | commandcode | OpenClaude request error: ECONNREFUSED | YES |
 | TH-015 | `รัน node mother.js` | commandcode | OpenClaude request error: ECONNREFUSED | YES |
 | TH-016 | `20 คน` | commandcode | OpenClaude request error: ECONNREFUSED | YES |
-| TH-017 | `๑๒๓` | thaillm | OpenClaude request error: ECONNREFUSED | YES |
+| TH-017 | `๑๒๓` | thaillm | OpenClaude request error: ECONNREFUSED | — |
 | TH-018 | `` | openclaude | OpenClaude request error: ECONNREFUSED | — |
-| TH-019 | `เอ` | commandcode | OpenClaude request error: ECONNREFUSED | YES |
-| TH-020 | `แอ` | innova_bot | OpenClaude request error: ECONNREFUSED | YES |
-| TH-021 | `โอ` | thaillm | OpenClaude request error: ECONNREFUSED | YES |
-| TH-022 | `ใอ` | openai | OpenClaude request error: ECONNREFUSED | YES |
-| TH-023 | `ไอ` | ollama_mdes | OpenClaude request error: ECONNREFUSED | YES |
+| TH-019 | `เอ` | commandcode | OpenClaude request error: ECONNREFUSED | — |
+| TH-020 | `แอ` | innova_bot | OpenClaude request error: ECONNREFUSED | — |
+| TH-021 | `โอ` | thaillm | OpenClaude request error: ECONNREFUSED | — |
+| TH-022 | `ใอ` | openai | OpenClaude request error: ECONNREFUSED | — |
+| TH-023 | `ไอ` | ollama_mdes | OpenClaude request error: ECONNREFUSED | — |
 | TH-024 | `จิตคืออะไร` | ollama_mdes | OpenClaude request error: ECONNREFUSED | YES |
 | TH-025 | `ความแตกต่างระหว่าง soma และ in` | ollama_local | OpenClaude request error: ECONNREFUSED | YES |
 | TH-026 | `Thai-Syllable-Splitter แบบ det` | innova_bot | OpenClaude request error: ECONNREFUSED | YES |
@@ -506,19 +470,19 @@
 | TH-008 | `เชียงใหม่` | innova_bot | — | YES |
 | TH-009 | `ประเทศไทย` | ollama_mdes | — | YES |
 | TH-010 | `ธรรมะ` | openclaude | — | YES |
-| TH-011 | `hello` | openclaude | — | YES |
+| TH-011 | `hello` | openclaude | — | — |
 | TH-012 | `helloจิต` | openclaude | — | YES |
 | TH-013 | `น้ำขึ้นให้รีบตัก` | openai | — | YES |
 | TH-014 | `มนุษย์ Agent` | commandcode | — | YES |
 | TH-015 | `รัน node mother.js` | commandcode | — | YES |
 | TH-016 | `20 คน` | commandcode | — | YES |
-| TH-017 | `๑๒๓` | thaillm | — | YES |
-| TH-018 | `` | openclaude | — | YES |
-| TH-019 | `เอ` | commandcode | — | YES |
+| TH-017 | `๑๒๓` | thaillm | — | — |
+| TH-018 | `` | openclaude | — | — |
+| TH-019 | `เอ` | commandcode | — | — |
 | TH-020 | `แอ` | innova_bot | — | — |
-| TH-021 | `โอ` | thaillm | — | YES |
-| TH-022 | `ใอ` | openai | — | YES |
-| TH-023 | `ไอ` | ollama_mdes | — | YES |
+| TH-021 | `โอ` | thaillm | — | — |
+| TH-022 | `ใอ` | openai | — | — |
+| TH-023 | `ไอ` | ollama_mdes | — | — |
 | TH-024 | `จิตคืออะไร` | ollama_mdes | — | YES |
 | TH-025 | `ความแตกต่างระหว่าง soma และ in` | ollama_local | — | YES |
 | TH-026 | `Thai-Syllable-Splitter แบบ det` | innova_bot | — | YES |

@@ -1,132 +1,132 @@
 {
   "TH-001": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "ollama_cloud",
+    "routingKey": "msgCount:1|lang:thai|prefix:จิ-ต",
     "canonical": "จิ-ต"
   },
   "TH-002": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "thaillm",
+    "routingKey": "msgCount:1|lang:thai|prefix:นำ-กา-ย",
     "canonical": "นำ-กา-ย"
   },
   "TH-003": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "openclaude",
+    "routingKey": "msgCount:1|lang:thai|prefix:จิ-ตน-ำ-กา-ย",
     "canonical": "จิ-ตน-ำ-กา-ย"
   },
   "TH-004": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "openai",
+    "routingKey": "msgCount:1|lang:thai|prefix:อว-ั-ยว-ะ",
     "canonical": "อว-ั-ยว-ะ"
   },
   "TH-005": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "commandcode",
+    "routingKey": "msgCount:1|lang:thai|prefix:สม-า-ธิ",
     "canonical": "สม-า-ธิ"
   },
   "TH-006": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "ollama_cloud",
+    "routingKey": "msgCount:1|lang:thai|prefix:ภา-ษา-ไ-ทย",
     "canonical": "ภา-ษา-ไ-ทย"
   },
   "TH-007": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "thaillm",
+    "routingKey": "msgCount:1|lang:thai|prefix:กร-ุงเ-ทพมห-า-นคร",
     "canonical": "กร-ุงเ-ทพมห-า-นคร"
   },
   "TH-008": {
     "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "routingKey": "msgCount:1|lang:thai|prefix:เ-ชี-ยง-ใ-หม-่",
     "canonical": "เ-ชี-ยง-ใ-หม-่"
   },
   "TH-009": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "ollama_mdes",
+    "routingKey": "msgCount:1|lang:thai|prefix:ปร-ะเ-ทศ-ไ-ทย",
     "canonical": "ปร-ะเ-ทศ-ไ-ทย"
   },
   "TH-010": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "openclaude",
+    "routingKey": "msgCount:1|lang:thai|prefix:ธรรม-ะ",
     "canonical": "ธรรม-ะ"
   },
   "TH-011": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "openclaude",
+    "routingKey": "msgCount:1|lang:other",
     "canonical": "hello"
   },
   "TH-012": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "openclaude",
+    "routingKey": "msgCount:1|lang:thai|prefix:hello-จิ-ต",
     "canonical": "hello-จิ-ต"
   },
   "TH-013": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "openai",
+    "routingKey": "msgCount:1|lang:thai|prefix:น้ำ-ขึ-้นให้-รี-บต-ัก",
     "canonical": "น้ำ-ขึ-้นให้-รี-บต-ัก"
   },
   "TH-014": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "commandcode",
+    "routingKey": "msgCount:1|lang:thai|prefix:มน-ุ-ษย-์Agent",
     "canonical": "มน-ุ-ษย-์Agent"
   },
   "TH-015": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "commandcode",
+    "routingKey": "msgCount:1|lang:thai|prefix:รั-นnodemother.js",
     "canonical": "รั-นnodemother.js"
   },
   "TH-016": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "commandcode",
+    "routingKey": "msgCount:1|lang:thai|prefix:20-คน",
     "canonical": "20-คน"
   },
   "TH-017": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "thaillm",
+    "routingKey": "msgCount:1|lang:thai|prefix:๑๒๓",
     "canonical": "๑๒๓"
   },
   "TH-018": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "openclaude",
+    "routingKey": "msgCount:1|lang:other",
     "canonical": ""
   },
   "TH-019": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "commandcode",
+    "routingKey": "msgCount:1|lang:thai|prefix:เอ",
     "canonical": "เอ"
   },
   "TH-020": {
     "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "routingKey": "msgCount:1|lang:thai|prefix:แอ",
     "canonical": "แอ"
   },
   "TH-021": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "thaillm",
+    "routingKey": "msgCount:1|lang:thai|prefix:โอ",
     "canonical": "โอ"
   },
   "TH-022": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "openai",
+    "routingKey": "msgCount:1|lang:thai|prefix:ใอ",
     "canonical": "ใอ"
   },
   "TH-023": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "ollama_mdes",
+    "routingKey": "msgCount:1|lang:thai|prefix:ไอ",
     "canonical": "ไอ"
   },
   "TH-024": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "ollama_mdes",
+    "routingKey": "msgCount:1|lang:thai|prefix:จิ-ตค-ื-ออ-ะไร",
     "canonical": "จิ-ตค-ื-ออ-ะไร"
   },
   "TH-025": {
-    "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "deterministicBackend": "ollama_local",
+    "routingKey": "msgCount:1|lang:thai|prefix:คว-ามแ-ตกต-่า-งร-ะ-หว-่างsomaแ-ละ-in",
     "canonical": "คว-ามแ-ตกต-่า-งร-ะ-หว-่างsomaแ-ละ-innova"
   },
   "TH-026": {
     "deterministicBackend": "innova_bot",
-    "routingKey": "",
+    "routingKey": "msgCount:1|lang:thai|prefix:ThaiSyllableSplitterแ-บบ-det",
     "canonical": "ThaiSyllableSplitterแ-บบ-deterministic"
   }
 }
