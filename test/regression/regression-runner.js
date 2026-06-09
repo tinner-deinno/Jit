@@ -273,7 +273,7 @@ function renderMarkdown(r) {
 
   md += `## How to Interpret\n\n`;
   md += `- **Variance = syllable-mismatch**: The Thai splitter output changed for this input compared to the corpus \`expected\` array. This is a regression in TICKET-006b logic.\n`;
-  md += `- **Variance = backend-shift**: The deterministic routing key changed, causing a different backend to be selected. Review \`golden-files/${backend}.json\` diffs.\n`;
+  md += `- **Variance = backend-shift**: The deterministic routing key changed, causing a different backend to be selected. Review \`golden-files/<backend>.json\` diffs.\n`;
   md += `- **Live Error**: The backend call failed (network, auth, timeout). Not a regression in routing logic, but recorded for reliability tracking.\n`;
   md += `- **Golden files** in \`test/regression/golden-files/\` store the expected deterministic backend per case. Delete or update them after intentional routing changes.\n`;
 
