@@ -355,7 +355,7 @@
       "tier": "0-master",
       "health_status": "ok",
       "last_heartbeat": null,
-      "response_time_ms": 60,
+      "response_time_ms": 90,
       "message_queue_depth": 94,
       "version": "1.0.0"
     },
@@ -411,7 +411,7 @@
       "reports_to": "innova",
       "manages": [],
       "health_status": "ok",
-      "last_heartbeat": "2026-06-08T09:15:58+07:00",
+      "last_heartbeat": "2026-06-09T08:00:38+07:00",
       "response_time_ms": null,
       "message_queue_depth": 0,
       "version": "1.0.0"

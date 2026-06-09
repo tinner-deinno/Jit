@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# bin/commandcode — CommandCode CLI wrapper with auth via COMMANDCODE_API_KEY from .env
+#
+# Usage:
+#   commandcode "your prompt"
+#   commandcode "refactor this code"
+#   commandcode  (interactive mode)
+
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+JIT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Load .env for COMMANDCODE_API_KEY
+if [ -f "$JIT_ROOT/.env" ]; then
+  set -a
+  source "$JIT_ROOT/.env"
+  set +a
+fi
+
+# Find the real commandcode binary
+# Priority: installed binary → fallback to nvm version
+CC_BIN=$(command -v commandcode 2>/dev/null) || \
+CC_BIN="/usr/local/share/nvm/versions/node/v24.15.0/bin/commandcode"
+
+if [ ! -x "$CC_BIN" ]; then
+  echo "❌ CommandCode CLI not found at $CC_BIN" >&2
+  exit 1
+fi
+
+# Ensure COMMANDCODE_API_KEY is set
+if [ -z "${COMMANDCODE_API_KEY:-}" ]; then
+  echo "❌ COMMANDCODE_API_KEY not set in .env" >&2
+  exit 1
+fi
+
+# Export for CommandCode to use
+export COMMANDCODE_API_KEY
+
+# Pass through all arguments to CommandCode
+exec "$CC_BIN" "$@"
