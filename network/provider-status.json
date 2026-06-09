@@ -1,5 +1,5 @@
 {
-  "probed_at_ms": 1780919730492,
+  "probed_at_ms": 1780990876059,
   "timeout_ms": 35000,
   "full_probe": true,
   "probed_backends": [
@@ -16,6 +16,7 @@
   "usable": [
     "commandcode",
     "innova_bot",
+    "ollama_cloud",
     "ollama_local",
     "ollama_mdes",
     "thaillm"
@@ -23,6 +24,7 @@
   "cached_usable": [
     "commandcode",
     "innova_bot",
+    "ollama_cloud",
     "ollama_local",
     "ollama_mdes",
     "thaillm"
@@ -31,70 +33,71 @@
     "ollama_mdes": {
       "backend": "ollama_mdes",
       "status": "ALIVE",
-      "ms": 3269,
+      "ms": 4608,
       "served_by": "ollama_mdes",
       "sample": "OK",
-      "probed_at_ms": 1780919730492
+      "probed_at_ms": 1780990876059
     },
     "ollama_local": {
       "backend": "ollama_local",
       "status": "ALIVE",
-      "ms": 3070,
+      "ms": 4875,
       "served_by": "ollama_local",
       "sample": "OK",
-      "probed_at_ms": 1780919730492
+      "probed_at_ms": 1780990876059
     },
     "ollama_cloud": {
       "backend": "ollama_cloud",
-      "status": "RATE_LIMITED",
-      "ms": 2487,
-      "error": "Ollama HTTP 429: {\"error\":\"you (tarpipnum) have reached your session usage limit",
-      "probed_at_ms": 1780919730492
+      "status": "ALIVE",
+      "ms": 4581,
+      "served_by": "ollama_cloud",
+      "sample": "OK",
+      "probed_at_ms": 1780990876059
     },
     "thaillm": {
       "backend": "thaillm",
       "status": "ALIVE",
-      "ms": 2560,
+      "ms": 4581,
       "served_by": "thaillm",
-      "sample": "<think> Okay, the user wants me to reply with exactly \"OK\". ",
-      "probed_at_ms": 1780919730492
+      "sample": "<think> Okay, I need to respond to the user's query. The use",
+      "probed_at_ms": 1780990876059
     },
     "copilot": {
       "backend": "copilot",
       "status": "ERROR",
-      "ms": 12906,
+      "ms": 16849,
       "error": "empty reply from copilot",
-      "probed_at_ms": 1780919730492
+      "probed_at_ms": 1780990876059
     },
     "openai": {
       "backend": "openai",
       "status": "ERROR",
-      "ms": 7150,
+      "ms": 25786,
       "error": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nm",
-      "probed_at_ms": 1780919730492
+      "probed_at_ms": 1780990876059
     },
     "openclaude": {
       "backend": "openclaude",
       "status": "UNREACHABLE",
-      "ms": 82,
+      "ms": 145,
       "error": "OpenClaude request error: ECONNREFUSED",
-      "probed_at_ms": 1780919730492
+      "probed_at_ms": 1780990876059
     },
     "innova_bot": {
       "backend": "innova_bot",
       "status": "ALIVE",
-      "ms": 234,
+      "ms": 2428,
       "served_by": "innova_bot",
       "sample": "stub-ok: USER: Reply with exactly: OK ASSISTANT:",
-      "probed_at_ms": 1780919730492
+      "probed_at_ms": 1780990876059
     },
     "commandcode": {
       "backend": "commandcode",
       "status": "ALIVE",
-      "ms": 1829,
+      "ms": 2372,
       "served_by": "commandcode",
       "sample": "OK",
-      "probed_at_ms": 1780919730492
+      "probed_at_ms": 1780990876059
     }
   }
 }
