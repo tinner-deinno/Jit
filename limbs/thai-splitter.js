@@ -16,7 +16,14 @@ function splitThaiSyllables(text) {
     // order (e.g. tone-mark before below-vowel) produce the same output as
     // their canonically-ordered equivalents.  This is the fix for the
     // SA Design Review gap (2026-06-08): "NFC Normalization Gap".
-    const normalized = String(text).normalize('NFC');
+    let normalized = String(text).normalize('NFC');
+
+    // TICKET-017: Strip zero-width characters (ZWS, ZWNJ, ZWJ) to ensure
+    // routing key stability regardless of whether the input contains hidden
+    // formatting characters. These characters don't affect visual output but
+    // can change hash keys if not normalized away.
+    // Pattern: U+200B (ZWS), U+200C (ZWNJ), U+200D (ZWJ)
+    normalized = normalized.replace(/[​‌‍]/g, '');
 
     // Simple deterministic split: current implementation uses a regex-based
     // heuristic for syllable boundaries to avoid tokenization variance.
