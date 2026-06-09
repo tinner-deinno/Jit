@@ -1,0 +1,38 @@
+name: TICKET-009 Regression Tests
+
+on:
+  push:
+    branches:
+      - main
+      - fix/**
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  ticket-009-tests:
+    name: Thai Routing Regression Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run TICKET-009 test suite
+        run: npm run test:ticket-009
+        env:
+          ORACLE_URL: ${{ vars.ORACLE_URL || 'http://localhost:47778' }}

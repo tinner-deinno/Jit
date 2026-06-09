@@ -6,7 +6,7 @@
     "points": 6,
     "days": 5
   },
-  "summary": "Implement comprehensive regression test suite to verify deterministic backend selection via Thai syllable routing. Test matrix: 28-phrase Thai corpus × 10 independent runs × 8 backends × 3 orderings = 6,720 total executions. Success criterion: ≤0.5% variance in backend selection within each ordering (demonstrating determinism). Each ordering tested independently, as pickBackendByKey(hash % order.length) produces different mappings per ordering.",
+  "summary": "Implement comprehensive regression test suite to verify deterministic backend selection via Thai syllable routing. Test matrix: 28-phrase Thai corpus × 10 independent runs × 9 backends × 3 orderings = 7,560 total executions. Success criterion: ≤0.5% variance in backend selection within each ordering (demonstrating determinism). Each ordering tested independently, as pickBackendByKey(hash % order.length) produces different mappings per ordering.",
   "description": {
     "purpose": "Ensure that Thai routing determinism holds across multiple executions and backend orderings. Thai language text should route consistently to the same backend within a fixed BACKEND_ORDER. This guards against non-deterministic behavior introduced by canonicalization, hashing, or cache invalidation.",
     "scope": "Testing routing stability, NOT testing correctness of canonicalization or hash function (those are TICKET-007c scope). Focus: run-to-run determinism within a fixed ordering.",
