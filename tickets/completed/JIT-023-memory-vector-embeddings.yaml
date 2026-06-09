@@ -1,0 +1,18 @@
+id: JIT-023
+title: "Add vector embeddings and semantic indexing to memory system"
+priority: P2
+type: feat
+status: completed
+owner: innova
+created: 2026-06-07
+updated: 2026-06-08
+spec_ref: specs/JIT-023-spec.md
+acceptance:
+  - memory/ stores embeddings alongside knowledge entries (local cache or Oracle)
+  - memory/shared.sh recall <topic> returns both exact matches + semantically similar entries
+  - Embeddings refreshed on each heartbeat (batch job)
+  - Memory query response includes similarity_score for ranking
+  - Cross-session memory recovery: given a context, find most relevant prior decisions
+effort_hours: 7
+tags: [memory, embeddings, semantic, search, p2, innova]
+notes: "Current memory is flat JSON. Add semantic indexing to find contextually relevant memories across sessions and agents."

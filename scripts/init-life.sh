@@ -93,7 +93,7 @@ if [ "$STATUS_ONLY" -eq 1 ]; then
 
   # Ollama
   if curl -sf --max-time 5 "${OLLAMA_URL:-https://ollama.mdes-innova.online}/api/tags" \
-      -H "Authorization: Bearer ${OLLAMA_TOKEN:-}" 2>/dev/null | grep -q '"models"'; then
+      -H "Authorization: Bearer ${OLLAMA_TOKEN:-[REDACTED]}" 2>/dev/null | grep -q '"models"'; then
     echo -e "  🤖 MDES Ollama:       ${GREEN}✅ พร้อม${RESET}"
   else
     echo -e "  🤖 MDES Ollama:       ${RED}❌ ไม่พร้อม${RESET}"

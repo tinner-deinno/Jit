@@ -1,0 +1,5 @@
+# 🤖 Sonnet 4.6
+# cmdteam-cron — crontab line: run cmdteam self-improve every hour
+# Install:   crontab /workspaces/Jit/scripts/cmdteam-cron
+# Remove:    crontab -l | grep -v 'cmdteam-daemon.sh' | crontab -
+0 * * * * /workspaces/Jit/scripts/cmdteam-daemon.sh >> /workspaces/Jit/logs/cmdteam-cron.log 2>&1

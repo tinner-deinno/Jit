@@ -1,0 +1,7 @@
+{
+  "agent": "rupa",
+  "ts": "2026-06-08T18:38:00Z",
+  "model": "gpt-5.4",
+  "summary": "Design tokens for Jit frontend (EverGreen theme)",
+  "tokens": "see raw output above (color primary #0F4C3A, accent, neutral, semantic; typography thai+en+mix; spacing 4px base; radius 4-16; shadow 0-24)"
+}

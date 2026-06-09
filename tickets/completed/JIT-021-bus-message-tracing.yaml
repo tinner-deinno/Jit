@@ -1,0 +1,18 @@
+id: JIT-021
+title: "Implement message tracing and correlation IDs across bus"
+priority: P1
+type: feat
+status: done
+owner: netra
+created: 2026-06-07
+updated: 2026-06-08
+spec_ref: specs/JIT-021-spec.md
+acceptance:
+  - Every message gets correlation-id (currently done) + trace-chain (path of hops)
+  - bus.sh trace <correlation-id> shows full message journey from sender → final recipient
+  - Message files include hop_count and timestamp_chain for latency measurement
+  - netra.sh eye-check reports slowest message paths (> 1 second)
+  - bus.sh stats --trace outputs average latency per agent pair (soma→innova, etc)
+effort_hours: 5
+tags: [bus, tracing, debugging, observability, p1, netra]
+notes: "Currently track messages sent/received but no cross-agent tracing. Essential for debugging stuck messages and bottlenecks."

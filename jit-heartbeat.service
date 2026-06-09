@@ -1,0 +1,41 @@
+[Unit]
+Description=Jit 24/7 Heartbeat Monitor (จิต หัวใจ)
+After=network.target git-daemon.service
+Wants=network-online.target
+StartLimitInterval=300
+StartLimitBurst=3
+OnFailure=notify-failure@%n.service
+
+[Service]
+Type=notify
+WatchdogSec=60
+NotifyAccess=main
+User=codespace
+WorkingDirectory=/workspaces/Jit
+Environment="PATH=/home/codespace/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+EnvironmentFile=/workspaces/Jit/.secrets/ollama.env
+
+# Main heartbeat loop
+ExecStart=/bin/bash -c 'cd /workspaces/Jit && bash scripts/heartbeat-24h-daemon.sh'
+ExecStartPost=/usr/bin/systemd-notify --ready
+
+# Restart policy
+Restart=always
+RestartSec=10
+RestartPreventExitStatus=42
+StartLimitAction=reboot
+
+# Process management
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jit-heartbeat
+KillMode=process
+KillSignal=SIGTERM
+
+# Resource limits
+MemoryLimit=512M
+CPUQuota=50%
+Timeout=300
+
+[Install]
+WantedBy=multi-user.target

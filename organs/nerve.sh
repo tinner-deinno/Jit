@@ -24,12 +24,24 @@ mkdir -p "$NERVE_DIR"
 _emit_event() {
   local EVENT="$1" DATA="$2" SOURCE="${3:-unknown}"
   local TS=$(date '+%Y-%m-%dT%H:%M:%S')
-  local EVENT_JSON="{\"ts\":\"$TS\",\"event\":\"$EVENT\",\"source\":\"$SOURCE\",\"data\":\"$DATA\"}"
+
+  # Use python for safe JSON encoding (prevents injection via quotes/special chars)
+  local EVENT_JSON
+  EVENT_JSON=$(python3 -c "
+import json, sys
+data = {
+  'ts': sys.argv[1],
+  'event': sys.argv[2],
+  'source': sys.argv[3],
+  'data': sys.argv[4]
+}
+print(json.dumps(data, ensure_ascii=False))
+" "$TS" "$EVENT" "$SOURCE" "$DATA")
 
   # บันทึกลง event log
   echo "$EVENT_JSON" >> "$EVENT_LOG"
 
-  # สร้างไฟล์ event สำหรับ subscribers
+  # สร้างไฟลล์ event สำหรับ subscribers
   local EVENT_FILE="$NERVE_DIR/${EVENT}_$(date +%s%3N).evt"
   echo "$EVENT_JSON" > "$EVENT_FILE"
 

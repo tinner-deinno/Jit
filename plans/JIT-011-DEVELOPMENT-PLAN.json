@@ -1,0 +1,355 @@
+{
+  "ticket": "JIT-011",
+  "title": "Bus message authentication (HMAC)",
+  "owner": "lak",
+  "hours_allocated": 6,
+  "status": "development_plan",
+  
+  "vulnerability_analysis": {
+    "severity": "HIGH",
+    "classification": "Missing Authentication & Integrity Control",
+    "description": "The file-based message bus (/tmp/manusat-bus/) currently operates without authentication or message integrity verification. Any process with filesystem access can forge, tamper, or replay messages.",
+    
+    "attack_vectors": [
+      {
+        "name": "Message Forgery",
+        "description": "Attacker can create messages with forged 'from' field, impersonating any agent (e.g., jit, soma, innova)",
+        "impact": "HIGH - Can execute arbitrary commands by spoofing master agents",
+        "example": "Create task: message claiming to be from 'jit' ordering deploy to production"
+      },
+      {
+        "name": "Message Tampering",
+        "description": "Attacker can modify message content during transit before agent reads it",
+        "impact": "HIGH - Can alter task parameters, inject malicious code in 'body'",
+        "example": "Change deploy target from 'staging' to 'production'"
+      },
+      {
+        "name": "Message Replay",
+        "description": "Attacker can replay old messages multiple times",
+        "impact": "MEDIUM - Can trigger duplicate executions, but requires idempotency-key dedup",
+        "example": "Re-send old 'task:deploy' from months ago to trigger unexpected deployment"
+      },
+      {
+        "name": "DLQ Injection",
+        "description": "Attacker can inject fake failures or move legitimate messages to DLQ",
+        "impact": "MEDIUM - Can cause denial of service for specific agents",
+        "example": "Overwrite .reason sidecars to confuse retry logic"
+      }
+    ],
+    
+    "current_state": {
+      "authentication": "NONE - No signature verification",
+      "integrity_check": "NONE - No tamper detection",
+      "replay_protection": "PARTIAL - Idempotency keys exist but not enforced uniformly",
+      "secret_management": "NONE - No shared secret distribution mechanism",
+      "authorization": "File-level (Unix permissions only)"
+    },
+    
+    "root_cause": "Protocol v1.0 added headers (protocol-version, idempotency-key, x-signature field) but signature computation and verification were not fully implemented in mouth.sh (send) and ear.sh (receive).",
+    
+    "affected_components": [
+      "network/bus.sh - No signature generation when sending",
+      "organs/mouth.sh - Does not compute or add x-signature header",
+      "organs/ear.sh - Does not verify x-signature before processing",
+      "limbs/lib.sh - Has functions defined but not integrated",
+      "network/protocol.md - Spec exists but implementation incomplete"
+    ]
+  },
+  
+  "fix_design": {
+    "approach": "End-to-end HMAC-SHA256 signature signing and verification",
+    
+    "design_principles": [
+      "Sign at send time (mouth.sh) over canonical string: from+to+subject+timestamp+body",
+      "Verify at receive time (ear.sh) before processing",
+      "Shared secret: MANUSAT_BUS_SECRET (32+ bytes)",
+      "Strict mode: MANUSAT_STRICT_AUTH=1 (require signatures) or 0 (legacy compat)",
+      "Backward compatible: Accept unsigned messages when STRICT_AUTH=0",
+      "Constant-time comparison to prevent timing attacks"
+    ],
+    
+    "implementation_flow": {
+      "signing_flow": {
+        "1_send": {
+          "actor": "mouth.sh tell() / bus.sh send",
+          "step": "Prepare message: from, to, subject, timestamp, body",
+          "code": "CANONICAL=\"${FROM}${TO}${SUBJECT}${TIMESTAMP}${BODY}\"",
+          "output": "canonical_string"
+        },
+        "2_compute": {
+          "actor": "lib.sh bus_compute_signature()",
+          "step": "Compute HMAC-SHA256(canonical, MANUSAT_BUS_SECRET)",
+          "code": "echo -n \"$CANONICAL\" | openssl dgst -sha256 -hmac \"$BUS_SECRET\" | awk '{print $NF}'",
+          "output": "signature_hex (64 chars)"
+        },
+        "3_add_header": {
+          "actor": "bus.sh send",
+          "step": "Add x-signature header to message file",
+          "code": "echo 'x-signature:hmac-sha256='$SIG >> $MSG_FILE",
+          "output": "message_with_signature"
+        }
+      },
+      
+      "verification_flow": {
+        "1_receive": {
+          "actor": "ear.sh receive",
+          "step": "Read message file from inbox",
+          "code": "cat /tmp/manusat-bus/$AGENT/P*/*.msg",
+          "output": "message_content"
+        },
+        "2_parse_headers": {
+          "actor": "ear.sh _verify_message()",
+          "step": "Extract from, to, subject, timestamp, x-signature, body",
+          "code": "from=$(grep '^from:' $MSG | cut -d: -f2-); sig=$(grep '^x-signature:' $MSG | sed 's/.*hmac-sha256=//')",
+          "output": "parsed_fields"
+        },
+        "3_verify": {
+          "actor": "lib.sh bus_verify_signature()",
+          "step": "Recompute HMAC-SHA256 and compare with provided signature",
+          "code": "expected=$(bus_compute_signature $from $to $subject $timestamp $body); [ \"$expected\" = \"$provided\" ] && echo OK || echo FAIL",
+          "output": "verification_result"
+        },
+        "4_handle_result": {
+          "actor": "ear.sh",
+          "conditions": [
+            "Valid signature → Accept and process",
+            "Invalid signature → Move to rejected/ directory, log EAR_REJECTED",
+            "Missing signature + STRICT_AUTH=1 → Reject with error",
+            "Missing signature + STRICT_AUTH=0 → Accept with warning"
+          ]
+        }
+      }
+    },
+    
+    "pseudo_code_mouth_sh": {
+      "function": "tell(to, subject, body)",
+      "steps": [
+        "BODY=\"$3\"",
+        "FROM=\"${AGENT_NAME:-system}\"",
+        "TO=\"$1\"",
+        "SUBJECT=\"$2\"",
+        "TIMESTAMP=$(date '+%Y-%m-%dT%H:%M:%S')",
+        "",
+        "# Compute signature",
+        "if [ -n \"$MANUSAT_BUS_SECRET\" ]; then",
+        "  SIG=$(bus_compute_signature \"$FROM\" \"$TO\" \"$SUBJECT\" \"$TIMESTAMP\" \"$BODY\")",
+        "  SIG_HEADER=\"x-signature:hmac-sha256=$SIG\"",
+        "else",
+        "  SIG_HEADER=\"\"",
+        "fi",
+        "",
+        "# Write message with signature",
+        "cat > $MSG_FILE << 'END'",
+        "from:$FROM",
+        "to:$TO",
+        "subject:$SUBJECT",
+        "timestamp:$TIMESTAMP",
+        "$SIG_HEADER",
+        "---",
+        "$BODY",
+        "END"
+      ]
+    },
+    
+    "pseudo_code_ear_sh": {
+      "function": "receive(agent)",
+      "steps": [
+        "for MSG_FILE in /tmp/manusat-bus/$AGENT/P*/*.msg; do",
+        "  # Parse headers",
+        "  FROM=$(grep '^from:' $MSG_FILE | cut -d: -f2-)",
+        "  TO=$(grep '^to:' $MSG_FILE | cut -d: -f2-)",
+        "  SUBJECT=$(grep '^subject:' $MSG_FILE | cut -d: -f2-)",
+        "  TIMESTAMP=$(grep '^timestamp:' $MSG_FILE | cut -d: -f2-)",
+        "  PROVIDED_SIG=$(grep '^x-signature:' $MSG_FILE | sed 's/.*hmac-sha256=//')",
+        "  BODY=$(sed -n '/^---$/,$p' $MSG_FILE | tail -n +2)",
+        "  ",
+        "  # Verify signature",
+        "  if ! bus_verify_signature \"$FROM\" \"$TO\" \"$SUBJECT\" \"$TIMESTAMP\" \"$BODY\" \"$PROVIDED_SIG\"; then",
+        "    # Move to rejected/ directory",
+        "    mv $MSG_FILE /tmp/manusat-bus/$AGENT/rejected/",
+        "    log_action EAR_REJECTED \"from:$FROM subject:$SUBJECT reason:signature_invalid\"",
+        "    continue",
+        "  fi",
+        "  ",
+        "  # Process message",
+        "  echo \"Message from $FROM: $SUBJECT\"",
+        "  echo \"$BODY\"",
+        "done"
+      ]
+    },
+    
+    "files_to_modify": [
+      {
+        "file": "network/protocol.md",
+        "changes": [
+          "Update message format example to show x-signature header",
+          "Add signature verification as mandatory step in lifecycle",
+          "Document canonical string format and HMAC algorithm",
+          "Add JIT-011 reference in version history",
+          "Update error handling section with signature failures"
+        ]
+      },
+      {
+        "file": "limbs/lib.sh",
+        "changes": [
+          "ALREADY IMPLEMENTED: bus_compute_signature() - compute HMAC-SHA256",
+          "ALREADY IMPLEMENTED: bus_verify_signature() - verify signature",
+          "ALREADY IMPLEMENTED: bus_parse_signature() - extract from headers",
+          "ADD: Constant-time comparison safeguard (optional enhancement)",
+          "ADD: Logging for signature operations (already has err/warn)"
+        ]
+      },
+      {
+        "file": "network/bus.sh",
+        "changes": [
+          "In 'send' command: Call bus_compute_signature() after building message",
+          "Add x-signature header to message before writing to file",
+          "Log signature generation with ok/info",
+          "Handle case when MANUSAT_BUS_SECRET not set (warn but allow)"
+        ]
+      },
+      {
+        "file": "organs/mouth.sh",
+        "changes": [
+          "In tell() function: Call bus.sh signature functions",
+          "Integrate signature generation before message write",
+          "Add x-signature header to outgoing messages",
+          "Log signature generation attempt"
+        ]
+      },
+      {
+        "file": "organs/ear.sh",
+        "changes": [
+          "Add _verify_message() helper function",
+          "Call _verify_message() in receive() and listen() before processing",
+          "Create rejected/ directory for failed signature verification",
+          "Move invalid-signature messages to rejected/ with .reason sidecar",
+          "Log EAR_REJECTED action for audit trail"
+        ]
+      },
+      {
+        "file": "network/bus-auth.sh",
+        "type": "NEW",
+        "changes": [
+          "Dedicated authentication utility (optional, for debugging/testing)",
+          "Commands: sign <msg-file>, verify <msg-file>, test-round-trip",
+          "Useful for manual testing and troubleshooting auth issues"
+        ]
+      }
+    ]
+  },
+  
+  "tests_required": [
+    {
+      "test_id": "AUTH-001",
+      "name": "Valid signature acceptance",
+      "description": "Message with valid HMAC-SHA256 signature is accepted and processed",
+      "setup": [
+        "Set MANUSAT_BUS_SECRET='test-secret-32bytes-minimum'",
+        "Set MANUSAT_STRICT_AUTH=1"
+      ],
+      "steps": [
+        "1. Create message: from=innova, to=soma, subject=task:test, timestamp=2026-06-08T10:00:00, body=test",
+        "2. Compute correct signature",
+        "3. Add x-signature header to message",
+        "4. Place in /tmp/manusat-bus/soma/P2/",
+        "5. Run: AGENT_NAME=soma bash organs/ear.sh receive"
+      ],
+      "expected": "Message processed, logged BUS_RECV, NOT in rejected/"
+    },
+    {
+      "test_id": "AUTH-002",
+      "name": "Invalid signature rejection",
+      "description": "Message with tampered body is rejected (signature mismatch)",
+      "setup": [
+        "Set MANUSAT_BUS_SECRET='test-secret-32bytes-minimum'",
+        "Set MANUSAT_STRICT_AUTH=1"
+      ],
+      "steps": [
+        "1. Create message with valid signature for body='original'",
+        "2. Modify message body to 'tampered'",
+        "3. Keep original x-signature header (now invalid)",
+        "4. Place in inbox",
+        "5. Run: AGENT_NAME=soma bash organs/ear.sh receive"
+      ],
+      "expected": "Message moved to rejected/, logged EAR_REJECTED, NOT processed"
+    },
+    {
+      "test_id": "AUTH-003",
+      "name": "Missing signature in strict mode rejection",
+      "description": "Unsigned message rejected when MANUSAT_STRICT_AUTH=1",
+      "setup": [
+        "Set MANUSAT_BUS_SECRET='test-secret'",
+        "Set MANUSAT_STRICT_AUTH=1"
+      ],
+      "steps": [
+        "1. Create message WITHOUT x-signature header",
+        "2. Place in inbox",
+        "3. Run: AGENT_NAME=soma bash organs/ear.sh receive"
+      ],
+      "expected": "Message moved to rejected/, logged BUS_AUTH_FAIL error"
+    },
+    {
+      "test_id": "AUTH-004",
+      "name": "Missing signature legacy mode acceptance",
+      "description": "Unsigned message accepted when MANUSAT_STRICT_AUTH=0",
+      "setup": [
+        "Set MANUSAT_BUS_SECRET='test-secret'",
+        "Set MANUSAT_STRICT_AUTH=0"
+      ],
+      "steps": [
+        "1. Create message WITHOUT x-signature header",
+        "2. Place in inbox",
+        "3. Run: AGENT_NAME=soma bash organs/ear.sh receive"
+      ],
+      "expected": "Message processed with warning, logged BUS_AUTH legacy message"
+    },
+    {
+      "test_id": "AUTH-005",
+      "name": "No secret configured behavior",
+      "description": "Behavior when MANUSAT_BUS_SECRET not set",
+      "setup": [
+        "Unset MANUSAT_BUS_SECRET",
+        "Set MANUSAT_STRICT_AUTH=0"
+      ],
+      "steps": [
+        "1. Send message via bus.sh send to innova subject test body hello",
+        "2. Check message file for x-signature header"
+      ],
+      "expected": "Message sent without x-signature header, warning logged"
+    },
+    {
+      "test_id": "AUTH-006",
+      "name": "Signature format correctness",
+      "description": "Canonical string includes all required fields (from+to+subject+timestamp+body)",
+      "setup": [
+        "Set MANUSAT_BUS_SECRET='test-secret'"
+      ],
+      "steps": [
+        "1. Manually compute: openssl dgst -sha256 -hmac 'test-secret' with exact canonical",
+        "2. Call: bus_compute_signature 'innova' 'soma' 'task:test' '2026-06-08T10:00:00' 'hello'",
+        "3. Compare outputs"
+      ],
+      "expected": "Computed signatures match exactly (64-char hex)"
+    }
+  ],
+  
+  "implementation_estimate": {
+    "task_1_analysis": "1.0h",
+    "task_2_update_protocol_md": "0.5h",
+    "task_3_implement_bus_sh_signing": "1.5h",
+    "task_4_implement_ear_sh_verification": "1.5h",
+    "task_5_create_tests": "1.0h",
+    "task_6_documentation": "0.5h",
+    "total": "6.0h"
+  },
+  
+  "success_criteria": [
+    "All 6 tests passing",
+    "Signature header present in all new messages (when secret configured)",
+    "Verification rejects tampered messages",
+    "Backward compatibility verified (STRICT_AUTH=0 accepts legacy)",
+    "Protocol documentation updated",
+    "Security principle ศีล (integrity) satisfied"
+  ]
+}

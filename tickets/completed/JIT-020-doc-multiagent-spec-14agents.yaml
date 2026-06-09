@@ -1,0 +1,55 @@
+title: "Rewrite multiagent-spec.md with Tier 0-3 hierarchy"
+epic: "documentation"
+owner: vaja
+assignees:
+  - vaja
+priority: "P2"
+status: "completed"
+completed: "2026-06-07"
+completed_by: "mue"
+notes: "Rewrote docs/multiagent-spec.md to v2.0 - full Tier 0-3 hierarchy, all 14 agents, parent-child delegation, organ assignments, autonomous patterns, health tracking"
+created: "2026-06-07"
+due_date: null
+
+description: |
+  multiagent-spec.md is severely outdated — only documents 2 agents (soma, innova) and lacks the 4-tier hierarchy structure.
+
+  **Current State:**
+  - Only 2 agents listed in Agent table (soma, innova)
+  - Missing: jit (Tier 0), 10 Tier 2/3 agents
+  - Model versions outdated (shows opus-4.6, actual is opus-4.7)
+  - No tier structure explained
+  - No organ assignments beyond 8 generic scripts
+  - No parent-child relationship documentation
+
+  **Required Rewrite:**
+  1. Replace Agent table with full Tier 0-3 structure:
+     - Tier 0 (Master): jit
+     - Tier 1 (Leadership): soma
+     - Tier 2 (Core): innova, lak, neta
+     - Tier 3 (Specialists): vaja, chamu, rupa, pada, netra, karn, mue, pran, sayanprasathan
+  2. Show model assignments per tier (e.g., Tier 0 = Sonnet, Tier 3 = Haiku)
+  3. Clarify parent-child delegation: jit → soma → {lak, neta, pada, innova} → {vaja, chamu, rupa}
+  4. Add parent-child workflow (who delegates to whom)
+  5. List all 14 organ scripts with assigned agents
+  6. Update model versions to current (opus-4.7, sonnet-4.6, haiku-4.5)
+  7. Add "Autonomous Patterns" section explaining how agents spawn child tasks
+  8. Add "Organ Assignment" section mapping all 14 organs to agents
+
+  **Reference:**
+  - CLAUDE.md Agent Tier Structure
+  - core/body-map.md (parent-child flows)
+  - network/registry.json (agent capabilities)
+
+acceptance_criteria:
+  - Spec documents all 14 agents with correct tier, model, and role
+  - Parent-child relationships clearly shown
+  - All 14 organs mapped to agent owners
+  - Model versions match current CLAUDE.md
+  - "Autonomous Patterns" section explains how innova spawns child agents
+  - Spec is 2-3x longer than current version (more comprehensive)
+
+tags:
+  - documentation
+  - critical-reference
+  - spec

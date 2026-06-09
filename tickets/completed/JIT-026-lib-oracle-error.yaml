@@ -1,0 +1,57 @@
+---
+id: JIT-026
+organ: limbs/lib
+title: oracle_ready function doesn't capture error output for debugging
+severity: P2
+status: done
+location: limbs/lib.sh:44-47
+description: |
+  The oracle_ready function silently discards error output, making debugging difficult
+  when Oracle is misconfigured or unreachable.
+
+  Current code:
+  ```bash
+  oracle_ready() {
+    curl -sf "$ORACLE_URL/api/health" | python3 -c \
+      "import json,sys; d=json.load(sys.stdin); exit(0 if d.get('oracle')=='connected' else 1)" 2>/dev/null
+  }
+  ```
+
+  Problems:
+  1. No indication of whether failure is due to network, timeout, or bad JSON
+  2. Agents can't diagnose why Oracle is unavailable
+  3. Error logs are empty even when Oracle is completely down
+  4. Makes it hard to distinguish between "Oracle offline" vs "Oracle returned error"
+
+impact: |
+  - Difficult to troubleshoot Oracle connectivity issues
+  - No logs of what curl/python error occurred
+  - Takes longer to diagnose system health
+  - Agents blindly retry without understanding the problem
+
+fix_approach: |
+  Add optional debug output and error capture:
+
+  ```bash
+  oracle_ready() {
+    local DEBUG="${ORACLE_DEBUG:-0}"
+    local RESPONSE CURL_STAT
+    RESPONSE=$(curl -sf --max-time 5 "$ORACLE_URL/api/health" 2>/tmp/oracle-curl-error)
+    CURL_STAT=$?
+
+    if [ $CURL_STAT -ne 0 ]; then
+      [ "$DEBUG" = "1" ] && echo "curl failed: $(cat /tmp/oracle-curl-error)" >&2
+      return 1
+    fi
+
+    if echo "$RESPONSE" | python3 -c "import json,sys; d=json.load(sys.stdin); exit(0 if d.get('oracle')=='connected' else 1)" 2>/tmp/oracle-json-error; then
+      return 0
+    else
+      [ "$DEBUG" = "1" ] && echo "oracle JSON parse failed: $(cat /tmp/oracle-json-error)" >&2
+      return 1
+    fi
+  }
+  ```
+
+tags: [debugging, observability, oracle, error-handling]
+---

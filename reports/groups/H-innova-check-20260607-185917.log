@@ -1,0 +1,21 @@
+All steps complete. Here's the summary:
+
+---
+
+**PM+SA Dispatch — 2026-06-07**
+
+| Item | Result |
+|------|--------|
+| Tickets indexed | 18 open (5×P0, 8×P1, 5×P2) |
+| INDEX.md | Updated with full ticket table |
+| Master report | `/reports/SA-Lead/2026-06-07-iter-dispatch.md` |
+| innova notified | Sent via bus |
+
+**Critical finding**: All 7 background workflow groups (wf_94fec3ef-34d) failed with "Invalid API key" — no specs, no new tickets, no deep audit was produced. This is the top blocker for the next iteration.
+
+**Top P0 risks**:
+1. **JIT-006** — hardcoded `OLLAMA_TOKEN` in service unit (live secret exposure, `pada` owns)
+2. **JIT-011** — no bus message authentication (any process can spoof agent messages, `lak` owns)
+3. **JIT-012** — Oracle has no health monitor or auto-restart (`pran` owns)
+
+**Recommended next action**: Diagnose the API key failure before launching any new fan-out workflow, then have `pada` hotfix JIT-006 as the quickest P0 win.

@@ -1,0 +1,98 @@
+{
+  "_doc": "Multi-provider LLM routing for the Jit (จิต) มนุษย์ Agent system. Read by limbs/llm.sh. Pattern inspired by LiteLLM (provider/model strings + fallback lists) and OpenRouter (provider routing). Each agent can run on ANY provider; if its primary provider is unavailable the gateway walks the fallback chain — so an agent launched under Ollama can still reach Claude, GPT, etc.",
+  "version": "1.0",
+  "updated": "2026-06-08",
+
+  "_routing_rules": "Resolution order for any call: (1) explicit --provider/--model flag, (2) explicit provider/model string e.g. 'claude/sonnet', (3) per-agent entry in `agents`, (4) `default_agent`. A bare model id is mapped to a provider by prefix (claude-*→claude, gpt-*→openai, gemma*→ollama).",
+
+  "default_chain": ["claude", "ollama"],
+
+  "concurrency": {
+    "_doc": "Per-agent flock prevents the SAME agent from running two LLM calls at once (no shared-state collision). global_max caps total concurrent gateway calls across all agents.",
+    "per_agent_lock": true,
+    "lock_timeout_seconds": 30,
+    "global_max": 6
+  },
+
+  "providers": {
+    "claude": {
+      "adapter": "limbs/providers/claude.sh",
+      "kind": "anthropic",
+      "transport": "cli",
+      "cli": "claude",
+      "api_key_env": "COMMANDCODE_API_KEY",
+      "base_url_env": "ANTHROPIC_BASE_URL",
+      "enabled": true,
+      "models": {
+        "default": "claude-sonnet-4-6",
+        "opus": "claude-opus-4-8",
+        "sonnet": "claude-sonnet-4-6",
+        "haiku": "claude-haiku-4-5-20251001"
+      }
+    },
+
+    "ollama": {
+      "adapter": "limbs/providers/ollama.sh",
+      "kind": "ollama",
+      "transport": "http",
+      "base_url_env": "OLLAMA_BASE_URL",
+      "base_url": "https://ollama.mdes-innova.online",
+      "api_key_env": "OLLAMA_TOKEN",
+      "enabled": true,
+      "models": {
+        "default": "gemma4:26b",
+        "big": "gemma4:26b",
+        "small": "gemma4:e4b"
+      }
+    },
+
+    "openai": {
+      "adapter": "limbs/providers/openai.sh",
+      "kind": "openai-compatible",
+      "transport": "http",
+      "base_url_env": "OPENAI_BASE_URL",
+      "base_url": "https://api.openai.com/v1",
+      "api_key_env": "OPENAI_API_KEY",
+      "enabled": true,
+      "models": {
+        "default": "gpt-4o",
+        "gpt": "gpt-4o",
+        "mini": "gpt-4o-mini",
+        "o": "o3-mini"
+      }
+    },
+
+    "codex": {
+      "adapter": "limbs/providers/codex.sh",
+      "kind": "codex-cli",
+      "transport": "cli",
+      "cli": "codex",
+      "api_key_env": "OPENAI_API_KEY",
+      "enabled": true,
+      "models": {
+        "default": "gpt-5-codex",
+        "codex": "gpt-5-codex"
+      }
+    }
+  },
+
+  "agents": {
+    "jit":            { "provider": "claude", "model": "sonnet", "fallback": ["ollama"] },
+    "soma":           { "provider": "claude", "model": "opus",   "fallback": ["claude:sonnet", "ollama"] },
+    "innova":         { "provider": "claude", "model": "sonnet", "fallback": ["ollama", "openai"] },
+    "lak":            { "provider": "claude", "model": "sonnet", "fallback": ["ollama"] },
+    "neta":           { "provider": "claude", "model": "sonnet", "fallback": ["ollama"] },
+    "vaja":           { "provider": "claude", "model": "haiku",  "fallback": ["ollama"] },
+    "chamu":          { "provider": "claude", "model": "haiku",  "fallback": ["ollama"] },
+    "rupa":           { "provider": "claude", "model": "haiku",  "fallback": ["ollama"] },
+    "pada":           { "provider": "claude", "model": "haiku",  "fallback": ["ollama"] },
+    "netra":          { "provider": "claude", "model": "haiku",  "fallback": ["ollama"] },
+    "karn":           { "provider": "claude", "model": "haiku",  "fallback": ["ollama"] },
+    "mue":            { "provider": "claude", "model": "haiku",  "fallback": ["codex", "ollama"] },
+    "pran":           { "provider": "claude", "model": "haiku",  "fallback": ["ollama"] },
+    "lung":           { "provider": "ollama", "model": "small",  "fallback": ["claude:haiku"] },
+    "sayanprasathan": { "provider": "claude", "model": "haiku",  "fallback": ["ollama"] }
+  },
+
+  "default_agent": { "provider": "claude", "model": "haiku", "fallback": ["ollama"] }
+}

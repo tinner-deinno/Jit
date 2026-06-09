@@ -1,0 +1,14 @@
+[Unit]
+Description=cmdteam self-improve timer (every 1hr, off :00 to avoid fleet pile-up)
+Documentation=https://github.com/mdes-innova/Jit
+
+[Timer]
+# Run hourly at :17 (off the :00 fleet peak)
+OnCalendar=*-*-* *:17:00
+# Also run 1min after boot so fresh sessions get a baseline scan
+OnBootSec=1min
+Persistent=true
+Unit=cmdteam-self-improve.service
+
+[Install]
+WantedBy=timers.target

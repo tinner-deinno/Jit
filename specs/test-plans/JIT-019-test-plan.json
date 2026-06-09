@@ -1,0 +1,572 @@
+{
+  "ticket_id": "JIT-019",
+  "title": "JSON Injection via Commit Messages in discord-webhook.sh",
+  "test_owner": "chamu",
+  "test_date": "2026-06-08",
+  "components": [
+    "scripts/discord-webhook.sh",
+    "tests/test_discord_webhook_json_injection.py"
+  ],
+  "test_cases": [
+    {
+      "id": "JIT-019-TC-001",
+      "name": "Double Quote Injection",
+      "category": "JSON Escaping",
+      "description": "Verify that commit messages containing double quotes are safely escaped and do not break JSON structure",
+      "preconditions": [
+        "discord-webhook.sh exists and is executable",
+        "jq is available (version 1.6+)",
+        "Git repo with test commits available"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Create git commit with message containing double quotes",
+          "input": "commit message: \"This is a \"quoted\" message\""
+        },
+        {
+          "step": 2,
+          "action": "Call discord-webhook.sh with the commit",
+          "input": "bash scripts/discord-webhook.sh 1 ok 'Test message with quotes'"
+        },
+        {
+          "step": 3,
+          "action": "Verify the generated JSON payload is valid",
+          "input": "Parse output via json.loads() or jq ."
+        }
+      ],
+      "expected_result": "JSON payload is valid; quote characters are escaped as \\\" in the JSON string; commit message appears correctly in embeds[0].fields[3].value",
+      "acceptance_criteria": [
+        "JSON is parseable (no syntax errors)",
+        "All quotes are properly escaped",
+        "Content is preserved exactly as input"
+      ],
+      "test_level": "unit",
+      "priority": "P0"
+    },
+    {
+      "id": "JIT-019-TC-002",
+      "name": "Newline Injection",
+      "category": "JSON Escaping",
+      "description": "Verify that commit messages with newlines (LF/CR) are safely encoded as \\n in JSON",
+      "preconditions": [
+        "discord-webhook.sh available",
+        "jq installed",
+        "Ability to pass multi-line strings to bash"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Create commit with multi-line message",
+          "input": "Line 1\\nLine 2\\nLine 3"
+        },
+        {
+          "step": 2,
+          "action": "Invoke discord-webhook.sh",
+          "input": "bash scripts/discord-webhook.sh 1 ok 'Test'"
+        },
+        {
+          "step": 3,
+          "action": "Extract and validate JSON",
+          "input": "Capture stdout, parse with json library"
+        }
+      ],
+      "expected_result": "JSON is valid; newlines encoded as \\n; embeds.fields[3].value contains escaped newlines; when parsed back, original multi-line text is recovered",
+      "acceptance_criteria": [
+        "JSON parses without syntax error",
+        "Newlines rendered as \\\\n in JSON",
+        "Parsed value matches original multi-line input"
+      ],
+      "test_level": "unit",
+      "priority": "P0"
+    },
+    {
+      "id": "JIT-019-TC-003",
+      "name": "Backslash Escaping",
+      "category": "JSON Escaping",
+      "description": "Verify that backslashes in paths/messages are escaped as \\\\ in JSON",
+      "preconditions": [
+        "discord-webhook.sh available",
+        "jq 1.6+"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Create commit with Windows path",
+          "input": "C:\\Users\\workspace\\file.txt"
+        },
+        {
+          "step": 2,
+          "action": "Run discord-webhook.sh",
+          "input": "bash scripts/discord-webhook.sh 1 ok 'Test'"
+        },
+        {
+          "step": 3,
+          "action": "Parse JSON and verify content",
+          "input": "json.loads(payload)"
+        }
+      ],
+      "expected_result": "JSON is valid; backslashes properly escaped; when parsed, string matches input exactly",
+      "acceptance_criteria": [
+        "JSON syntax is valid",
+        "All backslashes escaped as \\\\\\\\",
+        "Content round-trips correctly"
+      ],
+      "test_level": "unit",
+      "priority": "P0"
+    },
+    {
+      "id": "JIT-019-TC-004",
+      "name": "Tab Character Handling",
+      "category": "JSON Escaping",
+      "description": "Verify that tab characters (\\t) in messages are properly escaped in JSON",
+      "preconditions": [
+        "discord-webhook.sh available",
+        "jq available"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Create message with tab-separated columns",
+          "input": "Col1\\tCol2\\tCol3"
+        },
+        {
+          "step": 2,
+          "action": "Execute discord-webhook.sh",
+          "input": "bash scripts/discord-webhook.sh 1 ok 'Test'"
+        },
+        {
+          "step": 3,
+          "action": "Validate JSON structure",
+          "input": "Parse and check embeds[0].fields"
+        }
+      ],
+      "expected_result": "JSON is valid; tabs encoded as \\t; parsed content is correct",
+      "acceptance_criteria": [
+        "JSON parses successfully",
+        "Tab characters preserved in output",
+        "No JSON syntax errors"
+      ],
+      "test_level": "unit",
+      "priority": "P0"
+    },
+    {
+      "id": "JIT-019-TC-005",
+      "name": "Unicode & Emoji Support",
+      "category": "JSON Escaping",
+      "description": "Verify that Unicode characters and emojis are preserved correctly in JSON payloads",
+      "preconditions": [
+        "discord-webhook.sh available",
+        "jq with UTF-8 support",
+        "System supports UTF-8 locale"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Create commit with Unicode and emoji",
+          "input": "Hello \u4e16\u754c \ud83e\udec0 \u00e9mojis"
+        },
+        {
+          "step": 2,
+          "action": "Run discord-webhook.sh",
+          "input": "bash scripts/discord-webhook.sh 1 ok 'Test'"
+        },
+        {
+          "step": 3,
+          "action": "Parse JSON and verify Unicode integrity",
+          "input": "json.loads(payload) and check character encoding"
+        }
+      ],
+      "expected_result": "JSON is valid; all Unicode characters preserved; emoji renders correctly when parsed; no encoding corruption",
+      "acceptance_criteria": [
+        "JSON is valid UTF-8 and parses successfully",
+        "Unicode characters appear exactly as input",
+        "Emoji content is not corrupted"
+      ],
+      "test_level": "unit",
+      "priority": "P1"
+    },
+    {
+      "id": "JIT-019-TC-006",
+      "name": "Mixed Special Characters",
+      "category": "JSON Escaping",
+      "description": "Verify handling of messages with multiple types of special characters simultaneously",
+      "preconditions": [
+        "discord-webhook.sh available",
+        "jq available"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Create commit with mixed special chars",
+          "input": "Quote \" and newline and tab mixed"
+        },
+        {
+          "step": 2,
+          "action": "Execute discord-webhook.sh",
+          "input": "bash scripts/discord-webhook.sh 1 ok 'Test'"
+        },
+        {
+          "step": 3,
+          "action": "Validate JSON and round-trip content",
+          "input": "Parse JSON and compare to original"
+        }
+      ],
+      "expected_result": "JSON is valid; all special characters are properly escaped; parsed content matches original exactly",
+      "acceptance_criteria": [
+        "JSON syntax is valid",
+        "All character types properly handled",
+        "Content integrity maintained"
+      ],
+      "test_level": "unit",
+      "priority": "P0"
+    },
+    {
+      "id": "JIT-019-TC-007",
+      "name": "JSON Injection Attempt",
+      "category": "Security",
+      "description": "Verify that a commit message containing JSON-like structure cannot break the payload or inject fields",
+      "preconditions": [
+        "discord-webhook.sh available",
+        "jq available"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Create commit with injected JSON object",
+          "input": "{\"malicious\": \"payload\", \"extra_field\": \"injected\"}"
+        },
+        {
+          "step": 2,
+          "action": "Run discord-webhook.sh",
+          "input": "bash scripts/discord-webhook.sh 1 ok 'Test'"
+        },
+        {
+          "step": 3,
+          "action": "Parse JSON and verify structure integrity",
+          "input": "json.loads(payload) and validate top-level keys"
+        }
+      ],
+      "expected_result": "JSON is valid; injected JSON appears as a string value, not as additional fields; payload structure is unchanged; no 'malicious' or 'extra_field' keys at root or embed level",
+      "acceptance_criteria": [
+        "JSON parses successfully",
+        "Top-level structure has expected fields only (content, embeds)",
+        "Injected payload is escaped and appears as string content",
+        "No unauthorized field injection"
+      ],
+      "test_level": "security",
+      "priority": "P0"
+    },
+    {
+      "id": "JIT-019-TC-008",
+      "name": "HTML/Script Injection Attempt",
+      "category": "Security",
+      "description": "Verify that HTML/JavaScript payloads in commit messages are safely escaped",
+      "preconditions": [
+        "discord-webhook.sh available",
+        "jq available"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Create commit with script tag",
+          "input": "<script>alert('xss')</script>"
+        },
+        {
+          "step": 2,
+          "action": "Execute discord-webhook.sh",
+          "input": "bash scripts/discord-webhook.sh 1 ok 'Test'"
+        },
+        {
+          "step": 3,
+          "action": "Verify JSON validity and content treatment",
+          "input": "Parse JSON and check embeds[0].fields[3].value"
+        }
+      ],
+      "expected_result": "JSON is valid; HTML/script tags appear as literal string values in JSON, not as markup; no interpretation as HTML",
+      "acceptance_criteria": [
+        "JSON is syntactically valid",
+        "Script tags appear as escaped string content",
+        "No XSS vector introduced via JSON"
+      ],
+      "test_level": "security",
+      "priority": "P0"
+    },
+    {
+      "id": "JIT-019-TC-009",
+      "name": "Empty String Handling",
+      "category": "Edge Cases",
+      "description": "Verify correct handling of empty commit messages or status values",
+      "preconditions": [
+        "discord-webhook.sh available",
+        "jq available"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Set MESSAGE to empty string",
+          "input": "MESSAGE=''"
+        },
+        {
+          "step": 2,
+          "action": "Run discord-webhook.sh",
+          "input": "bash scripts/discord-webhook.sh 1 ok ''"
+        },
+        {
+          "step": 3,
+          "action": "Validate JSON structure",
+          "input": "Parse and verify all fields present"
+        }
+      ],
+      "expected_result": "JSON is valid; embeds.description is an empty string; no missing fields; payload structure intact",
+      "acceptance_criteria": [
+        "JSON parses without error",
+        "Description field present but empty",
+        "All required fields are present"
+      ],
+      "test_level": "unit",
+      "priority": "P2"
+    },
+    {
+      "id": "JIT-019-TC-010",
+      "name": "Very Long Commit Message",
+      "category": "Edge Cases",
+      "description": "Verify that very long commit messages (1000+ characters) are handled correctly",
+      "preconditions": [
+        "discord-webhook.sh available",
+        "jq available"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Create 2000-character commit message",
+          "input": "A * 2000"
+        },
+        {
+          "step": 2,
+          "action": "Run discord-webhook.sh",
+          "input": "bash scripts/discord-webhook.sh 1 ok 'Test'"
+        },
+        {
+          "step": 3,
+          "action": "Parse JSON and measure payload size",
+          "input": "json.loads() and check length of embeds[0].fields[3].value"
+        }
+      ],
+      "expected_result": "JSON is valid; full message content is preserved; payload size is reasonable; no truncation or data loss",
+      "acceptance_criteria": [
+        "JSON parses successfully",
+        "Message length preserved (2000+ chars)",
+        "No payload size violations"
+      ],
+      "test_level": "unit",
+      "priority": "P2"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-001",
+      "criterion": "All variables in JSON payload must be safely escaped",
+      "test_cases": [
+        "JIT-019-TC-001",
+        "JIT-019-TC-002",
+        "JIT-019-TC-003",
+        "JIT-019-TC-004"
+      ],
+      "verification": "json.loads() succeeds on all payloads"
+    },
+    {
+      "id": "AC-002",
+      "criterion": "Commit messages with quotes, newlines, and special characters must render safely",
+      "test_cases": [
+        "JIT-019-TC-001",
+        "JIT-019-TC-002",
+        "JIT-019-TC-006"
+      ],
+      "verification": "Parsed JSON content matches input exactly"
+    },
+    {
+      "id": "AC-003",
+      "criterion": "JSON injection attempts must be escaped and not introduce new fields",
+      "test_cases": [
+        "JIT-019-TC-007"
+      ],
+      "verification": "Top-level keys are ['content', 'embeds'] only"
+    },
+    {
+      "id": "AC-004",
+      "criterion": "XSS payloads (HTML/script tags) must not be interpreted",
+      "test_cases": [
+        "JIT-019-TC-008"
+      ],
+      "verification": "Script tags appear as literal strings in JSON"
+    },
+    {
+      "id": "AC-005",
+      "criterion": "Unicode and emoji content must be preserved correctly",
+      "test_cases": [
+        "JIT-019-TC-005"
+      ],
+      "verification": "Unicode characters appear exactly as input in parsed JSON"
+    },
+    {
+      "id": "AC-006",
+      "criterion": "jq must be used for all JSON encoding (no string interpolation)",
+      "test_cases": [
+        "JIT-019-TC-001",
+        "JIT-019-TC-002",
+        "JIT-019-TC-003"
+      ],
+      "verification": "Code review: no heredoc variable interpolation in JSON building"
+    },
+    {
+      "id": "AC-007",
+      "criterion": "All edge cases (empty strings, very long messages) must be handled",
+      "test_cases": [
+        "JIT-019-TC-009",
+        "JIT-019-TC-010"
+      ],
+      "verification": "JSON remains valid in all cases"
+    }
+  ],
+  "regression_tests": [
+    {
+      "id": "JIT-019-RT-001",
+      "name": "Standard Heartbeat Flow",
+      "description": "Verify that normal heartbeat messages still work correctly after JSON injection fix",
+      "preconditions": [
+        "discord-webhook.sh available",
+        "DISCORD_WEBHOOK env var set (or test mode)",
+        "Git repo with commit history"
+      ],
+      "test_procedure": "bash scripts/discord-webhook.sh 1 ok 'System heartbeat running normally'",
+      "expected_result": "Script executes successfully; JSON payload is generated; Discord notification is sent (or test reports success)",
+      "pass_criteria": "Script exits with code 0; JSON is valid"
+    },
+    {
+      "id": "JIT-019-RT-002",
+      "name": "Status Variations",
+      "description": "Verify all status types (ok, warning, critical) generate correct emoji and color codes",
+      "preconditions": [
+        "discord-webhook.sh available"
+      ],
+      "test_procedure": [
+        "bash scripts/discord-webhook.sh 1 ok 'Test'",
+        "bash scripts/discord-webhook.sh 2 warning 'Test'",
+        "bash scripts/discord-webhook.sh 3 critical 'Test'"
+      ],
+      "expected_result": "All three calls succeed; correct emoji used (\u2705, \u26a0\ufe0f, \ud83d\udea8); correct color codes (65280 for ok, 16711680 for others)",
+      "pass_criteria": "All three statuses generate valid JSON with correct emoji in content and color in fields"
+    },
+    {
+      "id": "JIT-019-RT-003",
+      "name": "Existing Test Suite Passes",
+      "description": "Verify that the existing Python test suite (8/8 tests) still passes",
+      "preconditions": [
+        "tests/test_discord_webhook_json_injection.py exists",
+        "Python 3.8+, json, subprocess modules available"
+      ],
+      "test_procedure": "python3 tests/test_discord_webhook_json_injection.py",
+      "expected_result": "All 8 tests pass (quotes, newlines, backslashes, tabs, unicode, mixed, json_injection, html_like)",
+      "pass_criteria": "Exit code 0; 8/8 tests pass message displayed"
+    },
+    {
+      "id": "JIT-019-RT-004",
+      "name": "jq Availability Check",
+      "description": "Verify that the script gracefully handles jq availability",
+      "preconditions": [
+        "discord-webhook.sh available"
+      ],
+      "test_procedure": [
+        "Confirm: which jq && jq --version",
+        "bash scripts/discord-webhook.sh 1 ok 'Test'",
+        "Verify jq is in use (no fallback to vulnerable heredoc)"
+      ],
+      "expected_result": "jq 1.6+ is available; script uses jq for payload construction",
+      "pass_criteria": "jq version returned; script uses jq (visible in code review or strace)"
+    },
+    {
+      "id": "JIT-019-RT-005",
+      "name": "Integration with Actual Git Commits",
+      "description": "Verify that real git commit data is extracted and safely included in Discord payload",
+      "preconditions": [
+        "discord-webhook.sh available",
+        "Git repo at /workspaces/Jit with commit history",
+        "Functions get_commit_hash() and get_commit_message() work"
+      ],
+      "test_procedure": [
+        "cd /workspaces/Jit",
+        "bash scripts/discord-webhook.sh 1 ok 'Test'",
+        "Verify embeds[0].fields[2].value contains commit hash link",
+        "Verify embeds[0].fields[3].value contains commit message"
+      ],
+      "expected_result": "Script extracts real commit data; JSON payload includes valid GitHub commit link; commit message is properly escaped",
+      "pass_criteria": "JSON is valid; commit hash is non-empty; GitHub URL is correct format"
+    },
+    {
+      "id": "JIT-019-RT-006",
+      "name": "Color Code Mapping",
+      "description": "Verify that status values map correctly to Discord color codes",
+      "preconditions": [
+        "discord-webhook.sh available"
+      ],
+      "test_procedure": [
+        "Test with status='ok' -> color should be 65280 (green)",
+        "Test with status='warning' -> color should be 16711680 (red)",
+        "Test with status='critical' -> color should be 16711680 (red)",
+        "Parse JSON and verify embeds[0].color field"
+      ],
+      "expected_result": "Color codes are correct for each status; JSON is valid",
+      "pass_criteria": "All color codes match expected values; JSON parses successfully"
+    },
+    {
+      "id": "JIT-019-RT-007",
+      "name": "Missing DISCORD_WEBHOOK Graceful Handling",
+      "description": "Verify that missing Discord webhook config is handled gracefully",
+      "preconditions": [
+        "discord-webhook.sh available"
+      ],
+      "test_procedure": [
+        "Unset DISCORD_WEBHOOK env var",
+        "bash scripts/discord-webhook.sh 1 ok 'Test'",
+        "Check exit code and output"
+      ],
+      "expected_result": "Script completes successfully with exit code 0; message indicates webhook is not configured (skipped)",
+      "pass_criteria": "Exit code 0; warning message printed; no error"
+    }
+  ],
+  "test_execution_notes": {
+    "environment": {
+      "shell": "bash",
+      "jq_version": "1.6+",
+      "python_version": "3.8+",
+      "os": "Linux/macOS"
+    },
+    "execution_order": [
+      "Run acceptance criteria tests first (TC-001 to TC-010)",
+      "Verify AC-001 through AC-007 are met",
+      "Then run regression tests (RT-001 to RT-007)",
+      "Finally, run full Python test suite (RT-003)"
+    ],
+    "test_data_generation": {
+      "method": "Base64 encoding to safely pass special characters to bash",
+      "rationale": "Avoids shell interpretation of special chars during test execution"
+    },
+    "success_criteria": {
+      "all_tests_pass": "10/10 acceptance criteria tests pass + 7/7 regression tests pass",
+      "security": "No JSON injection vectors identified; all payloads safely escaped",
+      "performance": "Script execution time < 5 seconds per call; no memory leaks"
+    }
+  },
+  "test_ownership": {
+    "test_lead": "chamu (QA/Tester agent)",
+    "code_owner": "pada (DevOps/Infrastructure agent)",
+    "reviewer": "neta (Code Reviewer agent)",
+    "approval_gate": "All tests pass + security review approval"
+  },
+  "schedule": {
+    "test_start": "2026-06-08",
+    "test_completion_target": "2026-06-08",
+    "ci_integration": "Run on every commit to scripts/discord-webhook.sh"
+  }
+}

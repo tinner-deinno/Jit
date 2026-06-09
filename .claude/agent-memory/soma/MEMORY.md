@@ -1,0 +1,2 @@
+- [Error Recovery Audit](error-recovery-audit.md) — Audit of error recovery patterns, gaps, and 3 improvement recommendations for Jit multi-agent system
+- [Architecture Audit 2026-06-08](project-architecture-audit-2026-06-08.md) — Agents/bus/memory functional but bus has no consumer, heartbeat flatlined ~5h, DLQ growing unanswered

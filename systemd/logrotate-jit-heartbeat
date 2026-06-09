@@ -1,0 +1,15 @@
+/var/log/jit/*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 innova innova
+    size 10M
+    maxage 30
+    postrotate
+        # Reload systemd to pick up new log file
+        /usr/bin/systemctl reload jit-heartbeat 2>/dev/null || true
+    endscript
+}

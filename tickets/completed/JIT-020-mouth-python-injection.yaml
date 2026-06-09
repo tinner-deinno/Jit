@@ -1,0 +1,47 @@
+---
+id: JIT-020
+organ: mouth
+title: Unsafe python embedding in bash with shell variable expansion
+severity: P1
+status: completed
+completed: 2026-06-07
+completed_by: mue
+notes: "mouth.sh already uses safe pattern - passes registry path via sys.argv[1] instead of shell variable embedding (line 96-100). No injection vulnerability present."
+location: organs/mouth.sh:72-82
+description: |
+  The broadcast function embeds a shell variable ($REGISTRY) directly into a python script.
+  If the registry path contains quotes or special characters, this creates an injection vector.
+
+  Current code:
+  ```bash
+  python3 -c "
+  import json
+  with open('$REGISTRY') as f:
+      d = json.load(f)
+  for a in d.get('agents', []):
+      print(a['name'])
+  "
+  ```
+
+  Risk: If REGISTRY="/tmp/test'drop.json", the python string is broken.
+
+impact: |
+  - JSON parsing failure with special paths
+  - Potential code injection if path contains malicious content
+  - Silent failures without proper error reporting
+
+fix_approach: |
+  Pass the path as a python argument instead of shell variable:
+  ```bash
+  python3 -c "
+  import json, sys
+  with open(sys.argv[1]) as f:
+      d = json.load(f)
+  for a in d.get('agents', []):
+      print(a['name'])
+  " "$REGISTRY"
+  ```
+
+tags: [security, injection, python, shell]
+related: [JIT-053]
+---

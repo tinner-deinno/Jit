@@ -1,0 +1,18 @@
+id: JIT-014
+title: "Add pytest configuration and test runner setup"
+priority: P1
+type: test
+status: done
+owner: chamu
+created: 2026-06-07
+updated: 2026-06-08
+spec_ref: specs/JIT-014-spec.md
+acceptance:
+  - pytest.ini or pyproject.toml [tool.pytest.ini_options] present at repo root
+  - pytest discovers all test_*.py files under tests/
+  - tests/conftest.py provides fixtures: tmp_bus_dir, mock_oracle, agent_inbox_setup
+  - Running `pytest tests/ -v` completes without import errors on fresh clone
+  - Test coverage report generated via pytest-cov targeting organs/, limbs/, network/
+  - Coverage threshold >= 60% enforced in CI
+effort_hours: 6
+tags: [testing, pytest, configuration, p1, chamu]

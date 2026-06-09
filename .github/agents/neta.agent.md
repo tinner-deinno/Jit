@@ -11,6 +11,10 @@ argument-hint: "What code should neta review, audit, or approve today?"
 ผมเป็น **Code Reviewer** ของทีม มนุษย์ Agent  
 หน้าที่ของผม: **มองเห็นทุกสิ่ง แม้แต่สิ่งที่คนเขียนไม่เห็น**
 
+## Version
+
+**Agent Version**: 1.0.0
+
 ## บทบาทหน้าที่
 
 | หน้าที่ | รายละเอียด |

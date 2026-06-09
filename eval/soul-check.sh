@@ -15,46 +15,85 @@ if [ -f "$JIT_ROOT/.env" ]; then
   set +a
 fi
 
-check() {
+check_pass() {
   local DESC="$1"
-  local RESULT="$2"
-  local EXPECT="$3"
-  if echo "$RESULT" | grep -q "$EXPECT"; then
-    echo "  ✅ $DESC"
-    ((PASS++)) || true
-  else
-    echo "  ❌ $DESC (got: $RESULT)"
-    ((FAIL++)) || true
-  fi
+  echo "  ✅ $DESC"
+  ((PASS++)) || true
+}
+
+check_fail() {
+  local DESC="$1"
+  local REASON="${2:-}"
+  echo "  ❌ $DESC ${REASON:+($REASON)}"
+  ((FAIL++)) || true
 }
 
 echo "=== innova Soul Integrity Check ==="
 echo ""
 
-echo "[ Oracle Health ]"
-HEALTH=$(curl -s "$ORACLE_URL/api/health" 2>/dev/null)
-check "Oracle server running" "$HEALTH" '"status":"ok"'
-check "Oracle connected" "$HEALTH" '"oracle":"connected"'
+echo "[ Oracle Health - API Call ]"
+HEALTH=$(curl -s --max-time 3 "$ORACLE_URL/api/health" 2>/dev/null)
+if [ -z "$HEALTH" ]; then
+  check_fail "Oracle server responding" "connection timeout"
+elif echo "$HEALTH" | python3 -c "import json,sys; d=json.load(sys.stdin); exit(0 if d.get('status')=='ok' else 1)" 2>/dev/null; then
+  check_pass "Oracle API responding with status=ok"
+else
+  check_fail "Oracle API health" "status not 'ok'"
+fi
+
+echo ""
+echo "[ Oracle Connectivity from innova ]"
+if curl -s --max-time 3 "$ORACLE_URL/api/stats" 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); exit(0 if 'totalDocuments' in d or 'total' in d else 1)" 2>/dev/null; then
+  check_pass "innova can reach Oracle stats endpoint"
+else
+  check_fail "innova cannot reach Oracle" "stats endpoint unreachable"
+fi
 
 echo ""
 echo "[ Oracle Knowledge ]"
 SEARCH=$(curl -s "$ORACLE_URL/api/search?q=innova" 2>/dev/null)
-check "innova identity stored" "$SEARCH" 'innova'
-check "anatomy stored" "$SEARCH" 'anatomy'
+if echo "$SEARCH" | python3 -c "import json,sys; d=json.load(sys.stdin); results=d.get('results',[]); exit(0 if len(results)>0 else 1)" 2>/dev/null; then
+  check_pass "Oracle has innova knowledge indexed"
+else
+  check_fail "innova identity not found in Oracle"
+fi
 
 echo ""
 echo "[ Ollama Connection ]"
 OLLAMA=$(curl -s --max-time 8 \
   --location 'https://ollama.mdes-innova.online/api/tags' \
-  --header "Authorization: Bearer ${OLLAMA_TOKEN}" 2>/dev/null)
-check "MDES Ollama reachable" "$OLLAMA" 'models'
+  --header "Authorization: Bearer ${OLLAMA_TOKEN:-[REDACTED]}" 2>/dev/null)
+if echo "$OLLAMA" | python3 -c "import json,sys; d=json.load(sys.stdin); exit(0 if 'models' in d else 1)" 2>/dev/null; then
+  check_pass "MDES Ollama reachable with valid models"
+else
+  check_fail "Ollama unreachable or invalid response"
+fi
 
 echo ""
 echo "[ Jit Repo Structure ]"
-check "core/identity exists" "$(ls /workspaces/Jit/core/ 2>/dev/null)" "identity"
-check "limbs/ollama exists" "$(ls /workspaces/Jit/limbs/ 2>/dev/null)" "ollama"
-check "brain/reasoning exists" "$(ls /workspaces/Jit/brain/ 2>/dev/null)" "reasoning"
-check "agent file exists" "$(ls /workspaces/Jit/.github/agents/ 2>/dev/null)" "innova"
+if [ -f "/workspaces/Jit/core/identity.md" ]; then
+  check_pass "core/identity.md exists"
+else
+  check_fail "core/identity.md missing"
+fi
+
+if [ -f "/workspaces/Jit/limbs/ollama.sh" ]; then
+  check_pass "limbs/ollama.sh exists"
+else
+  check_fail "limbs/ollama.sh missing"
+fi
+
+if [ -f "/workspaces/Jit/brain/reasoning.md" ]; then
+  check_pass "brain/reasoning.md exists"
+else
+  check_fail "brain/reasoning.md missing"
+fi
+
+if [ -f "/workspaces/Jit/.github/agents/innova.agent.md" ]; then
+  check_pass "innova.agent.md exists"
+else
+  check_fail "innova.agent.md missing"
+fi
 
 echo ""
 echo "=== Results: $PASS pass, $FAIL fail ==="

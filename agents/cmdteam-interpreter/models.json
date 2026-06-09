@@ -1,0 +1,180 @@
+{
+  "models": [
+    {
+      "id": "claude-opus-4-8",
+      "name": "Claude Opus 4.8",
+      "tier": "opus",
+      "context_length": 1000000,
+      "use_case": "deep_reasoning,architecture,multi_step_planning,strategic_decision",
+      "latency_class": "slow",
+      "recommended_for_agents": [
+        "jit",
+        "soma",
+        "lak"
+      ],
+      "command_pattern": "claude → anthropic adapter → CommandCode"
+    },
+    {
+      "id": "claude-opus-4-7",
+      "name": "Claude Opus 4.7",
+      "tier": "opus",
+      "context_length": 1000000,
+      "use_case": "deep_reasoning,code_review_fallback,architecture_review",
+      "latency_class": "slow",
+      "recommended_for_agents": [
+        "soma",
+        "neta"
+      ],
+      "command_pattern": "claude → anthropic adapter → CommandCode"
+    },
+    {
+      "id": "claude-sonnet-4-6",
+      "name": "Claude Sonnet 4.6",
+      "tier": "sonnet",
+      "context_length": 1000000,
+      "use_case": "code_generation,debugging,general_development,balanced_thinking",
+      "latency_class": "medium",
+      "recommended_for_agents": [
+        "innova",
+        "lak",
+        "vaja",
+        "rupa"
+      ],
+      "command_pattern": "claude → anthropic adapter → CommandCode"
+    },
+    {
+      "id": "claude-haiku-4-5-20251001",
+      "name": "Claude Haiku 4.5",
+      "tier": "haiku",
+      "context_length": 200000,
+      "use_case": "quick_lookups,routing,fast_classification,heartbeat,status_polls",
+      "latency_class": "fast",
+      "recommended_for_agents": [
+        "netra",
+        "karn",
+        "chamu",
+        "mue",
+        "pada",
+        "pran",
+        "lung",
+        "sayanprasathan"
+      ],
+      "command_pattern": "claude → anthropic adapter → CommandCode"
+    },
+    {
+      "id": "gpt-5.5",
+      "name": "GPT-5.5",
+      "tier": "gpt5",
+      "context_length": 200000,
+      "use_case": "codex_style_completion,multi_language_codegen,broad_reasoning_cross_check",
+      "latency_class": "medium",
+      "recommended_for_agents": [
+        "innova",
+        "chamu"
+      ],
+      "command_pattern": "gpt-5.5 → openai adapter → CommandCode"
+    },
+    {
+      "id": "gpt-5.4",
+      "name": "GPT-5.4",
+      "context_length": 400000,
+      "tier": "gpt5",
+      "use_case": "long_context_review,large_diff_audit,bulk_test_generation,fallback_reasoning",
+      "latency_class": "medium",
+      "recommended_for_agents": [
+        "neta",
+        "chamu",
+        "innova"
+      ],
+      "command_pattern": "gpt-5.4 → openai adapter → CommandCode"
+    },
+    {
+      "id": "gpt-5.3-codex",
+      "added": "2026-06-08T17:09:16Z"
+    },
+    {
+      "id": "gpt-5.4-mini",
+      "added": "2026-06-08T17:09:16Z"
+    },
+    {
+      "id": "moonshotai/Kimi-K2.6",
+      "added": "2026-06-08T17:09:16Z"
+    },
+    {
+      "id": "moonshotai/Kimi-K2.5",
+      "added": "2026-06-08T17:09:16Z"
+    },
+    {
+      "id": "zai-org/GLM-5.1",
+      "added": "2026-06-08T17:09:16Z"
+    },
+    {
+      "id": "zai-org/GLM-5",
+      "added": "2026-06-08T17:09:16Z"
+    },
+    {
+      "id": "MiniMaxAI/MiniMax-M3",
+      "added": "2026-06-08T17:09:16Z"
+    },
+    {
+      "id": "MiniMaxAI/MiniMax-M2.7",
+      "added": "2026-06-08T17:09:16Z"
+    },
+    {
+      "id": "MiniMaxAI/MiniMax-M2.5",
+      "added": "2026-06-08T17:09:16Z"
+    },
+    {
+      "id": "deepseek/deepseek-v4-pro",
+      "added": "2026-06-08T17:09:16Z"
+    },
+    {
+      "id": "deepseek/deepseek-v4-flash",
+      "added": "2026-06-08T17:09:16Z"
+    },
+    {
+      "id": "Qwen/Qwen3.6-Max-Preview",
+      "added": "2026-06-08T17:09:17Z"
+    },
+    {
+      "id": "Qwen/Qwen3.6-Plus",
+      "added": "2026-06-08T17:09:17Z"
+    },
+    {
+      "id": "Qwen/Qwen3.7-Max",
+      "added": "2026-06-08T17:09:17Z"
+    },
+    {
+      "id": "Qwen/Qwen3.7-Plus",
+      "added": "2026-06-08T17:09:17Z"
+    },
+    {
+      "id": "stepfun/Step-3.7-Flash",
+      "added": "2026-06-08T17:09:17Z"
+    },
+    {
+      "id": "stepfun/Step-3.5-Flash",
+      "added": "2026-06-08T17:09:17Z"
+    },
+    {
+      "id": "xiaomi/mimo-v2.5-pro",
+      "added": "2026-06-08T17:09:17Z"
+    },
+    {
+      "id": "xiaomi/mimo-v2.5",
+      "added": "2026-06-08T17:09:17Z"
+    },
+    {
+      "id": "google/gemini-3.5-flash",
+      "added": "2026-06-08T17:09:17Z"
+    },
+    {
+      "id": "google/gemini-3.1-flash-lite",
+      "added": "2026-06-08T17:09:17Z"
+    },
+    {
+      "id": "nvidia/nemotron-3-ultra-550b-a55b",
+      "added": "2026-06-08T17:09:17Z"
+    }
+  ]
+}

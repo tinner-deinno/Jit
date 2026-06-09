@@ -1,0 +1,24 @@
+[Unit]
+Description=cmdteam self-improve (hourly) — scan models, log health, auto-recover
+Documentation=https://github.com/mdes-innova/Jit
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/workspaces/Jit
+
+# Run self-improve with .env sourced (token load)
+ExecStart=/bin/bash -c 'set -a; source /workspaces/Jit/.env; set +a; exec /usr/bin/env bash /workspaces/Jit/cmdteam/self-improve.sh'
+
+# Logging
+StandardOutput=append:/workspaces/Jit/logs/cmdteam-self-improve.log
+StandardError=append:/workspaces/Jit/logs/cmdteam-self-improve.log
+
+# Resource limits
+MemoryMax=256M
+CPUQuota=50%
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true

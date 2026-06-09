@@ -1,0 +1,17 @@
+id: JIT-002
+title: Add idempotency key to bus messages
+priority: P0
+type: spec+code
+status: completed
+owner: lak
+created: 2026-06-06
+updated: 2026-06-08
+spec_ref: network/protocol.md
+source_audit: PROTO-GAP-002
+acceptance:
+  - Add `idempotency-key:<uuid>` header to message format; sender may pass it explicitly, otherwise derived from `from+subject+body-hash`
+  - bus.sh `send` writes the key to the .msg file and a sidecar `.key` index per agent inbox
+  - bus.sh `recv` filters out messages whose idempotency-key was already processed in the last 24h (file or oracle lookup)
+  - router.sh `dispatch` aborts with `BUS_DUPLICATE` log entry if key already seen
+effort_hours: 6
+tags: [bus, protocol, dedup, p0]

@@ -1,0 +1,112 @@
+id: JIT-019
+title: JSON Injection in discord-webhook.sh payload
+priority: P0
+type: security
+status: completed
+owner: pada
+created: 2026-06-07
+updated: 2026-06-08
+completed_date: 2026-06-08
+verification: |
+  - All 8/8 JSON injection tests pass
+  - discord-webhook.sh uses jq for safe JSON encoding
+  - Tested with quotes, newlines, backslashes, tabs, unicode, and injection attempts
+spec_ref: specs/JIT-019-spec.md
+acceptance:
+  - All variables in JSON payload must be properly escaped via jq or printf-style encoding
+  - Verify that commit messages with quotes, newlines, or special chars render safely
+  - Add unit test with payload containing `"`, `\n`, and `<` characters
+effort_hours: 3
+tags: [security, shell-injection, json-injection]
+---
+
+## Summary
+
+The `scripts/discord-webhook.sh` script constructs Discord webhook JSON payloads using unquoted bash variables inside a heredoc (lines 73-108). If commit messages, status, or other interpolated values contain JSON-special characters (`"`, `\`, newlines), the payload becomes malformed or allows JSON injection.
+
+## Impact
+
+- Malformed JSON causes silent Discord notification failures
+- Attacker-crafted commit message with quotes/escapes can break JSON structure
+- Potential: inject additional JSON fields to manipulate Discord embed appearance
+
+## Affected Lines
+
+- **discord-webhook.sh:73-108** — `BEAT_NUMBER`, `STATUS`, `MESSAGE`, `commit_msg`, `commit_hash` used unquoted in JSON heredoc
+
+## Fix Strategy
+
+Use `jq` to safely encode strings, or use printf-style escaping. Example:
+```bash
+SAFE_MSG=$(printf '%s' "$MESSAGE" | jq -Rs .)
+```
+
+Or rebuild JSON object using jq:
+```bash
+local payload=$(jq -n \
+  --arg beat "$BEAT_NUMBER" \
+  --arg msg "$MESSAGE" \
+  '{content: "\($emoji) **Heartbeat #\($beat)**", embeds: [...]}')
+```
+
+## Implementation (Completed by pada)
+
+### Changes Made
+
+Replaced vulnerable heredoc JSON construction with `jq`-based safe encoding:
+
+**File:** `scripts/discord-webhook.sh` (lines 72-108)
+
+**Before:** Vulnerable heredoc with unquoted variable interpolation
+```bash
+local payload=$(cat <<EOF
+{
+  "content": "$emoji **Heartbeat #$BEAT_NUMBER** - $STATUS",
+  "embeds": [{
+    "description": "$MESSAGE",
+    ...
+    "value": "$commit_msg",
+```
+
+**After:** Safe `jq` construction with `--arg` parameters
+```bash
+local payload=$(jq -n --arg emoji "$emoji" \
+                   --arg beat "$BEAT_NUMBER" \
+                   --arg status "$STATUS" \
+                   --arg msg "$MESSAGE" \
+                   --arg ts "$timestamp" \
+                   --arg hash "$commit_hash" \
+                   --arg url "$commit_url" \
+                   --arg commit_msg "$commit_msg" \
+                   --arg color "$color_code" \
+    '{content: "...", embeds: [...]}')
+```
+
+### Test Results
+
+Created `tests/test_discord_webhook_json_injection.py` with 8 test cases:
+
+| Test Case | Payload Type | Result |
+|-----------|--------------|--------|
+| quotes | `"double"` and `'single'` | ✅ PASS |
+| newlines | `Line1\nLine2\nLine3` | ✅ PASS |
+| backslashes | `C:\Users\path` | ✅ PASS |
+| tabs | `Col1\tCol2\tCol3` | ✅ PASS |
+| unicode | `Hello 世界 🫀 émojis` | ✅ PASS |
+| mixed | Quotes + newlines + tabs | ✅ PASS |
+| json_injection | `{"malicious": "payload"}` | ✅ PASS |
+| html_like | `<script>alert('xss')</script>` | ✅ PASS |
+
+**All 8/8 tests passed** — JSON is valid and content is preserved correctly.
+
+### Verification
+
+```bash
+# jq available
+which jq && jq --version
+# /usr/bin/jq, jq-1.6
+
+# Run test suite
+python3 tests/test_discord_webhook_json_injection.py
+# Total: 8/8 tests passed
+```

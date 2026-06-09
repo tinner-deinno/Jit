@@ -10,9 +10,65 @@
 #   ./act.sh run "command"            — รันคำสั่ง + บันทึก log
 #   ./act.sh http GET "url"           — HTTP call
 #   ./act.sh learn "pattern" "..."    — บันทึกลง Oracle
+#
+# ─── JIT-022: Safe String Handling (Prevention) ─────────────────────
+# WARNING: Never embed user input directly in sed/perl regex patterns.
+#
+# Safe patterns for file operations:
+#   ✅ USE: echo "$CONTENT" > "$FILE"      — Direct write (no interpretation)
+#   ✅ USE: echo "$CONTENT" >> "$FILE"     — Append (safe)
+#   ✅ USE: python3 with re.escape()       — For complex transformations
+#   ❌ AVOID: sed "s/$USER_INPUT/..."      — Injection risk
+#   ❌ AVOID: perl -pe "s/$USER_INPUT/..." — Injection risk
+#
+# If sed/perl operations are ever added in future:
+#   1. Always escape user input: $(printf '%s\n' "$input" | sed 's/[&/\]/\\&/g')
+#   2. Prefer python3 for complex regex: python3 -c "import re; re.escape('$input')"
+#   3. Consider dedicated templating tools for file generation
+#
+# This script currently uses only safe echo-based file operations.
+# No sed/perl regex operations are present — preventive documentation only.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib.sh"
+
+# Action journal for branch decisions
+ACTION_JOURNAL="${ACTION_JOURNAL:-/tmp/manusat-act-journal.log}"
+
+# Log branch decision to journal
+log_branch_decision() {
+  local condition="$1"
+  local result="$2"
+  local true_cmd="$3"
+  local false_cmd="$4"
+  echo "$(date +%Y-%m-%dT%H:%M:%S)|BRANCH|$condition|$result|$true_cmd|$false_cmd" >> "$ACTION_JOURNAL"
+}
+
+# Check condition implementations
+check_condition() {
+  local cond="$1"
+  case "$cond" in
+    file_exists:*)
+      [ -f "${cond#file_exists:}" ]
+      ;;
+    git_dirty:*)
+      [ -n "$(git -C "${cond#git_dirty:}" status --porcelain 2>/dev/null)" ]
+      ;;
+    oracle_available)
+      curl -sf "$ORACLE_URL/api/health" >/dev/null 2>&1
+      ;;
+    agent_online:*)
+      [ -d "/tmp/manusat-bus/${cond#agent_online:}" ]
+      ;;
+    last_status_ok)
+      [ "$(cat /tmp/manusat-last-status.txt 2>/dev/null)" = "ok" ]
+      ;;
+    *)
+      # Unknown condition - treat as false
+      return 1
+      ;;
+  esac
+}
 
 CMD="${1:-help}"
 shift || true
@@ -139,15 +195,100 @@ case "$CMD" in
     fi
     ;;
 
+  # ── Branch: Conditional execution ──────────────────────────────────
+  branch)
+    # Usage: act.sh branch <condition> <if-true-cmd> <if-false-cmd>
+    CONDITION="$1"
+    TRUE_CMD="$2"
+    FALSE_CMD="$3"
+
+    if [ -z "$CONDITION" ]; then
+      err "ต้องระบุ condition: act.sh branch <condition> <true-cmd> <false-cmd>"
+      exit 1
+    fi
+
+    step "ตรวจสอบเงื่อนไข: $CONDITION"
+    log_action "BRANCH_CHECK" "$CONDITION"
+
+    if check_condition "$CONDITION"; then
+      info "เงื่อนไขเป็นจริง — ดำเนินการ: $TRUE_CMD"
+      log_branch_decision "$CONDITION" "true" "$TRUE_CMD" "${FALSE_CMD:-none}"
+      if [ -n "$TRUE_CMD" ]; then
+        eval "$TRUE_CMD"
+        EXIT_CODE=$?
+        log_action "BRANCH_TRUE_RESULT" "$TRUE_CMD (exit $EXIT_CODE)"
+        exit $EXIT_CODE
+      fi
+      exit 0
+    else
+      info "เงื่อนไขเป็นเท็จ — ดำเนินการ: ${FALSE_CMD:-none}"
+      log_branch_decision "$CONDITION" "false" "$TRUE_CMD" "${FALSE_CMD:-none}"
+      if [ -n "$FALSE_CMD" ]; then
+        eval "$FALSE_CMD"
+        EXIT_CODE=$?
+        log_action "BRANCH_FALSE_RESULT" "$FALSE_CMD (exit $EXIT_CODE)"
+        exit $EXIT_CODE
+      fi
+      exit 0
+    fi
+    ;;
+
+  # ── Sequence: Command chaining with error handling ─────────────────
+  sequence)
+    # Usage: act.sh sequence <cmd1> && <cmd2> || <cmd3>
+    # Parse and execute command chain
+    SEQUENCE_EXPR="$*"
+
+    if [ -z "$SEQUENCE_EXPR" ]; then
+      err "ต้องระบุลำดับคำสั่ง: act.sh sequence <cmd1> && <cmd2> || <cmd3>"
+      exit 1
+    fi
+
+    step "ดำเนินการลำดับ: $SEQUENCE_EXPR"
+    log_action "SEQUENCE_START" "$SEQUENCE_EXPR"
+
+    # Execute the sequence and capture final exit code
+    eval "$SEQUENCE_EXPR"
+    FINAL_STATUS=$?
+
+    if [ $FINAL_STATUS -eq 0 ]; then
+      log_action "SEQUENCE_OK" "$SEQUENCE_EXPR"
+      ok "ลำดับสำเร็จ (exit 0)"
+    else
+      log_action "SEQUENCE_FAIL" "$SEQUENCE_EXPR (exit $FINAL_STATUS)"
+      err "ลำดับล้มเหลว (exit $FINAL_STATUS)"
+    fi
+
+    # Store last status for last_status_ok condition
+    if [ $FINAL_STATUS -eq 0 ]; then
+      echo "ok" > /tmp/manusat-last-status.txt
+    else
+      echo "fail" > /tmp/manusat-last-status.txt
+    fi
+
+    exit $FINAL_STATUS
+    ;;
+
   *)
     echo "Usage: act.sh <command>"
     echo ""
     echo "  git {commit|push|status|log|diff}  — git operations"
-    echo "  write  <file> <content>             — เขียนไฟล์ (สร้าง backup อัตโนมัติ)"
-    echo "  append <file> <content>             — เพิ่มเนื้อหา (safe)"
-    echo "  run    <command>                    — รันคำสั่ง + บันทึก"
+    echo "  write  <file> <content>             — เขียนไฟลล์ (สร้าง backup อัตโนมัติ)"
+    echo "  append <file> <content>             — เพิ่ิมเนื้้อหา (safe)"
+    echo "  run    <command>                    — รันคำสั่่ง + บันทึก"
     echo "  http   <GET|POST> <url> [data]      — HTTP call"
     echo "  learn  <pattern> <content> <tags>   — บันทึกลง Oracle"
-    echo "  start-oracle                        — เปิด Oracle ถ้าไม่ได้รัน"
+    echo "  start-oracle                        — เปิิด Oracle ถ้้าไม่ได้รัน"
+    echo ""
+    echo "  --- Conditional Execution (JIT-025) ---"
+    echo "  branch   <condition> <true-cmd> <false-cmd>  — ดำเนินการตามเงื่่อนไข"
+    echo "  sequence <cmd1 && cmd2 || cmd3>              — ลำดับคำสั่่งพร้อมจัดการข้อผิิดพลาด"
+    echo ""
+    echo "  Conditions:"
+    echo "    file_exists:<path>    — ไฟล์มีอยู่หรือไม่"
+    echo "    git_dirty:<path>      — git repo มี uncommitted changes"
+    echo "    oracle_available      — Oracle server พร้อมทำงาน"
+    echo "    agent_online:<name>   — agent มี inbox directory"
+    echo "    last_status_ok        — คำสั่่งล่าสุดสำเร็จ"
     ;;
 esac

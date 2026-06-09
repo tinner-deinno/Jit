@@ -1,0 +1,17 @@
+id: JIT-018
+title: "Add bus metrics collection and dashboard command"
+priority: P2
+type: feat
+status: done
+owner: netra
+created: 2026-06-07
+updated: 2026-06-08
+spec_ref: specs/JIT-018-spec.md
+acceptance:
+  - bus.sh metrics subcommand outputs: messages_sent, messages_received, failed, expired, dlq_depth per agent
+  - Metrics accumulated in /tmp/manusat-bus-metrics.json, updated on each send/recv/fail
+  - netra.sh eye-check includes bus metrics in system health report
+  - bus.sh stats --json flag outputs machine-readable JSON for programmatic consumption
+  - Heartbeat daemon records metrics snapshot each beat to /tmp/manusat-metrics-history.jsonl
+effort_hours: 5
+tags: [bus, monitoring, metrics, p2, netra]

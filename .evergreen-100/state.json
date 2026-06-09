@@ -1,0 +1,39 @@
+{
+  "session_start": "2026-06-08T18:30:00Z",
+  "now_utc": "19:34:30",
+  "elapsed_min": 65,
+  "duration_target": "5h+ (unlimited)",
+  "loop_mode": "autonomous",
+  "phase1_complete": true,
+  "phase2_complete": true,
+  "phase3_progress": "started - frontend (\u2705), tester agents (1.5/2), pattern-detector (\u2705), status-broadcaster (\u2705)",
+  "loops_running": {
+    "cleanup-1hr": "old",
+    "self-improve-2hr": "old",
+    "status-daemon-15m": "old",
+    "writer-1hr": "new (doc scanner)",
+    "housekeeping-1hr": "new (folder organizer)",
+    "pattern-detector-15m": "new (model usage analyzer)",
+    "status-broadcaster-15m": "new (Discord status)"
+  },
+  "frontend": {
+    "stack": "Vite 5 + React 18 + TS + Tailwind 3",
+    "views": [
+      "Dashboard",
+      "Chat (SSE)",
+      "Vault",
+      "Agents (15 organs)",
+      "Settings"
+    ],
+    "build_size": "207KB \u2192 64KB gzipped",
+    "tsc_clean": true
+  },
+  "tokens_logged": "~80k (1.6% of 5M budget)",
+  "providers_used": {
+    "claude_sonnet_4_6": "primary",
+    "claude_haiku": "specialists",
+    "gpt-5.4": "code review",
+    "gpt-5.4-mini": "rotation",
+    "Kimi-K2.6": "vault-write fallback"
+  }
+}

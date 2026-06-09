@@ -1,0 +1,19 @@
+id: JIT-028
+title: "Implement knowledge decay and archival policy"
+priority: P2
+type: feat
+status: completed
+owner: innova
+created: 2026-06-07
+updated: 2026-06-08
+spec_ref: specs/JIT-028-spec.md
+acceptance:
+  - Memory entries tagged with access_count, last_accessed, created_date
+  - oracle.sh learn-expires <pattern> <content> <days> sets expiry window
+  - Heartbeat archive task: move entries untouched for > 60 days to /memory/archive/<date>/
+  - Decay scoring: relevance = recency + access_count + semantic_relevance
+  - memory/ recall returns recent + high-access items first (not just semantic match)
+  - Archive searchable by memory/shared.sh recall --archived
+effort_hours: 5
+tags: [memory, decay, archival, maintenance, p2, innova]
+notes: "Memory grows unbounded. Add decay/archival to keep knowledge base fresh and queryable; prevent drowning in old decisions."
