@@ -154,16 +154,45 @@ Current Date: 2026-06-09
 
 ---
 
-### ⚠️ innomcp PUSH BLOCKER — Action Required by innova
+### ⚠️ CRITICAL: innomcp PUSH BLOCKER — Action Required by innova
 
-`pending-commits` branch has production-ready completed work (742 unit tests, 11/11 E2E chat):
+**Status**: 🔴 **ESCALATED** (4 iterations, no progress — human action required)
+
+`pending-commits` branch has **production-ready** completed work:
+- 742 unit tests ✅
+- 11/11 E2E chat PASS ✅
 - MotherStatsCard normalization fix
 - AgentLeaderboard normalization fix  
 - Thai typography fixes
 - Backend error handling middleware
+- 10 strict-mode TypeScript bugs (fixed overnight)
 
-**Cannot push** — current credentials lack `workflow` scope or `mdes-innova/innomcp` repo access.  
-**Fix**: Regenerate GitHub PAT with `repo` + `workflow` scopes, then `git push origin pending-commits` from `C:\Users\USER-NT\DEV\innomcp`
+**Current blocker**: GitHub PAT lacks `repo` + `workflow` scopes
+- Cannot push to `mdes-innova/innomcp` (permission denied)
+- Branch stuck at commit f5a7ac1 for 3+ days
+- Blocks TICKET-014 (0.5 pt credential refresh)
+- Blocks TICKET-013 (4 pt health monitoring) — marked "after push blocker resolved"
+
+**Required action (innova only)**:
+1. Go to https://github.com/settings/tokens
+2. Create new Personal Access Token with scopes:
+   - ✅ `repo` (full control of private repositories)
+   - ✅ `workflow` (Update GitHub Action workflows)
+   - ❌ Do NOT use classic token (deprecated)
+3. Copy token
+4. Update Windows Credential Manager:
+   - `Control Panel → Credential Manager → Windows Credentials`
+   - Edit: `git:https://github.com`
+   - Update password field with new token
+5. Test push:
+   ```bash
+   cd C:\Users\USER-NT\DEV\innomcp
+   git push origin pending-commits
+   ```
+6. Once pushed, merge pending-commits → main via GitHub PR
+
+**Estimated time**: 5-10 minutes  
+**Impact if unresolved**: Blocks 2 TICKETs, 4.5 points of work, 11 E2E tests stuck
 
 ---
 
