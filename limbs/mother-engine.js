@@ -78,6 +78,10 @@ class MotherEngine {
   }
 
   async handleBotEvent(event) {
+    if (!event || typeof event !== 'object') {
+      console.warn(`[Mother] Invalid bot event (falsy or non-object): ${typeof event}`);
+      return;
+    }
     console.log(`[Mother] Processing bot event: ${event.event || 'unknown'}`);
 
     switch (event.event) {
@@ -109,7 +113,8 @@ class MotherEngine {
         fs.writeFileSync(this.leaderboardPath, JSON.stringify(this.leaderboard, null, 2));
         console.log(`[Mother] Leaderboard hydrated from DB (${Object.keys(this.leaderboard.fleet).length} agents).`);
       } else {
-        const n = leaderboardDB.persist(this.leaderboard.fleet);
+        const fleet = this.leaderboard.fleet || {};
+        const n = leaderboardDB.persist(fleet);
         console.log(`[Mother] Leaderboard DB seeded from JSON (${n} agents).`);
       }
     } catch (e) {
