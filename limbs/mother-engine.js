@@ -7,6 +7,41 @@ const eventLog = require('./event-log');
 const leaderboardDB = require('./leaderboard-db');
 
 class MotherEngine {
+  /**
+   * Sanitize user input for safe inclusion in LLM prompts.
+   * Truncates to 500 chars and removes control characters that could be used for prompt injection.
+   */
+  static _sanitizeInput(str) {
+    return String(str || '')
+      .slice(0, 500)
+      .replace(/[\n\r`]/g, ' ');  // Replace newlines and backticks with spaces
+  }
+
+  /**
+   * Redact sensitive fields from objects before logging.
+   * Prevents API keys, tokens, passwords from leaking into logs.
+   */
+  static _redactSecrets(obj) {
+    if (!obj || typeof obj !== 'object') return obj;
+    const copy = JSON.parse(JSON.stringify(obj));
+    const secretKeys = ['api_key', 'token', 'password', 'secret', 'authorization', 'auth', 'key', 'apiKey'];
+    const redact = (o) => {
+      if (Array.isArray(o)) {
+        o.forEach(redact);
+      } else if (o && typeof o === 'object') {
+        Object.keys(o).forEach(k => {
+          if (secretKeys.some(sk => k.toLowerCase().includes(sk))) {
+            o[k] = '***REDACTED***';
+          } else if (typeof o[k] === 'object') {
+            redact(o[k]);
+          }
+        });
+      }
+    };
+    redact(copy);
+    return copy;
+  }
+
   constructor() {
     this.registryPath = path.join(__dirname, '../network/registry.json');
     this.leaderboardPath = path.join(__dirname, '../network/leaderboard.json');
@@ -115,7 +150,7 @@ class MotherEngine {
         // Possibly persist this insight to Oracle
         break;
       default:
-        console.log(`[Mother] Unhandled bot event: ${JSON.stringify(event)}`);
+        console.log(`[Mother] Unhandled bot event: ${JSON.stringify(MotherEngine._redactSecrets(event))}`);
     }
   }
 
@@ -145,11 +180,12 @@ class MotherEngine {
    * and capability matching.
    */
   async selectSquad(goal, phase) {
-    console.log(`[Mother] Designing squad for phase: ${phase} - Goal: ${goal}`);
+    const sanitizedGoal = MotherEngine._sanitizeInput(goal);
+    console.log(`[Mother] Designing squad for phase: ${phase} - Goal: ${sanitizedGoal}`);
 
     // 1. Find all agents that have relevant capabilities
     const candidates = this.registry.agents.filter(agent => {
-      return agent.capabilities.some(cap => goal.toLowerCase().includes(cap.toLowerCase()));
+      return agent.capabilities.some(cap => sanitizedGoal.toLowerCase().includes(cap.toLowerCase()));
     });
 
     // 2. Sort by leaderboard correctness score (descending)
@@ -185,7 +221,9 @@ class MotherEngine {
     }
 
     // 1. Design Squad
-    const squadNames = await this.selectSquad(goal, phaseName);
+    const sanitizedGoal = MotherEngine._sanitizeInput(goal);
+    const sanitizedContext = MotherEngine._sanitizeInput(context);
+    const squadNames = await this.selectSquad(sanitizedGoal, phaseName);
     console.log(`[Mother] Squad Selected: ${squadNames.join(', ')}`);
 
     // 2. Parallel Execution
@@ -194,7 +232,7 @@ class MotherEngine {
       results = await spawnAgentParallel(
         squadNames.map(name => ({
           agent: name,
-          message: `Goal: ${goal}. Context: Phase ${phaseName}.${context ? '\n' + context : ''} Provide your specialized output.`,
+          message: `Goal: ${sanitizedGoal}. Context: Phase ${phaseName}.${sanitizedContext ? '\n' + sanitizedContext : ''} Provide your specialized output.`,
           options: this.liveProvider ? { overrideBackend: this.liveProvider.backend, overrideModel: this.liveProvider.model } : {}
         })),
         `Phase ${phaseName} Execution`
@@ -208,11 +246,12 @@ class MotherEngine {
     console.log(`[Mother] Verifying results via Reviewer Squad...`);
     let verifications = [];
     try {
-      const verifierSquad = await this.selectSquad(`Verify and audit the following results: ${JSON.stringify(results)}`, 'Verification');
+      const resultsJson = JSON.stringify(results).slice(0, 500);  // Truncate to 500 chars
+      const verifierSquad = await this.selectSquad(`Verify and audit the following results: ${resultsJson}`, 'Verification');
       verifications = await spawnAgentParallel(
         verifierSquad.map(name => ({
           agent: name,
-          message: `Review results for phase ${phaseName}. Score it 0-100. Goal was: ${goal}. Results: ${JSON.stringify(results)}`,
+          message: `Review results for phase ${phaseName}. Score it 0-100. Goal was: ${sanitizedGoal}. Results: ${resultsJson}`,
           options: this.liveProvider ? { overrideBackend: this.liveProvider.backend, overrideModel: this.liveProvider.model } : {}
         })),
         `Phase ${phaseName} Verification`
@@ -273,11 +312,12 @@ class MotherEngine {
    * Returns [{ title, goal }]. Falls back to a single phase on any failure.
    */
   async decomposeGoal(goal, max = 4) {
+    const sanitizedGoal = MotherEngine._sanitizeInput(goal);
     const prompt = [
       `Break this goal into ${max} or fewer concrete, sequential phases.`,
       'Return ONLY a numbered list, one phase per line, formatted "Title: what to do".',
       'Keep titles short (2-4 words). No preamble.',
-      `\nGoal: ${goal}`,
+      `\nGoal: ${sanitizedGoal}`,
     ].join('\n');
     const opts = this.liveProvider
       ? { overrideBackend: this.liveProvider.backend, overrideModel: this.liveProvider.model }
@@ -428,6 +468,21 @@ class MotherEngine {
       console.log(`[Mother] Atomic commit successful for phase ${phase} (${staged.split(/\n/).length} file(s))`);
     } catch (e) {
       console.error(`[Mother] Commit failed: ${e.message}`);
+    }
+  }
+
+  /**
+   * Cleanup event listeners to prevent memory leaks when MotherEngine is destroyed.
+   * Call this before discarding the instance if it will be recreated.
+   */
+  cleanup() {
+    try {
+      if (this.botBridge) {
+        this.botBridge.removeAllListeners('connected');
+        this.botBridge.removeAllListeners('bot_event');
+      }
+    } catch (e) {
+      console.warn(`[Mother] Cleanup error: ${e.message}`);
     }
   }
 }
