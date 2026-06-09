@@ -79,7 +79,7 @@ function _normalizeModelAlias(model) {
     // Pre-normalize: collapse dashes/spaces around digits/Latin so
     // "จิต-โมเดล-26-บ" becomes "จิตโมเดล26บ" before syllable splitting.
     var cleaned = value.replace(/[-\s]+/g, '');
-    var syllables = splitThaiSyllables(cleaned);
+    var syllables = thaiSplitter.splitThaiSyllables(cleaned);
     var canonicalKey = syllables.join('-');
 
     // Syllable-split alias map (expandable)
