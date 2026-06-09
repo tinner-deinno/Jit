@@ -1207,7 +1207,14 @@ function routingKey(messages, options) {
       parts.push('lang:thai');
       var prefix = firstContent.slice(0, 30);
       var canonical = thaiCanonicalize(prefix);
-      parts.push('prefix:' + canonical.replace(/[^a-zA-Z0-9-]/g, ''));
+      // TICKET-009 FIX: Keep Thai syllables in the key (do not strip them).
+      // Prior code stripped Thai chars (U+0E00–U+0E7F) to `---`, collapsing
+      // entropy. Now we keep canonical syllables directly: e.g.
+      // "จิต-โม-เดล" instead of "---". This restores entropy without
+      // changing hash algorithm (DJB2 is fast and distributes well with
+      // distinct keys). Backward-compatible: same routing logic, just
+      // better entropy for Thai input.
+      parts.push('prefix:' + canonical);
     } else {
       parts.push('lang:other');
     }
