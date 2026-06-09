@@ -36,6 +36,7 @@ if (fs.existsSync(envPath)) {
 const router = require('../hermes-discord/model-router');
 const eventLog = require('../limbs/event-log');
 const leaderboardDB = require('../limbs/leaderboard-db');
+const { routingKey } = require('../hermes-discord/model-router');
 
 function arg(name, fallback) {
   const i = process.argv.indexOf(name);
@@ -147,6 +148,7 @@ const BACKEND_LIMITS = {
   ollama_local: 2,
   copilot: 1,
   openai: 1,
+  openclaude: 1,
   innova_bot: 1,
   commandcode: 2,
 };
@@ -367,7 +369,14 @@ function buildJobs() {
   const jobs = [];
   const modelCursor = {};
   for (let i = 0; i < COUNT; i++) {
-    const lane = weighted[i % weighted.length];
+    // TICKET-007a: deterministic lane selection via syllable-splitter routing key
+    // Compute key from actual job content (worker context + goal) so ollama_local
+    // and other backends route by prompt syllables, not by numeric index tokens.
+    const worker = roster[i];
+    const contentForRouting = [GOAL, worker.workerId, worker.agent, worker.perspective, worker.role].join(' ');
+    const key = routingKey(contentForRouting);
+    const laneIndex = key % weighted.length;
+    const lane = weighted[laneIndex];
     const cursor = modelCursor[lane.backend] || 0;
     const model = lane.models[cursor % lane.models.length] || null;
     modelCursor[lane.backend] = cursor + 1;
@@ -375,12 +384,13 @@ function buildJobs() {
       id: i + 1,
       backend: lane.backend,
       model,
-      workerId: roster[i].workerId,
-      agent: roster[i].agent,
-      role: roster[i].role,
-      perspective: roster[i].perspective,
+      workerId: worker.workerId,
+      agent: worker.agent,
+      role: worker.role,
+      perspective: worker.perspective,
       costTier: lane.costTier,
       external: lane.external,
+      routingKey: key,
     });
   }
   return jobs;
