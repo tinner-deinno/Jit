@@ -42,7 +42,37 @@ Current Date: 2026-06-09
 
 ## 🎯 In Progress (TICKET-011)
 
-### TICKET-011: Rate Limiting & Backpressure (ASSIGNED → pada)
+### ✅ TICKET-011 — APPROVED & CLOSED (Iteration 12)
+
+**Implemented**: Token bucket rate limiting in `network/proxy-thai.js` (commit `ffb6a66`)  
+**Spec**: 1000 req/min global, 100 req/min per-IP; atomic dual-bucket check; 429 + Retry-After  
+**Tests**: 12/12 existing PASS; `_resetRateLimitBuckets` + env flag exported for new tests  
+**Approver**: Sonnet 4.6 — 2026-06-09
+
+---
+
+### ⚠️ innomcp PUSH BLOCKER — Action Required by innova
+
+`pending-commits` branch has production-ready completed work (742 unit tests, 11/11 E2E chat):
+- MotherStatsCard normalization fix
+- AgentLeaderboard normalization fix  
+- Thai typography fixes
+- Backend error handling middleware
+
+**Cannot push** — current credentials lack `workflow` scope or `mdes-innova/innomcp` repo access.  
+**Fix**: Regenerate GitHub PAT with `repo` + `workflow` scopes, then `git push origin pending-commits` from `C:\Users\USER-NT\DEV\innomcp`
+
+---
+
+### 📋 TICKET-012: Team Charter YAML (Queued, depends on 011)
+### 📋 TICKET-013: innomcp Redis/DB Health Monitoring (NEW — from CODEX report)
+
+**TICKET-013 summary**: innomcp health endpoint returns `degraded` because Redis/DB readiness check is blocking even when chat and MCP are fully functional. Implement graceful degradation so health reports green for liveness (chat/MCP working) vs readiness (stores connected). Unblocks clean CI green gate.  
+**Owner**: TBD | **Effort**: 4 points | **Repo**: mdes-innova/innomcp (after push blocker resolved)
+
+---
+
+### Previous TICKET-011 spec:
 **Objective**: Verify routing stability across extended runs with real Thai language corpus. Document any variance in routing distribution when new backends are added or reordered.
 
 **Acceptance Criteria**:
