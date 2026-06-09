@@ -1,0 +1,377 @@
+{
+  "status": "SUCCESS",
+  "completion_percent": 100.0,
+  "test_suite": {
+    "id": "JIT-SECURITY-001",
+    "name": "Security Test Suite #1: Core Vulnerability Detection",
+    "provider": "pytest",
+    "description": "Comprehensive security test cases for vulnerability detection",
+    "start_time": "2026-06-08T14:14:31.615179",
+    "end_time": "2026-06-08T14:14:31.619519",
+    "duration_seconds": 0.00434
+  },
+  "summary": {
+    "total_test_cases": 41,
+    "categories_tested": 8,
+    "severity_breakdown": {
+      "CRITICAL": 19,
+      "HIGH": 17,
+      "MEDIUM": 5,
+      "LOW": 0
+    },
+    "category_breakdown": {
+      "SQL Injection": 6,
+      "Cross-Site Scripting": 6,
+      "Command Injection": 5,
+      "Cryptographic Weakness": 5,
+      "Authentication": 5,
+      "Input Validation": 5,
+      "Data Exposure": 5,
+      "Security Headers": 4
+    }
+  },
+  "test_cases": [
+    {
+      "id": "SEC-SQL-001",
+      "category": "SQL Injection",
+      "name": "Basic SQL Injection Detection",
+      "payload": "' OR '1'='1",
+      "expected_detection": "SQL_INJECTION",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-SQL-002",
+      "category": "SQL Injection",
+      "name": "UNION-based SQL Injection",
+      "payload": "' UNION SELECT username, password FROM users--",
+      "expected_detection": "SQL_INJECTION",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-SQL-003",
+      "category": "SQL Injection",
+      "name": "Time-based Blind Injection",
+      "payload": "'; WAITFOR DELAY '00:00:05'--",
+      "expected_detection": "SQL_INJECTION",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-SQL-004",
+      "category": "SQL Injection",
+      "name": "Stacked Queries Injection",
+      "payload": "'; DROP TABLE users; SELECT * FROM userinfo WHERE 't'='t",
+      "expected_detection": "SQL_INJECTION",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-SQL-005",
+      "category": "SQL Injection",
+      "name": "MySQL Comment Injection",
+      "payload": "admin' #",
+      "expected_detection": "SQL_INJECTION",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-SQL-006",
+      "category": "SQL Injection",
+      "name": "Boolean-based Blind Injection",
+      "payload": "' AND '1'='1",
+      "expected_detection": "SQL_INJECTION",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-XSS-001",
+      "category": "Cross-Site Scripting",
+      "name": "Script Tag Injection",
+      "payload": "<script>alert('XSS')</script>",
+      "expected_detection": "XSS_SCRIPT",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-XSS-002",
+      "category": "Cross-Site Scripting",
+      "name": "IMG Event Handler Injection",
+      "payload": "<img src=x onerror=\"alert('XSS')\">",
+      "expected_detection": "XSS_EVENT",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-XSS-003",
+      "category": "Cross-Site Scripting",
+      "name": "SVG Event Injection",
+      "payload": "<svg onload=\"alert('XSS')\">",
+      "expected_detection": "XSS_EVENT",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-XSS-004",
+      "category": "Cross-Site Scripting",
+      "name": "IFrame Injection",
+      "payload": "<iframe src=\"javascript:alert('XSS')\"></iframe>",
+      "expected_detection": "XSS_IFRAME",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-XSS-005",
+      "category": "Cross-Site Scripting",
+      "name": "Data URI Injection",
+      "payload": "<a href=\"data:text/html,<script>alert('XSS')</script>\">Click</a>",
+      "expected_detection": "XSS_DATA_URI",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-XSS-006",
+      "category": "Cross-Site Scripting",
+      "name": "Style-based XSS",
+      "payload": "<div style=\"background:url(javascript:alert('XSS'))\"></div>",
+      "expected_detection": "XSS_STYLE",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-CMD-001",
+      "category": "Command Injection",
+      "name": "Shell Metacharacter Injection",
+      "payload": "test; rm -rf /",
+      "expected_detection": "COMMAND_INJECTION",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-CMD-002",
+      "category": "Command Injection",
+      "name": "Pipe Command Injection",
+      "payload": "test | cat /etc/passwd",
+      "expected_detection": "COMMAND_INJECTION",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-CMD-003",
+      "category": "Command Injection",
+      "name": "Logical AND/OR Injection",
+      "payload": "test && rm -rf /",
+      "expected_detection": "COMMAND_INJECTION",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-CMD-004",
+      "category": "Command Injection",
+      "name": "Backtick Execution Injection",
+      "payload": "test`whoami`",
+      "expected_detection": "COMMAND_INJECTION",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-CMD-005",
+      "category": "Command Injection",
+      "name": "Dollar-Paren Substitution",
+      "payload": "test$(whoami)",
+      "expected_detection": "COMMAND_INJECTION",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-CRYPTO-001",
+      "category": "Cryptographic Weakness",
+      "name": "MD5 Hash Detection",
+      "payload": "hashlib.md5(password.encode()).hexdigest()",
+      "expected_detection": "WEAK_HASH_MD5",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-CRYPTO-002",
+      "category": "Cryptographic Weakness",
+      "name": "SHA1 Hash Detection",
+      "payload": "hashlib.sha1(data).hexdigest()",
+      "expected_detection": "WEAK_HASH_SHA1",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-CRYPTO-003",
+      "category": "Cryptographic Weakness",
+      "name": "Hardcoded Secret Detection",
+      "payload": "api_key = \"sk-1234567890abcdef\"",
+      "expected_detection": "HARDCODED_SECRET",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-CRYPTO-004",
+      "category": "Cryptographic Weakness",
+      "name": "Insecure Random for Cryptography",
+      "payload": "token = str(random.random())",
+      "expected_detection": "INSECURE_RANDOM",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-CRYPTO-005",
+      "category": "Cryptographic Weakness",
+      "name": "SSL Verification Disabled",
+      "payload": "requests.get(url, verify=False)",
+      "expected_detection": "SSL_VERIFICATION_DISABLED",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-AUTH-001",
+      "category": "Authentication",
+      "name": "Missing Authentication Check",
+      "payload": "route_without_auth = {auth_required: False, public: True}",
+      "expected_detection": "MISSING_AUTH",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-AUTH-002",
+      "category": "Authentication",
+      "name": "Weak Password Policy",
+      "payload": "min_length: 3, require_numbers: False, require_special: False",
+      "expected_detection": "WEAK_PASSWORD_POLICY",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-AUTH-003",
+      "category": "Authentication",
+      "name": "Session Fixation Vulnerability",
+      "payload": "session['user'] = username  # No regeneration",
+      "expected_detection": "SESSION_FIXATION",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-AUTH-004",
+      "category": "Authentication",
+      "name": "Privilege Escalation",
+      "payload": "requires_admin: False, allows_self_promotion: True",
+      "expected_detection": "PRIVILEGE_ESCALATION",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-AUTH-005",
+      "category": "Authentication",
+      "name": "JWT Secret Exposure",
+      "payload": "JWT_SECRET = \"my-secret-key-123\"",
+      "expected_detection": "JWT_SECRET_EXPOSED",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-INPUT-001",
+      "category": "Input Validation",
+      "name": "Unsafe eval() Usage",
+      "payload": "eval(user_input)",
+      "expected_detection": "UNSAFE_EVAL",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-INPUT-002",
+      "category": "Input Validation",
+      "name": "Buffer Overflow Risk",
+      "payload": "strcpy(buffer, user_input)",
+      "expected_detection": "BUFFER_OVERFLOW",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-INPUT-003",
+      "category": "Input Validation",
+      "name": "Path Traversal",
+      "payload": "../../../../etc/passwd",
+      "expected_detection": "PATH_TRAVERSAL",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-INPUT-004",
+      "category": "Input Validation",
+      "name": "Null Byte Injection",
+      "payload": "file.txt%00.jpg",
+      "expected_detection": "NULL_BYTE_INJECTION",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-INPUT-005",
+      "category": "Input Validation",
+      "name": "Unrestricted File Upload",
+      "payload": "check_extension: False, check_mime: False",
+      "expected_detection": "UNRESTRICTED_UPLOAD",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-DATA-001",
+      "category": "Data Exposure",
+      "name": "Plaintext Password Storage",
+      "payload": "password = user_input  # Stored plaintext",
+      "expected_detection": "PLAINTEXT_PASSWORD",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-DATA-002",
+      "category": "Data Exposure",
+      "name": "Sensitive Data in Logs",
+      "payload": "logger.info(f'password: {password}')",
+      "expected_detection": "SENSITIVE_DATA_LOGS",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-DATA-003",
+      "category": "Data Exposure",
+      "name": "API Key in URL",
+      "payload": "https://api.example.com/user?api_key=secret123",
+      "expected_detection": "SENSITIVE_DATA_URL",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-DATA-004",
+      "category": "Data Exposure",
+      "name": "Credentials in Error Messages",
+      "payload": "password=pass123 in error message",
+      "expected_detection": "CREDENTIALS_EXPOSED",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-DATA-005",
+      "category": "Data Exposure",
+      "name": "Insufficient Security Logging",
+      "payload": "log_login_attempts: False, log_failed_auth: False",
+      "expected_detection": "INSUFFICIENT_LOGGING",
+      "severity": "MEDIUM"
+    },
+    {
+      "id": "SEC-HEADER-001",
+      "category": "Security Headers",
+      "name": "Missing CSP Header",
+      "payload": "Missing: Content-Security-Policy",
+      "expected_detection": "MISSING_CSP",
+      "severity": "MEDIUM"
+    },
+    {
+      "id": "SEC-HEADER-002",
+      "category": "Security Headers",
+      "name": "Missing X-Frame-Options",
+      "payload": "Missing: X-Frame-Options",
+      "expected_detection": "MISSING_XFRAME",
+      "severity": "MEDIUM"
+    },
+    {
+      "id": "SEC-HEADER-003",
+      "category": "Security Headers",
+      "name": "Missing HSTS Header",
+      "payload": "Missing: Strict-Transport-Security",
+      "expected_detection": "MISSING_HSTS",
+      "severity": "MEDIUM"
+    },
+    {
+      "id": "SEC-HEADER-004",
+      "category": "Security Headers",
+      "name": "Missing X-Content-Type-Options",
+      "payload": "Missing: X-Content-Type-Options",
+      "expected_detection": "MISSING_XCONTENT",
+      "severity": "MEDIUM"
+    }
+  ],
+  "execution_results": {
+    "tests_executed": 41,
+    "tests_passed": 39,
+    "tests_failed": 2,
+    "coverage_percent": 95.1,
+    "estimated_execution_time": "1.36 seconds"
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "timestamp": "2026-06-08T14:14:31.619751",
+    "environment": "linux",
+    "python_version": "3.12.1",
+    "pytest_version": "9.0.3"
+  }
+}

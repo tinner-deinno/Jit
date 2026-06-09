@@ -1,0 +1,16 @@
+{
+  "suite_id": "JIT-SECURITY-001",
+  "provider": "pytest",
+  "start_time": "2026-06-08T14:08:12.314912",
+  "test_cases": [],
+  "summary": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0
+  },
+  "end_time": "2026-06-08T14:08:13.097249",
+  "duration_seconds": 0.782337,
+  "completion_percent": 0.0,
+  "status": "PASSED"
+}

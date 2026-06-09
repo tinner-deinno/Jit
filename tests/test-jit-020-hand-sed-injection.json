@@ -1,0 +1,503 @@
+{
+  "ticket_id": "JIT-020",
+  "title": "Sed injection in organs/hand.sh edit command",
+  "test_owner": "chamu",
+  "test_execution_date": "2026-06-08",
+  "test_cases": [
+    {
+      "test_id": "JIT-020-TC-001",
+      "name": "Edit with safe literal string",
+      "category": "positive_functional",
+      "priority": "P0",
+      "description": "Verify basic edit functionality works with simple alphanumeric strings",
+      "precondition": "Test file created with known content",
+      "steps": [
+        "Create test file: echo 'foo bar' > /tmp/test_hand_001.txt",
+        "Execute: hand.sh edit /tmp/test_hand_001.txt 'foo' 'baz'",
+        "Verify file contains 'baz bar'"
+      ],
+      "expected_result": "File successfully edited, OLD replaced with NEW, no sed errors",
+      "test_data": {
+        "file_content": "foo bar",
+        "old_string": "foo",
+        "new_string": "baz",
+        "expected_output": "baz bar"
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-002",
+      "name": "Edit with pipe character (sed delimiter)",
+      "category": "security_injection",
+      "priority": "P0",
+      "description": "Verify sed pipe delimiter in OLD or NEW is properly escaped",
+      "precondition": "Test file with pipe delimiter content",
+      "steps": [
+        "Create test file: echo 'a|b c' > /tmp/test_hand_002.txt",
+        "Execute: hand.sh edit /tmp/test_hand_002.txt 'a|b' 'x|y'",
+        "Verify file contains 'x|y c' exactly"
+      ],
+      "expected_result": "Pipe characters properly escaped, file shows literal pipe in content",
+      "test_data": {
+        "file_content": "a|b c",
+        "old_string": "a|b",
+        "new_string": "x|y",
+        "expected_output": "x|y c",
+        "injection_risk": "Unescaped | would terminate sed s command and start new command"
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-003",
+      "name": "Edit with ampersand character (sed backreference)",
+      "category": "security_injection",
+      "priority": "P0",
+      "description": "Verify sed ampersand backreference in replacement is properly escaped",
+      "precondition": "Test file with ampersand content",
+      "steps": [
+        "Create test file: echo 'test & verify' > /tmp/test_hand_003.txt",
+        "Execute: hand.sh edit /tmp/test_hand_003.txt 'test & verify' 'check & confirm'",
+        "Verify file contains 'check & confirm' exactly (not expanded backreference)"
+      ],
+      "expected_result": "Ampersand treated as literal character, not as sed backreference",
+      "test_data": {
+        "file_content": "test & verify",
+        "old_string": "test & verify",
+        "new_string": "check & confirm",
+        "expected_output": "check & confirm",
+        "injection_risk": "Unescaped & in replacement expands to matched text, causing duplication"
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-004",
+      "name": "Edit with regex metacharacters (. * [ ] ^ $)",
+      "category": "security_injection",
+      "priority": "P0",
+      "description": "Verify regex metacharacters in OLD pattern are properly escaped",
+      "precondition": "Test file with regex metacharacters",
+      "steps": [
+        "Create test file: echo 'a.b c*d' > /tmp/test_hand_004.txt",
+        "Execute: hand.sh edit /tmp/test_hand_004.txt 'a.b' 'x.y'",
+        "Verify file contains 'x.y c*d' with dots as literals"
+      ],
+      "expected_result": "Dots treated as literal dots, not as regex wildcard",
+      "test_data": {
+        "file_content": "a.b c*d",
+        "old_string": "a.b",
+        "new_string": "x.y",
+        "expected_output": "x.y c*d",
+        "injection_risk": "Unescaped . matches any character; * repeats previous; could match unintended text"
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-005",
+      "name": "Edit with backslash character",
+      "category": "security_injection",
+      "priority": "P0",
+      "description": "Verify backslash characters are properly escaped (escape char in sed)",
+      "precondition": "Test file with backslash content",
+      "steps": [
+        "Create test file: echo 'path\\to\\file' > /tmp/test_hand_005.txt",
+        "Execute: hand.sh edit /tmp/test_hand_005.txt 'path\\to' 'newpath\\to'",
+        "Verify file contains 'newpath\\to\\file' with backslashes literal"
+      ],
+      "expected_result": "Backslashes treated as literal characters",
+      "test_data": {
+        "file_content": "path\\to\\file",
+        "old_string": "path\\to",
+        "new_string": "newpath\\to",
+        "expected_output": "newpath\\to\\file",
+        "injection_risk": "Backslash is escape char in sed; improper escaping breaks sed syntax"
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-006",
+      "name": "Edit with forward slash character",
+      "category": "security_injection",
+      "priority": "P0",
+      "description": "Verify forward slash (alternate sed delimiter context) is properly escaped",
+      "precondition": "Test file with forward slash content",
+      "steps": [
+        "Create test file: echo '/etc/passwd' > /tmp/test_hand_006.txt",
+        "Execute: hand.sh edit /tmp/test_hand_006.txt '/etc/passwd' '/root/.bashrc'",
+        "Verify file contains '/root/.bashrc' exactly"
+      ],
+      "expected_result": "Forward slashes properly escaped despite using pipe as sed delimiter",
+      "test_data": {
+        "file_content": "/etc/passwd",
+        "old_string": "/etc/passwd",
+        "new_string": "/root/.bashrc",
+        "expected_output": "/root/.bashrc"
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-007",
+      "name": "Edit with complex sed injection attempt",
+      "category": "security_injection",
+      "priority": "P0",
+      "description": "Verify defense against crafted sed injection payload",
+      "precondition": "Test file with simple content",
+      "steps": [
+        "Create test file: echo 'original' > /tmp/test_hand_007.txt",
+        "Execute: hand.sh edit /tmp/test_hand_007.txt 'original' 'safe'",
+        "Verify file contains 'safe', no arbitrary commands executed"
+      ],
+      "expected_result": "Malicious payload treated as literal string; file unchanged except intended edit",
+      "test_data": {
+        "file_content": "original",
+        "old_string": "original",
+        "new_string": "safe",
+        "expected_output": "safe",
+        "injection_payload_attempt": "original|s|/etc/passwd||"
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-008",
+      "name": "Edit with square brackets (character class)",
+      "category": "security_injection",
+      "priority": "P0",
+      "description": "Verify square brackets in pattern are properly escaped",
+      "precondition": "Test file with square brackets",
+      "steps": [
+        "Create test file: echo 'test [a-z]' > /tmp/test_hand_008.txt",
+        "Execute: hand.sh edit /tmp/test_hand_008.txt '[a-z]' '[0-9]'",
+        "Verify file contains 'test [0-9]' with brackets as literal"
+      ],
+      "expected_result": "Square brackets treated as literal characters, not as regex character class",
+      "test_data": {
+        "file_content": "test [a-z]",
+        "old_string": "[a-z]",
+        "new_string": "[0-9]",
+        "expected_output": "test [0-9]"
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-009",
+      "name": "Edit with caret and dollar (anchors)",
+      "category": "security_injection",
+      "priority": "P0",
+      "description": "Verify line anchors ^ and $ are properly escaped in pattern",
+      "precondition": "Test file with caret and dollar content",
+      "steps": [
+        "Create test file: echo 'price = $5 ^hot' > /tmp/test_hand_009.txt",
+        "Execute: hand.sh edit /tmp/test_hand_009.txt '$5 ^hot' '$10 ^cold'",
+        "Verify file contains 'price = $10 ^cold' with $ and ^ as literals"
+      ],
+      "expected_result": "Anchors treated as literal characters, not as regex anchors",
+      "test_data": {
+        "file_content": "price = $5 ^hot",
+        "old_string": "$5 ^hot",
+        "new_string": "$10 ^cold",
+        "expected_output": "price = $10 ^cold"
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-010",
+      "name": "Edit with combined special characters",
+      "category": "security_injection",
+      "priority": "P0",
+      "description": "Verify multiple special characters together are escaped correctly",
+      "precondition": "Test file with mixed special characters",
+      "steps": [
+        "Create test file: echo 'path: /etc/[config]* & $PWD | exec' > /tmp/test_hand_010.txt",
+        "Execute: hand.sh edit /tmp/test_hand_010.txt '/etc/[config]*' '/home/[user]*'",
+        "Verify file shows '/home/[user]*' with all specials escaped"
+      ],
+      "expected_result": "All special characters properly escaped in combination",
+      "test_data": {
+        "file_content": "path: /etc/[config]* & $PWD | exec",
+        "old_string": "/etc/[config]*",
+        "new_string": "/home/[user]*",
+        "expected_output": "path: /home/[user]* & $PWD | exec"
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-011",
+      "name": "Edit with empty string replacement",
+      "category": "functional",
+      "priority": "P1",
+      "description": "Verify edit can delete content by replacing with empty string",
+      "precondition": "Test file with content",
+      "steps": [
+        "Create test file: echo 'remove me' > /tmp/test_hand_011.txt",
+        "Execute: hand.sh edit /tmp/test_hand_011.txt 'remove me' ''",
+        "Verify file is empty or contains only whitespace"
+      ],
+      "expected_result": "Content successfully removed, file empty",
+      "test_data": {
+        "file_content": "remove me",
+        "old_string": "remove me",
+        "new_string": "",
+        "expected_output": ""
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-012",
+      "name": "Edit with newline in content",
+      "category": "functional",
+      "priority": "P1",
+      "description": "Verify edit handles content with actual newline characters",
+      "precondition": "Test file with multiline content",
+      "steps": [
+        "Create test file with 'line1\\nline2'",
+        "Execute: hand.sh edit targeting single line",
+        "Verify only targeted line is replaced"
+      ],
+      "expected_result": "Single line properly replaced, other lines unaffected",
+      "test_data": {
+        "file_content": "line1\nline2\nline3",
+        "old_string": "line2",
+        "new_string": "modified",
+        "expected_output": "line1\nmodified\nline3"
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-013",
+      "name": "Edit with global flag (multiple replacements)",
+      "category": "functional",
+      "priority": "P1",
+      "description": "Verify edit replaces all occurrences (g flag)",
+      "precondition": "Test file with repeated pattern",
+      "steps": [
+        "Create test file: echo 'foo foo foo' > /tmp/test_hand_013.txt",
+        "Execute: hand.sh edit /tmp/test_hand_013.txt 'foo' 'bar'",
+        "Verify file contains 'bar bar bar' (all 3 replaced)"
+      ],
+      "expected_result": "All occurrences replaced globally",
+      "test_data": {
+        "file_content": "foo foo foo",
+        "old_string": "foo",
+        "new_string": "bar",
+        "expected_output": "bar bar bar",
+        "sed_flag": "g"
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-014",
+      "name": "Edit backup creation",
+      "category": "functional",
+      "priority": "P1",
+      "description": "Verify backup file is created before editing",
+      "precondition": "Test file exists",
+      "steps": [
+        "Create test file: echo 'original' > /tmp/test_hand_014.txt",
+        "Execute: hand.sh edit /tmp/test_hand_014.txt 'original' 'modified'",
+        "Verify backup file /tmp/test_hand_014.txt.bak.* exists",
+        "Verify backup contains original content"
+      ],
+      "expected_result": "Backup file created with timestamp suffix before editing",
+      "test_data": {
+        "file_content": "original",
+        "old_string": "original",
+        "new_string": "modified",
+        "backup_pattern": "*.bak.*"
+      }
+    },
+    {
+      "test_id": "JIT-020-TC-015",
+      "name": "Edit non-existent file error handling",
+      "category": "error_handling",
+      "priority": "P1",
+      "description": "Verify appropriate error when editing non-existent file",
+      "precondition": "File does not exist",
+      "steps": [
+        "Execute: hand.sh edit /tmp/nonexistent_file_xyz.txt 'foo' 'bar'",
+        "Check exit code and error message"
+      ],
+      "expected_result": "Error message displayed, exit code non-zero, no file created",
+      "test_data": {
+        "file": "/tmp/nonexistent_file_xyz.txt",
+        "expected_error": "ไม่พบ",
+        "expected_exit_code": 1
+      }
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-001",
+      "description": "Escape functions properly handle pipe delimiter",
+      "validation": "TC-002 passes: pipe characters in OLD/NEW are escaped",
+      "critical": true
+    },
+    {
+      "id": "AC-002",
+      "description": "Escape functions properly handle ampersand backreference",
+      "validation": "TC-003 passes: & in replacement is escaped and not expanded",
+      "critical": true
+    },
+    {
+      "id": "AC-003",
+      "description": "Escape functions properly handle regex metacharacters",
+      "validation": "TC-004,005,008,009 pass: . * [ ] ^ $ \\ are literal",
+      "critical": true
+    },
+    {
+      "id": "AC-004",
+      "description": "No sed command injection possible",
+      "validation": "TC-007 passes: malicious payloads treated as literal strings",
+      "critical": true
+    },
+    {
+      "id": "AC-005",
+      "description": "Escape order is correct (backslash first)",
+      "validation": "TC-005 passes: escaping backslash first prevents re-escaping",
+      "critical": true
+    },
+    {
+      "id": "AC-006",
+      "description": "Combined special characters are handled safely",
+      "validation": "TC-010 passes: multiple specials in one string escaped correctly",
+      "critical": true
+    },
+    {
+      "id": "AC-007",
+      "description": "Basic edit functionality preserved",
+      "validation": "TC-001,011,012,013 pass: normal edits work as expected",
+      "critical": true
+    },
+    {
+      "id": "AC-008",
+      "description": "Backup mechanism still functions",
+      "validation": "TC-014 passes: backup file created before edit",
+      "critical": false
+    },
+    {
+      "id": "AC-009",
+      "description": "Error handling for invalid input",
+      "validation": "TC-015 passes: non-existent file error correctly reported",
+      "critical": false
+    }
+  ],
+  "regression_tests": [
+    {
+      "test_id": "JIT-020-RT-001",
+      "name": "Verify other hand.sh commands unaffected",
+      "description": "Regression test: ensure create, append, delete, copy, call, execute still work",
+      "coverage": [
+        "hand.sh create",
+        "hand.sh append",
+        "hand.sh delete",
+        "hand.sh copy",
+        "hand.sh call",
+        "hand.sh execute"
+      ],
+      "validation_steps": [
+        "Execute: hand.sh create /tmp/reg_test.txt 'test content'",
+        "Execute: hand.sh append /tmp/reg_test.txt 'appended'",
+        "Execute: hand.sh copy /tmp/reg_test.txt /tmp/reg_test2.txt",
+        "Verify both files exist and contain expected content",
+        "Execute: hand.sh delete (with confirmation)",
+        "Verify files removed"
+      ]
+    },
+    {
+      "test_id": "JIT-020-RT-002",
+      "name": "Verify integration with mouth.sh",
+      "description": "Regression test: mouth.sh can call hand.sh without breakage",
+      "coverage": ["organs/mouth.sh → hand.sh call"],
+      "validation_steps": [
+        "Source mouth.sh",
+        "Call function that invokes hand.sh",
+        "Verify output and exit code"
+      ]
+    },
+    {
+      "test_id": "JIT-020-RT-003",
+      "name": "Verify performance not degraded",
+      "description": "Regression test: multiple sequential edits complete in reasonable time",
+      "coverage": ["performance", "sed efficiency"],
+      "validation_steps": [
+        "Create file with 10,000 lines",
+        "Execute 100 sequential edits",
+        "Measure total elapsed time",
+        "Verify time < 5 seconds (acceptable threshold)"
+      ]
+    },
+    {
+      "test_id": "JIT-020-RT-004",
+      "name": "Verify large file handling",
+      "description": "Regression test: edit works on large files without memory issues",
+      "coverage": ["large files", "memory"],
+      "validation_steps": [
+        "Create 100MB file",
+        "Execute edit command",
+        "Verify completion and no out-of-memory errors",
+        "Verify backup created"
+      ]
+    },
+    {
+      "test_id": "JIT-020-RT-005",
+      "name": "Verify message bus integration",
+      "description": "Regression test: hand.sh log_action calls still work",
+      "coverage": ["organs/hand.sh log_action", "audit trail"],
+      "validation_steps": [
+        "Enable logging",
+        "Execute hand.sh edit",
+        "Verify log entry contains: HAND_EDIT, filename, old→new"
+      ]
+    }
+  ],
+  "test_execution_plan": {
+    "phase_1": {
+      "name": "Security Injection Tests",
+      "test_cases": [
+        "JIT-020-TC-002",
+        "JIT-020-TC-003",
+        "JIT-020-TC-004",
+        "JIT-020-TC-005",
+        "JIT-020-TC-006",
+        "JIT-020-TC-007",
+        "JIT-020-TC-008",
+        "JIT-020-TC-009",
+        "JIT-020-TC-010"
+      ],
+      "priority": "critical",
+      "estimated_time_hours": 3
+    },
+    "phase_2": {
+      "name": "Functional Tests",
+      "test_cases": [
+        "JIT-020-TC-001",
+        "JIT-020-TC-011",
+        "JIT-020-TC-012",
+        "JIT-020-TC-013"
+      ],
+      "priority": "high",
+      "estimated_time_hours": 2
+    },
+    "phase_3": {
+      "name": "Backup and Error Handling",
+      "test_cases": [
+        "JIT-020-TC-014",
+        "JIT-020-TC-015"
+      ],
+      "priority": "medium",
+      "estimated_time_hours": 1
+    },
+    "phase_4": {
+      "name": "Regression Tests",
+      "test_cases": [
+        "JIT-020-RT-001",
+        "JIT-020-RT-002",
+        "JIT-020-RT-003",
+        "JIT-020-RT-004",
+        "JIT-020-RT-005"
+      ],
+      "priority": "high",
+      "estimated_time_hours": 2
+    }
+  },
+  "exit_criteria": {
+    "all_security_tests_pass": "100% pass rate on Phase 1 (injection tests)",
+    "all_functional_tests_pass": "100% pass rate on Phase 2 (functional tests)",
+    "no_regressions": "100% pass rate on Phase 4 (regression tests)",
+    "acceptance_criteria_met": "All critical AC (001-006) verified",
+    "code_review_approved": "neta (code reviewer) approves escape logic"
+  },
+  "notes": {
+    "escape_pattern_logic": "escape_sed_pattern escapes . * [ ] ^ $ | \\ in order, backslash first to avoid re-escaping",
+    "escape_replacement_logic": "escape_sed_replacement escapes \\ & | for replacement context",
+    "sed_delimiter": "Using | as delimiter instead of /, safe for paths with /",
+    "test_environment": "Bash on Linux, /tmp for test files, cleanup after each test",
+    "test_data_sensitivity": "No sensitive data; all test data is arbitrary strings",
+    "automation_notes": "Tests can be automated in CI/CD pipeline after manual verification"
+  }
+}

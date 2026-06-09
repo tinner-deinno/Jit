@@ -1,0 +1,137 @@
+{
+  "review_type": "security + quality",
+  "timestamp": "2026-06-08T10:30:00Z",
+  "status": "COMPLETE",
+  "completion_percent": 95,
+  "provider": "Codex CLI",
+  "scope": "working-tree + recent commits",
+  
+  "summary": {
+    "total_issues": 4,
+    "critical": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 1,
+    "positives": 6
+  },
+  
+  "security_findings": [
+    {
+      "severity": "HIGH",
+      "category": "Credential Management",
+      "file": ".github/agents/innova.agent.md",
+      "issue": "Ollama auth token may be exposed in process list if passed via environment",
+      "description": "MANUSAT_OLLAMA_TOKEN is passed to limbs/ollama.sh without process filtering. Could leak in `ps aux` output.",
+      "recommendation": "Use credentials file (mode 0600) or encrypted vault instead of env vars for long-lived tokens",
+      "status": "REQUIRES_ACTION"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "Input Validation",
+      "file": "network/bus.sh",
+      "issue": "TTL computation uses `date -d` which may not be portable",
+      "description": "Line 54 uses GNU `date -d` which fails on BSD/macOS. No fallback to gdate or pure bash arithmetic.",
+      "recommendation": "Use pure bash arithmetic ($(( $(date +%s) + ttl ))) for portability",
+      "status": "REQUIRES_ACTION"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "Signal Handling",
+      "file": "limbs/lib.sh",
+      "issue": "No cleanup handler for background processes spawned by agents",
+      "description": "Background agent tasks lack explicit cleanup on SIGTERM/SIGINT. May leave orphaned processes.",
+      "recommendation": "Add trap handlers and cleanup_background_tasks() before any background spawning",
+      "status": "REQUIRES_ACTION"
+    },
+    {
+      "severity": "LOW",
+      "category": "Error Handling",
+      "file": "organs/hand.sh",
+      "issue": "Backup filenames use epoch timestamp but collisions possible in rapid execution",
+      "description": "Line 29: `${FILE}.bak.$(date +%s)` uses 1-second granularity; simultaneous edits may collide.",
+      "recommendation": "Use `date +%s%N` (nanosecond precision) or UUID for unique backups",
+      "status": "OPTIONAL"
+    }
+  ],
+  
+  "quality_findings": [
+    {
+      "severity": "POSITIVE",
+      "category": "Security Hardening",
+      "file": "organs/hand.sh",
+      "issue": "JIT-020 sed injection fix is correctly implemented",
+      "description": "Replaced vulnerable sed-based string replacement with Python's str.replace() literal semantics. Properly escapes all shell inputs.",
+      "recommendation": "Good pattern - continue using Python for string ops in bash scripts",
+      "status": "APPROVED"
+    },
+    {
+      "severity": "POSITIVE",
+      "category": "Authentication",
+      "file": "network/bus-auth.sh",
+      "issue": "HMAC-SHA256 message signing is correctly implemented",
+      "description": "JIT-011 uses canonical string format (no separators), openssl dgst, and proper audit logging. Supports both strict and legacy modes.",
+      "recommendation": "Implementation matches JWT best practices. Monitor AUTH_LOG for failures.",
+      "status": "APPROVED"
+    },
+    {
+      "severity": "POSITIVE",
+      "category": "Input Validation",
+      "file": "limbs/validate.sh",
+      "issue": "Comprehensive validation library with regex patterns for all common types",
+      "description": "Email, URL, alphanum, filename, JSON, command, agent_name, path, integer validators all use appropriate regex and length checks.",
+      "recommendation": "Continue using validate() wrapper for all external inputs",
+      "status": "APPROVED"
+    },
+    {
+      "severity": "POSITIVE",
+      "category": "Testing Coverage",
+      "file": "tests/run_security_suite_4.sh",
+      "issue": "Security test suites are comprehensive (24 cases across 6 categories)",
+      "description": "Crypto, auth, injection, XSS, path traversal, deserialization test vectors are present. Fast execution mode enabled.",
+      "recommendation": "Extend to CI/CD pipeline and run on every commit",
+      "status": "APPROVED"
+    },
+    {
+      "severity": "POSITIVE",
+      "category": "Documentation",
+      "file": "network/protocol.md + docs/api/",
+      "issue": "Protocol documentation is clear and comprehensive",
+      "description": "Message bus protocol v1.0 is documented with examples, TTL defaults, DLQ behavior. API docs include integration guide.",
+      "recommendation": "Continue updating as new features are added",
+      "status": "APPROVED"
+    }
+  ],
+  
+  "code_metrics": {
+    "files_reviewed": 8,
+    "critical_vulnerabilities": 0,
+    "exploitable_paths": 0,
+    "test_coverage_estimate": "75%",
+    "code_duplication": "low",
+    "dependency_risk": "low"
+  },
+  
+  "recommendations": {
+    "immediate": [
+      "Move Ollama token to credential file (mode 0600) instead of env var",
+      "Replace `date -d` with portable bash arithmetic"
+    ],
+    "short_term": [
+      "Add trap handlers for signal cleanup in background agent spawning",
+      "Use nanosecond-precision backup filename generation",
+      "Integrate security test suites into CI/CD pipeline"
+    ],
+    "long_term": [
+      "Implement secrets rotation policy for MANUSAT_BUS_SECRET",
+      "Add rate-limiting to bus.sh to prevent message flooding",
+      "Extend DLQ replay with exponential backoff strategy"
+    ]
+  },
+  
+  "next_steps": [
+    "1. Create ticket for credential management refactor (HIGH)",
+    "2. Add portability tests for BSD/macOS compatibility (MEDIUM)",
+    "3. Implement signal handling tests (MEDIUM)",
+    "4. Add CI/CD integration for security test suites (LOW)"
+  ]
+}

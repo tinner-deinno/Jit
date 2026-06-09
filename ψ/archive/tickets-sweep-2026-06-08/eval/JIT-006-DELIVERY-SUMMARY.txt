@@ -1,0 +1,283 @@
+DELIVERY SUMMARY - JIT-006 TEST PLAN
+====================================
+
+TICKET: JIT-006 (Security - Remove Hardcoded OLLAMA_TOKEN from jit-heartbeat.service)
+TEST OWNER: chamu (QA Lead)
+DELIVERY DATE: 2026-06-08
+STATUS: COMPLETE & READY FOR EXECUTION
+
+FILES DELIVERED
+================
+
+1. /workspaces/Jit/eval/JIT-006-test-plan.json
+   - Machine-readable comprehensive test plan
+   - Format: JSON with full test specifications
+   - Size: ~60KB
+   - Contains:
+     * 10 acceptance criteria with validation steps
+     * 15 test cases (unit, integration, security, functional, negative)
+     * 10 regression tests (daily, weekly, monthly, quarterly)
+     * 3 performance benchmarks
+     * Complete test execution order and dependencies
+     * Test reporting format and approval gates
+
+2. /workspaces/Jit/eval/JIT-006-TEST-SUMMARY.md
+   - Human-readable test plan summary
+   - Format: Markdown with organized sections
+   - Contains:
+     * Coverage overview (acceptance criteria, test cases)
+     * Test execution strategy (5 phases)
+     * Approval gates (pre-merge, staging, production)
+     * Success criteria (minimal and full)
+     * Known issues & workarounds
+     * Test dependencies graph
+     * Metrics & KPIs
+     * Handoff checklist to chamu
+
+3. /workspaces/Jit/eval/JIT-006-QUICK-REFERENCE.txt
+   - Quick reference for test execution
+   - Format: ASCII table with checklist format
+   - Contains:
+     * Pre-flight checks (5 min)
+     * 5-phase test execution with commands
+     * Regression tests (ongoing)
+     * Approval gates (3 decision points)
+     * Result documentation template
+     * Common issues & workarounds
+     * Support contacts
+     * Timeline estimates
+
+TEST COVERAGE BREAKDOWN
+======================
+
+Acceptance Criteria: 10 total
+  AC-001: No hardcoded OLLAMA_TOKEN in service file
+  AC-002: Credentials stored with 0600 permissions (root:root)
+  AC-003: LoadCredential mechanism properly configured
+  AC-004: Service starts and runs successfully
+  AC-005: Token not visible in process environment
+  AC-006: Token removed from git history
+  AC-007: Ollama API connectivity verified
+  AC-008: Token rotated and old token disabled at MDES
+  AC-009: Setup script creates valid configuration
+  AC-010: System health check passes (full multi-agent)
+
+Test Cases: 15 total
+  Unit Tests (4): TC-001, TC-002, TC-003, TC-004
+  Integration Tests (3): TC-005, TC-008, TC-011
+  Security Tests (3): TC-006, TC-007, TC-013
+  Functional Tests (3): TC-009, TC-010, TC-012
+  Negative Tests (2): TC-014, TC-015
+
+Regression Tests: 10 total
+  RT-001: No credential leakage via systemd-show
+  RT-002: systemd-analyze security audit clean
+  RT-003: Heartbeat pulse continues after restart (weekly)
+  RT-004: Credential persistence across reboot (post-upgrade)
+  RT-005: No regressions in other services (monthly)
+  RT-006: Audit trail captures credential access (weekly)
+  RT-007: Documentation stays in sync (quarterly)
+  RT-008: Compatibility with heartbeat-24h-daemon.sh
+  RT-009: LoadCredential fallback graceful failure
+  RT-010: No secrets in journalctl output (weekly)
+
+TEST EXECUTION TIMELINE
+=======================
+
+Phase 1 - Unit Tests:           1-2 hours  (MANDATORY)
+Phase 2 - Integration Tests:    1-2 hours  (MANDATORY)
+Phase 3 - Security Tests:       0.5-1 hour (MANDATORY, parallel)
+Phase 4 - Functional Tests:     2-3 hours  (RECOMMENDED)
+Phase 5 - Negative Tests:       1-2 hours  (RECOMMENDED)
+──────────────────────────────────────────
+Minimum (Phase 1-2-3):          3-5 hours
+Full Success (Phase 1-5):       6-10 hours
+Regression Tests:               Ongoing (per schedule)
+
+APPROVAL GATES
+==============
+
+Gate 1 - PRE-MERGE (neta, Code Reviewer)
+  Tests: TC-001 to TC-007, TC-013 (all P0 tests)
+  Decision: APPROVED / BLOCKED
+
+Gate 2 - STAGING DEPLOY (pada, DevOps)
+  Tests: All P0 + P1 tests (Phase 1-4)
+  Decision: APPROVED / BLOCKED
+
+Gate 3 - PRODUCTION DEPLOY (jit, Master Orchestrator)
+  Tests: All tests + regression tests passing
+  Decision: APPROVED / BLOCKED
+
+KEY FEATURES OF THIS TEST PLAN
+===============================
+
+1. Comprehensive Coverage
+   - File integrity & permissions
+   - Runtime behavior validation
+   - Security posture verification
+   - API connectivity testing
+   - Error handling (edge cases)
+   - System health impact
+   - Performance benchmarks
+
+2. Structured Execution
+   - 5 ordered phases (dependencies managed)
+   - Clear pass/fail criteria for each test
+   - Expected outputs documented
+   - Failure modes identified
+   - Workarounds provided
+
+3. Security-First Design
+   - Multiple validation methods (grep, stat, systemctl show, ps aux)
+   - Process environment inspection
+   - Git history verification
+   - Permission isolation testing
+   - Credential access audit trail
+
+4. Operational Excellence
+   - Pre-flight checklist
+   - Quick reference commands
+   - Known issues & fixes
+   - Support contact matrix
+   - Rollback procedures for negative tests
+
+5. Reporting & Traceability
+   - JSON template for results
+   - Per-test documentation requirements
+   - Approval gate decisions
+   - Evidence artifact locations
+   - Historical metrics tracking
+
+COMPONENTS UNDER TEST
+====================
+
+1. /workspaces/Jit/jit-heartbeat.service
+   - Verify no hardcoded OLLAMA_TOKEN environment variable
+   - Confirm LoadCredential mechanism in use
+   - Check systemd syntax validity
+   - Verify service starts/stops cleanly
+
+2. /etc/jit-credentials/ollama_token
+   - File permissions (0600, root:root only)
+   - Directory permissions (0700)
+   - Content (valid token, not world-readable)
+   - Persistence & recoverability
+
+3. /workspaces/Jit/scripts/setup-credentials.sh
+   - Script existence & executability
+   - Input validation (token parameter required)
+   - Directory/file creation logic
+   - Permission setting logic
+
+4. /workspaces/Jit/scripts/heartbeat-24h-daemon.sh
+   - Reads OLLAMA_TOKEN from environment (not hardcoded)
+   - Compatible with LoadCredential mechanism
+   - Handles token via $CREDENTIALS_DIRECTORY
+   - No token leakage to logs
+
+5. Multi-Agent System Integration
+   - Oracle (localhost:47778) accessibility
+   - Message bus (/tmp/manusat-bus) functionality
+   - Body-check.sh & soul-check.sh pass
+   - Heartbeat pulses continue normally
+
+SUCCESS METRICS
+===============
+
+Quality:
+  - All 15 test cases PASS
+  - All 10 regression tests PASS
+  - Zero security issues found
+  - 100% acceptance criteria met
+
+Performance:
+  - Service startup: < 3 seconds
+  - First Ollama API call: < 5 seconds
+  - Memory overhead: < 10 MB
+
+Reliability:
+  - Service uptime: 100% (30+ days)
+  - Restart recovery: < 30 seconds
+  - Auth failure handling: Graceful (no crash)
+
+USAGE INSTRUCTIONS FOR CHAMU
+=============================
+
+1. READ: /workspaces/Jit/eval/JIT-006-TEST-SUMMARY.md
+   (Full understanding of test plan, phases, and strategy)
+
+2. REVIEW: /workspaces/Jit/eval/JIT-006-QUICK-REFERENCE.txt
+   (Quick checklist with exact commands to run)
+
+3. REFERENCE: /workspaces/Jit/eval/JIT-006-test-plan.json
+   (Machine-readable for detailed specs, per-test validation)
+
+4. EXECUTE PHASES:
+   Phase 1 (1-2h):  Unit tests - verify structure & permissions
+   Phase 2 (1-2h):  Integration tests - verify runtime behavior
+   Phase 3 (30m-1h): Security tests - verify credential isolation
+   Phase 4 (2-3h):  Functional tests - verify setup & operations
+   Phase 5 (1-2h):  Negative tests - verify error handling
+
+5. DOCUMENT RESULTS:
+   Create /workspaces/Jit/eval/JIT-006-test-results.json
+   Record each test: PASS/FAIL/SKIP + timestamp + notes
+
+6. REPORT FINDINGS:
+   Send results to jit (Master Orchestrator)
+   Include: phase status, blockers, blockers, next steps
+
+7. SCHEDULE REGRESSION TESTS:
+   Daily: RT-010 (no secrets in logs)
+   Weekly: RT-001, RT-003, RT-006, RT-010
+   Monthly: RT-005
+   Quarterly: RT-007
+
+DELIVERABLE QUALITY CHECKLIST
+=============================
+
+[✓] Comprehensive test plan (15 test cases)
+[✓] Clear acceptance criteria (10 defined)
+[✓] Security-focused test cases
+[✓] Error handling & negative tests
+[✓] Performance benchmarks
+[✓] Regression test suite
+[✓] Approval gates defined
+[✓] Test dependencies documented
+[✓] Expected outputs specified
+[✓] Failure modes identified
+[✓] Workarounds provided
+[✓] Support contacts listed
+[✓] Execution timeline estimated
+[✓] JSON schema validation passing
+[✓] Human-readable summary
+[✓] Quick reference guide
+[✓] Ready for immediate execution
+
+NEXT STEPS
+==========
+
+1. chamu (QA) reviews test plan (read 3 docs)
+2. chamu verifies pre-flight requirements (5 min)
+3. chamu executes Phase 1-3 (mandatory tests) - 3-5 hours
+4. chamu reports results to jit + team
+5. If all P0 tests PASS: proceed to Phase 4-5 (optional but recommended)
+6. chamu schedules regression tests on calendar
+7. jit approves for production merge
+
+CONTACT FOR QUESTIONS
+====================
+
+Test Plan Creator: Claude Code (Haiku 4.5)
+Created: 2026-06-08
+For: chamu (QA Lead)
+Ticket: JIT-006
+System: Jit Oracle (จิต)
+
+Support during execution:
+  - pada (DevOps) - credential setup, systemd issues
+  - innova (Lead Dev) - script issues, environment variables
+  - neta (Code Reviewer) - security validation, approval gates
+  - jit (Master) - merge decisions, final sign-off
+

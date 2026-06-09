@@ -1,0 +1,513 @@
+#!/usr/bin/env python3
+"""
+Security Test Suite #3: Core Test Cases
+Tests critical vulnerability patterns in Jit system
+Provider: Codex CLI (JSON output)
+Speed: Focus on fast execution, test spawning capability
+"""
+
+import json
+import sys
+from datetime import datetime
+from pathlib import Path
+
+
+def generate_test_suite():
+    """Generate security test suite #3 with core vulnerability tests"""
+
+    suite_id = "JIT-SECURITY-003"
+    start_time = datetime.utcnow()
+
+    # Core security test cases
+    test_cases = [
+        # Category: Injection Attacks (12 cases)
+        {
+            "id": "SEC-INJ-001",
+            "category": "Injection",
+            "name": "Shell Command Injection via mouth.sh",
+            "vector": "Shell metacharacter injection",
+            "payload": "test; cat /etc/passwd",
+            "test_file": "organs/mouth.sh",
+            "expected_result": "BLOCKED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-INJ-002",
+            "category": "Injection",
+            "name": "Pipe injection in message routing",
+            "vector": "Pipe character in agent name",
+            "payload": "agent | rm -rf /",
+            "test_file": "network/bus.sh",
+            "expected_result": "BLOCKED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-INJ-003",
+            "category": "Injection",
+            "name": "JSON injection in message body",
+            "vector": "Unescaped quotes in JSON",
+            "payload": '{\"msg\": \"test\", \"cmd\": \"exec\"}',
+            "test_file": "network/bus.sh",
+            "expected_result": "SANITIZED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-INJ-004",
+            "category": "Injection",
+            "name": "Path traversal in file operations",
+            "vector": "../../etc/passwd",
+            "payload": "../../etc/passwd",
+            "test_file": "limbs/oracle.sh",
+            "expected_result": "BLOCKED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-INJ-005",
+            "category": "Injection",
+            "name": "Argument expansion in eval",
+            "vector": "$(whoami) expansion",
+            "payload": "$(whoami)",
+            "test_file": "limbs/think.sh",
+            "expected_result": "QUOTED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-INJ-006",
+            "category": "Injection",
+            "name": "Backtick execution in substitution",
+            "vector": "Backtick command substitution",
+            "payload": "`cat /etc/passwd`",
+            "test_file": "network/bus.sh",
+            "expected_result": "BLOCKED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-INJ-007",
+            "category": "Injection",
+            "name": "Glob pattern expansion",
+            "vector": "Wildcard expansion in filenames",
+            "payload": "/tmp/manusat-bus/*/inbox",
+            "test_file": "organs/ear.sh",
+            "expected_result": "QUOTED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-INJ-008",
+            "category": "Injection",
+            "name": "Logical operator injection",
+            "vector": "AND/OR chain execution",
+            "payload": "agent && malicious_cmd",
+            "test_file": "network/bus.sh",
+            "expected_result": "BLOCKED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-INJ-009",
+            "category": "Injection",
+            "name": "Null byte injection",
+            "vector": "Null byte in filenames",
+            "payload": "message\x00.txt",
+            "test_file": "network/bus.sh",
+            "expected_result": "BLOCKED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-INJ-010",
+            "category": "Injection",
+            "name": "LDAP injection in auth",
+            "vector": "*)(|(uid=*",
+            "payload": "*)(|(uid=*",
+            "test_file": "limbs/lib.sh",
+            "expected_result": "ESCAPED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-INJ-011",
+            "category": "Injection",
+            "name": "HTTP header injection",
+            "vector": "Newline injection in headers",
+            "payload": "X-Agent: test\r\nX-Injected: true",
+            "test_file": "network/bus.sh",
+            "expected_result": "BLOCKED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-INJ-012",
+            "category": "Injection",
+            "name": "Format string injection",
+            "vector": "%x%x%x in printf",
+            "payload": "%x%x%x",
+            "test_file": "organs/mouth.sh",
+            "expected_result": "QUOTED",
+            "severity": "MEDIUM"
+        },
+
+        # Category: Authentication & Authorization (8 cases)
+        {
+            "id": "SEC-AUTH-001",
+            "category": "Authentication",
+            "name": "Missing agent authentication",
+            "vector": "Unauthenticated message injection",
+            "test_scenario": "Send message from unknown sender",
+            "test_file": "network/bus.sh",
+            "expected_result": "VALIDATED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-AUTH-002",
+            "category": "Authorization",
+            "name": "Privilege escalation via role spoofing",
+            "vector": "Claim higher role in message",
+            "test_scenario": "Send message as jit (master)",
+            "test_file": "network/protocol.md",
+            "expected_result": "VERIFIED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-AUTH-003",
+            "category": "Authentication",
+            "name": "Session tampering in heartbeat",
+            "vector": "Modify heartbeat state",
+            "test_file": "scripts/heartbeat.sh",
+            "expected_result": "SIGNED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-AUTH-004",
+            "category": "Authorization",
+            "name": "Cross-organ message access",
+            "vector": "Read another organ's inbox",
+            "test_scenario": "ear.sh reads mouth's inbox",
+            "test_file": "organs/ear.sh",
+            "expected_result": "DENIED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-AUTH-005",
+            "category": "Authentication",
+            "name": "Token leakage in logs",
+            "vector": "API tokens in error messages",
+            "test_file": "limbs/oracle.sh",
+            "expected_result": "REDACTED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-AUTH-006",
+            "category": "Authorization",
+            "name": "Missing RBAC checks",
+            "vector": "Role-based access control bypass",
+            "test_scenario": "Deploy without proper role",
+            "test_file": "pada",
+            "expected_result": "ENFORCED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-AUTH-007",
+            "category": "Authentication",
+            "name": "Weak secrets in configuration",
+            "vector": "Default/weak JWT_SECRET",
+            "test_file": "scripts/bootstrap.sh",
+            "expected_result": "ROTATED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-AUTH-008",
+            "category": "Authorization",
+            "name": "Mass assignment vulnerability",
+            "vector": "Assign unintended fields",
+            "test_scenario": "Modify agent registry without auth",
+            "test_file": "network/registry.json",
+            "expected_result": "VALIDATED",
+            "severity": "HIGH"
+        },
+
+        # Category: Data Protection (7 cases)
+        {
+            "id": "SEC-DATA-001",
+            "category": "Data Protection",
+            "name": "Sensitive data in plaintext logs",
+            "vector": "Logging credentials/tokens",
+            "test_file": "limbs/think.sh",
+            "expected_result": "ENCRYPTED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-DATA-002",
+            "category": "Data Protection",
+            "name": "Unencrypted message storage",
+            "vector": "Message bus data at rest",
+            "test_file": "network/bus.sh",
+            "expected_result": "ENCRYPTED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-DATA-003",
+            "category": "Data Protection",
+            "name": "Missing data validation on input",
+            "vector": "Unvalidated user input",
+            "test_file": "organs/ear.sh",
+            "expected_result": "VALIDATED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-DATA-004",
+            "category": "Data Protection",
+            "name": "Insecure direct object references (IDOR)",
+            "vector": "Access agent inbox by ID",
+            "test_scenario": "Read /tmp/manusat-bus/jit/inbox directly",
+            "test_file": "network/bus.sh",
+            "expected_result": "PROTECTED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-DATA-005",
+            "category": "Data Protection",
+            "name": "Missing data classification",
+            "vector": "No PII/PHI handling",
+            "test_file": "memory/",
+            "expected_result": "CLASSIFIED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-DATA-006",
+            "category": "Data Protection",
+            "name": "Cleartext transmission over network",
+            "vector": "Ollama API call without TLS",
+            "test_file": "limbs/ollama.sh",
+            "expected_result": "ENCRYPTED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-DATA-007",
+            "category": "Data Protection",
+            "name": "Missing data expiration/retention",
+            "vector": "Old messages never deleted",
+            "test_file": "scripts/heartbeat.sh",
+            "expected_result": "PURGED",
+            "severity": "MEDIUM"
+        },
+
+        # Category: API Security (6 cases)
+        {
+            "id": "SEC-API-001",
+            "category": "API Security",
+            "name": "Missing API authentication",
+            "vector": "Unauthenticated Oracle API access",
+            "test_endpoint": "http://localhost:47778/api/search",
+            "expected_result": "AUTHENTICATED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-API-002",
+            "category": "API Security",
+            "name": "Missing rate limiting",
+            "vector": "Unbounded API requests",
+            "test_endpoint": "Oracle endpoints",
+            "expected_result": "RATE_LIMITED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-API-003",
+            "category": "API Security",
+            "name": "Verbose error messages",
+            "vector": "Stack traces in API responses",
+            "test_file": "limbs/oracle.sh",
+            "expected_result": "GENERIC_ERRORS",
+            "severity": "MEDIUM"
+        },
+        {
+            "id": "SEC-API-004",
+            "category": "API Security",
+            "name": "Missing CORS validation",
+            "vector": "Cross-origin requests allowed",
+            "test_endpoint": "http://localhost:47778",
+            "expected_result": "RESTRICTED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-API-005",
+            "category": "API Security",
+            "name": "Missing API versioning",
+            "vector": "Breaking changes in API",
+            "test_file": "limbs/oracle.sh",
+            "expected_result": "VERSIONED",
+            "severity": "MEDIUM"
+        },
+        {
+            "id": "SEC-API-006",
+            "category": "API Security",
+            "name": "Insecure deserialization",
+            "vector": "Arbitrary code execution from JSON",
+            "test_file": "tests/json_validator.test.js",
+            "expected_result": "SAFE",
+            "severity": "CRITICAL"
+        },
+
+        # Category: Infrastructure & Environment (7 cases)
+        {
+            "id": "SEC-INFRA-001",
+            "category": "Infrastructure",
+            "name": "Hardcoded credentials in scripts",
+            "vector": "API keys in source code",
+            "test_file": "scripts/bootstrap.sh",
+            "expected_result": "EXTERNALIZED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-INFRA-002",
+            "category": "Infrastructure",
+            "name": "Insecure file permissions",
+            "vector": "World-readable sensitive files",
+            "test_file": "organs/",
+            "expected_result": "700/600",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-INFRA-003",
+            "category": "Infrastructure",
+            "name": "Missing environment validation",
+            "vector": "Required env vars not checked",
+            "test_file": "limbs/lib.sh",
+            "expected_result": "VALIDATED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-INFRA-004",
+            "category": "Infrastructure",
+            "name": "Insecure default configuration",
+            "vector": "Default debug mode enabled",
+            "test_file": "scripts/bootstrap.sh",
+            "expected_result": "PRODUCTION",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-INFRA-005",
+            "category": "Infrastructure",
+            "name": "Missing dependency validation",
+            "vector": "Unverified package checksums",
+            "test_file": "scripts/bootstrap.sh",
+            "expected_result": "VERIFIED",
+            "severity": "MEDIUM"
+        },
+        {
+            "id": "SEC-INFRA-006",
+            "category": "Infrastructure",
+            "name": "Outdated dependencies",
+            "vector": "Known CVEs in dependencies",
+            "test_file": "package.json",
+            "expected_result": "PATCHED",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-INFRA-007",
+            "category": "Infrastructure",
+            "name": "Missing network isolation",
+            "vector": "No firewall rules",
+            "test_scenario": "Message bus accessible from network",
+            "test_file": "network/bus.sh",
+            "expected_result": "ISOLATED",
+            "severity": "HIGH"
+        },
+
+        # Category: Error Handling & Logging (5 cases)
+        {
+            "id": "SEC-ERROR-001",
+            "category": "Error Handling",
+            "name": "Exception disclosure",
+            "vector": "Stack traces in output",
+            "test_file": "limbs/oracle.sh",
+            "expected_result": "SANITIZED",
+            "severity": "MEDIUM"
+        },
+        {
+            "id": "SEC-ERROR-002",
+            "category": "Logging",
+            "name": "Insufficient logging",
+            "vector": "Security events not logged",
+            "test_file": "network/bus.sh",
+            "expected_result": "AUDITABLE",
+            "severity": "HIGH"
+        },
+        {
+            "id": "SEC-ERROR-003",
+            "category": "Logging",
+            "name": "Log injection",
+            "vector": "Newlines in log messages",
+            "test_file": "organs/mouth.sh",
+            "expected_result": "ESCAPED",
+            "severity": "MEDIUM"
+        },
+        {
+            "id": "SEC-ERROR-004",
+            "category": "Error Handling",
+            "name": "Missing error boundaries",
+            "vector": "Unhandled exceptions crash system",
+            "test_file": "scripts/heartbeat.sh",
+            "expected_result": "HANDLED",
+            "severity": "CRITICAL"
+        },
+        {
+            "id": "SEC-ERROR-005",
+            "category": "Logging",
+            "name": "Incomplete audit trail",
+            "vector": "Admin actions not logged",
+            "test_file": "eval/body-check.sh",
+            "expected_result": "LOGGED",
+            "severity": "HIGH"
+        },
+    ]
+
+    # Calculate summary statistics
+    total = len(test_cases)
+    by_severity = {
+        "CRITICAL": sum(1 for t in test_cases if t["severity"] == "CRITICAL"),
+        "HIGH": sum(1 for t in test_cases if t["severity"] == "HIGH"),
+        "MEDIUM": sum(1 for t in test_cases if t["severity"] == "MEDIUM"),
+    }
+
+    end_time = datetime.utcnow()
+    duration = (end_time - start_time).total_seconds()
+
+    result = {
+        "suite_id": suite_id,
+        "provider": "codex-cli",
+        "start_time": start_time.isoformat(),
+        "test_cases": test_cases,
+        "summary": {
+            "total": total,
+            "critical": by_severity["CRITICAL"],
+            "high": by_severity["HIGH"],
+            "medium": by_severity["MEDIUM"],
+            "categories": {
+                "Injection": sum(1 for t in test_cases if t["category"] == "Injection"),
+                "Authentication": sum(1 for t in test_cases if t["category"] == "Authentication"),
+                "Authorization": sum(1 for t in test_cases if t["category"] == "Authorization"),
+                "Data Protection": sum(1 for t in test_cases if t["category"] == "Data Protection"),
+                "API Security": sum(1 for t in test_cases if t["category"] == "API Security"),
+                "Infrastructure": sum(1 for t in test_cases if t["category"] == "Infrastructure"),
+                "Error Handling": sum(1 for t in test_cases if t["category"] == "Error Handling"),
+                "Logging": sum(1 for t in test_cases if t["category"] == "Logging"),
+            }
+        },
+        "end_time": end_time.isoformat(),
+        "duration_seconds": duration,
+        "completion_percent": 100.0,
+        "status": "GENERATED"
+    }
+
+    return result
+
+
+if __name__ == "__main__":
+    suite = generate_test_suite()
+
+    # Output as JSON (Codex CLI format)
+    json.dump(suite, sys.stdout, indent=2)
+
+    # Write to file for persistence
+    output_file = Path(__file__).parent / "security_test_suite_003.json"
+    with open(output_file, "w") as f:
+        json.dump(suite, f, indent=2)
+
+    # Return exit code
+    sys.exit(0)

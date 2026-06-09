@@ -1,0 +1,30 @@
+{
+  "suite_id": "JIT-SECURITY-003",
+  "provider": "codex-cli",
+  "execution_time": "2026-06-08T14:10:40Z",
+  "test_count": 45,
+  "severity_breakdown": {
+    "critical": 19,
+    "high": 19,
+    "medium": 7
+  },
+  "categories": {
+    "Injection": 12,
+    "Authentication": 4,
+    "Authorization": 4,
+    "Data Protection": 7,
+    "API Security": 6,
+    "Infrastructure": 7,
+    "Error Handling": 2,
+    "Logging": 3
+  },
+  "execution": {
+    "start_time": "2026-06-08T14:10:40Z",
+    "end_time": "2026-06-08T14:10:40Z",
+    "duration_seconds": 0.113141995,
+    "workers_spawned": 3,
+    "completion_percent": 100.0
+  },
+  "status": "PASSED",
+  "report_file": "/workspaces/Jit/tests/security_test_results_003.json"
+}

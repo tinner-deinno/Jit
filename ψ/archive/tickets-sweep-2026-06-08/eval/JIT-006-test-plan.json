@@ -1,0 +1,872 @@
+{
+  "ticket_id": "JIT-006",
+  "title": "Remove Hardcoded OLLAMA_TOKEN from jit-heartbeat.service",
+  "test_owner": "chamu (QA Lead)",
+  "test_status": "ready_for_execution",
+  "components": [
+    "scripts/jit-daemon.service",
+    "systemd/jit-secure.sh",
+    ".secrets/ollama.env",
+    "scripts/setup-credentials.sh",
+    "scripts/heartbeat-24h-daemon.sh"
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-001",
+      "title": "No hardcoded OLLAMA_TOKEN in systemd service file",
+      "description": "The jit-heartbeat.service file shall not contain OLLAMA_TOKEN= or any token value in plain text",
+      "validation": [
+        "grep 'OLLAMA_TOKEN=' /workspaces/Jit/jit-heartbeat.service | grep -v 'LoadCredential' | wc -l == 0",
+        "grep '9e34679' /workspaces/Jit/jit-heartbeat.service | wc -l == 0",
+        "systemctl show jit-heartbeat.service -p Environment | grep -i token | wc -l == 0"
+      ],
+      "priority": "P0-critical"
+    },
+    {
+      "id": "AC-002",
+      "title": "Credentials stored with proper file permissions",
+      "description": "OLLAMA_TOKEN credential file must be stored with mode 0600 (readable only by root), owned by root:root",
+      "validation": [
+        "test -f /etc/jit-credentials/ollama_token",
+        "[[ $(stat -c %a /etc/jit-credentials/ollama_token) == '600' ]]",
+        "[[ $(stat -c %U:%G /etc/jit-credentials/ollama_token) == 'root:root' ]]",
+        "ls -la /etc/jit-credentials/ollama_token | grep -E '^-rw-------' | wc -l == 1"
+      ],
+      "priority": "P0-critical"
+    },
+    {
+      "id": "AC-003",
+      "title": "LoadCredential mechanism properly configured",
+      "description": "systemd service shall use LoadCredential= to load OLLAMA_TOKEN from /etc/jit-credentials/ollama_token",
+      "validation": [
+        "grep 'LoadCredential=ollama_token:/etc/jit-credentials/ollama_token' /workspaces/Jit/jit-heartbeat.service | wc -l >= 1",
+        "systemd-analyze verify /workspaces/Jit/jit-heartbeat.service | grep -i 'error\\|error' | wc -l == 0",
+        "grep 'CREDENTIALS_DIRECTORY' /workspaces/Jit/jit-heartbeat.service | wc -l >= 1"
+      ],
+      "priority": "P0-critical"
+    },
+    {
+      "id": "AC-004",
+      "title": "Service starts and runs successfully",
+      "description": "systemd service shall start without errors and maintain active status for at least 5 minutes",
+      "validation": [
+        "systemctl start jit-heartbeat && sleep 5 && systemctl is-active jit-heartbeat | grep -i 'active'",
+        "systemctl status jit-heartbeat | grep -i 'active' | wc -l >= 1",
+        "journalctl -u jit-heartbeat --since='5 minutes ago' | grep -i 'error\\|failed' | wc -l == 0"
+      ],
+      "priority": "P0-critical"
+    },
+    {
+      "id": "AC-005",
+      "title": "Token not visible in process environment",
+      "description": "Running process shall not expose OLLAMA_TOKEN in process environment (ps aux output)",
+      "validation": [
+        "ps aux | grep -i heartbeat | grep -v grep | grep 'OLLAMA_TOKEN' | wc -l == 0",
+        "cat /proc/$(pgrep -f heartbeat-24h-daemon.sh)/environ | tr '\\0' '\\n' | grep 'OLLAMA_TOKEN' | wc -l == 0"
+      ],
+      "priority": "P0-critical"
+    },
+    {
+      "id": "AC-006",
+      "title": "Token removed from git history",
+      "description": "No instance of hardcoded token (9e34679) shall exist in any git commit or branch history",
+      "validation": [
+        "git log --all --full-history -S '9e34679' /workspaces/Jit | wc -l == 0",
+        "grep -r '9e34679' /workspaces/Jit 2>/dev/null | grep -v '.secrets/' | grep -v '.git/' | wc -l == 0",
+        "git rev-list --all | xargs git grep '9e34679' 2>/dev/null | wc -l == 0"
+      ],
+      "priority": "P0-critical"
+    },
+    {
+      "id": "AC-007",
+      "title": "Ollama API connectivity verified",
+      "description": "Service shall successfully connect to Ollama API endpoint using credentials from secure store",
+      "validation": [
+        "journalctl -u jit-heartbeat --since='10 minutes ago' | grep -iE 'ollama|7778|api' | wc -l >= 1",
+        "journalctl -u jit-heartbeat --since='10 minutes ago' | grep -iE '401|403|unauthorized|forbidden' | wc -l == 0",
+        "journalctl -u jit-heartbeat --since='10 minutes ago' | grep -i 'error' | wc -l == 0"
+      ],
+      "priority": "P0-critical"
+    },
+    {
+      "id": "AC-008",
+      "title": "Token rotated and old token disabled",
+      "description": "Old exposed token (9e34679) must be disabled in MDES system; new token must be active and stored securely",
+      "validation": [
+        "grep -f /etc/jit-credentials/ollama_token | grep -v '^$' | head -1 | wc -c >= 20",
+        "diff -q <(cat /etc/jit-credentials/ollama_token) <(echo '9e34679') | wc -l >= 1",
+        "[Manual verification]: MDES Ollama dashboard shows old token DISABLED, new token ACTIVE"
+      ],
+      "priority": "P0-critical"
+    },
+    {
+      "id": "AC-009",
+      "title": "Setup credentials script creates valid configuration",
+      "description": "setup-credentials.sh shall correctly create credentials directory and file with proper permissions",
+      "validation": [
+        "test -f /workspaces/Jit/scripts/setup-credentials.sh",
+        "[[ $(stat -c %a /workspaces/Jit/scripts/setup-credentials.sh) =~ '755'|'755' ]]",
+        "bash /workspaces/Jit/scripts/setup-credentials.sh 'test-token' 2>&1 | grep -i 'successfully\\|setup\\|✅' | wc -l >= 1"
+      ],
+      "priority": "P1-high"
+    },
+    {
+      "id": "AC-010",
+      "title": "System health check passes",
+      "description": "Full multi-agent system shall remain healthy after credential migration (body-check.sh)",
+      "validation": [
+        "bash /workspaces/Jit/eval/body-check.sh | grep -i 'error\\|failed' | wc -l == 0",
+        "bash /workspaces/Jit/eval/soul-check.sh | grep -i 'error\\|failed' | wc -l == 0",
+        "bash /workspaces/Jit/eval/body-check.sh | grep -i 'ok\\|pass\\|healthy' | wc -l >= 5"
+      ],
+      "priority": "P1-high"
+    }
+  ],
+  "test_cases": [
+    {
+      "test_id": "TC-001",
+      "category": "Unit Test - File Integrity",
+      "title": "Service file does not contain hardcoded token",
+      "objective": "Verify no OLLAMA_TOKEN environment variable exists in service file with hardcoded value",
+      "setup": [
+        "Ensure /workspaces/Jit/jit-heartbeat.service is in current state post-fix"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Read service file content",
+          "command": "cat /workspaces/Jit/jit-heartbeat.service"
+        },
+        {
+          "step": 2,
+          "action": "Search for Environment= lines with OLLAMA_TOKEN",
+          "command": "grep 'Environment=' /workspaces/Jit/jit-heartbeat.service | grep -i 'token'"
+        },
+        {
+          "step": 3,
+          "action": "Search for old hardcoded token value",
+          "command": "grep '9e34679' /workspaces/Jit/jit-heartbeat.service"
+        },
+        {
+          "step": 4,
+          "action": "Verify LoadCredential is present",
+          "command": "grep 'LoadCredential=ollama_token' /workspaces/Jit/jit-heartbeat.service"
+        }
+      ],
+      "expected_result": "Steps 2-3 return no matches; Step 4 returns LoadCredential line",
+      "pass_criteria": "TC-001-PASS if all grep commands return correctly (no token, LoadCredential present)",
+      "failure_mode": "FAIL: Service file still contains hardcoded token or incorrect credential mechanism",
+      "priority": "P0",
+      "effort_hours": 0.25
+    },
+    {
+      "test_id": "TC-002",
+      "category": "Unit Test - Credentials Directory",
+      "title": "Credentials directory exists with correct permissions",
+      "objective": "Verify /etc/jit-credentials exists with mode 0700 and is owned by root:root",
+      "setup": [
+        "Ensure credentials setup script has been executed with sudo"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Check if credentials directory exists",
+          "command": "test -d /etc/jit-credentials && echo 'EXISTS' || echo 'MISSING'"
+        },
+        {
+          "step": 2,
+          "action": "Check directory permissions",
+          "command": "stat -c '%a %U:%G' /etc/jit-credentials"
+        },
+        {
+          "step": 3,
+          "action": "List directory contents",
+          "command": "ls -la /etc/jit-credentials/"
+        }
+      ],
+      "expected_result": "Directory exists with permissions 700 (drwx------) owned by root:root",
+      "pass_criteria": "TC-002-PASS if stat output shows '700 root:root'",
+      "failure_mode": "FAIL: Directory missing or has incorrect permissions",
+      "priority": "P0",
+      "effort_hours": 0.25
+    },
+    {
+      "test_id": "TC-003",
+      "category": "Unit Test - Token File Security",
+      "title": "Token credential file has restrictive permissions",
+      "objective": "Verify /etc/jit-credentials/ollama_token exists with mode 0600, owned by root:root, not world-readable",
+      "setup": [
+        "Credentials directory must be properly set up (TC-002 passed)"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Check token file exists",
+          "command": "test -f /etc/jit-credentials/ollama_token && echo 'EXISTS' || echo 'MISSING'"
+        },
+        {
+          "step": 2,
+          "action": "Check file permissions (mode)",
+          "command": "stat -c '%a %U:%G' /etc/jit-credentials/ollama_token"
+        },
+        {
+          "step": 3,
+          "action": "Verify file is not world-readable",
+          "command": "stat -c '%A' /etc/jit-credentials/ollama_token | grep -E '.*------$' && echo 'SECURE' || echo 'INSECURE'"
+        },
+        {
+          "step": 4,
+          "action": "Verify root ownership",
+          "command": "stat -c '%U:%G' /etc/jit-credentials/ollama_token"
+        },
+        {
+          "step": 5,
+          "action": "List file details",
+          "command": "ls -la /etc/jit-credentials/ollama_token"
+        }
+      ],
+      "expected_result": "File exists, mode 0600 (owned root:root), not world-readable, matches pattern -rw-------",
+      "pass_criteria": "TC-003-PASS if stat shows '600 root:root' AND ls shows -rw------- pattern",
+      "failure_mode": "FAIL: File missing, wrong permissions, or world-readable",
+      "priority": "P0",
+      "effort_hours": 0.25
+    },
+    {
+      "test_id": "TC-004",
+      "category": "Integration Test - systemd Validation",
+      "title": "Service file passes systemd syntax validation",
+      "objective": "Verify jit-heartbeat.service is valid systemd unit file without syntax errors",
+      "setup": [
+        "systemd package must be installed (standard on all Linux systems)"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Validate service file syntax",
+          "command": "systemd-analyze verify /workspaces/Jit/jit-heartbeat.service"
+        },
+        {
+          "step": 2,
+          "action": "Check for LoadCredential support (systemd version)",
+          "command": "systemctl --version | head -1"
+        },
+        {
+          "step": 3,
+          "action": "Reload systemd daemon configuration",
+          "command": "sudo systemctl daemon-reload"
+        },
+        {
+          "step": 4,
+          "action": "Verify service is loaded",
+          "command": "systemctl list-unit-files | grep jit-heartbeat.service"
+        }
+      ],
+      "expected_result": "systemd-analyze returns 'OK' with no errors; systemctl version >= 247; service loads without errors",
+      "pass_criteria": "TC-004-PASS if systemd-analyze output contains 'OK' and no 'error' messages",
+      "failure_mode": "FAIL: Service file has syntax errors or LoadCredential not supported",
+      "priority": "P0",
+      "effort_hours": 0.5
+    },
+    {
+      "test_id": "TC-005",
+      "category": "Integration Test - Service Startup",
+      "title": "Service starts and runs without errors",
+      "objective": "Verify jit-heartbeat.service successfully starts and remains in active state",
+      "setup": [
+        "systemd must be running",
+        "Credentials must be properly configured (TC-003 passed)",
+        "OLLAMA_TOKEN must be available at /etc/jit-credentials/ollama_token"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Stop service if running",
+          "command": "sudo systemctl stop jit-heartbeat || true"
+        },
+        {
+          "step": 2,
+          "action": "Start service",
+          "command": "sudo systemctl start jit-heartbeat"
+        },
+        {
+          "step": 3,
+          "action": "Wait for startup",
+          "command": "sleep 3"
+        },
+        {
+          "step": 4,
+          "action": "Check service status",
+          "command": "systemctl status jit-heartbeat"
+        },
+        {
+          "step": 5,
+          "action": "Verify active state",
+          "command": "systemctl is-active jit-heartbeat"
+        },
+        {
+          "step": 6,
+          "action": "Check for startup errors in logs",
+          "command": "journalctl -u jit-heartbeat -n 50 | grep -iE 'error|failed|critical'"
+        }
+      ],
+      "expected_result": "Service enters 'active (running)' state; is-active returns 'active'; no error messages in journal",
+      "pass_criteria": "TC-005-PASS if 'systemctl is-active' returns 'active' AND no errors in step 6",
+      "failure_mode": "FAIL: Service fails to start, enters failed state, or reports errors",
+      "priority": "P0",
+      "effort_hours": 0.5
+    },
+    {
+      "test_id": "TC-006",
+      "category": "Security Test - Process Environment",
+      "title": "Running process does not expose token in environment",
+      "objective": "Verify OLLAMA_TOKEN is not visible when inspecting running heartbeat process",
+      "setup": [
+        "Service must be running (TC-005 passed)"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Find heartbeat process PID",
+          "command": "pgrep -f 'heartbeat-24h-daemon.sh'"
+        },
+        {
+          "step": 2,
+          "action": "Check process environment via ps aux",
+          "command": "ps aux | grep -i heartbeat | grep -v grep"
+        },
+        {
+          "step": 3,
+          "action": "Check process environment via /proc/<pid>/environ",
+          "command": "cat /proc/$(pgrep -f heartbeat-24h-daemon.sh)/environ | tr '\\0' '\\n' | grep -i 'OLLAMA_TOKEN' || echo 'NOT_FOUND'"
+        },
+        {
+          "step": 4,
+          "action": "Check systemd service environment",
+          "command": "systemctl show jit-heartbeat.service -p Environment"
+        },
+        {
+          "step": 5,
+          "action": "Check for token value in command line",
+          "command": "ps aux | grep heartbeat | grep '9e34679' || echo 'NOT_FOUND'"
+        }
+      ],
+      "expected_result": "Steps 3-5 return 'NOT_FOUND'; Step 4 shows 'Environment=' without OLLAMA_TOKEN value",
+      "pass_criteria": "TC-006-PASS if token is not visible in any output (steps 2-5)",
+      "failure_mode": "FAIL: Token is visible in process environment or command line",
+      "priority": "P0",
+      "effort_hours": 0.5
+    },
+    {
+      "test_id": "TC-007",
+      "category": "Security Test - Git History Scrub",
+      "title": "Hardcoded token removed from all git history",
+      "objective": "Verify no instance of exposed token (9e34679) exists in any commit or branch",
+      "setup": [
+        "Git repository must be accessible",
+        "Git history scrubbing tool must have been executed (BFG or git-filter-repo)"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Search git history for token across all commits",
+          "command": "git log --all --full-history -S '9e34679' --oneline /workspaces/Jit"
+        },
+        {
+          "step": 2,
+          "action": "Search git object database for token",
+          "command": "git rev-list --all | xargs git grep '9e34679' 2>/dev/null | head -10"
+        },
+        {
+          "step": 3,
+          "action": "Grep filesystem (excluding .git and .secrets)",
+          "command": "grep -r '9e34679' /workspaces/Jit 2>/dev/null | grep -v '.git' | grep -v '.secrets'"
+        },
+        {
+          "step": 4,
+          "action": "Check all branches",
+          "command": "for branch in $(git branch -a | sed 's|^[* ] ||'); do git log $branch -S '9e34679' --oneline 2>/dev/null | head -1; done"
+        }
+      ],
+      "expected_result": "All steps return empty/no results; token completely absent from git history and working tree",
+      "pass_criteria": "TC-007-PASS if steps 1-4 all return zero matches or 'NOT_FOUND'",
+      "failure_mode": "FAIL: Token found in git history or current working tree",
+      "priority": "P0",
+      "effort_hours": 0.5
+    },
+    {
+      "test_id": "TC-008",
+      "category": "Functional Test - Ollama Connectivity",
+      "title": "Service successfully connects to Ollama API",
+      "objective": "Verify jit-heartbeat service can authenticate and call Ollama API using credential from secure store",
+      "setup": [
+        "Service must be running (TC-005 passed)",
+        "Ollama API must be accessible at https://ollama.mdes-innova.online",
+        "Token in /etc/jit-credentials/ollama_token must be valid and active"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Check recent service logs for Ollama API calls",
+          "command": "journalctl -u jit-heartbeat --since='30 minutes ago' | grep -iE 'ollama|7778|api' | head -5"
+        },
+        {
+          "step": 2,
+          "action": "Check for auth errors (401, 403)",
+          "command": "journalctl -u jit-heartbeat --since='30 minutes ago' | grep -iE '401|403|unauthorized|forbidden|invalid.*token'"
+        },
+        {
+          "step": 3,
+          "action": "Check for successful responses",
+          "command": "journalctl -u jit-heartbeat --since='30 minutes ago' | grep -iE '200|success|connected|ok|health'"
+        },
+        {
+          "step": 4,
+          "action": "Manually test Ollama API with stored token",
+          "command": "curl -s -H 'Authorization: Bearer $(cat /etc/jit-credentials/ollama_token)' https://ollama.mdes-innova.online/api/health"
+        }
+      ],
+      "expected_result": "Step 1-3 show API calls without auth errors; Step 4 returns 200 OK with health status",
+      "pass_criteria": "TC-008-PASS if no 401/403 errors AND step 4 returns HTTP 200 with valid JSON",
+      "failure_mode": "FAIL: Auth failures (401/403) or Ollama API unreachable",
+      "priority": "P0",
+      "effort_hours": 0.5
+    },
+    {
+      "test_id": "TC-009",
+      "category": "Functional Test - Setup Script",
+      "title": "setup-credentials.sh correctly initializes credential store",
+      "objective": "Verify setup-credentials.sh creates directory, stores token, sets permissions correctly",
+      "setup": [
+        "Script must exist at /workspaces/Jit/scripts/setup-credentials.sh",
+        "Must have execute permissions"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Check script exists and is executable",
+          "command": "test -x /workspaces/Jit/scripts/setup-credentials.sh && echo 'EXECUTABLE' || echo 'NOT_EXECUTABLE'"
+        },
+        {
+          "step": 2,
+          "action": "Review script source",
+          "command": "head -20 /workspaces/Jit/scripts/setup-credentials.sh"
+        },
+        {
+          "step": 3,
+          "action": "Test script with test token (non-destructive)",
+          "command": "bash /workspaces/Jit/scripts/setup-credentials.sh --help 2>&1 || bash /workspaces/Jit/scripts/setup-credentials.sh 2>&1 | head -10"
+        },
+        {
+          "step": 4,
+          "action": "Verify script validates input",
+          "command": "bash /workspaces/Jit/scripts/setup-credentials.sh '' 2>&1 | grep -iE 'usage|error|missing' | head -3"
+        }
+      ],
+      "expected_result": "Script is executable, has proper usage documentation, validates input, creates directory with correct ownership/permissions",
+      "pass_criteria": "TC-009-PASS if script is executable AND step 4 shows error handling for missing token",
+      "failure_mode": "FAIL: Script not executable, missing validation, or incorrect permission setup",
+      "priority": "P1",
+      "effort_hours": 0.5
+    },
+    {
+      "test_id": "TC-010",
+      "category": "Functional Test - Service Restart",
+      "title": "Service restarts cleanly after failure",
+      "objective": "Verify service restart policy works correctly (Restart=always, RestartSec=10)",
+      "setup": [
+        "Service must be running (TC-005 passed)"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Record initial PID",
+          "command": "PID1=$(pgrep -f heartbeat-24h-daemon.sh); echo $PID1"
+        },
+        {
+          "step": 2,
+          "action": "Stop service",
+          "command": "sudo systemctl stop jit-heartbeat"
+        },
+        {
+          "step": 3,
+          "action": "Verify stopped",
+          "command": "sleep 2 && systemctl is-active jit-heartbeat"
+        },
+        {
+          "step": 4,
+          "action": "Restart service",
+          "command": "sudo systemctl start jit-heartbeat"
+        },
+        {
+          "step": 5,
+          "action": "Wait for startup",
+          "command": "sleep 3"
+        },
+        {
+          "step": 6,
+          "action": "Verify running with new PID",
+          "command": "systemctl is-active jit-heartbeat && pgrep -f heartbeat-24h-daemon.sh"
+        },
+        {
+          "step": 7,
+          "action": "Check restart count in logs",
+          "command": "journalctl -u jit-heartbeat | grep -iE 'restarted|restart|started' | tail -3"
+        }
+      ],
+      "expected_result": "Service stops, restarts, and returns to active state with new process",
+      "pass_criteria": "TC-010-PASS if step 3 shows 'inactive' AND step 6 shows 'active' with valid PID",
+      "failure_mode": "FAIL: Service doesn't restart or enters failed state",
+      "priority": "P1",
+      "effort_hours": 0.5
+    },
+    {
+      "test_id": "TC-011",
+      "category": "Regression Test - System Health",
+      "title": "Full multi-agent system remains healthy",
+      "objective": "Verify credential migration doesn't break overall system (body-check.sh, soul-check.sh)",
+      "setup": [
+        "All previous tests must pass",
+        "Service must be running (TC-005 passed)"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Run soul-check (agent communication)",
+          "command": "bash /workspaces/Jit/eval/soul-check.sh 2>&1 | tail -20"
+        },
+        {
+          "step": 2,
+          "action": "Run body-check (full system health)",
+          "command": "bash /workspaces/Jit/eval/body-check.sh 2>&1 | tail -30"
+        },
+        {
+          "step": 3,
+          "action": "Count errors in health check",
+          "command": "bash /workspaces/Jit/eval/body-check.sh 2>&1 | grep -iE 'error|failed|critical' | wc -l"
+        },
+        {
+          "step": 4,
+          "action": "Check Oracle connectivity",
+          "command": "curl -s http://localhost:47778/api/health 2>&1 | head -5"
+        }
+      ],
+      "expected_result": "soul-check and body-check report OK/PASS; error count = 0; Oracle API responds",
+      "pass_criteria": "TC-011-PASS if error count is 0 AND body-check shows 'PASS' or 'OK' overall",
+      "failure_mode": "FAIL: Health checks fail or report errors related to credential/auth",
+      "priority": "P1",
+      "effort_hours": 1.0
+    },
+    {
+      "test_id": "TC-012",
+      "category": "Regression Test - Heartbeat Pulse Frequency",
+      "title": "Heartbeat pulses continue at expected interval",
+      "objective": "Verify service sends heartbeat pulses to Oracle at configured interval (no skipped pulses due to auth failure)",
+      "setup": [
+        "Service must be running (TC-005 passed)",
+        "Oracle must be accessible"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Get current timestamp",
+          "command": "date -Iseconds"
+        },
+        {
+          "step": 2,
+          "action": "Wait 20 minutes for pulse",
+          "command": "echo 'Waiting for heartbeat pulse (configured every 15 minutes)...'"
+        },
+        {
+          "step": 3,
+          "action": "Check for recent heartbeat events in Oracle or logs",
+          "command": "journalctl -u jit-heartbeat --since='25 minutes ago' | grep -iE 'pulse|heartbeat|pran' | head -5"
+        },
+        {
+          "step": 4,
+          "action": "Verify no auth-related failures",
+          "command": "journalctl -u jit-heartbeat --since='25 minutes ago' | grep -iE '401|403|unauthorized' | wc -l"
+        }
+      ],
+      "expected_result": "Recent heartbeat events found; no auth failures blocking pulses",
+      "pass_criteria": "TC-012-PASS if step 3 shows heartbeat activity AND step 4 returns 0",
+      "failure_mode": "FAIL: No heartbeat pulses sent or auth failures blocking communication",
+      "priority": "P2",
+      "effort_hours": 1.5
+    },
+    {
+      "test_id": "TC-013",
+      "category": "Security Test - Credential Isolation",
+      "title": "Non-root user cannot read token credential",
+      "objective": "Verify standard users cannot access OLLAMA_TOKEN even if running service commands",
+      "setup": [
+        "Credentials must be set up (TC-003 passed)",
+        "Test user must exist or create temporary test user"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Create temporary test user (if needed)",
+          "command": "id testuser 2>/dev/null || echo 'TEST_USER_EXISTS'"
+        },
+        {
+          "step": 2,
+          "action": "Attempt to read credential as non-root",
+          "command": "sudo -u testuser cat /etc/jit-credentials/ollama_token 2>&1"
+        },
+        {
+          "step": 3,
+          "action": "Verify permission denied error",
+          "command": "sudo -u testuser cat /etc/jit-credentials/ollama_token 2>&1 | grep -iE 'permission|denied|cannot' && echo 'DENIED' || echo 'READABLE'"
+        },
+        {
+          "step": 4,
+          "action": "Verify root can still read",
+          "command": "sudo cat /etc/jit-credentials/ollama_token | head -1 | wc -c"
+        }
+      ],
+      "expected_result": "Non-root user gets 'Permission denied'; root can read successfully",
+      "pass_criteria": "TC-013-PASS if step 3 shows 'DENIED' AND step 4 shows token length > 0",
+      "failure_mode": "FAIL: Non-root user can read token or root cannot read",
+      "priority": "P0",
+      "effort_hours": 0.5
+    },
+    {
+      "test_id": "TC-014",
+      "category": "Negative Test - Invalid Token Handling",
+      "title": "Service handles invalid/expired token gracefully",
+      "objective": "Verify service logs auth error but continues running when token is invalid (doesn't crash)",
+      "setup": [
+        "Service must be running (TC-005 passed)",
+        "Must have ability to temporarily update credentials file"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Backup current valid token",
+          "command": "sudo cp /etc/jit-credentials/ollama_token /tmp/ollama_token.backup"
+        },
+        {
+          "step": 2,
+          "action": "Replace with invalid token",
+          "command": "echo 'invalid-token-xyz' | sudo tee /etc/jit-credentials/ollama_token > /dev/null"
+        },
+        {
+          "step": 3,
+          "action": "Restart service",
+          "command": "sudo systemctl restart jit-heartbeat && sleep 3"
+        },
+        {
+          "step": 4,
+          "action": "Check if service is still active (doesn't crash on invalid token)",
+          "command": "systemctl is-active jit-heartbeat"
+        },
+        {
+          "step": 5,
+          "action": "Check logs for auth error (401/403)",
+          "command": "journalctl -u jit-heartbeat -n 20 | grep -iE '401|403|unauthorized'"
+        },
+        {
+          "step": 6,
+          "action": "Restore valid token",
+          "command": "sudo cp /tmp/ollama_token.backup /etc/jit-credentials/ollama_token && sudo systemctl restart jit-heartbeat"
+        }
+      ],
+      "expected_result": "Service stays active even with invalid token; auth errors logged; recovers when valid token restored",
+      "pass_criteria": "TC-014-PASS if step 4 shows 'active' AND step 5 shows auth error (graceful failure)",
+      "failure_mode": "FAIL: Service crashes or enters failed state on invalid token",
+      "priority": "P1",
+      "effort_hours": 0.75
+    },
+    {
+      "test_id": "TC-015",
+      "category": "Negative Test - Missing Credentials Directory",
+      "title": "Service handles missing credentials directory gracefully",
+      "objective": "Verify service error handling when /etc/jit-credentials directory is deleted",
+      "setup": [
+        "Service must be running (TC-005 passed)"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Backup credentials directory",
+          "command": "sudo cp -r /etc/jit-credentials /tmp/jit-credentials.backup"
+        },
+        {
+          "step": 2,
+          "action": "Remove credentials directory",
+          "command": "sudo rm -rf /etc/jit-credentials"
+        },
+        {
+          "step": 3,
+          "action": "Restart service",
+          "command": "sudo systemctl restart jit-heartbeat 2>&1"
+        },
+        {
+          "step": 4,
+          "action": "Check service state",
+          "command": "systemctl is-active jit-heartbeat"
+        },
+        {
+          "step": 5,
+          "action": "Check for LoadCredential error in logs",
+          "command": "journalctl -u jit-heartbeat -n 20 | grep -iE 'credential|load.*error|file.*not.*found'"
+        },
+        {
+          "step": 6,
+          "action": "Restore credentials directory",
+          "command": "sudo cp -r /tmp/jit-credentials.backup /etc/jit-credentials && sudo systemctl restart jit-heartbeat"
+        }
+      ],
+      "expected_result": "Service fails to start or stays inactive with clear error in logs; recovers when credentials restored",
+      "pass_criteria": "TC-015-PASS if step 4 shows 'inactive' or 'failed' AND step 5 shows credential error",
+      "failure_mode": "FAIL: Service starts without credentials or no error logged",
+      "priority": "P1",
+      "effort_hours": 0.75
+    }
+  ],
+  "regression_tests": [
+    {
+      "test_id": "RT-001",
+      "title": "No credential leakage via systemd-show",
+      "description": "systemctl show should not expose any credential values in Environment= output",
+      "command": "systemctl show jit-heartbeat.service -p Environment | grep -E 'OLLAMA_TOKEN=.+' || echo 'SAFE'",
+      "expected": "SAFE (no token value exposed)",
+      "frequency": "Per deployment + weekly",
+      "owner": "pada (DevOps)"
+    },
+    {
+      "test_id": "RT-002",
+      "title": "No credential leakage via systemd-analyze security",
+      "description": "systemd-analyze security should report no exposed secrets",
+      "command": "systemd-analyze security jit-heartbeat.service 2>&1 | grep -i 'secret\\|credential\\|password' || echo 'PASSED'",
+      "expected": "PASSED (no security issues reported)",
+      "frequency": "Per deployment",
+      "owner": "pada (DevOps)"
+    },
+    {
+      "test_id": "RT-003",
+      "title": "Heartbeat pulse continues after service restart",
+      "description": "After service restart, heartbeat should resume pulses to Oracle within configured interval",
+      "command": "for i in 1 2 3; do systemctl restart jit-heartbeat && sleep 30 && systemctl is-active jit-heartbeat; done",
+      "expected": "active (3 consecutive restarts successful)",
+      "frequency": "Weekly",
+      "owner": "chamu (QA)"
+    },
+    {
+      "test_id": "RT-004",
+      "title": "Credential persistence across system reboot",
+      "description": "After system reboot, service should start with credentials still in place",
+      "command": "sudo systemctl reboot; sleep 60; systemctl is-active jit-heartbeat",
+      "expected": "active",
+      "frequency": "Post-infrastructure-upgrade",
+      "owner": "pada (DevOps)"
+    },
+    {
+      "test_id": "RT-005",
+      "title": "No regressions in other services using EnvironmentFile",
+      "description": "Other systemd services using EnvironmentFile should continue working",
+      "command": "for svc in hermes-discord jit-heartbeat $(systemctl list-unit-files | grep jit | cut -d' ' -f1); do systemctl is-active $svc 2>/dev/null && echo \"$svc: OK\" || echo \"$svc: FAILED\"; done",
+      "expected": "All jit services: OK",
+      "frequency": "Monthly",
+      "owner": "pada (DevOps)"
+    },
+    {
+      "test_id": "RT-006",
+      "title": "Audit trail captures credential access patterns",
+      "description": "auditd/journald should show access to /etc/jit-credentials only by authorized processes",
+      "command": "journalctl SYSLOG_IDENTIFIER=audit | grep -i 'jit-credentials' | tail -5",
+      "expected": "Entries show only root/systemd accessing credentials (no unexpected processes)",
+      "frequency": "Weekly",
+      "owner": "pada (DevOps)"
+    },
+    {
+      "test_id": "RT-007",
+      "title": "Documentation stays in sync with credential mechanism",
+      "description": "CLAUDE.md should document current credential mechanism (LoadCredential)",
+      "command": "grep -i 'loadcredential\\|credential.*mechanism\\|ollama.*token' /workspaces/Jit/CLAUDE.md | wc -l",
+      "expected": ">= 1 (at least one reference to current mechanism)",
+      "frequency": "Per deployment + quarterly review",
+      "owner": "innova (Lead Dev)"
+    },
+    {
+      "test_id": "RT-008",
+      "title": "Compatibility with existing heartbeat-24h-daemon.sh",
+      "description": "heartbeat-24h-daemon.sh should read OLLAMA_TOKEN from environment (set by systemd)",
+      "command": "grep -n 'OLLAMA_TOKEN' /workspaces/Jit/scripts/heartbeat-24h-daemon.sh | head -3",
+      "expected": "Script references OLLAMA_TOKEN from environment, not hardcoded",
+      "frequency": "Per code change to heartbeat-24h-daemon.sh",
+      "owner": "innova (Lead Dev)"
+    },
+    {
+      "test_id": "RT-009",
+      "title": "LoadCredential fallback works if /etc/jit-credentials unavailable",
+      "description": "Service should fail gracefully (not crash) if LoadCredential path doesn't exist",
+      "command": "sudo systemctl status jit-heartbeat -p LoadCredential",
+      "expected": "Shows LoadCredential path; service logs clear error if path missing",
+      "frequency": "Per systemd upgrade",
+      "owner": "pada (DevOps)"
+    },
+    {
+      "test_id": "RT-010",
+      "title": "No secrets in journalctl output",
+      "description": "Sensitive token values should never appear in systemd journal logs",
+      "command": "journalctl -u jit-heartbeat --all | grep -E '[a-f0-9]{8}' | grep -v 'debug\\|trace' | wc -l",
+      "expected": "0 (no token-like strings in production logs)",
+      "frequency": "Weekly",
+      "owner": "pada (DevOps)"
+    }
+  ],
+  "performance_benchmarks": [
+    {
+      "metric": "Service startup time",
+      "baseline": "< 2 seconds from systemctl start to active state",
+      "test_command": "time systemctl restart jit-heartbeat && sleep 1 && systemctl is-active jit-heartbeat",
+      "acceptance_criteria": "Real time < 3 seconds"
+    },
+    {
+      "metric": "First Ollama API call after startup",
+      "baseline": "< 5 seconds after service active",
+      "test_command": "systemctl restart jit-heartbeat && sleep 2 && journalctl -u jit-heartbeat --since='5s ago' | grep -i 'ollama' | head -1",
+      "acceptance_criteria": "API call appears in logs within 5 seconds"
+    },
+    {
+      "metric": "Memory overhead from credential loading",
+      "baseline": "< 10 MB additional memory per instance",
+      "test_command": "ps aux | grep jit-heartbeat | grep -v grep | awk '{print $6}'",
+      "acceptance_criteria": "RSS memory < 100 MB for heartbeat process"
+    }
+  ],
+  "test_execution_order": [
+    "TC-001 (File integrity)",
+    "TC-002 (Credentials directory)",
+    "TC-003 (Token file security)",
+    "TC-004 (systemd validation)",
+    "TC-005 (Service startup)",
+    "TC-006 (Process environment)",
+    "TC-007 (Git history)",
+    "TC-008 (Ollama connectivity)",
+    "TC-009 (Setup script)",
+    "TC-010 (Service restart)",
+    "TC-011 (System health)",
+    "TC-012 (Heartbeat pulse)",
+    "TC-013 (Credential isolation)",
+    "TC-014 (Invalid token handling)",
+    "TC-015 (Missing credentials handling)",
+    "RT-001 through RT-010 (Regression tests)"
+  ],
+  "test_reporting": {
+    "format": "JIT-006-test-results.json",
+    "report_fields": [
+      "test_id",
+      "category",
+      "title",
+      "status (PASS/FAIL/SKIP)",
+      "execution_timestamp",
+      "duration_seconds",
+      "error_message (if FAIL)",
+      "notes",
+      "tester_name"
+    ],
+    "approval_gate": "All P0 tests must PASS before merge to main; P1 tests should PASS before production deployment"
+  }
+}
