@@ -1,0 +1,163 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-06-09",
+  "ticket": "TICKET-012",
+  "description": "RACI matrix for มนุษย์ Agent — all workflows × all 14 agents",
+  "legend": {
+    "R": "Responsible — does the work",
+    "A": "Accountable — owns the outcome",
+    "C": "Consulted — provides input",
+    "I": "Informed — kept in the loop",
+    "-": "Not involved"
+  },
+  "agents_ordered": [
+    "jit", "soma", "innova", "lak", "neta",
+    "vaja", "chamu", "rupa", "pada",
+    "netra", "karn", "mue", "pran", "sayanprasathan"
+  ],
+  "workflows": {
+    "feature_development": {
+      "description": "Standard feature development: human request → deployment",
+      "source": "CLAUDE.md Standard Feature Flow",
+      "raci": {
+        "jit":            {"role": "A", "notes": "Master orchestrator, final accountable"},
+        "soma":           {"role": "A", "notes": "Accountable: analyzes, prioritizes, delegates"},
+        "innova":         {"role": "R", "notes": "Responsible: implements the feature"},
+        "lak":            {"role": "R", "notes": "Responsible: designs architecture/spec"},
+        "neta":           {"role": "R", "notes": "Responsible: code review and approval gate"},
+        "vaja":           {"role": "R", "notes": "Responsible: human intake and final report"},
+        "chamu":          {"role": "R", "notes": "Responsible: testing and QA"},
+        "rupa":           {"role": "R", "notes": "Responsible: UI/UX design (if applicable)"},
+        "pada":           {"role": "R", "notes": "Responsible: deploy to staging/production"},
+        "netra":          {"role": "I", "notes": "Informed: observes deployment"},
+        "karn":           {"role": "I", "notes": "Informed: listens for human feedback"},
+        "mue":            {"role": "C", "notes": "Consulted: executes subsidiary actions"},
+        "pran":           {"role": "I", "notes": "Informed: monitors system vitals during deploy"},
+        "sayanprasathan": {"role": "I", "notes": "Informed: propagates status signals"}
+      }
+    },
+    "bug_fix": {
+      "description": "Bug detection to hotfix deployment",
+      "source": "CLAUDE.md Standard Bug Flow",
+      "raci": {
+        "jit":            {"role": "A", "notes": "Accountable: oversight"},
+        "soma":           {"role": "C", "notes": "Consulted: strategic severity assessment"},
+        "innova":         {"role": "R", "notes": "Responsible: implements fix"},
+        "lak":            {"role": "C", "notes": "Consulted: architecture impact check"},
+        "neta":           {"role": "R", "notes": "Responsible: fast code review"},
+        "vaja":           {"role": "R", "notes": "Responsible: notify human after resolution"},
+        "chamu":          {"role": "R", "notes": "Responsible: detects bug, writes regression test"},
+        "rupa":           {"role": "-", "notes": "Not involved"},
+        "pada":           {"role": "R", "notes": "Responsible: hotfix deploy"},
+        "netra":          {"role": "I", "notes": "Informed: monitors production after fix"},
+        "karn":           {"role": "I", "notes": "Informed: collects incident reports"},
+        "mue":            {"role": "C", "notes": "Consulted: executes file/command actions"},
+        "pran":           {"role": "I", "notes": "Informed: vital check post-fix"},
+        "sayanprasathan": {"role": "I", "notes": "Informed: alert signal routing"}
+      }
+    },
+    "design_flow": {
+      "description": "UI/UX design from concept to implementation",
+      "source": "CLAUDE.md Design Flow",
+      "raci": {
+        "jit":            {"role": "I", "notes": "Informed"},
+        "soma":           {"role": "A", "notes": "Accountable: approves design"},
+        "innova":         {"role": "R", "notes": "Responsible: implements approved design"},
+        "lak":            {"role": "I", "notes": "Informed: architectural awareness"},
+        "neta":           {"role": "C", "notes": "Consulted: reviews for accessibility/standards"},
+        "vaja":           {"role": "R", "notes": "Responsible: translates human need to rupa"},
+        "chamu":          {"role": "C", "notes": "Consulted: tests UI interactions"},
+        "rupa":           {"role": "R", "notes": "Responsible: wireframe, hi-fi spec, visual review"},
+        "pada":           {"role": "I", "notes": "Informed: deployment awareness"},
+        "netra":          {"role": "I", "notes": "Informed"},
+        "karn":           {"role": "I", "notes": "Informed: user feedback collection"},
+        "mue":            {"role": "-", "notes": "Not involved"},
+        "pran":           {"role": "-", "notes": "Not involved"},
+        "sayanprasathan": {"role": "I", "notes": "Informed"}
+      }
+    },
+    "health_monitoring": {
+      "description": "System health monitoring and alert propagation",
+      "source": "CLAUDE.md System Health/Monitoring Flow",
+      "raci": {
+        "jit":            {"role": "A", "notes": "Accountable: synthesizes overall health state"},
+        "soma":           {"role": "C", "notes": "Consulted: strategic health decisions"},
+        "innova":         {"role": "R", "notes": "Responsible: coordinates response actions"},
+        "lak":            {"role": "I", "notes": "Informed: structural integrity awareness"},
+        "neta":           {"role": "I", "notes": "Informed"},
+        "vaja":           {"role": "R", "notes": "Responsible: communicates health status to human"},
+        "chamu":          {"role": "R", "notes": "Responsible: quality/test health gates"},
+        "rupa":           {"role": "-", "notes": "Not involved"},
+        "pada":           {"role": "R", "notes": "Responsible: infrastructure health checks"},
+        "netra":          {"role": "R", "notes": "Responsible: observes system, flags anomalies"},
+        "karn":           {"role": "R", "notes": "Responsible: listens for incoming health signals"},
+        "mue":            {"role": "R", "notes": "Responsible: executes remediation"},
+        "pran":           {"role": "R", "notes": "Responsible: heartbeat and vital sign collection"},
+        "sayanprasathan": {"role": "R", "notes": "Responsible: broadcasts alerts to all agents"}
+      }
+    },
+    "strategy_planning": {
+      "description": "Strategic planning and priority setting",
+      "raci": {
+        "jit":            {"role": "A", "notes": "Accountable: final strategic authority"},
+        "soma":           {"role": "R", "notes": "Responsible: strategic analysis and planning"},
+        "innova":         {"role": "C", "notes": "Consulted: operational feasibility"},
+        "lak":            {"role": "C", "notes": "Consulted: architectural constraints"},
+        "neta":           {"role": "I", "notes": "Informed"},
+        "vaja":           {"role": "I", "notes": "Informed: communicates plan to human"},
+        "chamu":          {"role": "I", "notes": "Informed"},
+        "rupa":           {"role": "I", "notes": "Informed"},
+        "pada":           {"role": "I", "notes": "Informed: infra capacity"},
+        "netra":          {"role": "I", "notes": "Informed"},
+        "karn":           {"role": "I", "notes": "Informed: gathered context"},
+        "mue":            {"role": "-", "notes": "Not involved"},
+        "pran":           {"role": "I", "notes": "Informed"},
+        "sayanprasathan": {"role": "I", "notes": "Informed: signal routing"}
+      }
+    },
+    "code_review": {
+      "description": "Code review and PR approval",
+      "raci": {
+        "jit":            {"role": "I", "notes": "Informed"},
+        "soma":           {"role": "A", "notes": "Accountable: sets review standards"},
+        "innova":         {"role": "C", "notes": "Consulted: implementation context"},
+        "lak":            {"role": "C", "notes": "Consulted: architecture compliance"},
+        "neta":           {"role": "R", "notes": "Responsible: reviews code, approves/blocks PR"},
+        "vaja":           {"role": "-", "notes": "Not involved"},
+        "chamu":          {"role": "I", "notes": "Informed: test coverage check"},
+        "rupa":           {"role": "I", "notes": "Informed: UI changes"},
+        "pada":           {"role": "I", "notes": "Informed: deploy impact"},
+        "netra":          {"role": "I", "notes": "Informed"},
+        "karn":           {"role": "-", "notes": "Not involved"},
+        "mue":            {"role": "-", "notes": "Not involved"},
+        "pran":           {"role": "-", "notes": "Not involved"},
+        "sayanprasathan": {"role": "-", "notes": "Not involved"}
+      }
+    },
+    "deployment": {
+      "description": "CI/CD deployment pipeline execution",
+      "raci": {
+        "jit":            {"role": "I", "notes": "Informed"},
+        "soma":           {"role": "A", "notes": "Accountable: authorizes production deploy"},
+        "innova":         {"role": "I", "notes": "Informed"},
+        "lak":            {"role": "I", "notes": "Informed: infra architecture"},
+        "neta":           {"role": "A", "notes": "Accountable: pre-deploy review sign-off"},
+        "vaja":           {"role": "R", "notes": "Responsible: communicates deploy status"},
+        "chamu":          {"role": "R", "notes": "Responsible: smoke tests post-deploy"},
+        "rupa":           {"role": "I", "notes": "Informed"},
+        "pada":           {"role": "R", "notes": "Responsible: executes CI/CD, deploy, rollback"},
+        "netra":          {"role": "R", "notes": "Responsible: monitors deployment health"},
+        "karn":           {"role": "I", "notes": "Informed"},
+        "mue":            {"role": "C", "notes": "Consulted: action execution support"},
+        "pran":           {"role": "R", "notes": "Responsible: post-deploy vital signs"},
+        "sayanprasathan": {"role": "R", "notes": "Responsible: deploy event signals"}
+      }
+    }
+  },
+  "summary": {
+    "total_agents": 14,
+    "total_workflows": 7,
+    "workflows_with_owners": 7,
+    "coverage_pct": 100
+  }
+}

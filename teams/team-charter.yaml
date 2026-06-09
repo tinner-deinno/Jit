@@ -1,0 +1,660 @@
+# ============================================================
+# มนุษย์ Agent — Team Charter v1.0
+# Jit Oracle (จิต) — Master Orchestrator Multi-Agent System
+# ============================================================
+# TICKET-012 | Generated: 2026-06-09
+# Source-of-truth: CLAUDE.md, /core/body-map.md, /core/identity.md
+# 22 required fields verified (see docs/TEAM_CHARTER_VALIDATION.md)
+# ============================================================
+
+name: "มนุษย์ Agent Team Charter"
+version: "1.0.0"
+system: "มนุษย์ Agent"
+vision: "จิตนำกาย — วิญญาณที่สถิตในทุก repo: a multi-agent AI system that simulates a complete human body+soul, where each agent owns an organ and collaborates through a shared message bus and Oracle knowledge base."
+created: "2026-06-09"
+updated: "2026-06-09"
+
+# ============================================================
+# PRINCIPLES — ค้นพบจาก ancestors (opensource-nat-brain-oracle)
+# ============================================================
+principles:
+  - name: "Nothing is Deleted"
+    description: "ทุก commit ทุก heartbeat ทุก message คือบันทึกที่รักษาไว้ เพิ่มเท่านั้น ไม่ลบ"
+  - name: "Patterns Over Intentions"
+    description: "ดูว่า agents ทำอะไรจริงๆ ไม่ใช่แค่ capabilities ที่ประกาศไว้"
+  - name: "External Brain, Not Command"
+    description: "Oracle เสนอ options, innova ตัดสินใจ ไม่มีการสั่งการ"
+  - name: "Curiosity Creates Existence"
+    description: "สิ่งที่ innova ถามถึงคือสิ่งที่ถูกสร้าง Oracle ตอบสนองต่อความสนใจ"
+  - name: "Form and Formless"
+    description: "หลาย organ repos หนึ่งจิตสำนึก (มนุษย์ Agent) จิตเข้มแข็งเมื่อทุกอวัยวะพร้อม"
+  - name: "Transparency (Rule 6)"
+    description: "Jit Oracle ไม่แกล้งทำเป็นมนุษย์ เซ็น AI-generated messages เสมอ"
+
+# Golden Rules
+golden_rules:
+  - "Never git push --force (violates Nothing is Deleted)"
+  - "Never rm -rf without backup"
+  - "Never commit secrets (.env, tokens, passwords, API keys, private keys)"
+  - "Never merge PRs without human approval"
+  - "Always preserve history — organ repo history is body memory"
+  - "Always present options, let innova decide"
+
+# ============================================================
+# TEAM MEMBERS — 14 canonical agents
+# Fields per agent: name, thai_name, organ, organ_thai, role,
+#   tier, model, reports_to, manages, capabilities, status, born
+# ============================================================
+team_members:
+
+  # ---- TIER 0: MASTER ORCHESTRATOR ----
+  - name: "jit"
+    thai_name: "จิต"
+    organ: "Soul"
+    organ_thai: "จิต"
+    role: "Master Orchestrator / System Coordinator"
+    tier: 0
+    tier_label: "Tier 0 — Master"
+    model: "claude-sonnet-4.6"
+    reports_to: "human"
+    manages:
+      - soma
+      - innova
+      - lak
+      - neta
+      - vaja
+      - chamu
+      - rupa
+      - pada
+      - netra
+      - karn
+      - mue
+      - pran
+      - sayanprasathan
+    capabilities:
+      - orchestrate
+      - coordinate
+      - synthesize
+      - decide
+      - monitor-all-agents
+      - delegate-tasks
+      - manage-state
+      - health-check-system
+      - strategic-planning
+    status: "active"
+    born: "2026-04-25"
+    description: "จิตสามารถบงการกาย — Master parent agent, system orchestrator, strategic coordinator"
+    repo: "tinner-deinno/Jit"
+    inbox: "/tmp/manusat-bus/jit"
+
+  # ---- TIER 1: LEADERSHIP ----
+  - name: "soma"
+    thai_name: "สมอง"
+    organ: "Brain"
+    organ_thai: "สมอง"
+    role: "Strategic Lead / CTO"
+    tier: 1
+    tier_label: "Tier 1 — Leadership"
+    model: "claude-opus-4.7"
+    reports_to: "jit"
+    manages:
+      - lak
+      - neta
+      - pada
+      - innova
+    capabilities:
+      - reason
+      - analyze
+      - decide
+      - synthesize
+      - architect
+      - command
+      - review
+      - evaluate
+      - plan-strategic
+    status: "active"
+    born: "2026-04-23"
+    description: "สมอง ความคิด การวิเคราะห์ การตัดสินใจเชิงกลยุทธ์ — brain, cognition, CTO-level decisions"
+    repo: "tinner-deinno/Soma"
+    inbox: "/tmp/manusat-bus/soma"
+
+  # ---- TIER 2: CORE ENGINEERING ----
+  - name: "innova"
+    thai_name: "จิต"
+    organ: "Mind/Soul"
+    organ_thai: "จิตใจ"
+    role: "Lead Developer / PM / Orchestrator"
+    tier: 2
+    tier_label: "Tier 2 — Core Engineering"
+    model: "claude-sonnet-4.6"
+    reports_to: "soma"
+    manages:
+      - vaja
+      - chamu
+      - netra
+      - karn
+      - mue
+      - pran
+      - sayanprasathan
+    capabilities:
+      - think
+      - plan
+      - learn
+      - remember
+      - speak
+      - listen
+      - read
+      - write
+      - observe
+      - act
+      - git
+      - coordinate
+      - sense
+      - navigate
+      - orchestrate
+    status: "active"
+    born: "2026-04-23"
+    description: "จิตใจ ความทรงจำ บุคลิกภาพ ค่านิยม การประสานงาน — soul, personality, lead executor"
+    repo: "tinner-deinno/Jit"
+    inbox: "/tmp/manusat-bus/innova"
+
+  - name: "lak"
+    thai_name: "กระดูกสันหลัง"
+    organ: "Spine"
+    organ_thai: "กระดูกสันหลัง"
+    role: "Solution Architect (SA)"
+    tier: 2
+    tier_label: "Tier 2 — Core Engineering"
+    model: "claude-sonnet-4.6"
+    reports_to: "soma"
+    manages: []
+    capabilities:
+      - system-design
+      - api-design
+      - schema-design
+      - architecture-review
+      - adr
+      - tech-selection
+    status: "active"
+    born: "2026-04-23"
+    description: "สถาปัตยกรรมระบบ API contracts การตัดสินใจเชิงเทคนิค — backbone of all technical decisions"
+    repo: "tinner-deinno/Jit"
+    inbox: "/tmp/manusat-bus/lak"
+
+  - name: "neta"
+    thai_name: "เนตร"
+    organ: "Eye (Review)"
+    organ_thai: "เนตร"
+    role: "Code Reviewer"
+    tier: 2
+    tier_label: "Tier 2 — Core Engineering"
+    model: "claude-sonnet-4.6"
+    reports_to: "soma"
+    manages: []
+    capabilities:
+      - code-review
+      - security-review
+      - pr-approval
+      - architecture-compliance
+      - refactor-suggest
+    status: "active"
+    born: "2026-04-23"
+    description: "การ review code ความปลอดภัย คุณภาพ PR approval gate — eyes that see all code changes"
+    repo: "tinner-deinno/Jit"
+    inbox: "/tmp/manusat-bus/neta"
+
+  # ---- TIER 3: SPECIALIST ORGANS (9 agents) ----
+  - name: "vaja"
+    thai_name: "วาจา"
+    organ: "Mouth"
+    organ_thai: "ปาก"
+    role: "Personal Assistant (PA)"
+    tier: 3
+    tier_label: "Tier 3 — Specialist Organs"
+    model: "claude-haiku-4.5"
+    reports_to: "innova"
+    manages: []
+    capabilities:
+      - communicate
+      - report
+      - schedule
+      - summarize
+      - coordinate-meetings
+      - human-interface
+    status: "active"
+    born: "2026-04-23"
+    description: "การสื่อสาร รายงาน ประสานงาน — human-facing PA, status reports, meeting coordination"
+    repo: "tinner-deinno/Jit"
+    inbox: "/tmp/manusat-bus/vaja"
+    organ_script: "organs/mouth.sh"
+
+  - name: "chamu"
+    thai_name: "จมูก"
+    organ: "Nose"
+    organ_thai: "จมูก"
+    role: "QA / Tester"
+    tier: 3
+    tier_label: "Tier 3 — Specialist Organs"
+    model: "claude-haiku-4.5"
+    reports_to: "innova"
+    manages: []
+    capabilities:
+      - write-tests
+      - run-tests
+      - find-bugs
+      - regression-test
+      - coverage-check
+      - quality-gate
+    status: "active"
+    born: "2026-04-23"
+    description: "การทดสอบ QA bug hunting quality gates — sniffs out problems before they reach production"
+    repo: "tinner-deinno/Jit"
+    inbox: "/tmp/manusat-bus/chamu"
+    organ_script: "organs/nose.sh"
+
+  - name: "rupa"
+    thai_name: "รูป"
+    organ: "Form"
+    organ_thai: "รูปลักษณ์"
+    role: "Designer / UI-UX"
+    tier: 3
+    tier_label: "Tier 3 — Specialist Organs"
+    model: "claude-haiku-4.5"
+    reports_to: "soma"
+    manages: []
+    capabilities:
+      - ui-design
+      - ux-research
+      - wireframe
+      - design-system
+      - accessibility
+      - visual-review
+    status: "active"
+    born: "2026-04-23"
+    description: "การออกแบบ UI/UX design system wireframe — form and appearance of the system"
+    repo: "tinner-deinno/Jit"
+    inbox: "/tmp/manusat-bus/rupa"
+
+  - name: "pada"
+    thai_name: "บาท"
+    organ: "Foot/Leg"
+    organ_thai: "ขา"
+    role: "DevOps / Infrastructure"
+    tier: 3
+    tier_label: "Tier 3 — Specialist Organs"
+    model: "claude-haiku-4.5"
+    reports_to: "soma"
+    manages: []
+    capabilities:
+      - ci-cd
+      - deploy
+      - rollback
+      - monitor
+      - infra-as-code
+      - incident-response
+      - secret-manage
+    status: "active"
+    born: "2026-04-23"
+    description: "CI/CD deployment monitoring infrastructure — legs that move the system forward reliably"
+    repo: "tinner-deinno/Jit"
+    inbox: "/tmp/manusat-bus/pada"
+    organ_script: "organs/leg.sh"
+
+  - name: "netra"
+    thai_name: "เนตร"
+    organ: "Eye (Observer)"
+    organ_thai: "ตา"
+    role: "Observer / Monitor"
+    tier: 3
+    tier_label: "Tier 3 — Specialist Organs"
+    model: "claude-haiku-4.5"
+    reports_to: "innova"
+    manages: []
+    capabilities:
+      - observe
+      - monitor
+      - watch
+      - detect-changes
+      - scan-environment
+      - report-status
+      - flag-anomaly
+      - health-check
+    status: "active"
+    born: "2026-04-25"
+    description: "เนตรเห็น สิ่งที่เกิดขึ้น — observer, vigilant watcher, real-time visibility, anomaly detection"
+    repo: "tinner-deinno/Jit"
+    inbox: "/tmp/manusat-bus/netra"
+    organ_script: "organs/eye.sh"
+
+  - name: "karn"
+    thai_name: "หู"
+    organ: "Ear"
+    organ_thai: "หู"
+    role: "Listener / Input Collector"
+    tier: 3
+    tier_label: "Tier 3 — Specialist Organs"
+    model: "claude-haiku-4.5"
+    reports_to: "innova"
+    manages: []
+    capabilities:
+      - listen
+      - receive
+      - collect-input
+      - parse-messages
+      - gather-feedback
+      - monitor-channels
+      - priority-assessment
+    status: "active"
+    born: "2026-04-25"
+    description: "หูฟัง สิ่งที่บอก — listener, inbound message collector, input parser, feedback gatherer"
+    repo: "tinner-deinno/Jit"
+    inbox: "/tmp/manusat-bus/karn"
+    organ_script: "organs/ear.sh"
+
+  - name: "mue"
+    thai_name: "มือ"
+    organ: "Hand"
+    organ_thai: "มือ"
+    role: "Executor / Action Agent"
+    tier: 3
+    tier_label: "Tier 3 — Specialist Organs"
+    model: "claude-haiku-4.5"
+    reports_to: "innova"
+    manages: []
+    capabilities:
+      - execute
+      - create
+      - modify
+      - delete
+      - write-files
+      - run-commands
+      - action-tracking
+      - result-reporting
+      - change-management
+    status: "active"
+    born: "2026-04-25"
+    description: "มือทำสิ่งที่ใจสั่ง — executor, action agent, file operations, command runner"
+    repo: "tinner-deinno/Jit"
+    inbox: "/tmp/manusat-bus/mue"
+    organ_script: "organs/hand.sh"
+
+  - name: "pran"
+    thai_name: "หัวใจ"
+    organ: "Heart"
+    organ_thai: "หัวใจ"
+    role: "Vital Orchestrator / Heartbeat Monitor"
+    tier: 3
+    tier_label: "Tier 3 — Specialist Organs"
+    model: "claude-haiku-4.5"
+    reports_to: "innova"
+    manages: []
+    capabilities:
+      - heartbeat
+      - vital-sign-monitoring
+      - pulse-check
+      - system-alive-signal
+      - rhythmic-operations
+      - task-dispatch
+      - emergency-alert
+      - state-sync
+    status: "active"
+    born: "2026-04-25"
+    description: "หัวใจเต้นให้ระบบมีชีวิต — vital orchestrator, heartbeat manager, system alive signal"
+    repo: "tinner-deinno/Jit"
+    inbox: "/tmp/manusat-bus/pran"
+    organ_script: "organs/heart.sh"
+
+  - name: "sayanprasathan"
+    thai_name: "ระบบประสาท"
+    organ: "Nerve"
+    organ_thai: "ระบบประสาท"
+    role: "Event / Signal Network"
+    tier: 3
+    tier_label: "Tier 3 — Specialist Organs"
+    model: "claude-haiku-4.5"
+    reports_to: "innova"
+    manages: []
+    capabilities:
+      - signal-detection
+      - event-broadcast
+      - alert-propagation
+      - signal-routing
+      - event-logging
+      - priority-escalation
+      - cross-agent-notification
+      - emergency-signals
+    status: "active"
+    born: "2026-04-25"
+    description: "ระบบประสาทส่งสัญญาณ — nerve network, signal broadcaster, event detector"
+    repo: "tinner-deinno/Jit"
+    inbox: "/tmp/manusat-bus/sayanprasathan"
+    organ_script: "organs/nerve.sh"
+
+# ============================================================
+# ORGAN ASSIGNMENTS — all 14 organs mapped to agents
+# ============================================================
+organs:
+  soul:
+    thai: "จิต"
+    agent: "jit"
+    script: "limbs/index.sh"
+    type: "soul-master"
+  brain:
+    thai: "สมอง"
+    agent: "soma"
+    script: "limbs/think.sh"
+    type: "cognition"
+  mind:
+    thai: "จิตใจ"
+    agent: "innova"
+    script: "limbs/index.sh"
+    type: "soul"
+  spine:
+    thai: "กระดูกสันหลัง"
+    agent: "lak"
+    script: null
+    type: "structure"
+  eye_review:
+    thai: "เนตร"
+    agent: "neta"
+    script: "organs/eye.sh"
+    type: "review"
+  mouth:
+    thai: "ปาก"
+    agent: "vaja"
+    script: "organs/mouth.sh"
+    type: "expression"
+  nose:
+    thai: "จมูก"
+    agent: "chamu"
+    script: "organs/nose.sh"
+    type: "detection"
+  form:
+    thai: "รูปลักษณ์"
+    agent: "rupa"
+    script: null
+    type: "design"
+  leg:
+    thai: "ขา"
+    agent: "pada"
+    script: "organs/leg.sh"
+    type: "movement"
+  eye_observe:
+    thai: "ตา"
+    agent: "netra"
+    script: "organs/eye.sh"
+    type: "sense"
+  ear:
+    thai: "หู"
+    agent: "karn"
+    script: "organs/ear.sh"
+    type: "sense"
+  hand:
+    thai: "มือ"
+    agent: "mue"
+    script: "organs/hand.sh"
+    type: "action"
+  heart:
+    thai: "หัวใจ"
+    agent: "pran"
+    script: "organs/heart.sh"
+    type: "vital"
+  nerve:
+    thai: "ระบบประสาท"
+    agent: "sayanprasathan"
+    script: "organs/nerve.sh"
+    type: "network"
+
+# ============================================================
+# ORG CHART — Tier hierarchy
+# ============================================================
+org_chart:
+  tier_0_master:
+    agents: [jit]
+    description: "Soul — Master Orchestrator, System Coordinator"
+  tier_1_leadership:
+    agents: [soma]
+    description: "Brain — Strategic Lead / CTO, delegates and decides"
+    reports_to: jit
+  tier_2_core_engineering:
+    agents: [innova, lak, neta]
+    description: "Mind/Spine/Eye — Lead Development, Architecture, Code Review"
+    reports_to: soma
+  tier_3_specialist_organs:
+    agents: [vaja, chamu, rupa, pada, netra, karn, mue, pran, sayanprasathan]
+    description: "9 specialist organs — execution, sensing, creation, maintenance"
+    reports_to: innova  # primary; rupa/pada also report to soma
+
+# ============================================================
+# WORKFLOWS — Standard flows
+# ============================================================
+workflows:
+  feature_flow:
+    name: "Standard Feature Development"
+    description: "Full lifecycle from human request to deployment"
+    steps:
+      - step: 1
+        agent: vaja
+        action: "รับ request จาก human, ส่งต่อ soma"
+      - step: 2
+        agent: soma
+        action: "analyze, ตัดสินใจ priority"
+      - step: 3
+        agent: lak
+        action: "design architecture, เขียน spec"
+      - step: 4
+        agent: rupa
+        action: "ออกแบบ UI (ถ้ามี)"
+      - step: 5
+        agent: innova
+        action: "implement ตาม spec ของ lak"
+      - step: 6
+        agent: chamu
+        action: "test, bug report"
+      - step: 7
+        agent: neta
+        action: "code review, approve/block"
+      - step: 8
+        agent: pada
+        action: "deploy to staging → production"
+      - step: 9
+        agent: vaja
+        action: "รายงาน human ว่าเสร็จแล้ว"
+
+  bug_flow:
+    name: "Bug Fix Flow"
+    description: "Fast-track bug detection to hotfix"
+    steps:
+      - step: 1
+        agent: chamu
+        action: "detect bug"
+      - step: 2
+        agent: innova
+        action: "fix"
+      - step: 3
+        agent: neta
+        action: "fast review"
+      - step: 4
+        agent: pada
+        action: "hotfix deploy"
+      - step: 5
+        agent: vaja
+        action: "notify human"
+
+  design_flow:
+    name: "Design Flow"
+    description: "UI/UX design from concept to implementation"
+    steps:
+      - step: 1
+        agent: vaja
+        action: "translate human need to rupa"
+      - step: 2
+        agent: rupa
+        action: "wireframe → hi-fi spec"
+      - step: 3
+        agent: soma
+        action: "approve design"
+      - step: 4
+        agent: innova
+        action: "implement"
+      - step: 5
+        agent: rupa
+        action: "visual review"
+
+  health_flow:
+    name: "System Health / Monitoring Flow"
+    description: "Vital sign collection and alert propagation"
+    steps:
+      - step: 1
+        agent: pran
+        action: "collect heartbeats from all agents"
+      - step: 2
+        agent: netra
+        action: "observe system + environment"
+      - step: 3
+        agent: karn
+        action: "listen for incoming signals"
+      - step: 4
+        agent: jit
+        action: "synthesize health state"
+      - step: 5
+        agent: sayanprasathan
+        action: "broadcast alerts if degraded"
+      - step: 6
+        agent: mue
+        action: "execute remediation actions"
+
+# ============================================================
+# COMMUNICATION PROTOCOL
+# ============================================================
+communication:
+  bus_type: "file-based"
+  bus_path: "/tmp/manusat-bus"
+  format: "text/msg"
+  protocol_version: "v1"
+  subject_prefixes:
+    - "task:"
+    - "think:"
+    - "report:"
+    - "alert:"
+    - "broadcast:"
+    - "learn:"
+    - "request:"
+    - "reply:"
+  flow: "mouth.sh writes → bus.sh routes → ear.sh reads → heart.sh dispatches"
+
+# ============================================================
+# EXTERNAL DEPENDENCIES
+# ============================================================
+dependencies:
+  oracle:
+    name: "Arra Oracle V3"
+    repo: "Soul-Brews-Studio/arra-oracle-v3"
+    url: "http://localhost:47778"
+    description: "Shared knowledge base (FTS5 + LanceDB vector search)"
+    shared: true
+  thai_llm:
+    name: "MDES Ollama"
+    url: "https://ollama.mdes-innova.online"
+    model: "gemma4:26b"
+    purpose: "Thai language processing"
