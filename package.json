@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "test:ticket-009": "node eval/ticket-009-cache-test.js && node eval/ticket-009-determinism-test.js && node eval/ticket-009-distribution-test.js && node eval/ticket-009-latency-test.js && node eval/ticket-009-before-after.js"
+    "test": "npm run test:ticket-009 && npm run test:regression-011",
+    "test:ticket-009": "node eval/ticket-009-cache-test.js && node eval/ticket-009-determinism-test.js && node eval/ticket-009-distribution-test.js && node eval/ticket-009-latency-test.js && node eval/ticket-009-before-after.js",
+    "test:regression-011": "node test/regression-011.js"
   },
   "dependencies": {
     "axios": "^1.17.0",
