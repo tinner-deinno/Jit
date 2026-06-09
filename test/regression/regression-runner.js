@@ -57,9 +57,10 @@ function nowIso() { return new Date().toISOString(); }
 
 function pickBackendDeterministic(prompt, prefer) {
   // Use the internal deterministic routing (TICKET-007a)
-  const key = router._routingKey(prompt);
+  // routingKey() requires an array of message objects, not a bare string
+  const key = router.routingKey([{ role: 'user', content: prompt }], {});
   const order = router.status().order || USABLE_BACKENDS;
-  return router.pickBackendByKey(key, order, prefer);
+  return router.pickBackendByKey(key, order);
 }
 
 function loadGolden(backend) {
@@ -80,7 +81,7 @@ function saveGolden(backend, data) {
 async function runCase(tc, backend) {
   const prompt = tc.input;
   const canonical = router._thaiCanonicalize(prompt);
-  const routingKey = router._routingKey(prompt);
+  const routingKey = router.routingKey([{ role: 'user', content: prompt }], {});
   const deterministicBackend = pickBackendDeterministic(prompt, backend);
 
   let liveBackend = null;

@@ -1,131 +1,131 @@
 {
   "TH-001": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "จิ-ต"
   },
   "TH-002": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "นำ-กา-ย"
   },
   "TH-003": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "จิ-ตน-ำ-กา-ย"
   },
   "TH-004": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "อว-ั-ยว-ะ"
   },
   "TH-005": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "สม-า-ธิ"
   },
   "TH-006": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "ภา-ษา-ไ-ทย"
   },
   "TH-007": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "กร-ุงเ-ทพมห-า-นคร"
   },
   "TH-008": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "เ-ชี-ยง-ใ-หม-่"
   },
   "TH-009": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "ปร-ะเ-ทศ-ไ-ทย"
   },
   "TH-010": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "ธรรม-ะ"
   },
   "TH-011": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "hello"
   },
   "TH-012": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "hello-จิ-ต"
   },
   "TH-013": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "น้ำ-ขึ-้นให้-รี-บต-ัก"
   },
   "TH-014": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "มน-ุ-ษย-์Agent"
   },
   "TH-015": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "รั-นnodemother.js"
   },
   "TH-016": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "20-คน"
   },
   "TH-017": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "๑๒๓"
   },
   "TH-018": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": ""
   },
   "TH-019": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "เอ"
   },
   "TH-020": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "แอ"
   },
   "TH-021": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "โอ"
   },
   "TH-022": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "ใอ"
   },
   "TH-023": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "ไอ"
   },
   "TH-024": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "จิ-ตค-ื-ออ-ะไร"
   },
   "TH-025": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "คว-ามแ-ตกต-่า-งร-ะ-หว-่างsomaแ-ละ-innova"
   },
   "TH-026": {
-    "deterministicBackend": "ollama_mdes",
+    "deterministicBackend": "innova_bot",
     "routingKey": "",
     "canonical": "ThaiSyllableSplitterแ-บบ-deterministic"
   }

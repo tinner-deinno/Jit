@@ -1,0 +1,132 @@
+{
+  "TH-001": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "จิ-ต"
+  },
+  "TH-002": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "นำ-กา-ย"
+  },
+  "TH-003": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "จิ-ตน-ำ-กา-ย"
+  },
+  "TH-004": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "อว-ั-ยว-ะ"
+  },
+  "TH-005": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "สม-า-ธิ"
+  },
+  "TH-006": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "ภา-ษา-ไ-ทย"
+  },
+  "TH-007": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "กร-ุงเ-ทพมห-า-นคร"
+  },
+  "TH-008": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "เ-ชี-ยง-ใ-หม-่"
+  },
+  "TH-009": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "ปร-ะเ-ทศ-ไ-ทย"
+  },
+  "TH-010": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "ธรรม-ะ"
+  },
+  "TH-011": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "hello"
+  },
+  "TH-012": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "hello-จิ-ต"
+  },
+  "TH-013": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "น้ำ-ขึ-้นให้-รี-บต-ัก"
+  },
+  "TH-014": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "มน-ุ-ษย-์Agent"
+  },
+  "TH-015": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "รั-นnodemother.js"
+  },
+  "TH-016": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "20-คน"
+  },
+  "TH-017": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "๑๒๓"
+  },
+  "TH-018": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": ""
+  },
+  "TH-019": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "เอ"
+  },
+  "TH-020": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "แอ"
+  },
+  "TH-021": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "โอ"
+  },
+  "TH-022": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "ใอ"
+  },
+  "TH-023": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "ไอ"
+  },
+  "TH-024": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "จิ-ตค-ื-ออ-ะไร"
+  },
+  "TH-025": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "คว-ามแ-ตกต-่า-งร-ะ-หว-่างsomaแ-ละ-innova"
+  },
+  "TH-026": {
+    "deterministicBackend": "copilot",
+    "routingKey": "",
+    "canonical": "ThaiSyllableSplitterแ-บบ-deterministic"
+  }
+}
