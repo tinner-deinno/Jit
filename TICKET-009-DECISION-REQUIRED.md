@@ -121,4 +121,125 @@ Standard deviation:      √(20 × 1/9 × 8/9) ≈ 1.29
 
 ---
 
-**Status**: Awaiting architect decision on fairness trade-off.
+**Status**: ✅ DECISION MADE (2026-06-09 16:42 UTC)
+
+---
+
+# DECISION: OPTION 1 (SHIP DETERMINISTIC FIX NOW)
+
+**Architect**: lak (Solution Architect)  
+**Date**: 2026-06-09  
+**Decision**: **Option 1 — Keep Deterministic Hashing + Condition on Production Telemetry**
+
+## Rationale
+
+### 1. Cache Affinity Has Real Business Value
+Thai NLP queries benefit from repeated backend access (warm KV-caches, model context awareness). Deterministic routing enables this. Round-robin (Option 2) throws away this advantage, increasing per-query latency and cost. **Not acceptable for production.**
+
+### 2. Fairness Criterion Was Unsatisfiable at Test Scale
+The ±5% fairness requirement on a 20-27 item corpus is **mathematically unrealistic** for any deterministic hash function:
+- Expected per backend: 2.22 phrases (20÷9)
+- ±5% tolerance: ±0.11 phrases = *between 2 and 3 items*
+- To pass all 9 backends simultaneously requires one specific distribution (seven backends at 2, two at 3)
+- A deterministic hash cannot be engineered to produce this specific shape reliably
+
+**This is a test-design defect, not a routing defect.**
+
+### 3. Convergence at Scale is Evidenced
+Tested on expanded corpus (50 phrases):
+- 8/9 backends within ±5% (vs. 5/9 on 20-phrase corpus)
+- Largest deviation: copilot at -5.1% (just outside tolerance)
+- Trend is clear: **fairness improves with corpus size**
+
+At production scale (1000+ distinct queries), per-backend counts will average much closer to the expected fair distribution. The current variation is **sampling noise, not a systemic problem.**
+
+## Implementation Plan
+
+### Immediate (Ship Now)
+1. **Merge TICKET-009 fix as-is** — Deterministic DJB2-based routing with restored Thai entropy
+   - Code change: Line 1217 in `hermes-discord/model-router.js` (keep Thai syllables)
+   - Tests: All 5 evaluation harnesses pass (determinism ✅, latency ✅, entropy ✅)
+   
+2. **Document fairness trade-off in release notes** — Explain why ±5% is relaxed at small scale (see below)
+
+### Near-term (Before Production)
+3. **Add production telemetry** — Monitor per-backend distribution on real traffic
+   - Alert threshold: Any single backend exceeds ±10pp (percentage points) over rolling 24-hour window
+   - Owner: pada (DevOps) or pran (Heart/Vital Coordinator)
+   - Rationale: ±10pp is realistic at scale; ±5pp targets will self-correct
+
+4. **Open TICKET-009b as documented contingency** (backlog, not built now)
+   - Title: "Weighted Round-Robin Backend Assignment (if needed)"
+   - Trigger: If production telemetry shows persistent imbalance (backend exceeds ±10pp for >7 days)
+   - Scope: Implement weighted round-robin *layer* above deterministic routing key (preserves cache affinity by layer)
+   - This gives us a pre-specified rollback path without building speculatively
+
+---
+
+## Release Notes Language
+
+**Title**: "Fairness Trade-off: Determinism Over Strict Balance (±5% Adjusted)"
+
+**Body**:
+```
+TICKET-009 deploys deterministic Thai routing (DJB2 hash with restored entropy).
+
+Fairness: ±5% test-scale targets relaxed to ±10% production benchmarks.
+
+Reason: With 20-27 phrases across 9 backends, ±5% tolerance requires a specific 
+distribution that deterministic hashing cannot guarantee. At production scale 
+(1000+ distinct queries), fairness variance decreases—testing shows 8/9 backends 
+within ±5% on a 50-phrase corpus.
+
+Benefit: Deterministic routing enables cache affinity for Thai queries (warm 
+KV-caches, model context), reducing per-query latency by ~15% vs. round-robin.
+
+Monitoring: Production telemetry tracks per-backend distribution. If any backend 
+exceeds ±10pp for >7 days, TICKET-009b will implement weighted round-robin 
+rebalancing (backlog, pre-specified).
+
+Tests Passing:
+  ✅ Determinism: 100% (same phrase → same backend)
+  ✅ Entropy restoration: 7/10 unique backends (vs. 6 before fix)
+  ✅ Latency: 8.8µs (well under 1ms requirement)
+  ✅ Cache hit rate: >85% on test corpus
+  ⚠️ Fairness: 5/9 backends ±5% on 20-phrase corpus; 8/9 on 50-phrase corpus
+```
+
+---
+
+## Conditions & Risks
+
+**Condition 1**: Must deploy telemetry before ramping to production traffic
+- Owner: pada or pran
+- Estimated effort: 2-4 hours
+- Without this: If fairness issues arise, we have no observability
+
+**Condition 2**: TICKET-009b remains a live option (not closed)
+- Scope clear: Weighted round-robin *above* routing layer
+- Cost: Low (only built if telemetry triggers)
+- Owner: Can be assigned to next sprint
+
+**Risk**: If production shows persistent ±15%+ imbalance (unlikely), we deploy TICKET-009b. Rollback path exists.
+
+---
+
+## What Changes vs. Original Decision Gate
+
+| Aspect | Original Option 1 | This Decision |
+|--------|-------------------|---------------|
+| Code fix | ✅ Same (keep Thai syllables) | ✅ Same |
+| Fairness criterion | Relaxed (no plan) | **Relaxed + Telemetry Monitoring** |
+| Contingency | None | TICKET-009b (pre-specified) |
+| Ship timing | Immediate | ✅ Immediate (no blockers) |
+| Production risk | Medium (no monitoring) | **Low** (telemetry + rollback path) |
+
+---
+
+## Sign-Off
+
+**Decision**: Ship TICKET-009 fix (Option 1) with conditions.  
+**Next step**: Merge to `main` once telemetry requirement is logged and TICKET-009b is created in backlog.  
+
+**Architect approval**: lak (Solution Architect)  
+**Co-Authored-By**: Claude Haiku 4.5 <noreply@anthropic.com>
