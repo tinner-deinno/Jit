@@ -1,0 +1,17 @@
+id: JIT-015
+title: "Add multi-model fallback chain to limbs/ollama.sh"
+priority: P1
+type: feat
+status: done
+owner: innova
+created: 2026-06-07
+updated: 2026-06-08
+spec_ref: specs/JIT-015-spec.md
+acceptance:
+  - ollama.sh accepts MODEL_CHAIN env var: comma-separated ordered model list (e.g. "gemma4:26b,gemma2:9b,gemma2:2b")
+  - On primary model timeout (>30s) or HTTP 5xx, automatically retries with next model in chain
+  - Each model attempt logged: timestamp, model, latency, success/fail
+  - Fallback events emitted to bus as learn:model-fallback for Oracle to track patterns
+  - OLLAMA_TIMEOUT_SEC env var configures timeout per attempt (default 30)
+effort_hours: 5
+tags: [ollama, multi-model, reliability, p1, innova]

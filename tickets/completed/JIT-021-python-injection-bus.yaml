@@ -1,0 +1,58 @@
+id: JIT-021
+title: Python code injection in network/bus.sh via unescaped registry path
+priority: P0
+type: security
+status: completed
+completed: "2026-06-07"
+owner: sayanprasathan
+created: 2026-06-07
+updated: 2026-06-08
+spec_ref: specs/JIT-021-spec.md
+acceptance:
+  - Escape $REGISTRY path using Python string literals or pass as argv
+  - Verify Python subprocess call works with registry paths containing quotes or spaces
+  - Add unit test with registry path containing `'` and `"` characters
+effort_hours: 3
+tags: [security, code-injection, python-injection, bus]
+---
+
+## Summary
+
+The `network/bus.sh` script (lines 27-32) embeds the unescaped `$REGISTRY` variable directly into Python code executed via `python3 -c`. If the registry path contains single or double quotes, backslashes, or other special characters, it breaks Python string parsing and allows arbitrary code execution.
+
+```bash
+python3 -c "
+import json
+with open('$REGISTRY') as f:    # <-- UNESCAPED PATH
+    d = json.load(f)
+for a in d.get('agents', []):
+    import os; os.makedirs('$BUS_ROOT/' + a['name'], exist_ok=True)  # <-- UNESCAPED PATH
+"
+```
+
+## Impact
+
+- Attacker with control over `$REGISTRY` or `$BUS_ROOT` paths can inject Python code
+- Could lead to arbitrary code execution during bus initialization
+- If PATH includes a crafted registry file, Python interpreter executes attacker code
+
+## Affected Lines
+
+- **network/bus.sh:27-32** — `$REGISTRY` and `$BUS_ROOT` used unquoted in Python heredoc
+- **organs/heart.sh:64-88** — Same pattern with `$REGISTRY` and `$BUS_ROOT`
+- **organs/mouth.sh:72-77** — Same pattern with `$REGISTRY`
+
+## Fix Strategy
+
+Pass variables as Python command-line arguments:
+```bash
+python3 -c "
+import sys, json, os
+reg_path = sys.argv[1]
+bus_root = sys.argv[2]
+with open(reg_path) as f:
+    d = json.load(f)
+for a in d.get('agents', []):
+    os.makedirs(os.path.join(bus_root, a['name']), exist_ok=True)
+" "$REGISTRY" "$BUS_ROOT"
+```

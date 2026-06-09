@@ -1,0 +1,350 @@
+{
+  "documentation_task": {
+    "status": "success",
+    "completion_percent": 100,
+    "generated_at": "2026-06-08T00:00:00Z",
+    "title": "Secure Validation CLI (Codex) - API Documentation",
+    "version": "1.0",
+    "api": {
+      "name": "Secure Validation CLI v12",
+      "provider": "Codex CLI",
+      "description": "JSON-based REST-like validation interface for input sanitization, type checking, and schema validation",
+      "base_command": "node secure_validator_cli.js",
+      "output_format": "JSON",
+      "exit_codes": {
+        "0": "Success",
+        "1": "Validation failed or error occurred"
+      },
+      "endpoints": [
+        {
+          "endpoint": "validate",
+          "description": "Validate single input with configurable depth and length constraints",
+          "method": "command",
+          "usage": "validate <input> [options]",
+          "parameters": [
+            {
+              "name": "input",
+              "type": "string",
+              "required": true,
+              "description": "Input string to validate"
+            },
+            {
+              "name": "maxLength",
+              "type": "integer",
+              "required": false,
+              "default": 10000,
+              "flag": "--maxLength=N",
+              "description": "Maximum allowed input length in characters"
+            },
+            {
+              "name": "maxDepth",
+              "type": "integer",
+              "required": false,
+              "default": 20,
+              "flag": "--maxDepth=N",
+              "description": "Maximum nesting depth for complex structures"
+            },
+            {
+              "name": "allowNull",
+              "type": "boolean",
+              "required": false,
+              "default": true,
+              "flag": "--allowNull=true|false",
+              "description": "Whether null values are permitted"
+            },
+            {
+              "name": "sanitize",
+              "type": "boolean",
+              "required": false,
+              "default": true,
+              "flag": "--sanitize=true|false",
+              "description": "Whether to sanitize dangerous characters/patterns"
+            }
+          ],
+          "example": "node secure_validator_cli.js validate \"SELECT * FROM users\" --maxLength=5000",
+          "response_schema": {
+            "status": "string (success|validation_failed|error)",
+            "completion_percent": "integer (0-100)",
+            "data": {
+              "input": "string (truncated to 50 chars if longer)",
+              "valid": "boolean",
+              "errors": "array of error objects",
+              "sanitized": "string (cleaned output)"
+            },
+            "timestamp": "ISO 8601 datetime"
+          }
+        },
+        {
+          "endpoint": "batch",
+          "description": "Validate multiple inputs as JSON array with summary statistics",
+          "method": "command",
+          "usage": "batch <json-array> [options]",
+          "parameters": [
+            {
+              "name": "json-array",
+              "type": "string (JSON)",
+              "required": true,
+              "description": "Array of strings to validate: [\"input1\", \"input2\", ...]"
+            },
+            {
+              "name": "maxLength",
+              "type": "integer",
+              "required": false,
+              "default": 10000,
+              "flag": "--maxLength=N",
+              "description": "Maximum allowed input length per item"
+            },
+            {
+              "name": "maxDepth",
+              "type": "integer",
+              "required": false,
+              "default": 20,
+              "flag": "--maxDepth=N",
+              "description": "Maximum nesting depth per item"
+            },
+            {
+              "name": "sanitize",
+              "type": "boolean",
+              "required": false,
+              "default": true,
+              "flag": "--sanitize=true|false",
+              "description": "Whether to sanitize each input"
+            }
+          ],
+          "example": "node secure_validator_cli.js batch '[\"test1\", \"test2\", \"test3\"]'",
+          "response_schema": {
+            "status": "string (success|partial_failure|error)",
+            "completion_percent": "integer (0-100, calculated as valid_count/total_count * 100)",
+            "data": {
+              "total": "integer (number of inputs)",
+              "valid": "integer (number of valid inputs)",
+              "invalid": "integer (number of invalid inputs)",
+              "results": "array of {input, valid, errors} objects"
+            },
+            "timestamp": "ISO 8601 datetime"
+          }
+        },
+        {
+          "endpoint": "email",
+          "description": "Specialized validation for email addresses with RFC compliance",
+          "method": "command",
+          "usage": "email <email>",
+          "parameters": [
+            {
+              "name": "email",
+              "type": "string",
+              "required": true,
+              "description": "Email address to validate"
+            }
+          ],
+          "example": "node secure_validator_cli.js email \"user@example.com\"",
+          "response_schema": {
+            "status": "string (success|validation_failed|error)",
+            "completion_percent": "integer (0 or 100)",
+            "data": {
+              "email": "string",
+              "valid": "boolean"
+            },
+            "timestamp": "ISO 8601 datetime"
+          }
+        },
+        {
+          "endpoint": "url",
+          "description": "Specialized validation for URLs with scheme and format checking",
+          "method": "command",
+          "usage": "url <url>",
+          "parameters": [
+            {
+              "name": "url",
+              "type": "string",
+              "required": true,
+              "description": "URL to validate (must include scheme: http://, https://, etc.)"
+            }
+          ],
+          "example": "node secure_validator_cli.js url \"https://example.com/path\"",
+          "response_schema": {
+            "status": "string (success|validation_failed|error)",
+            "completion_percent": "integer (0 or 100)",
+            "data": {
+              "url": "string",
+              "valid": "boolean"
+            },
+            "timestamp": "ISO 8601 datetime"
+          }
+        },
+        {
+          "endpoint": "number",
+          "description": "Numeric validation with optional range constraints",
+          "method": "command",
+          "usage": "number <value> [options]",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "number",
+              "required": true,
+              "description": "Numeric value to validate"
+            },
+            {
+              "name": "min",
+              "type": "number",
+              "required": false,
+              "default": "-Infinity",
+              "flag": "--min=N",
+              "description": "Minimum allowed value (inclusive)"
+            },
+            {
+              "name": "max",
+              "type": "number",
+              "required": false,
+              "default": "Infinity",
+              "flag": "--max=N",
+              "description": "Maximum allowed value (inclusive)"
+            }
+          ],
+          "example": "node secure_validator_cli.js number 42 --min=0 --max=100",
+          "response_schema": {
+            "status": "string (success|validation_failed|error)",
+            "completion_percent": "integer (0 or 100)",
+            "data": {
+              "value": "number",
+              "valid": "boolean",
+              "range": "[min, max]",
+              "errors": "array of validation error messages"
+            },
+            "timestamp": "ISO 8601 datetime"
+          }
+        },
+        {
+          "endpoint": "enum",
+          "description": "Enum/allowlist validation - check value is in permitted set",
+          "method": "command",
+          "usage": "enum <value> <json-array>",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "string",
+              "required": true,
+              "description": "Value to validate against allowlist"
+            },
+            {
+              "name": "json-array",
+              "type": "string (JSON array)",
+              "required": true,
+              "description": "Array of allowed values: [\"val1\", \"val2\", ...]"
+            }
+          ],
+          "example": "node secure_validator_cli.js enum \"admin\" '[\"user\", \"admin\", \"guest\"]'",
+          "response_schema": {
+            "status": "string (success|validation_failed|error)",
+            "completion_percent": "integer (0 or 100)",
+            "data": {
+              "value": "string",
+              "valid": "boolean",
+              "allowed": "array of permitted values"
+            },
+            "timestamp": "ISO 8601 datetime"
+          }
+        }
+      ],
+      "response_format": {
+        "description": "All endpoints return JSON objects with consistent structure",
+        "fields": {
+          "status": {
+            "type": "string",
+            "enum": ["success", "validation_failed", "error", "partial_failure"],
+            "description": "Request status indicator"
+          },
+          "completion_percent": {
+            "type": "integer",
+            "range": "0-100",
+            "description": "Percentage of successful validations/operations"
+          },
+          "data": {
+            "type": "object",
+            "description": "Endpoint-specific result data"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message (only when status=error)"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "ISO 8601",
+            "description": "Server timestamp of response"
+          }
+        }
+      },
+      "error_handling": {
+        "missing_arguments": {
+          "status": "error",
+          "completion_percent": 0,
+          "error": "Required argument missing (e.g., 'Input required for validate command')"
+        },
+        "invalid_json": {
+          "status": "error",
+          "completion_percent": 0,
+          "error": "JSON parsing failed with details"
+        },
+        "validation_failure": {
+          "status": "validation_failed",
+          "completion_percent": 0,
+          "data": {
+            "valid": false,
+            "errors": ["array of validation failures"]
+          }
+        },
+        "partial_batch_failure": {
+          "status": "partial_failure",
+          "completion_percent": "X (calculated)",
+          "data": {
+            "total": "N",
+            "valid": "M",
+            "invalid": "N-M"
+          }
+        }
+      },
+      "security_features": [
+        "Input length limiting (configurable maxLength)",
+        "Nesting depth limiting (configurable maxDepth)",
+        "Automatic HTML/script sanitization (configurable)",
+        "Null value filtering (configurable)",
+        "Email format RFC compliance checking",
+        "URL scheme and structure validation",
+        "Numeric range validation"
+      ],
+      "usage_examples": {
+        "quick_start": [
+          "node secure_validator_cli.js help",
+          "node secure_validator_cli.js validate 'any input string'",
+          "node secure_validator_cli.js email 'test@example.com'"
+        ],
+        "batch_validation": [
+          "node secure_validator_cli.js batch '[\"email@test.com\", \"invalid\", \"another@test.com\"]'"
+        ],
+        "constrained_validation": [
+          "node secure_validator_cli.js validate 'test' --maxLength=100 --maxDepth=5",
+          "node secure_validator_cli.js number 50 --min=0 --max=100"
+        ],
+        "enum_check": [
+          "node secure_validator_cli.js enum 'production' '[\"dev\", \"staging\", \"production\"]'"
+        ]
+      },
+      "integration_notes": {
+        "json_output": "All responses are valid JSON, suitable for piping to other tools",
+        "exit_code": "Use process exit codes for success/failure detection in scripts",
+        "completion_percent": "Use this field for progress tracking in long-running batches",
+        "timestamp": "All responses include server timestamp for audit trails"
+      }
+    }
+  },
+  "metadata": {
+    "task_id": "doc-task-#1",
+    "provider": "Codex CLI",
+    "quality": "production-ready",
+    "sections_completed": 6,
+    "sections_total": 6,
+    "estimated_reading_time_minutes": 5,
+    "examples_included": 12,
+    "endpoints_documented": 6
+  }
+}

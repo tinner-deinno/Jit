@@ -1,0 +1,228 @@
+{
+  "analysis_date": "2026-06-09",
+  "repository": "Jit",
+  "total_code_files": 213,
+  "documentation_status": {
+    "shell_scripts": {
+      "total": 35,
+      "with_headers": 35,
+      "percentage": 100
+    },
+    "javascript_files": {
+      "total": 4,
+      "with_headers": 4,
+      "percentage": 100
+    },
+    "typescript_files": {
+      "total": 0,
+      "with_headers": 0,
+      "percentage": 0
+    }
+  },
+  "directories_without_readme": [
+    "cmdteam",
+    "eval",
+    "hermes-discord",
+    "hermes-ollama",
+    "limbs",
+    "limbs/providers",
+    "memory",
+    "mind",
+    "minds",
+    "network",
+    "ops",
+    "ops/systemd",
+    "organs",
+    "reports/coverage",
+    "scripts",
+    "src",
+    "systemd",
+    "tests",
+    "voice"
+  ],
+  "scripts_lacking_clear_documentation": [
+    "awaken.sh",
+    "cmdteam-cleanup-loop.sh",
+    "cmdteam-daemon.sh",
+    "cmdteam-loops-master.sh",
+    "cmdteam-self-improve-loop.sh",
+    "cmdteam-status-daemon.sh",
+    "codespace-presence.sh",
+    "create_jit.sh",
+    "gsd.sh",
+    "heartbeat-enhanced.sh",
+    "heartbeat.sh",
+    "housekeeping-loop.sh",
+    "init-life.sh",
+    "innova-bot-setup.sh",
+    "innova-remote.sh",
+    "innova-startup.sh",
+    "jit-loops-master.sh",
+    "karn-remote.sh",
+    "multi-remote.sh",
+    "pattern-detector-loop.sh",
+    "pc3_start_all.sh",
+    "selfhood-checklist.sh",
+    "start-hermes-discord.sh",
+    "start-oracle.sh",
+    "status-broadcaster-loop.sh",
+    "sync-cross-machine.sh",
+    "sync-identity.sh",
+    "writer-loop.sh"
+  ],
+  "undocumented_modules": [
+    {
+      "module": "agents/template.json",
+      "issue": "Agent template has no corresponding .md documentation"
+    }
+  ],
+  "documentation_gaps": {
+    "directory_readmes": {
+      "description": "19 directories with code lack README.md files",
+      "impact": "New contributors cannot understand module purpose",
+      "affected_dirs": [
+        "limbs (14 shell scripts - core utilities)",
+        "organs (14 shell scripts - I/O layer)",
+        "network (6 shell scripts - message bus)",
+        "scripts (41 shell scripts - daemon/startup)",
+        "eval (10 code files - testing)",
+        "tests (8 code files - test suite)",
+        "src (5 JS files - validators)"
+      ]
+    },
+    "script_headers": {
+      "description": "28 daemon and utility scripts in ./scripts/ lack clear PURPOSE/DESCRIPTION headers",
+      "impact": "Unclear what daemon/startup scripts do, when to use them, dependencies",
+      "examples": [
+        "awaken.sh - unclear if bootstrap or reset",
+        "heartbeat-enhanced.sh - purpose not documented",
+        "cmdteam-loops-master.sh - multi-agent loop purpose missing",
+        "sync-cross-machine.sh - machine sync logic undocumented"
+      ]
+    },
+    "function_documentation": {
+      "description": "Private/internal functions (_filter_*, _provider_*, etc.) lack inline docs",
+      "impact": "Difficult to understand internal logic flow",
+      "files_affected": [
+        "limbs/agent_filter.sh (_filter_* functions)",
+        "limbs/embed.sh (_generate_embedding*, _load_embedding_index)",
+        "limbs/llm.sh (_provider_*, _resolve, _build_system)",
+        "limbs/ollama.sh (_call_ollama_with_fallback)"
+      ]
+    },
+    "api_documentation": {
+      "description": "Missing API docs for agent message formats and routing",
+      "impact": "Hard to understand inter-agent communication protocol",
+      "missing": [
+        "Agent message schema (types, required fields)",
+        "Bus routing rules and priority handling",
+        "Direct-channel protocol specification",
+        "Discord webhook message format"
+      ]
+    },
+    "provider_documentation": {
+      "description": "limbs/providers/ directory has code but no module documentation",
+      "impact": "Unclear how provider abstraction layer works",
+      "files": [
+        "providers/anthropic.sh",
+        "providers/generic.sh",
+        "providers/ollama.sh",
+        "providers/openai.sh"
+      ]
+    },
+    "mind_systems": {
+      "description": "mind/ and minds/ directories lack documentation",
+      "impact": "Cannot understand psychological/emotional state systems",
+      "directories": [
+        "mind/",
+        "minds/ (innova-specific mind system)"
+      ]
+    }
+  },
+  "todo_fixme_comments": {
+    "total_found": 0,
+    "note": "No explicit TODO/FIXME comments found (tmpfile XXXXXX patterns don't count)"
+  },
+  "recommendations": {
+    "high_priority": [
+      {
+        "task": "Create README.md for ./limbs/",
+        "description": "Document core limb system, how limbs work, limb types",
+        "effort": "medium"
+      },
+      {
+        "task": "Create README.md for ./organs/",
+        "description": "Document organ I/O layer, how to use ear/mouth/hand/eye/etc",
+        "effort": "medium"
+      },
+      {
+        "task": "Create README.md for ./scripts/",
+        "description": "Index all 41 scripts with purpose, usage, dependencies",
+        "effort": "high"
+      },
+      {
+        "task": "Add documentation headers to daemon scripts",
+        "description": "Add PURPOSE/USAGE comments to 28 undocumented daemon scripts",
+        "effort": "high"
+      }
+    ],
+    "medium_priority": [
+      {
+        "task": "Document internal functions",
+        "description": "Add inline comments for _filter_*, _provider_*, _generate_embedding* functions",
+        "effort": "medium"
+      },
+      {
+        "task": "Create provider abstraction documentation",
+        "description": "Document how llm.sh routes between providers with fallback chain",
+        "effort": "medium"
+      },
+      {
+        "task": "Document agent message protocol",
+        "description": "Formalize agent message schema, bus routing, error handling",
+        "effort": "high"
+      }
+    ],
+    "low_priority": [
+      {
+        "task": "Document mind/minds/ systems",
+        "description": "Explain psychological state tracking for agents",
+        "effort": "medium"
+      },
+      {
+        "task": "Create eval/ test suite documentation",
+        "description": "Document test structure, how to run tests, coverage expectations",
+        "effort": "low"
+      }
+    ]
+  },
+  "existing_documentation": {
+    "comprehensive": [
+      "/docs/core/JIT_FULL_SYSTEM_GUIDE.md",
+      "/docs/core/JIT_DEVELOPMENT_GUIDE.md",
+      "/CLAUDE.md (project instructions)",
+      "/core/body-map.md (team RACI)"
+    ],
+    "api_docs": [
+      "/docs/api/API_DOCUMENTATION_v2.json",
+      "/docs/api/CODEX_CLI_API.json",
+      "/docs/API.md"
+    ]
+  },
+  "summary": {
+    "well_documented_areas": [
+      "All .sh and .js files have header comments",
+      "All agent .json files have corresponding .md docs (except template)",
+      "Comprehensive API documentation exists in /docs/",
+      "System architecture well documented in /docs/core/"
+    ],
+    "gaps": [
+      "19 directories lack README.md files",
+      "28 daemon/utility scripts lack clear PURPOSE headers",
+      "Internal function documentation sparse",
+      "Agent message protocol not formally documented",
+      "Provider abstraction layer not documented",
+      "Test suite documentation missing"
+    ]
+  }
+}

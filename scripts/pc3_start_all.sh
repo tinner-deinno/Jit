@@ -1,12 +1,44 @@
 #!/usr/bin/env bash
 # scripts/pc3_start_all.sh — PC3-Jit One-Click Bootstrap
 #
-# Starts all Jit agent services on the PC3 node.
-# Run this after a fresh clone or codespace start.
+# สคริปต์สำหรับเริ่มต้นบริการทั้งหมดของระบบ Jit agent บนโหนด PC3
+# ออกแบบมาเพื่อให้ผู้ใช้สามารถเริ่มต้นระบบได้อย่างรวดเร็วหลังจาก
+# ทำการ clone โค้ดใหม่หรือเริ่มต้น Codespace ใหม่
 #
-# Usage:
-#   bash scripts/pc3_start_all.sh           # full start
-#   bash scripts/pc3_start_all.sh --status  # show current status
+# บริการที่จะเริ่มต้น:
+#   - Oracle Knowledge Base (arra-oracle-v3) - ฐานความรู้ร่วมกันของทุก agent
+#   - Heartbeat Daemon - ระบบชีพจรสำคัญที่ทำให้ระบบมีชีวิตชีวา
+#   - Hermes Systems - ระบบแจ้งเตือนและรายงานสถานะ
+#   - Monitoring Services - ระบบตรวจสอบสุขภาพและประสิทธิภาพ
+#   - Background Loops - ลูปพื้นหลังสำหรับงานบำรุงรักษาและปรับปรุงตนเอง
+#
+# วัตถุประสงค์:
+#   ลดความซับซ้อนในการเริ่มต้นระบบ Jit จากหลายขั้นตอนเหลือเพียงคำสั่งเดียว
+#   ให้มั่นใจว่าบริการที่จำเป็นทั้งหมดถูกเริ่มต้นอย่างถูกต้องและในลำดับที่เหมาะสม
+#   ให้ผู้ใช้ใหม่สามารถเริ่มทำงานกับระบบได้ทันทีโดยไม่ต้องตั้งค่ามากมาย
+#
+# การใช้งาน:
+#   bash scripts/pc3_start_all.sh           # เริ่มต้นบริการทั้งหมด (ค่าเริ่มต้น)
+#   bash scripts/pc3_start_all.sh --status  # แสดงสถานะปัจจุบันของบริการโดยไม่เริ่มต้นใหม่
+#
+# ขั้นตอนการทำงานภายใน:
+#   1. ตรวจสอบและติดตั้ง dependencies ที่จำเป็น (Bun, ฯลฯ)
+#   2. เริ่มต้น Oracle Knowledge Base บนพอร์ต 47778
+#   3. เริ่มต้น Heartbeat Daemon เพื่อให้ระบบมีชีพจร
+#   4. เริ่มต้น Hermes Systems สำหรับการแจ้งเตือน
+#   5. เริ่มต้น Monitoring Services และ Background Loops
+#   6. ตรวจสอบว่าบริการทั้งหมดทำงานอย่างถูกต้อง
+#
+# หมายเหตุ:
+#   สคริปต์นี้ถูกออกแบบมาให้รันได้อย่างปลอดภัยหลายครั้ง
+#   หากบริการใดบริการหนึ่งกำลังทำงานอยู่แล้ว จะไม่พยายามเริ่มต้นซ้ำซ้อน
+#   หากเกิดข้อผิดพลาดในการเริ่มต้นบริการใดบริการหนึ่ง จะแสดงข้อความแจ้งเตือน
+#   แต่จะยังคงพยายามเริ่มต้นบริการที่เหลือต่อไป
+#
+# การตรวจสอบหลังการเริ่มต้น:
+#   ตรวจสอบ Oracle: curl http://localhost:47778/api/health
+#   ตรวจสอบ Heartbeat: bash scripts/heartbeat.sh status
+#   ตรวจสอบบริการอื่นๆ: ตรวจสอบ process ที่ทำงานอยู่หรือไฟล์ log ที่เกี่ยวข้อง
 
 set -euo pipefail
 

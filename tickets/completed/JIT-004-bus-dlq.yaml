@@ -1,0 +1,17 @@
+id: JIT-004
+title: Add dead-letter queue (DLQ) for bus failures
+priority: P1
+type: spec+code
+status: completed
+owner: lak
+created: 2026-06-06
+updated: 2026-06-08
+spec_ref: network/protocol.md
+source_audit: PROTO-GAP-004
+acceptance:
+  - Define `$BUS_ROOT/_dlq/<reason>/` directory structure (e.g. `_dlq/expired/`, `_dlq/unrouted/`, `_dlq/max-retries/`)
+  - bus.sh gains a `dlq` subcommand: `dlq list`, `dlq replay <file>`, `dlq purge --older-than 7d`
+  - router.sh and bus.sh move (not copy) failed messages to the appropriate DLQ folder and write a `.reason` sidecar with failure metadata
+  - An alert subject `alert:dlq-growing` is emitted when DLQ depth exceeds a configurable threshold
+effort_hours: 5
+tags: [bus, dlq, observability, p1]

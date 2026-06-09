@@ -1,0 +1,25 @@
+id: JIT-027
+title: "Implement message priority queues in bus"
+priority: P1
+type: feat
+status: completed
+owner: netra
+created: 2026-06-07
+updated: 2026-06-08
+completed: 2026-06-08
+spec_ref: specs/JIT-027-spec.md
+acceptance:
+  - bus.sh send <to> <subject> [--priority P1|P2|P3] adds priority header (default: P2)
+  - Message inbox subdivided into priority buckets: P1/ P2/ P3/
+  - bus.sh recv --priority=P1 reads high-priority messages first
+  - bus.sh stats reports queue depth and % served by priority
+  - Alert subjects (alert:critical, alert:anomaly) auto-promoted to P1
+  - DLQ messages get P3 to prevent starvation
+effort_hours: 6
+tags: [bus, queue, priority, p1, netra]
+notes: "Currently FIFO queue. Add priority to ensure critical alerts and health checks don't get blocked by low-priority tasks."
+implementation_notes: |
+  - Priority queues already implemented in bus.sh before verification
+  - Added --priority flag for recv command (was missing)
+  - Added validation for priority values (P1/P2/P3 only)
+  - All 6 acceptance criteria verified and passing

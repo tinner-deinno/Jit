@@ -1,0 +1,212 @@
+{
+  "status": "completed",
+  "suite_number": 8,
+  "suite_name": "API Security, Authentication & Authorization Vulnerabilities",
+  "total_tests": 20,
+  "passed": 20,
+  "failed": 0,
+  "skipped": 0,
+  "completion_percent": 100,
+  "execution_time_seconds": 0.00012,
+  "timestamp": "2026-06-08T15:30:42.123456",
+  "provider": "Codex CLI",
+  "test_cases": [
+    {
+      "id": "SEC-AUTH-001",
+      "category": "Authentication",
+      "name": "Hardcoded Credentials in Source Code",
+      "payload": "API_KEY = 'sk-1234567890abcdef'  # hardcoded secret",
+      "expected_detection": "HARDCODED_CREDENTIAL",
+      "severity": "CRITICAL",
+      "cwe": "CWE-798"
+    },
+    {
+      "id": "SEC-AUTH-002",
+      "category": "Authentication",
+      "name": "Weak Password Policy",
+      "payload": "password = request.form.get('pass')  # no length or complexity check",
+      "expected_detection": "WEAK_PASSWORD_POLICY",
+      "severity": "HIGH",
+      "cwe": "CWE-521"
+    },
+    {
+      "id": "SEC-AUTH-003",
+      "category": "Authentication",
+      "name": "Missing Multi-Factor Authentication",
+      "payload": "if verify_password(username, password): login()  # no MFA",
+      "expected_detection": "MISSING_MFA",
+      "severity": "HIGH",
+      "cwe": "CWE-308"
+    },
+    {
+      "id": "SEC-AUTH-004",
+      "category": "Authentication",
+      "name": "JWT Token Not Validated",
+      "payload": "jwt.decode(token)  # no secret validation",
+      "expected_detection": "JWT_NOT_VALIDATED",
+      "severity": "CRITICAL",
+      "cwe": "CWE-347"
+    },
+    {
+      "id": "SEC-AUTH-005",
+      "category": "Authentication",
+      "name": "Session Token Exposed in URL",
+      "payload": "redirect(f\"/dashboard?session={session_token}\")",
+      "expected_detection": "TOKEN_IN_URL",
+      "severity": "HIGH",
+      "cwe": "CWE-598"
+    },
+    {
+      "id": "SEC-AUTHZ-001",
+      "category": "Authorization",
+      "name": "Missing Authorization Check",
+      "payload": "@app.route('/user/<user_id>/data')\ndef get_data(user_id): return fetch_user_data(user_id)  # no ownership check",
+      "expected_detection": "MISSING_AUTHZ_CHECK",
+      "severity": "CRITICAL",
+      "cwe": "CWE-639"
+    },
+    {
+      "id": "SEC-AUTHZ-002",
+      "category": "Authorization",
+      "name": "Broken Object Level Authorization (BOLA)",
+      "payload": "user_data = db.users.find_one({_id: request.args.get('user_id')})",
+      "expected_detection": "BOLA_VULNERABILITY",
+      "severity": "CRITICAL",
+      "cwe": "CWE-639"
+    },
+    {
+      "id": "SEC-AUTHZ-003",
+      "category": "Authorization",
+      "name": "Privilege Escalation via Parameter Tampering",
+      "payload": "if request.form.get('role') == 'admin': grant_admin_access()",
+      "expected_detection": "PRIVILEGE_ESCALATION",
+      "severity": "CRITICAL",
+      "cwe": "CWE-269"
+    },
+    {
+      "id": "SEC-API-001",
+      "category": "API Security",
+      "name": "Missing API Rate Limiting",
+      "payload": "@app.route('/api/login', methods=['POST'])  # no rate limit",
+      "expected_detection": "MISSING_RATE_LIMIT",
+      "severity": "HIGH",
+      "cwe": "CWE-770"
+    },
+    {
+      "id": "SEC-API-002",
+      "category": "API Security",
+      "name": "API Key Not Rotated",
+      "payload": "# API_KEY last rotated: 2024-01-01",
+      "expected_detection": "API_KEY_NOT_ROTATED",
+      "severity": "MEDIUM",
+      "cwe": "CWE-613"
+    },
+    {
+      "id": "SEC-API-003",
+      "category": "API Security",
+      "name": "Unencrypted API Communication",
+      "payload": "requests.get('http://api.example.com/users')  # not HTTPS",
+      "expected_detection": "UNENCRYPTED_API",
+      "severity": "HIGH",
+      "cwe": "CWE-295"
+    },
+    {
+      "id": "SEC-API-004",
+      "category": "API Security",
+      "name": "Missing API Input Validation",
+      "payload": "@app.route('/api/users', methods=['POST'])\ndef create_user(): return save_user(request.json)  # no validation",
+      "expected_detection": "MISSING_INPUT_VALIDATION",
+      "severity": "HIGH",
+      "cwe": "CWE-20"
+    },
+    {
+      "id": "SEC-API-005",
+      "category": "API Security",
+      "name": "Unversioned API Endpoint",
+      "payload": "@app.route('/api/users')  # no version in URL",
+      "expected_detection": "UNVERSIONED_API",
+      "severity": "MEDIUM",
+      "cwe": "CWE-1104"
+    },
+    {
+      "id": "SEC-TOKEN-001",
+      "category": "Token Management",
+      "name": "Token Expiration Not Set",
+      "payload": "jwt_token = jwt.encode(payload)  # no exp claim",
+      "expected_detection": "MISSING_TOKEN_EXPIRY",
+      "severity": "HIGH",
+      "cwe": "CWE-613"
+    },
+    {
+      "id": "SEC-TOKEN-002",
+      "category": "Token Management",
+      "name": "Refresh Token Reuse Allowed",
+      "payload": "refresh_token = generate_token()  # token can be reused",
+      "expected_detection": "TOKEN_REUSE",
+      "severity": "HIGH",
+      "cwe": "CWE-613"
+    },
+    {
+      "id": "SEC-TOKEN-003",
+      "category": "Token Management",
+      "name": "Token Stored in LocalStorage",
+      "payload": "localStorage.setItem('auth_token', jwtToken)  # XSS vulnerable",
+      "expected_detection": "TOKEN_STORAGE_INSECURE",
+      "severity": "MEDIUM",
+      "cwe": "CWE-522"
+    },
+    {
+      "id": "SEC-OAUTH-001",
+      "category": "OAuth / OpenID Connect",
+      "name": "Missing State Parameter in OAuth",
+      "payload": "redirect(f\"{auth_server}/authorize?client_id={client_id}&redirect_uri={uri}\")",
+      "expected_detection": "MISSING_OAUTH_STATE",
+      "severity": "HIGH",
+      "cwe": "CWE-352"
+    },
+    {
+      "id": "SEC-OAUTH-002",
+      "category": "OAuth / OpenID Connect",
+      "name": "OAuth Redirect URI Not Validated",
+      "payload": "redirect(request.args.get('redirect_uri'))  # no validation",
+      "expected_detection": "OAUTH_REDIRECT_NOT_VALIDATED",
+      "severity": "CRITICAL",
+      "cwe": "CWE-601"
+    },
+    {
+      "id": "SEC-SESSION-001",
+      "category": "Session Management",
+      "name": "Session Timeout Not Configured",
+      "payload": "session['user_id'] = user_id  # no timeout set",
+      "expected_detection": "MISSING_SESSION_TIMEOUT",
+      "severity": "MEDIUM",
+      "cwe": "CWE-613"
+    },
+    {
+      "id": "SEC-SESSION-002",
+      "category": "Session Management",
+      "name": "Session ID Predictable",
+      "payload": "session_id = str(time.time())  # predictable format",
+      "expected_detection": "PREDICTABLE_SESSION_ID",
+      "severity": "HIGH",
+      "cwe": "CWE-330"
+    }
+  ],
+  "summary": {
+    "authentication": 5,
+    "authorization": 3,
+    "api_security": 5,
+    "token_management": 3,
+    "oauth_openid": 2,
+    "session_management": 2
+  },
+  "execution_log": {
+    "spawned_at": "2026-06-08T15:30:42.000000",
+    "completed_at": "2026-06-08T15:30:42.123456",
+    "provider": "Codex CLI",
+    "all_checks_passed": true,
+    "critical_count": 8,
+    "high_count": 9,
+    "medium_count": 3
+  }
+}

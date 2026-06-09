@@ -2,13 +2,14 @@
 # network/router.sh — เส้นทางข้อมูล: route tasks ไปยัง agent/organ ที่เหมาะสม
 #
 # หลักพุทธ: สัมมาสังกัปปะ — ส่งสิ่งต่างๆ ไปยังที่ที่เหมาะสม
-# บทบาท multiagent: intelligent task routing, load balancing, failover
+# บทบาท multiagent: intelligent task routing, load balancing, failover, idempotency check
 #
 # Usage:
 #   ./router.sh route <task-type> <args>  — route งานไปยัง agent ที่เหมาะ
 #   ./router.sh who-can <capability>      — ถามว่าใครทำได้
 #   ./router.sh table                     — แสดง routing table
 #   ./router.sh dispatch <file>           — ส่งงานจาก task file
+#   ./router.sh check-idem <msg-file>     — ตรวจสอบ idempotency key
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../limbs/lib.sh"
@@ -18,6 +19,93 @@ shift || true
 
 REGISTRY="$SCRIPT_DIR/registry.json"
 JIT_ROOT_DIR="${JIT_ROOT:-/workspaces/Jit}"
+
+# Associative array for routing table grouping (must be declared at top level)
+declare -A ORGAN_GROUPS
+
+# ── Check idempotency key from message file ─────────────────────────
+# Called before routing to prevent duplicate processing
+# Returns: 0 if duplicate (abort), 1 if new (proceed)
+check_idempotency() {
+  local MSG_FILE="$1"
+  local AGENT="$2"
+
+  if [ ! -f "$MSG_FILE" ]; then
+    err "check_idem: message file not found: $MSG_FILE"
+    return 1
+  fi
+
+  local IDEM_KEY
+  IDEM_KEY=$(parse_idempotency_key "$MSG_FILE")
+
+  if [ -z "$IDEM_KEY" ]; then
+    # No idempotency key - legacy message, allow through
+    warn "check_idem: no idempotency-key header, allowing legacy message"
+    return 1
+  fi
+
+  if is_duplicate_key "$IDEM_KEY" "$AGENT"; then
+    # Duplicate detected - log and reject
+    err "BUS_DUPLICATE: agent=$AGENT key=$IDEM_KEY file=$(basename "$MSG_FILE")"
+    log_action "BUS_DUPLICATE" "agent:$AGENT key:$IDEM_KEY file:$(basename "$MSG_FILE")"
+    return 0  # Return 0 = is duplicate, should abort
+  fi
+
+  return 1  # Return 1 = not duplicate, proceed
+}
+
+# ── JIT-017: Version Check ─────────────────────────────────────────
+# Compare semver versions and check compatibility
+# Returns: 0 if version is acceptable, 1 if mismatch
+check_version() {
+  local MSG_FILE="$1"
+  local MIN_VERSION="${MANUSAT_MIN_AGENT_VER:-0.0.0}"
+
+  if [ ! -f "$MSG_FILE" ]; then
+    return 0  # No file, allow through (will fail later)
+  fi
+
+  # Extract x-agent-version from message
+  local MSG_VERSION
+  MSG_VERSION=$(grep "^x-agent-version:" "$MSG_FILE" 2>/dev/null | cut -d: -f2- | tr -d ' \r\n')
+
+  if [ -z "$MSG_VERSION" ]; then
+    # No version header - legacy message, allow through
+    warn "check_version: no x-agent-version header, allowing legacy message"
+    return 0
+  fi
+
+  # Compare versions using Python (semver comparison)
+  local VERSION_OK
+  VERSION_OK=$(python3 -c "
+import sys
+def parse_version(v):
+    try:
+        parts = v.split('.')
+        return tuple(int(p) for p in parts[:3])
+    except:
+        return (0, 0, 0)
+
+msg_ver = parse_version('$MSG_VERSION')
+min_ver = parse_version('$MIN_VERSION')
+
+# Return 0 (success) if msg_version >= min_version
+sys.exit(0 if msg_ver >= min_ver else 1)
+" 2>/dev/null && echo "ok" || echo "mismatch")
+
+  if [ "$VERSION_OK" = "mismatch" ]; then
+    log_action "BUS_VERSION_MISMATCH" "Agent version $MSG_VERSION < minimum $MIN_VERSION"
+    warn "BUS_VERSION_MISMATCH: msg_version=$MSG_VERSION < min_version=$MIN_VERSION"
+    # Non-fatal by default - just logging
+    # Enable strict mode with MANUSAT_STRICT_VERSION=1
+    if [ "${MANUSAT_STRICT_VERSION:-0}" = "1" ]; then
+      err "Strict version mode enabled - rejecting message"
+      return 1
+    fi
+  fi
+
+  return 0  # Allow through (non-fatal)
+}
 
 # ── Routing Table: task_type → organ_script ─────────────────────────
 # กาย-วาจา-ใจ mapped to organs
@@ -95,10 +183,42 @@ case "$CMD" in
     log_action "ROUTER" "$TASK_TYPE → $SCRIPT $ORGAN_CMD"
     step "route: $TASK_TYPE → $SCRIPT"
 
-    if [ -x "$FULL_SCRIPT" ]; then
-      bash "$FULL_SCRIPT" "$ORGAN_CMD" $ARGS
+    # ── Retry with Exponential Backoff + Jitter (JIT-003) ──────────
+    # Pattern: base_delay * 2^attempt + jitter (prevent thundering herd)
+    MAX_RETRIES="${MAX_RETRIES:-3}"
+    BASE_DELAY="${BASE_DELAY:-1}"  # Base delay in seconds
+    attempt=1
+    EXEC_SUCCESS=false
+
+    while [ $attempt -le $MAX_RETRIES ]; do
+      if [ -x "$FULL_SCRIPT" ]; then
+        if bash "$FULL_SCRIPT" "$ORGAN_CMD" $ARGS; then
+          EXEC_SUCCESS=true
+          break
+        fi
+      else
+        err "script ไม่พบ: $FULL_SCRIPT"
+        break
+      fi
+
+      # Exponential backoff with jitter: delay = base * 2^attempt + random(0-500ms)
+      base_delay_sec=$((BASE_DELAY * (2 ** attempt)))
+      jitter_ms=$(python3 -c "import random; print(random.randint(0, 500))" 2>/dev/null || echo "0")
+      delay_sec_float=$(python3 -c "print(${base_delay_sec} + ${jitter_ms}/1000.0)" 2>/dev/null || echo "$base_delay_sec")
+
+      log_action "BUS_RETRY" "Attempt $attempt failed for $TASK_TYPE → $SCRIPT, retrying in ${delay_sec_float}s (base:${base_delay_sec}s jitter:${jitter_ms}ms)"
+
+      if [ $attempt -lt $MAX_RETRIES ]; then
+        step "Retry $attempt/$MAX_RETRIES failed, waiting ${delay_sec_float}s before next attempt..."
+        sleep "$delay_sec_float"
+      fi
+      ((attempt++))
+    done
+
+    if [ "$EXEC_SUCCESS" = true ]; then
+      exit 0
     else
-      err "script ไม่พบ: $FULL_SCRIPT"
+      err "route: $TASK_TYPE failed after $MAX_RETRIES attempts with exponential backoff + jitter"
       exit 1
     fi
     ;;
@@ -132,13 +252,13 @@ for a in d.get('agents', []):
     echo -e "${BOLD}=== Routing Table ===${RESET}"
     echo ""
     # จัดกลุ่มตาม organ
-    declare -A GROUPS
+    # Initialize ORGAN_GROUPS below
     for KEY in "${!ORGAN_ROUTES[@]}"; do
       ORGAN=$(echo "${ORGAN_ROUTES[$KEY]}" | cut -d/ -f2 | cut -d. -f1)
-      GROUPS[$ORGAN]+="$KEY "
+      ORGAN_GROUPS[$ORGAN]+="$KEY "
     done
-    for ORGAN in "${!GROUPS[@]}"; do
-      echo -e "  ${CYAN}$ORGAN${RESET}: ${GROUPS[$ORGAN]}"
+    for ORGAN in "${!ORGAN_GROUPS[@]}"; do
+      echo -e "  ${CYAN}$ORGAN${RESET}: ${ORGAN_GROUPS[$ORGAN]}"
     done | sort
     echo ""
     ;;
@@ -169,12 +289,35 @@ for i, task in enumerate(tasks, 1):
 PYEOF
     ;;
 
+  # ── check idempotency key ─────────────────────────────────────────
+  check-idem)
+    MSG_FILE="$1"
+    AGENT="${2:-${AGENT_NAME:-router}}"
+    if [ -z "$MSG_FILE" ]; then err "Usage: router.sh check-idem <msg-file> [agent]"; exit 1; fi
+
+    # JIT-017: Check version first (non-fatal, just logging)
+    check_version "$MSG_FILE" || true
+
+    if check_idempotency "$MSG_FILE" "$AGENT"; then
+      # Duplicate detected - should abort
+      exit 2  # Special exit code for duplicate
+    else
+      # Not a duplicate - proceed
+      exit 0
+    fi
+    ;;
+
   *)
-    echo "Usage: router.sh {route|who-can|table|dispatch}"
+    echo "Usage: router.sh {route|who-can|table|dispatch|check-idem}"
     echo ""
     echo "  route    <task-type> <args>   — route งานไปยัง organ"
     echo "  who-can  <capability>         — หา agent ที่ทำได้"
     echo "  table                         — แสดง routing table"
     echo "  dispatch <task-file.json>     — ส่งงานจาก file"
+    echo "  check-idem <msg-file> [agent] — ตรวจสอบ idempotency key (exit 2=duplicate)"
+    echo ""
+    echo "Environment Variables (JIT-017):"
+    echo "  MANUSAT_MIN_AGENT_VER=X.Y.Z   — Minimum required agent version (semver)"
+    echo "  MANUSAT_STRICT_VERSION=1      — Reject messages below minimum (default: log only)"
     ;;
 esac

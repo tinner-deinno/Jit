@@ -1,0 +1,17 @@
+id: JIT-016
+title: "Add shared memory decay and cleanup policy"
+priority: P2
+type: chore
+status: done
+owner: innova
+created: 2026-06-07
+updated: 2026-06-08
+spec_ref: specs/JIT-016-spec.md
+acceptance:
+  - /tmp/manusat-shared.json entries older than 24h are pruned on each heartbeat
+  - Pruning logic in organs/heart.sh: reads JSON, filters by timestamp, rewrites
+  - Memory size capped at 500 entries (LRU eviction when over limit)
+  - Pruned entries archived to /tmp/manusat-shared-archive.jsonl (append-only, max 10MB)
+  - pran.sh reports shared memory size in vitals output
+effort_hours: 4
+tags: [memory, cleanup, reliability, p2, innova]

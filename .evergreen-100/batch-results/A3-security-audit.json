@@ -1,0 +1,10 @@
+{
+  "agent": "neta",
+  "ts": "2026-06-08T18:39:00Z",
+  "model": "claude-sonnet-4-6",
+  "findings": [
+    {"issue":"CORS too permissive + credentials","severity":"high","fix":"Hardcoded origin allowlist"},
+    {"issue":"Debug/diag endpoint exposes env/secrets","severity":"high","fix":"Remove or gate behind auth"},
+    {"issue":"Bind 0.0.0.0:4000 no auth/rate-limit","severity":"med","fix":"127.0.0.1 bind + reverse proxy + rate-limit"}
+  ]
+}

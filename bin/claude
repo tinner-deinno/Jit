@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# bin/claude — CMD provider wrapper for Claude Code
+#
+# Intercepts `claude` calls and routes to limbs/llm.sh if a non-Claude provider is requested.
+# Otherwise delegates to the real Claude CLI.
+#
+# Usage:
+#   claude [opts] — uses default Claude CLI (CommandCode)
+#   claude --model ollama/gemma4:26b [opts] — uses ollama provider via llm.sh
+#   claude -m claude/sonnet [opts] — uses claude/sonnet via llm.sh
+#   claude -m openai/gpt-4o [opts] — uses openai provider via llm.sh
+
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+JIT_ROOT="${JIT_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+
+# Parse args to detect provider routing
+_parse() {
+  PROVIDER=""
+  MODEL=""
+  PASSTHROUGH=()
+  local i=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -m|--model)
+        ARG="${2:-}"
+        if [[ "$ARG" == */* ]]; then
+          # "provider/model" → route to llm.sh
+          PROVIDER="${ARG%/*}"
+          MODEL="${ARG#*/}"
+        else
+          # bare model id → check if it's a known provider name
+          case "$ARG" in
+            claude|ollama|openai|codex)
+              PROVIDER="$ARG"
+              MODEL=""
+              ;;
+            *)
+              # bare model id for claude → use default claude behavior
+              PASSTHROUGH+=(-m "$ARG")
+              ;;
+          esac
+        fi
+        shift 2 || shift
+        ;;
+      *)
+        PASSTHROUGH+=("$1")
+        shift
+        ;;
+    esac
+  done
+}
+
+# If provider/model is specified, route through llm.sh; otherwise use real claude CLI
+_route() {
+  if [ -n "$PROVIDER" ]; then
+    # Non-Claude provider or explicit provider override → use llm.sh gateway
+    local PROMPT
+    # Last positional arg is the prompt (if any)
+    if [ ${#PASSTHROUGH[@]} -gt 0 ]; then
+      PROMPT="${PASSTHROUGH[-1]}"
+    else
+      PROMPT=""
+    fi
+
+    if [ -z "$PROMPT" ]; then
+      echo "ต้องระบุ prompt เมื่อใช้ provider override" >&2
+      exit 1
+    fi
+
+    local LLMSH_ARGS=(call "$PROMPT" --provider "$PROVIDER")
+    [ -n "$MODEL" ] && LLMSH_ARGS+=(--model "$MODEL")
+
+    exec bash "$JIT_ROOT/limbs/llm.sh" "${LLMSH_ARGS[@]}"
+  else
+    # No provider override → use the real claude CLI with original args
+    # Find the real claude (skip this wrapper via PATH or explicit path)
+    local REAL_CLAUDE
+    REAL_CLAUDE=$(PATH="${PATH#$SCRIPT_DIR/bin:}" command -v claude 2>/dev/null)
+    [ -n "$REAL_CLAUDE" ] || REAL_CLAUDE="/home/codespace/.local/bin/claude"
+
+    # Set CommandCode auth for direct claude calls
+    local EXEC_ENV=()
+    if [ -n "${COMMANDCODE_API_KEY:-}" ]; then
+      EXEC_ENV+=(ANTHROPIC_API_KEY="$COMMANDCODE_API_KEY")
+    fi
+    if [ -n "${ANTHROPIC_BASE_URL:-}" ]; then
+      EXEC_ENV+=(ANTHROPIC_BASE_URL="$ANTHROPIC_BASE_URL")
+    fi
+
+    [ ${#EXEC_ENV[@]} -gt 0 ] && exec env "${EXEC_ENV[@]}" "$REAL_CLAUDE" "${PASSTHROUGH[@]}" \
+      || exec "$REAL_CLAUDE" "${PASSTHROUGH[@]}"
+  fi
+}
+
+# Load .env to get COMMANDCODE_API_KEY, ANTHROPIC_BASE_URL, etc.
+if [ -f "$JIT_ROOT/.env" ]; then
+  set -a
+  source "$JIT_ROOT/.env"
+  set +a
+fi
+
+_parse "$@"
+_route

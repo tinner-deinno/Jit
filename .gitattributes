@@ -1,0 +1,6 @@
+# Multi-machine merge strategy
+# heartbeat logs are append-only — union merge prevents conflicts between machines
+memory/state/heartbeat*.log merge=union
+memory/state/heart.in.json merge=union
+memory/state/heart.out.json merge=union
+memory/ledger.txt merge=union

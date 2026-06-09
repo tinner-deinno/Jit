@@ -104,19 +104,22 @@ _cleanup_stale_messages() {
 _append_heartbeat_log() {
   local phase="$1"
   local ts="$2"
-  local file="$JIT_ROOT/memory/state/heartbeat.log"
+  # hostname-specific file prevents multi-machine merge conflicts
+  local host; host="$(hostname | tr '.' '-')"
+  local file="$JIT_ROOT/memory/state/heartbeat-${host}.log"
   mkdir -p "$(dirname "$file")"
   if [ "$phase" = "IN" ]; then
-    echo "$(date '+%Y-%m-%dT%H:%M:%S') | $(hostname) | #$PULSE_COUNT | phase=IN | mode=$MODE | changed=$CHANGES" >> "$file"
+    echo "$(date '+%Y-%m-%dT%H:%M:%S') | $host | #$PULSE_COUNT | phase=IN | mode=$MODE | changed=$CHANGES" >> "$file"
   else
-    echo "$(date '+%Y-%m-%dT%H:%M:%S') | $(hostname) | #$PULSE_COUNT | phase=OUT | mode=$MODE | changed=$CHANGES" >> "$file"
+    echo "$(date '+%Y-%m-%dT%H:%M:%S') | $host | #$PULSE_COUNT | phase=OUT | mode=$MODE | changed=$CHANGES" >> "$file"
   fi
 }
 
 _commit_heartbeat() {
   local phase="$1"
   local ts="$2"
-  local file="$JIT_ROOT/memory/state/heartbeat.log"
+  local host; host="$(hostname | tr '.' '-')"
+  local file="$JIT_ROOT/memory/state/heartbeat-${host}.log"
   local msg
   if [ "$phase" = "IN" ]; then
     msg="->💓 heartbeat (IN) ->#$PULSE_COUNT — $(hostname) @ $ts"
@@ -212,6 +215,32 @@ _do_pulse() {
   _log_pulse_locally "OUT #$PULSE_COUNT mode=$MODE"
 
   # ═══════════════════════════════════════════════════════════════
+  # DLQ Health Check (ทุก 5 pulses — alert pran/innova ถ้า threshold exceeded)
+  # ═══════════════════════════════════════════════════════════════
+  if [ $(( PULSE_COUNT % 5 )) -eq 0 ]; then
+    echo -ne "  📬 DLQ check "
+    if [ -x "$JIT_ROOT/organs/dlq-handler.sh" ]; then
+      bash "$JIT_ROOT/organs/dlq-handler.sh" remediate 2>/dev/null > /dev/null
+      printf "done\n"
+    else
+      printf "skipped (dlq-handler.sh not found)\n"
+    fi
+  fi
+
+  # ═══════════════════════════════════════════════════════════════
+  # Memory Decay Archive Task (ทุก 10 pulses ≈ 2.5 ชม. ที่ normal mode)
+  # ═══════════════════════════════════════════════════════════════
+  if [ $(( PULSE_COUNT % 10 )) -eq 0 ]; then
+    echo -ne "  🧹 memory decay check "
+    if [ -x "$JIT_ROOT/mind/memory-decay.sh" ]; then
+      ARCHIVED_COUNT=$(bash "$JIT_ROOT/mind/memory-decay.sh" archive 2>&1 | grep "Archived" | awk '{print $2}' || echo "0")
+      printf "done (archived: %s entries)\n" "${ARCHIVED_COUNT:-0}"
+    else
+      printf "skipped (script not found)\n"
+    fi
+  fi
+
+  # ═══════════════════════════════════════════════════════════════
   # สรุป Pulse (local state only — no git commit, no push)
   # ═══════════════════════════════════════════════════════════════
   echo ""
@@ -227,6 +256,7 @@ Mode: $MODE
 Pending task msgs: $PENDING
 Repo changes: $CHANGES
 Next interval: ${PULSE_INTERVAL}s
+Memory decay check: $(( PULSE_COUNT % 10 == 0 ? 1 : 0 ))
 EOF
 
   log_action "HEARTBEAT_PULSE" \

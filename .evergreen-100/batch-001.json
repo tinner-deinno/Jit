@@ -1,0 +1,11 @@
+{
+  "batch": 1,
+  "ts": "2026-06-08T18:37:00Z",
+  "tasks": [
+    {"id": "A1", "agent": "innova", "task": "audit phayakorn + propose 5 UX improvements", "provider": "claude", "model": "claude-sonnet-4-6"},
+    {"id": "A2", "agent": "rupa",   "task": "design system tokens for Jit frontend (colors, typography, spacing)", "provider": "openai", "model": "gpt-5.4"},
+    {"id": "A3", "agent": "neta",   "task": "security audit of harness + 5 hardening recommendations", "provider": "claude", "model": "claude-sonnet-4-6"},
+    {"id": "A4", "agent": "chamu",  "task": "write 10 Bun test cases for /chat endpoint", "provider": "claude", "model": "claude-haiku-4-5-20251001"},
+    {"id": "A5", "agent": "lak",    "task": "design connector plugin interface (provider abstraction)", "provider": "claude", "model": "claude-sonnet-4-6"}
+  ]
+}

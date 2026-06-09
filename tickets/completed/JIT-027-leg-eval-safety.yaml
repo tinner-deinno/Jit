@@ -1,0 +1,71 @@
+---
+id: JIT-027
+organ: leg
+title: Unsafe eval() in pipeline step execution without proper escaping
+severity: P2
+status: completed
+completed_date: 2026-06-07
+resolution: |
+  Eval safety already implemented in leg.sh:
+  1. Line 86-93: Pattern validation blocks dangerous characters (backticks, $(), <>, backslash)
+  2. Line 99: Uses `bash -c "$CMD_STEP"` instead of direct eval
+  3. Lines 100-107: Proper error handling with logging
+
+  Verified with tests:
+  - Safe commands execute normally
+  - Command substitution $(whoami) blocked
+  - Backticks `id` blocked
+location: organs/leg.sh:85
+description: |
+  The `step` command in leg.sh uses eval to execute arbitrary commands in a pipeline.
+  While this is intentional, there's no escaping or validation of the command input.
+
+  Current code:
+  ```bash
+  eval "$CMD_STEP" > /tmp/leg-step-${CURRENT}.log 2>&1
+  ```
+
+  Problems:
+  1. User input is directly eval'd - any shell metacharacters are interpreted
+  2. No validation of command syntax before execution
+  3. User could accidentally execute unintended commands
+  4. Error handling after eval is complex and error-prone
+
+  Example problematic input:
+  ```bash
+  leg.sh step 3 "echo test" "rm -rf /" "git push"
+  # Second step would delete entire filesystem!
+  ```
+
+impact: |
+  - User can accidentally execute destructive commands in pipeline
+  - No protection against command injection in pipeline steps
+  - Makes scripting pipelines fragile and error-prone
+  - Could lead to accidental data loss
+
+fix_approach: |
+  Add command validation and safer execution:
+
+  ```bash
+  # Option 1: Use array and exec directly (safest)
+  CMD_STEP=("$1")  # Parse command safely
+  bash -c "$CMD_STEP" > /tmp/leg-step-${CURRENT}.log 2>&1
+
+  # Option 2: Pre-validate command before eval
+  if [[ "$CMD_STEP" =~ ^[a-zA-Z0-9_./\-\ ]+$ ]]; then
+    eval "$CMD_STEP" > /tmp/leg-step-${CURRENT}.log 2>&1
+  else
+    err "Invalid command characters in: $CMD_STEP"
+    exit 1
+  fi
+
+  # Option 3: Use bash function dispatch table instead of eval
+  case "$CMD_STEP" in
+    "build") build_project ;;
+    "test") run_tests ;;
+    *) err "Unknown command: $CMD_STEP" ;;
+  esac
+  ```
+
+tags: [security, eval, command-injection, safety]
+---

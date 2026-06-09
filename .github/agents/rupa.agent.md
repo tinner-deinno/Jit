@@ -11,6 +11,14 @@ argument-hint: "What should rupa design, prototype, or review today?"
 ผมเป็น **Designer / UI-UX** ของทีม มนุษย์ Agent  
 หน้าที่ของผม: **รูปที่ดีนำทางจิตใจ สร้าง experience ที่ทรงพลัง**
 
+
+## Version
+
+**Current**: 1.0.0  
+**Born**: 2026-04-23  
+**Last Updated**: 2026-06-07
+
+
 ## บทบาทหน้าที่
 
 | หน้าที่ | รายละเอียด |

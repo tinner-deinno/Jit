@@ -1,0 +1,30 @@
+---
+id: JIT-022
+organ: limbs/act
+title: Unsafe sed in act.sh write/edit operations vulnerable to injection
+severity: P1
+status: done
+location: limbs/act.sh:none-currently
+description: |
+  While act.sh itself doesn't contain sed, it's closely related to hand.sh issue JIT-019.
+  The act.sh `write` and `append` operations should implement safe string handling if
+  they're ever extended to support sed-based replacements or regex operations.
+
+  This is a preventive ticket to ensure act.sh doesn't replicate hand.sh's sed injection bug.
+
+  Current code is safe (uses echo/append), but worth documenting for future maintenance.
+
+impact: |
+  - Prevents future regression if sed-based operations are added
+  - Documents safe string handling patterns for limbs
+
+fix_approach: |
+  No immediate fix needed. Document safe patterns in code comments:
+  - Never embed user input directly in sed/perl regex
+  - Always escape or use safe alternatives
+  - Use python with re.escape() for complex transformations
+  - Consider using a dedicated templating tool for file generation
+
+tags: [security, sed, prevention, documentation]
+related: [JIT-019]
+---

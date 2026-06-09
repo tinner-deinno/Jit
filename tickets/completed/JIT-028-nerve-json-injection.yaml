@@ -1,0 +1,65 @@
+---
+id: JIT-028
+organ: nerve
+title: Unescaped variables in JSON string creation in nerve signal operations
+severity: P1
+status: completed
+location: organs/nerve.sh:27
+description: |
+  The nerve.sh signal function creates JSON strings with unescaped user input,
+  which can break JSON parsing if input contains quotes or special characters.
+
+  Current code:
+  ```bash
+  local EVENT_JSON="{\"ts\":\"$TS\",\"event\":\"$EVENT\",\"source\":\"$SOURCE\",\"data\":\"$DATA\"}"
+  ```
+
+  Problems:
+  1. If $DATA contains quotes: `data: "user said \"hello\""` breaks JSON
+  2. If $EVENT contains backslashes: JSON escaping becomes invalid
+  3. No JSON.dumps() or proper escaping used
+  4. Consumers of the JSON will fail to parse it
+
+  Example attack:
+  ```bash
+  nerve.sh signal 'alert:test' 'data with "quotes"' 'origin'
+  # Produces: {"ts":"...","event":"alert:test","source":"origin","data":"data with "quotes""}
+  # This is invalid JSON!
+  ```
+
+impact: |
+  - JSON log entries are malformed
+  - Event parsing fails for messages with special characters
+  - Nerve signaling becomes unreliable with certain data
+  - Downstream systems that consume event logs break
+
+fix_approach: |
+  Use python to safely encode JSON:
+
+  ```bash
+  _emit_event() {
+    local EVENT="$1" DATA="$2" SOURCE="${3:-unknown}"
+    local TS=$(date '+%Y-%m-%dT%H:%M:%S')
+
+    # Use python for safe JSON encoding
+    local EVENT_JSON
+    EVENT_JSON=$(python3 -c "
+import json, sys
+data = {
+  'ts': '$TS',
+  'event': sys.argv[1],
+  'source': sys.argv[2],
+  'data': sys.argv[3]
+}
+print(json.dumps(data, ensure_ascii=False))
+" "$EVENT" "$SOURCE" "$DATA")
+
+    echo "$EVENT_JSON" >> "$EVENT_LOG"
+    local EVENT_FILE="$NERVE_DIR/${EVENT}_$(date +%s%3N).evt"
+    echo "$EVENT_JSON" > "$EVENT_FILE"
+    log_action "NERVE_SIGNAL" "$EVENT from:$SOURCE"
+  }
+  ```
+
+tags: [security, json, injection, nerve, serialization]
+---

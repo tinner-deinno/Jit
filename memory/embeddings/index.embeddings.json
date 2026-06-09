@@ -1,0 +1,47 @@
+{
+  "embeddings": {
+    "old_high_access": {
+      "file": "old_high_access.embedding.json",
+      "model": "gemma4:e4b",
+      "generated_at": "2026-06-08T04:16:11",
+      "dimensions": 64
+    },
+    "expiring_soon": {
+      "file": "expiring_soon.embedding.json",
+      "model": "gemma4:e4b",
+      "generated_at": "2026-06-08T04:16:12",
+      "dimensions": 64
+    },
+    "already_expired": {
+      "file": "already_expired.embedding.json",
+      "model": "gemma4:e4b",
+      "generated_at": "2026-06-08T04:16:12",
+      "dimensions": 64
+    },
+    "already_archived": {
+      "file": "already_archived.embedding.json",
+      "model": "gemma4:e4b",
+      "generated_at": "2026-06-08T04:16:12",
+      "dimensions": 64
+    },
+    "old_low_access": {
+      "file": "old_low_access.embedding.json",
+      "model": "gemma4:e4b",
+      "generated_at": "2026-06-08T04:16:11",
+      "dimensions": 64
+    },
+    "recent_low_access": {
+      "file": "recent_low_access.embedding.json",
+      "model": "gemma4:e4b",
+      "generated_at": "2026-06-08T04:16:11",
+      "dimensions": 64
+    },
+    "recent_high_access": {
+      "file": "recent_high_access.embedding.json",
+      "model": "gemma4:e4b",
+      "generated_at": "2026-06-08T04:16:11",
+      "dimensions": 64
+    }
+  },
+  "last_updated": "2026-06-08T04:16:12.295796"
+}

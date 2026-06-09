@@ -1,0 +1,24 @@
+id: JIT-022
+title: "Add chain-of-thought logging to think.sh"
+priority: P2
+type: feat
+status: done
+owner: innova
+created: 2026-06-07
+updated: 2026-06-08
+completed: 2026-06-08
+spec_ref: specs/JIT-022-spec.md
+acceptance:
+  - think.sh plan logs reasoning steps to /tmp/manusat-cot-log.jsonl (one JSON per line)
+  - Each log entry: {agent, timestamp, intent, step, substeps[], oracle_queries[], decision}
+  - think.sh log --cot shows last 10 reasoning chains in human-readable format
+  - cot-log used by soma for retrospectives to track decision patterns
+  - Log entry example: {agent: 'innova', intent: 'implement task', step: 1, substeps: ['understand', 'plan', 'execute'], oracle_queries: 2, decision: 'sequential'}
+effort_hours: 2
+tags: [thinking, reasoning, logging, cot, p2, innova, done]
+notes: "Implemented 2026-06-08. CoT logging via cot_log() in lib.sh. JSONL format for easy parsing."
+test_results:
+  - CoT log file created at /tmp/manusat-cot-log.jsonl
+  - Entry format verified: JSON with all required fields
+  - log --cot displays formatted chains with colors
+  - Programmatic access tested for soma retrospectives

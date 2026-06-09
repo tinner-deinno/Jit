@@ -24,19 +24,52 @@ echo "  $(date '+%Y-%m-%d %H:%M:%S')"
 
 # ════════════════════════════════════════════════════════
 _section "Core Services"
-# Oracle
-curl -sf "$ORACLE_URL/api/health" | python3 -c \
-  "import json,sys; d=json.load(sys.stdin); exit(0 if d.get('oracle')=='connected' else 1)" 2>/dev/null \
-  && _pass "Oracle connected ($ORACLE_URL)" || _fail "Oracle offline"
+# Oracle API health call with strict validation
+ORACLE_HEALTH=$(curl -sf --max-time 3 "$ORACLE_URL/api/health" 2>/dev/null)
+if echo "$ORACLE_HEALTH" | python3 -c "import json,sys; d=json.load(sys.stdin); exit(0 if d.get('status')=='ok' else 1)" 2>/dev/null; then
+  _pass "Oracle API healthy ($ORACLE_URL)"
+else
+  _fail "Oracle API unreachable or unhealthy"
+fi
 
-# Oracle docs
+# Oracle docs count
 DOCS=$(curl -sf "$ORACLE_URL/api/stats" 2>/dev/null | python3 -c \
   "import json,sys; d=json.load(sys.stdin); print(d.get('totalDocuments', d.get('total','?')))" 2>/dev/null || echo "?")
 [ "$DOCS" != "?" ] && _pass "Oracle docs: $DOCS" || _warn "Oracle stats unavailable"
 
+# Heart pulse freshness (heartbeat < 5 min = alive)
+HEART_OUT="/workspaces/Jit/memory/state/heart.out.json"
+if [ -f "$HEART_OUT" ]; then
+  HEART_TS=$(python3 -c "import json; print(json.load(open('$HEART_OUT')).get('timestamp', 'invalid'))" 2>/dev/null)
+  if [ "$HEART_TS" != "invalid" ]; then
+    HEART_EPOCH=$(date -d "$HEART_TS" +%s 2>/dev/null || echo "0")
+    NOW_EPOCH=$(date +%s)
+    HEART_AGE=$((NOW_EPOCH - HEART_EPOCH))
+    if [ "$HEART_AGE" -lt 300 ]; then
+      _pass "Heart pulse fresh (${HEART_AGE}s old)"
+    else
+      _warn "Heart pulse stale (${HEART_AGE}s old, threshold 300s)"
+    fi
+  fi
+else
+  _fail "heart.out.json not found"
+fi
+
+# Inbox message depth trend (check if queues are draining or backing up)
+QUEUE_CHECK=$(bash "$JIT_ROOT/network/bus.sh" queue 2>/dev/null | wc -l)
+if [ "$QUEUE_CHECK" -gt 0 ]; then
+  if [ "$QUEUE_CHECK" -gt 50 ]; then
+    _warn "Message queue backing up ($QUEUE_CHECK messages pending)"
+  else
+    _pass "Message queue healthy ($QUEUE_CHECK messages)"
+  fi
+else
+  _pass "Message queue empty (agents caught up)"
+fi
+
 # Ollama
 curl -sf --max-time 5 "https://ollama.mdes-innova.online/api/tags" \
-  -H "Authorization: Bearer ${OLLAMA_TOKEN}" > /dev/null 2>&1 \
+  -H "Authorization: Bearer ${OLLAMA_TOKEN:-[REDACTED]}" > /dev/null 2>&1 \
   && _pass "MDES Ollama reachable (${OLLAMA_MODEL})" || _warn "Ollama timeout (may be slow)"
 
 # ════════════════════════════════════════════════════════

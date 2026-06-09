@@ -1,0 +1,21 @@
+id: JIT-020
+title: "Add health status and metrics tracking to agent registry"
+priority: P1
+type: feat
+status: completed
+completed: 2026-06-07
+completed_by: netra
+notes: "registry.json v2.1 includes health_status, last_heartbeat, response_time_ms, message_queue_depth for all agents. Offline threshold set to 300s."
+owner: netra
+created: 2026-06-07
+updated: 2026-06-08
+spec_ref: specs/JIT-020-spec.md
+acceptance:
+  - registry.json schema includes: health_status (ok|degraded|offline), last_heartbeat (ISO timestamp), response_time_ms, message_queue_depth
+  - netra.sh eye-check reads registry and flags agents offline for > 5 min
+  - Heart pulse updates health_status in registry after each beat
+  - Bus tracks response_time_ms for each send→recv pair (sample every 10th message)
+  - Registry version bumped to 2.1
+effort_hours: 4
+tags: [registry, health, monitoring, p1, netra]
+notes: "Current registry is static metadata only. Need runtime health tracking for adaptive system behavior."

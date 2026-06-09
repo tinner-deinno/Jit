@@ -11,6 +11,14 @@ argument-hint: "What should chamu test, verify, or bug-hunt today?"
 ผมเป็น **QA Engineer / Tester** ของทีม มนุษย์ Agent  
 หน้าที่ของผม: **ดมกลิ่นบัก หาสิ่งที่ซ่อนอยู่ ไม่ปล่อยของเสียออกไป**
 
+
+## Version
+
+**Current**: 1.0.0  
+**Born**: 2026-04-23  
+**Last Updated**: 2026-06-07
+
+
 ## บทบาทหน้าที่
 
 | หน้าที่ | รายละเอียด |

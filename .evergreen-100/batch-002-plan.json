@@ -1,0 +1,9 @@
+{
+  "batch": 2,
+  "tasks": [
+    {"id":"B1","agent":"innova","task":"Implement CORS allowlist in server.ts"},
+    {"id":"B2","agent":"innova","task":"Remove debug endpoint + add env-redaction helper"},
+    {"id":"B3","agent":"innova","task":"Bind to 127.0.0.1 default + document 0.0.0.0 opt-in"},
+    {"id":"B4","agent":"chamu","task":"Write 5 more Bun tests for /health, /metrics, /rate-limits"}
+  ]
+}

@@ -1,0 +1,66 @@
+title: "Expand protocol.md with all 14 agents + error recovery"
+epic: "documentation"
+owner: vaja
+assignees:
+  - vaja
+priority: "P2"
+status: "open"
+created: "2026-06-07"
+due_date: null
+
+description: |
+  protocol.md is incomplete — only documents Agent Roles for 2 agents (soma, innova) and lacks error recovery / incident response procedures.
+
+  **Current State:**
+  - Agent Roles section only covers soma + innova
+  - Missing: roles, responsibilities, message handling guidelines for 12 other agents
+  - No troubleshooting section
+  - Error Handling section is skeletal (3 lines)
+  - No message queue overflow handling
+  - No timeout recovery procedures
+  - No fallback routing examples
+
+  **Required Additions:**
+
+  ### 1. Expand Agent Roles (one section per agent)
+  For each of the 14 agents, document:
+  - **rReceives**: which message prefixes? (task:, think:, request:, etc.)
+  - **Sends**: what does this agent emit? (report:, learn:, alert:, etc.)
+  - **Specialty**: core strength/domain
+  - **Inbox path**: /tmp/manusat-bus/<name>/
+
+  Include all: jit, soma, innova, lak, neta, vaja, chamu, rupa, pada, netra, karn, mue, pran, sayanprasathan
+
+  ### 2. Add Error Handling & Recovery section
+  - **Message queue overflow**: what happens when inbox grows too large? Truncation? Rotation?
+  - **Agent timeout**: how long to wait for response? What triggers retry?
+  - **Oracle down**: fallback to /tmp/innova-pending-learn.log (already mentioned, but needs details)
+  - **Cascade failure**: if one agent fails, which others are affected?
+  - **Deadlock detection**: how to detect circular message waits?
+
+  ### 3. Add Troubleshooting section
+  - Common issues: "Agent not responding"
+  - Diagnostics: how to check inbox, how to tail bus messages
+  - Recovery: how to restart failed agent, how to clear stalled messages
+  - Commands: `bash organs/ear.sh inbox <agent-name>`, `bash network/bus.sh queue`, etc.
+
+  ### 4. Add Example Message Flows
+  - Feature request: human → vaja → soma → lak → innova → test → review → deploy → report
+  - Bug hotfix: chamu → innova → neta → pada → vaja
+  - Parallel work: soma delegates to {lak, innova, rupa} simultaneously
+
+  **Reference:**
+  - CLAUDE.md (all 14 agent details)
+  - core/body-map.md (agent responsibilities, RACI)
+
+acceptance_criteria:
+  - All 14 agents documented in Agent Roles section (with receives/sends/specialty)
+  - Error Handling section covers: queue overflow, timeouts, oracle failure, cascades, deadlock
+  - Troubleshooting section with 5+ diagnostic commands
+  - 3-4 example message flows with diagrams or ASCII flow charts
+  - Protocol document grows to ~200+ lines (from current ~120)
+
+tags:
+  - documentation
+  - technical-reference
+  - operational

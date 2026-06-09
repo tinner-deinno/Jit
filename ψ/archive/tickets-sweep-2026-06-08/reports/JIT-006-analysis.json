@@ -1,0 +1,580 @@
+{
+  "ticket_id": "JIT-006",
+  "title": "Remove Hardcoded OLLAMA_TOKEN from jit-heartbeat.service",
+  "owner": "pada",
+  "status": "done",
+  "created": "2026-06-06",
+  "updated": "2026-06-08",
+
+  "vulnerability_analysis": {
+    "severity": "P0 - CRITICAL",
+    "type": "Credentials Exposure",
+    "cwe_ids": ["CWE-798 (Use of Hard-Coded Credentials)", "CWE-542 (Information Exposure in Logs)"],
+    "summary": "OLLAMA_TOKEN (9e34679...) was hardcoded in systemd unit file /workspaces/Jit/jit-heartbeat.service, exposing production API credentials in a world-readable configuration file.",
+    
+    "vulnerability_details": {
+      "affected_file": "/workspaces/Jit/systemd/jit-heartbeat.service",
+      "credential_type": "API Token (MDES Ollama)",
+      "exposure_vector": "Unit file readable by all system users via systemctl show, grep, cat, or process inspection",
+      "credential_scope": "Production API access to https://ollama.mdes-innova.online (Thai language model serving)",
+      "discovered_by": "DEVOPS-001 security audit (2026-06-06)",
+      "public_exposure_window": "Unknown; assume compromised",
+      "git_history_status": "Token present in at least one commit (memory/heartbeats/beat-1.md shows 9e34679 in curl command)"
+    },
+
+    "attack_scenarios": [
+      {
+        "scenario": "Unauthorized Ollama API access",
+        "attacker": "Any user with shell access to server",
+        "impact": "Run expensive model inferences at victim's quota, DoS Thai language processing",
+        "difficulty": "Trivial (one-liner grep or ps)"
+      },
+      {
+        "scenario": "Token leakage via logs",
+        "attacker": "Log aggregation tools, systemd journal readers",
+        "impact": "Token exposed in centralized logging systems if journalctl output is shared",
+        "difficulty": "Easy (systemd stores in plaintext journal)"
+      },
+      {
+        "scenario": "Token exposure via monitoring/debugging",
+        "attacker": "DevOps tooling, APM agents, shell history",
+        "impact": "Credential in monitoring dashboards or shell history files",
+        "difficulty": "Medium (depends on log aggregation setup)"
+      },
+      {
+        "scenario": "Git history breach",
+        "attacker": "Git repository cloners, CI/CD logs, backups",
+        "impact": "Historical access to token even after removal from current version",
+        "difficulty": "Medium (requires git history inspection)"
+      }
+    ],
+
+    "current_state_assessment": {
+      "token_in_active_service_file": false,
+      "reason": "Already fixed: ops/systemd/jit-heartbeat.service now uses EnvironmentFile=/workspaces/Jit/.secrets/ollama.env",
+      "token_in_git_history": true,
+      "reason_git": "beat-1.md contains curl command with inline 9e34679... token in error output",
+      "token_in_current_codebase": false,
+      "reason_codebase": "grep -r '9e34679' shows only in specs, TOR, and memory logs",
+      "token_in_process_environment": "Unknown at runtime",
+      "credentials_directory_exists": false,
+      "reason_creds_dir": "/etc/jit-credentials/ not created; .secrets/ollama.enc used instead"
+    }
+  },
+
+  "fix_design": {
+    "approach": "Hybrid: Use systemd LoadCredential (primary) + fallback to EnvironmentFile (already in place)",
+    "rationale": "LoadCredential is systemd native (v247+), isolates credentials from process env, supports rotation. EnvironmentFile already implemented as bridge.",
+
+    "architecture_layers": [
+      {
+        "layer": "1. Storage Layer",
+        "current_state": ".secrets/ollama.enc (encrypted) + .secrets/ollama.enc.meta (metadata)",
+        "target_state": "Create /etc/jit-credentials/ollama_token (production) OR keep .secrets/ollama.env for dev",
+        "mechanism": "systemd LoadCredential directive points to credentials directory"
+      },
+      {
+        "layer": "2. Systemd Layer",
+        "current_state": "ops/systemd/jit-heartbeat.service uses EnvironmentFile=/workspaces/Jit/.secrets/ollama.env",
+        "target_state": "Migrate to LoadCredential=ollama_token:/etc/jit-credentials/ollama_token",
+        "mechanism": "LoadCredential exposes token via $CREDENTIALS_DIRECTORY/ollama_token (not in process env)"
+      },
+      {
+        "layer": "3. Script Layer",
+        "current_state": "scripts/heartbeat-24h-daemon.sh sources OLLAMA_TOKEN from environment",
+        "target_state": "Read OLLAMA_TOKEN from $CREDENTIALS_DIRECTORY/ollama_token OR fallback to $OLLAMA_TOKEN env var",
+        "mechanism": "Graceful fallback: if CREDENTIALS_DIRECTORY defined, source from there; else use inherited env"
+      },
+      {
+        "layer": "4. Git History Layer",
+        "current_state": "Token visible in memory/heartbeats/beat-1.md error output",
+        "target_state": "Scrub git history using BFG or git-filter-repo before forcing credentials policy",
+        "mechanism": "git filter-repo --replace-text or BFG --delete-files '9e34679'"
+      },
+      {
+        "layer": "5. Token Rotation Layer",
+        "current_state": "Old token (9e34679...) still in circulation",
+        "target_state": "Disable old token at MDES; issue new token; store in credentials file",
+        "mechanism": "Coordinate with MDES team; test new token before disabling old"
+      }
+    ],
+
+    "pseudocode": {
+      "systemd_unit_fix": {
+        "file": "systemd/jit-heartbeat.service or ops/systemd/jit-heartbeat.service",
+        "before": "[Service]\nEnvironmentFile=/workspaces/Jit/.secrets/ollama.env\nExecStart=/bin/bash ...",
+        "after": "[Service]\n# LoadCredential: systemd v247+ reads from /etc/jit-credentials/ and exposes via $CREDENTIALS_DIRECTORY\nLoadCredential=ollama_token:/etc/jit-credentials/ollama_token\nExecStart=/bin/bash -c 'export OLLAMA_TOKEN=$(cat $CREDENTIALS_DIRECTORY/ollama_token 2>/dev/null || echo \"\") && bash scripts/heartbeat-24h-daemon.sh'"
+      },
+
+      "script_fix": {
+        "file": "scripts/heartbeat-24h-daemon.sh",
+        "before": "# No explicit credential source; relies on inherited OLLAMA_TOKEN from systemd Environment=",
+        "after": "# Secure credential loading: prefer systemd LoadCredential, fallback to EnvironmentFile\nif [[ -n \"${CREDENTIALS_DIRECTORY:-}\" && -f \"$CREDENTIALS_DIRECTORY/ollama_token\" ]]; then\n  export OLLAMA_TOKEN=$(cat \"$CREDENTIALS_DIRECTORY/ollama_token\")\nfi\n# OLLAMA_TOKEN is now either from LoadCredential or EnvironmentFile, never hardcoded"
+      },
+
+      "setup_script": {
+        "file": "scripts/setup-credentials.sh (NEW)",
+        "logic": [
+          "1. Check if /etc/jit-credentials exists (prod) or create /tmp/.jit-creds (dev)",
+          "2. If running with sudo: create /etc/jit-credentials with mode 700, owned by root:root",
+          "3. If not sudo: use ~/.jit-credentials with mode 700 (user-local)",
+          "4. Prompt for new OLLAMA_TOKEN (from MDES dashboard after rotation)",
+          "5. Write token to credentials_dir/ollama_token with mode 600",
+          "6. Validate: systemctl daemon-reload && systemctl restart jit-heartbeat",
+          "7. Verify: curl https://ollama.mdes-innova.online/api/health with token"
+        ]
+      },
+
+      "git_history_scrub": {
+        "tool": "git-filter-repo (safer than BFG, Python-based)",
+        "command": "git filter-repo --replace-text --regex 's/9e34679[a-f0-9]{24}/[REDACTED]/g' --no-blob-protection",
+        "alternative": "BFG: bfg --delete-files '9e34679' /workspaces/Jit",
+        "post_scrub": "git push --force origin main (after team coordination)"
+      },
+
+      "token_rotation": {
+        "steps": [
+          "1. Generate new token in MDES Ollama dashboard",
+          "2. Store new token in credentials file (setup-credentials.sh)",
+          "3. Test connectivity: curl https://ollama.mdes-innova.online/api/health -H 'Authorization: Bearer NEW_TOKEN'",
+          "4. Restart service: systemctl restart jit-heartbeat",
+          "5. Monitor logs: journalctl -u jit-heartbeat -f (watch for successful API calls)",
+          "6. Once verified: disable old token in MDES dashboard"
+        ]
+      }
+    }
+  },
+
+  "files_to_modify": [
+    {
+      "file_path": "/workspaces/Jit/systemd/jit-heartbeat.service",
+      "type": "Systemd Unit Configuration",
+      "change_type": "Update",
+      "current_state": "Uses EnvironmentFile=/workspaces/Jit/.secrets/ollama.env",
+      "target_state": "Migrate to LoadCredential=ollama_token:/etc/jit-credentials/ollama_token",
+      "description": "Replace EnvironmentFile with LoadCredential for native systemd credential handling. LoadCredential exposes token via $CREDENTIALS_DIRECTORY, preventing it from entering process environment."
+    },
+    {
+      "file_path": "/workspaces/Jit/ops/systemd/jit-heartbeat.service",
+      "type": "Systemd Unit Configuration (alternate copy)",
+      "change_type": "Mirror Update",
+      "current_state": "Same as systemd/jit-heartbeat.service",
+      "target_state": "Same LoadCredential migration",
+      "description": "Keep ops/ and systemd/ in sync. Clarify which is canonical (likely ops/)."
+    },
+    {
+      "file_path": "/workspaces/Jit/scripts/heartbeat-24h-daemon.sh",
+      "type": "Shell Script",
+      "change_type": "Update",
+      "current_state": "Reads OLLAMA_TOKEN from inherited environment; no explicit credential source handling",
+      "target_state": "Add explicit credential loading: check $CREDENTIALS_DIRECTORY first, fallback to env var",
+      "description": "Make credential source explicit and testable. If CREDENTIALS_DIRECTORY is set (systemd LoadCredential), read token from there. Otherwise use inherited OLLAMA_TOKEN."
+    },
+    {
+      "file_path": "/workspaces/Jit/scripts/setup-credentials.sh",
+      "type": "Shell Script (NEW)",
+      "change_type": "Create",
+      "current_state": "Does not exist",
+      "target_state": "Interactive setup script for credentials directory",
+      "description": "Creates /etc/jit-credentials (prod, requires sudo) or ~/.jit-credentials (dev). Guides user to store new OLLAMA_TOKEN. Validates systemd can read it. Runs validation tests."
+    },
+    {
+      "file_path": "/workspaces/Jit/limbs/llm.sh",
+      "type": "Shell Script",
+      "change_type": "Conditional Update",
+      "current_state": "Loads .env file with `source`, which may contain token in plaintext",
+      "target_state": "Migrate to read OLLAMA_TOKEN from credentials file or environment (not hardcoded .env)",
+      "description": "If llm.sh directly sources .env with OLLAMA_TOKEN, add credential loading logic here too. Verify llm.sh can work with LoadCredential-supplied token."
+    },
+    {
+      "file_path": "/workspaces/Jit/memory/heartbeats/beat-1.md",
+      "type": "Documentation / Artifact",
+      "change_type": "Redact",
+      "current_state": "Contains curl error with inline 9e34679 token",
+      "target_state": "Redact token from error output",
+      "description": "Replace visible token with [REDACTED] in curl command. This is the source of token leakage in git history."
+    },
+    {
+      "file_path": "/workspaces/Jit/CLAUDE.md",
+      "type": "Project Documentation",
+      "change_type": "Update (Documentation Only)",
+      "current_state": "No mention of credential management procedure",
+      "target_state": "Add section: 'Credential Management & Token Rotation'",
+      "description": "Document how agents access OLLAMA_TOKEN securely. Reference setup-credentials.sh, explain LoadCredential vs EnvironmentFile."
+    },
+    {
+      "file_path": "/workspaces/Jit/docs/deployment-guide.md",
+      "type": "Deployment Documentation",
+      "change_type": "Update (Documentation Only)",
+      "current_state": "May not document credential setup for production",
+      "target_state": "Add 'Credentials Setup' section with step-by-step instructions",
+      "description": "Production deployment guide: how to create /etc/jit-credentials, load token, validate, rotate."
+    },
+    {
+      "file_path": "/workspaces/Jit/.secrets/ollama.env",
+      "type": "Secrets File",
+      "change_type": "Conditional Cleanup",
+      "current_state": "Exists as fallback for EnvironmentFile",
+      "target_state": "Keep for dev/test, mark as deprecated in favor of LoadCredential",
+      "description": "Can remain for local development (EnvironmentFile still works). In production, credentials come from /etc/jit-credentials via LoadCredential."
+    },
+    {
+      "file_path": "/workspaces/Jit/scripts/bootstrap.sh",
+      "type": "Bootstrap Script",
+      "change_type": "Conditional Update",
+      "current_state": "May not handle credentials setup",
+      "target_state": "Add optional credentials setup step",
+      "description": "If bootstrap is used to initialize production, add call to setup-credentials.sh or prompt for token input."
+    }
+  ],
+
+  "tests_needed": [
+    {
+      "test_id": "TEST-JIT-006-001",
+      "name": "Service loads without hardcoded token",
+      "type": "Unit Configuration Validation",
+      "command": "grep -i 'Environment.*OLLAMA_TOKEN' /workspaces/Jit/systemd/jit-heartbeat.service && echo 'FAIL: Token found in unit file' || echo 'PASS: No token in unit file'",
+      "expected_result": "PASS: No token in unit file",
+      "acceptance": "Token must not appear in Environment= directive"
+    },
+    {
+      "test_id": "TEST-JIT-006-002",
+      "name": "LoadCredential directive is present",
+      "type": "Systemd Configuration Validation",
+      "command": "grep -i 'LoadCredential' /workspaces/Jit/systemd/jit-heartbeat.service",
+      "expected_result": "LoadCredential=ollama_token:/etc/jit-credentials/ollama_token",
+      "acceptance": "LoadCredential directive must reference the credentials file"
+    },
+    {
+      "test_id": "TEST-JIT-006-003",
+      "name": "Credentials file has correct permissions",
+      "type": "File System Security",
+      "command": "ls -la /etc/jit-credentials/ollama_token | awk '{print $1}' | grep -c '^-rw-------'",
+      "expected_result": "1",
+      "acceptance": "File must be readable only by owner (mode 0600)"
+    },
+    {
+      "test_id": "TEST-JIT-006-004",
+      "name": "Credentials file is owned by root",
+      "type": "File System Security",
+      "command": "stat -c '%U:%G' /etc/jit-credentials/ollama_token",
+      "expected_result": "root:root",
+      "acceptance": "Credentials must be owned by root:root to prevent tampering"
+    },
+    {
+      "test_id": "TEST-JIT-006-005",
+      "name": "Service starts without errors",
+      "type": "Integration Test",
+      "command": "systemctl daemon-reload && systemctl start jit-heartbeat && sleep 2 && systemctl is-active jit-heartbeat",
+      "expected_result": "active",
+      "acceptance": "Service must enter active state after start"
+    },
+    {
+      "test_id": "TEST-JIT-006-006",
+      "name": "Token does not appear in process environment",
+      "type": "Process Security",
+      "command": "systemctl show jit-heartbeat.service -p Environment | grep -i OLLAMA_TOKEN",
+      "expected_result": "Environment=",
+      "acceptance": "systemctl show must not reveal OLLAMA_TOKEN in process environment"
+    },
+    {
+      "test_id": "TEST-JIT-006-007",
+      "name": "Token does not appear in ps output",
+      "type": "Process Security",
+      "command": "ps aux | grep heartbeat | grep -v grep | grep -c OLLAMA_TOKEN",
+      "expected_result": "0",
+      "acceptance": "ps output must not contain visible token"
+    },
+    {
+      "test_id": "TEST-JIT-006-008",
+      "name": "Service can reach Ollama API",
+      "type": "Connectivity Test",
+      "command": "journalctl -u jit-heartbeat -n 30 | grep -i 'ollama\\|api' | head -5",
+      "expected_result": "Must contain successful API call logs",
+      "acceptance": "Service logs must show successful Ollama API communication"
+    },
+    {
+      "test_id": "TEST-JIT-006-009",
+      "name": "Git history does not contain token",
+      "type": "Git History Audit",
+      "command": "git log --all --full-history -S '9e34679' /workspaces/Jit 2>/dev/null | wc -l",
+      "expected_result": "0",
+      "acceptance": "git log must return zero matches for token string"
+    },
+    {
+      "test_id": "TEST-JIT-006-010",
+      "name": "No token in codebase grep",
+      "type": "Codebase Audit",
+      "command": "grep -r '9e34679' /workspaces/Jit 2>/dev/null | grep -v '.git' | grep -v '.secrets' | wc -l",
+      "expected_result": "0",
+      "acceptance": "Token must not appear outside .git and .secrets directories"
+    },
+    {
+      "test_id": "TEST-JIT-006-011",
+      "name": "Heartbeat script reads credential correctly",
+      "type": "Script Functionality",
+      "command": "bash /workspaces/Jit/scripts/heartbeat-24h-daemon.sh --help 2>&1 | head -1",
+      "expected_result": "Script must execute without credential errors",
+      "acceptance": "Script must not fail due to missing OLLAMA_TOKEN (even if Ollama is unavailable)"
+    },
+    {
+      "test_id": "TEST-JIT-006-012",
+      "name": "setup-credentials.sh is executable",
+      "type": "Script Validation",
+      "command": "test -x /workspaces/Jit/scripts/setup-credentials.sh && echo 'PASS' || echo 'FAIL'",
+      "expected_result": "PASS",
+      "acceptance": "setup-credentials.sh must be created and executable"
+    },
+    {
+      "test_id": "TEST-JIT-006-013",
+      "name": "Token rotation does not break service",
+      "type": "Operational Test",
+      "command": "echo 'NEW_TOKEN_12345' | sudo tee /etc/jit-credentials/ollama_token > /dev/null && systemctl restart jit-heartbeat && sleep 2 && systemctl is-active jit-heartbeat",
+      "expected_result": "active",
+      "acceptance": "Service must restart cleanly with new token"
+    },
+    {
+      "test_id": "TEST-JIT-006-014",
+      "name": "Credentials directory permissions prevent unauthorized access",
+      "type": "Directory Security",
+      "command": "ls -ld /etc/jit-credentials | awk '{print $1}' | grep -c '^drwx------'",
+      "expected_result": "1",
+      "acceptance": "Directory must be accessible only by owner (mode 0700)"
+    },
+    {
+      "test_id": "TEST-JIT-006-015",
+      "name": "Documentation updated with credential procedures",
+      "type": "Documentation Audit",
+      "command": "grep -l 'LoadCredential\\|setup-credentials' /workspaces/Jit/CLAUDE.md /workspaces/Jit/docs/deployment-guide.md 2>/dev/null | wc -l",
+      "expected_result": "2",
+      "acceptance": "Both CLAUDE.md and deployment-guide.md must reference credential setup"
+    }
+  ],
+
+  "implementation_pseudocode": {
+    "step_1_update_service_file": {
+      "file": "systemd/jit-heartbeat.service",
+      "action": "Replace EnvironmentFile with LoadCredential",
+      "from": "[Service]\nEnvironmentFile=/workspaces/Jit/.secrets/ollama.env",
+      "to": "[Service]\n# Credentials: systemd v247+ LoadCredential exposes token via $CREDENTIALS_DIRECTORY\nLoadCredential=ollama_token:/etc/jit-credentials/ollama_token",
+      "comments": "LoadCredential is safer than EnvironmentFile: token never enters process environment"
+    },
+
+    "step_2_update_exec_start": {
+      "file": "systemd/jit-heartbeat.service",
+      "action": "Update ExecStart to source token from $CREDENTIALS_DIRECTORY",
+      "from": "ExecStart=/bin/bash /workspaces/Jit/scripts/heartbeat-24h-daemon.sh",
+      "to": "ExecStart=/bin/bash -c 'export OLLAMA_TOKEN=$(cat $CREDENTIALS_DIRECTORY/ollama_token 2>/dev/null || echo \"\") && bash /workspaces/Jit/scripts/heartbeat-24h-daemon.sh'",
+      "comments": "Make credential source explicit. Silent fallback to empty string if file doesn't exist (for dev/testing)."
+    },
+
+    "step_3_create_setup_script": {
+      "file": "scripts/setup-credentials.sh",
+      "action": "Create interactive setup script for credentials",
+      "pseudocode": [
+        "#!/bin/bash",
+        "# Check if running with sudo (prod) or user (dev)",
+        "if [[ $EUID -eq 0 ]]; then",
+        "  CREDS_DIR=/etc/jit-credentials",
+        "  OWNER=root:root",
+        "else",
+        "  CREDS_DIR=$HOME/.jit-credentials",
+        "  OWNER=$USER:$USER",
+        "fi",
+        "",
+        "# Create directory with secure permissions",
+        "mkdir -p $CREDS_DIR",
+        "chmod 700 $CREDS_DIR",
+        "chown $OWNER $CREDS_DIR",
+        "",
+        "# Prompt for token",
+        "read -s -p 'Enter new OLLAMA_TOKEN: ' token",
+        "echo \"$token\" > $CREDS_DIR/ollama_token",
+        "chmod 600 $CREDS_DIR/ollama_token",
+        "chown $OWNER $CREDS_DIR/ollama_token",
+        "",
+        "# Validate token with curl",
+        "if curl -s https://ollama.mdes-innova.online/api/health -H \"Authorization: Bearer $token\" | grep -q ok; then",
+        "  echo '✅ Token validated successfully'",
+        "else",
+        "  echo '⚠️  Token validation failed (Ollama may be unreachable)'",
+        "fi"
+      ]
+    },
+
+    "step_4_update_heartbeat_script": {
+      "file": "scripts/heartbeat-24h-daemon.sh",
+      "action": "Add explicit credential loading",
+      "insert_after": "source /workspaces/Jit/limbs/lib.sh",
+      "code": [
+        "# Secure credential loading: prefer systemd LoadCredential, fallback to inherited env",
+        "if [[ -n \"${CREDENTIALS_DIRECTORY:-}\" && -f \"$CREDENTIALS_DIRECTORY/ollama_token\" ]]; then",
+        "  export OLLAMA_TOKEN=$(cat \"$CREDENTIALS_DIRECTORY/ollama_token\")",
+        "  log_beat \"INFO\" \"✅ Loaded OLLAMA_TOKEN from systemd LoadCredential\"",
+        "elif [[ -z \"${OLLAMA_TOKEN:-}\" ]]; then",
+        "  log_beat \"WARN\" \"⚠️  OLLAMA_TOKEN not set (will fail if Ollama API is called)\"",
+        "fi"
+      ]
+    },
+
+    "step_5_redact_git_history": {
+      "file": "memory/heartbeats/beat-1.md",
+      "action": "Redact token from error output",
+      "from": "'Authorization: Bearer 9e34679b9d60d8b984005ec46508579c'",
+      "to": "'Authorization: Bearer [REDACTED]'",
+      "notes": "Then use git-filter-repo to scrub full history"
+    },
+
+    "step_6_scrub_git_history": {
+      "tool": "git-filter-repo",
+      "command": "git filter-repo --replace-text --regex 's/9e34679[a-f0-9]{24}/[REDACTED-TOKEN]/g' --no-blob-protection",
+      "alternative": "BFG: bfg --delete-files '9e34679'",
+      "post_action": "git push --force origin main (after team coordination)",
+      "notes": "Verify no token remains: git log -S '9e34679' (should return empty)"
+    },
+
+    "step_7_rotate_token": {
+      "action": "Coordinate with MDES to disable old token and issue new one",
+      "steps": [
+        "1. Contact MDES Ollama team (via shared Slack/email)",
+        "2. Request new OLLAMA_TOKEN for innova agent",
+        "3. Store new token: bash /workspaces/Jit/scripts/setup-credentials.sh",
+        "4. Verify: curl https://ollama.mdes-innova.online/api/health -H 'Authorization: Bearer <NEW_TOKEN>'",
+        "5. Restart service: systemctl restart jit-heartbeat",
+        "6. Monitor logs: journalctl -u jit-heartbeat -f (watch for successful API calls)",
+        "7. Disable old token: Instruct MDES to revoke 9e34679..."
+      ]
+    },
+
+    "step_8_update_documentation": {
+      "files": ["CLAUDE.md", "docs/deployment-guide.md"],
+      "sections": [
+        "Add 'Credential Management' section",
+        "Document LoadCredential vs EnvironmentFile",
+        "Provide setup-credentials.sh usage",
+        "Document token rotation procedure",
+        "Link to security audit (DEVOPS-001) and related tickets"
+      ]
+    }
+  },
+
+  "validation_plan": {
+    "pre_deployment_checks": [
+      "Verify systemd version: systemctl --version | head -1 (must be v247+)",
+      "Confirm sudo access: sudo -n systemctl status (no password prompt)",
+      "Check git permissions: git branch -a | grep main",
+      "Backup current service file: cp /workspaces/Jit/systemd/jit-heartbeat.service /tmp/jit-heartbeat.service.bak",
+      "Verify .secrets/ollama.env exists (fallback)"
+    ],
+
+    "deployment_verification": [
+      "systemctl daemon-reload",
+      "systemctl status jit-heartbeat (should show active or inactive; not failed)",
+      "systemctl start jit-heartbeat",
+      "sleep 2",
+      "systemctl is-active jit-heartbeat (should print 'active')",
+      "systemctl show jit-heartbeat.service -p Environment | grep -q OLLAMA_TOKEN || echo 'PASS: No token in environment'",
+      "ps aux | grep heartbeat | grep -v grep | grep OLLAMA_TOKEN || echo 'PASS: No token visible in process'",
+      "journalctl -u jit-heartbeat -n 20 (should show successful heartbeat or Ollama API calls)"
+    ],
+
+    "security_validation": [
+      "ls -la /etc/jit-credentials/ollama_token | grep -c '^-rw-------' (must equal 1)",
+      "stat -c '%U:%G' /etc/jit-credentials/ollama_token (must be 'root:root')",
+      "git log --all -S '9e34679' | wc -l (must be 0)",
+      "grep -r '9e34679' /workspaces/Jit 2>/dev/null | grep -v '.secrets' | grep -v '.git' | wc -l (must be 0)",
+      "curl -H 'Authorization: Bearer $(cat /etc/jit-credentials/ollama_token)' https://ollama.mdes-innova.online/api/health (must succeed)"
+    ],
+
+    "post_deployment_monitoring": [
+      "Watch heartbeat logs: journalctl -u jit-heartbeat -f",
+      "Verify Ollama API calls succeed (no auth errors)",
+      "Check for service restarts due to failures",
+      "Monitor for token-related errors in journal",
+      "Run full system check: bash /workspaces/Jit/eval/body-check.sh"
+    ]
+  },
+
+  "rollback_plan": {
+    "if_LoadCredential_not_supported": [
+      "Revert to EnvironmentFile: systemctl edit jit-heartbeat",
+      "Replace LoadCredential with EnvironmentFile=/etc/jit/ollama.env",
+      "Create /etc/jit/ollama.env with proper permissions (mode 0600, owned by root)",
+      "systemctl daemon-reload && systemctl restart jit-heartbeat"
+    ],
+
+    "if_service_fails_to_start": [
+      "Restore backup: cp /tmp/jit-heartbeat.service.bak /workspaces/Jit/systemd/jit-heartbeat.service",
+      "systemctl daemon-reload",
+      "systemctl start jit-heartbeat",
+      "Review logs: journalctl -u jit-heartbeat -n 50"
+    ],
+
+    "if_token_rotation_fails": [
+      "Keep old token available during transition",
+      "Update /etc/jit-credentials/ollama_token with old token temporarily",
+      "Restart service and verify logs",
+      "Investigate MDES API issues",
+      "Retry new token once MDES confirms setup"
+    ],
+
+    "if_git_scrub_causes_issues": [
+      "Revert local changes: git reflog",
+      "Recover from reflog: git checkout $(git reflog | grep 'reset:' | head -1)",
+      "Keep file-level credentials clean (don't re-add token)",
+      "Document incident and lessons learned"
+    ]
+  },
+
+  "risk_assessment": [
+    {
+      "risk": "systemd version does not support LoadCredential (< v247)",
+      "probability": "LOW",
+      "impact": "HIGH",
+      "mitigation": "Pre-check systemd version; fallback to EnvironmentFile. Ubuntu 21.04+ has v248+."
+    },
+    {
+      "risk": "Service fails to read token from $CREDENTIALS_DIRECTORY",
+      "probability": "MEDIUM",
+      "impact": "HIGH",
+      "mitigation": "Test in dev environment first; add error handling in script with graceful fallback"
+    },
+    {
+      "risk": "Git scrub breaks team workflow or loses commits",
+      "probability": "MEDIUM",
+      "impact": "MEDIUM",
+      "mitigation": "Communicate force-push to team; use git-filter-repo (safer than BFG); keep reflog for recovery"
+    },
+    {
+      "risk": "Token rotation creates auth errors (MDES delays)",
+      "probability": "MEDIUM",
+      "impact": "MEDIUM",
+      "mitigation": "Have both old and new tokens available during transition; test new token before disabling old"
+    },
+    {
+      "risk": "Credentials file accidentally deleted or permissions changed",
+      "probability": "LOW",
+      "impact": "HIGH",
+      "mitigation": "Document setup procedure; add to bootstrap.sh; use setup-credentials.sh to recreate"
+    },
+    {
+      "risk": "Sensitive info in journalctl logs",
+      "probability": "MEDIUM",
+      "impact": "MEDIUM",
+      "mitigation": "Ensure logs don't echo token; monitor journalctl output; consider log filtering rules"
+    }
+  ],
+
+  "effort_summary": {
+    "design_and_planning": "0.5 hours (spec and TOR already exist)",
+    "implement_service_file_changes": "0.25 hours",
+    "implement_script_changes": "0.5 hours",
+    "create_setup_credentials_script": "0.5 hours",
+    "git_history_scrub": "0.5 hours",
+    "token_rotation_coordination": "0.75 hours",
+    "testing_and_validation": "0.75 hours",
+    "documentation_updates": "0.25 hours",
+    "total_hours": "3.5 hours",
+    "status": "ESTIMATED (spec allocation is 3h; actual implementation ~3.5h with all steps)"
+  }
+}

@@ -1,0 +1,17 @@
+id: JIT-012
+title: "Add Oracle health monitoring with auto-restart"
+priority: P0
+type: feat
+status: done
+owner: pran
+created: 2026-06-07
+updated: 2026-06-08
+spec_ref: specs/JIT-012-spec.md
+acceptance:
+  - pran.sh polls http://localhost:47778/api/health every 60s
+  - On failure, pran.sh attempts restart via: cd /workspaces/arra-oracle-v3 && ORACLE_PORT=47778 bun run src/server.ts &
+  - After 3 consecutive failures, emits alert:critical to bus and notifies jit
+  - Health status written to /tmp/manusat-oracle-health.json with last_check, status, consecutive_failures
+  - netra.sh reads health file and reports in body-check output
+effort_hours: 5
+tags: [oracle, monitoring, reliability, p0, pran]

@@ -1,0 +1,25 @@
+id: JIT-017
+title: "Add capability versioning to agent registry"
+priority: P2
+type: feat
+status: completed
+owner: lak
+created: 2026-06-07
+updated: 2026-06-08
+completed: 2026-06-07
+completion_notes: |
+  All acceptance criteria verified:
+  1. registry.json: All 14 agents have version "1.0.0"
+  2. .agent.md files: All have ## Version section with 1.0.0
+  3. bus.sh: x-agent-version header added (line 647), extracted from registry (lines 618-630)
+  4. router.sh: check_version() function checks MANUSAT_MIN_AGENT_VER (lines 60-108)
+  5. BUS_VERSION_MISMATCH logged, non-fatal unless MANUSAT_STRICT_VERSION=1
+spec_ref: specs/JIT-017-spec.md
+acceptance:
+  - network/registry.json gains version field per agent (semver: "1.0.0")
+  - Each agent .agent.md file has a ## Version section with current capabilities version
+  - bus.sh message header gains optional x-agent-version field
+  - router.sh can filter/reject messages from agents below minimum version (MANUSAT_MIN_AGENT_VER)
+  - Version mismatch logged as BUS_VERSION_MISMATCH; non-fatal by default
+effort_hours: 4
+tags: [registry, versioning, protocol, p2, lak]

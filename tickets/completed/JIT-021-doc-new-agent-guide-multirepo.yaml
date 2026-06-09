@@ -1,0 +1,56 @@
+title: "Rewrite new-agent-guide.md for multi-agent addition"
+epic: "documentation"
+owner: vaja
+assignees:
+  - vaja
+priority: "P2"
+status: "completed"
+completed: "2026-06-07"
+created: "2026-06-07"
+due_date: null
+
+description: |
+  new-agent-guide.md currently describes single-repo bootstrap (cloning Jit repo to create a new agent repo) but does NOT address the actual use case: adding a new agent to the existing 14-agent ecosystem.
+
+  **Current Context:**
+  - Jit is ONE repo among many (each major agent may have its own repo)
+  - System is multi-repo, multi-agent with shared coordination
+  - Adding an agent requires: creating agent definition, registering in network/registry.json, assigning parent, assigning organ, creating inbox
+  - NOT just cloning Jit repo
+
+  **Required Rewrite:**
+  The guide should cover TWO scenarios:
+
+  **Scenario A: Add new agent to the EXISTING 14-agent system**
+  1. Create agents/<new-name>.json (copy from agents/template.json)
+  2. Create .github/agents/<new-name>.agent.md (Claude Code integration)
+  3. Register in network/registry.json (add to agents[], team_structure, organs)
+  4. Assign parent (which tier? reports to whom?)
+  5. Assign organ (which organ does this agent own?)
+  6. Create inbox: `mkdir -p /tmp/manusat-bus/<new-name>`
+  7. Initialize in Oracle: `bash limbs/oracle.sh learn "<new-name> awakening" ...`
+  8. Test: `bash eval/soul-check.sh`
+
+  **Scenario B: Create new agent in separate repo (advanced)**
+  - Instructions for creating a sibling Agent repo (like Jit itself is a repo)
+  - How to register child agents with parent orchestrator
+  - How to bridge communication via bus
+
+  **Reference Files:**
+  - agents/template.json (copy template)
+  - network/registry.json (registration structure)
+  - CLAUDE.md (tier assignment guidelines)
+  - core/body-map.md (organ ownership list)
+
+acceptance_criteria:
+  - Clear distinction between "add agent to Jit system" vs. "create new agent repo"
+  - Step-by-step walkthrough for Scenario A (most common case)
+  - Code examples showing agents/<name>.json and registry.json changes
+  - Checklist for verification (soul-check, bus test, Oracle learn)
+  - Parent-child assignment guidelines (when to assign to soma vs. innova vs. jit)
+  - Organ assignment guidelines (which organs are taken, which available)
+
+tags:
+  - documentation
+  - operational
+  - on-deck

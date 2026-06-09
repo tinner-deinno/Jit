@@ -1,0 +1,66 @@
+# Jit Daemon Log Rotation Configuration
+# ติดตั้ง: sudo cp /workspaces/Jit/ops/logrotate/jit-daemons /etc/logrotate.d/
+# หรือ symlink: sudo ln -s /workspaces/Jit/ops/logrotate/jit-daemons /etc/logrotate.d/jit-daemons
+
+/var/log/jit/*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 codespace codespace
+    sharedscripts
+    postrotate
+        # Reload systemd-journald เพื่อรับ log rotation signal (ถ้าใช้ journal)
+        systemctl reload systemd-journald 2>/dev/null || true
+    endscript
+}
+
+# Heartbeat daemon log
+/tmp/innova-heartbeat.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 codespace codespace
+    size 10M
+}
+
+# Heartbeat 24h daemon log
+/tmp/innova-heartbeat-daemon.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 codespace codespace
+    size 10M
+}
+
+# Hermes Discord bot log
+/tmp/hermes-discord.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 codespace codespace
+    size 10M
+}
+
+# General Jit logs in /tmp
+/tmp/jit-*.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 codespace codespace
+    size 5M
+}

@@ -1,0 +1,56 @@
+[20260607-185917] PM+SA dispatch starting
+[20260607-185917] SKIP 1000 — prompt file missing
+[20260607-185917] SKIP 107 — prompt file missing
+[20260607-185917] SKIP 988 — prompt file missing
+[20260607-185917] SKIP 989 — prompt file missing
+[20260607-185917] SKIP 990 — prompt file missing
+[20260607-185917] SKIP 991 — prompt file missing
+[20260607-185917] SKIP 992 — prompt file missing
+[20260607-185917] SKIP 993 — prompt file missing
+[20260607-185917] SKIP 994 — prompt file missing
+[20260607-185917] SKIP 995 — prompt file missing
+[20260607-185917] SKIP 996 — prompt file missing
+[20260607-185917] SKIP 997 — prompt file missing
+[20260607-185917] SKIP 998 — prompt file missing
+[20260607-185917] SKIP 999 — prompt file missing
+[20260607-185917] SKIP 106 — prompt file missing
+[20260607-185917] Launched 0 groups: 
+[20260607-185917] Fire-and-forget mode — groups running in background
+[20260607-185917] Coordinator scheduled in 120s
+[20260607-185917] Dispatch complete
+[20260607-190051] PM+SA dispatch starting — API key loaded: YES
+[20260607-190051] LAUNCH A-security (model: claude-haiku-4-5-20251001)
+[20260607-190051]   PID 507188 → groups/A-security-20260607-190051.log
+[20260607-190051] LAUNCH B-bus-spec (model: claude-haiku-4-5-20251001)
+[20260607-190051]   PID 507189 → groups/B-bus-spec-20260607-190051.log
+[20260607-190051] LAUNCH C-devops-spec (model: claude-haiku-4-5-20251001)
+[20260607-190051]   PID 507192 → groups/C-devops-spec-20260607-190051.log
+[20260607-190051] LAUNCH D-test-gaps (model: claude-haiku-4-5-20251001)
+[20260607-190051]   PID 507193 → groups/D-test-gaps-20260607-190051.log
+[20260607-190051] LAUNCH E-doc-audit (model: claude-haiku-4-5-20251001)
+[20260607-190051]   PID 507196 → groups/E-doc-audit-20260607-190051.log
+[20260607-190051] LAUNCH F-feature-discover (model: claude-haiku-4-5-20251001)
+[20260607-190051]   PID 507197 → groups/F-feature-discover-20260607-190051.log
+[20260607-190051] LAUNCH G-organ-health (model: claude-haiku-4-5-20251001)
+[20260607-190051]   PID 507203 → groups/G-organ-health-20260607-190051.log
+[20260607-190051] Launched 7/7 groups. PIDs: 507188 507189 507192 507193 507196 507197 507203
+[20260607-190051] Fire-and-forget — coordinator in 120s (PID 507206)
+[20260607-190051] Dispatch complete
+[20260607-190348] PM+SA dispatch starting — API key loaded: NO
+[20260607-190348] LAUNCH A-security (model: claude-haiku-4-5-20251001)
+[20260607-190348]   PID 546398 → groups/A-security-20260607-190348.log
+[20260607-190348] LAUNCH B-bus-spec (model: claude-haiku-4-5-20251001)
+[20260607-190348]   PID 546402 → groups/B-bus-spec-20260607-190348.log
+[20260607-190348] LAUNCH C-devops-spec (model: claude-haiku-4-5-20251001)
+[20260607-190348]   PID 546404 → groups/C-devops-spec-20260607-190348.log
+[20260607-190348] LAUNCH D-test-gaps (model: claude-haiku-4-5-20251001)
+[20260607-190348]   PID 546406 → groups/D-test-gaps-20260607-190348.log
+[20260607-190348] LAUNCH E-doc-audit (model: claude-haiku-4-5-20251001)
+[20260607-190348]   PID 546411 → groups/E-doc-audit-20260607-190348.log
+[20260607-190348] LAUNCH F-feature-discover (model: claude-haiku-4-5-20251001)
+[20260607-190348]   PID 546412 → groups/F-feature-discover-20260607-190348.log
+[20260607-190348] LAUNCH G-organ-health (model: claude-haiku-4-5-20251001)
+[20260607-190348]   PID 546416 → groups/G-organ-health-20260607-190348.log
+[20260607-190348] Launched 7/7 groups. PIDs: 546398 546402 546404 546406 546411 546412 546416
+[20260607-190348] Fire-and-forget — coordinator in 120s (PID 546417)
+[20260607-190348] Dispatch complete

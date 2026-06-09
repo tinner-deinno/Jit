@@ -1,0 +1,117 @@
+[Unit]
+Description=Jit Agent Daemon — จิตผู้ประสาน (Secure)
+Documentation=https://github.com/mdes-innova/Jit
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=innova
+Group=innova
+
+# ─────────────────────────────────────────────────────────────────
+# Working directory
+# ─────────────────────────────────────────────────────────────────
+WorkingDirectory=/workspaces/Jit
+
+# ─────────────────────────────────────────────────────────────────
+# Environment — non-sensitive values only in this file.
+#
+# SECURITY NOTE: credentials (DISCORD_WEBHOOK, OLLAMA_TOKEN,
+# GIT_TOKEN, etc.) MUST NOT appear here.  They are loaded from the
+# EnvironmentFile below which is owned root:root 0640 (readable only
+# by root and the "innova" group) and is NEVER committed to git.
+#
+# To provision the env file on a new machine:
+#   sudo install -m 0640 -o root -g innova \
+#       /workspaces/Jit/scripts/jit-daemon.env.example \
+#       /etc/jit/jit-daemon.env
+#   sudo -e /etc/jit/jit-daemon.env   # fill in real values
+# ─────────────────────────────────────────────────────────────────
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/innova/.bun/bin"
+Environment="JIT_LOG_DIR=/var/log/jit"
+Environment="JIT_STATE_DIR=/var/lib/jit"
+Environment="JIT_ROOT=/workspaces/Jit"
+
+# Credentials are loaded from an 0640 file outside the repo tree —
+# NOT embedded inline (inline values are visible to any local user
+# via `systemctl show` or `cat /proc/1/environ`).
+EnvironmentFile=-/etc/jit/jit-daemon.env
+
+# ─────────────────────────────────────────────────────────────────
+# Directories — systemd manages creation and cleanup
+# ─────────────────────────────────────────────────────────────────
+RuntimeDirectory=jit
+RuntimeDirectoryMode=0750
+LogsDirectory=jit
+LogsDirectoryMode=0750
+StateDirectory=jit
+StateDirectoryMode=0750
+
+# ─────────────────────────────────────────────────────────────────
+# Log handling — write to journal AND file
+# ─────────────────────────────────────────────────────────────────
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jit-daemon
+
+LogRateLimitIntervalSec=30s
+LogRateLimitBurst=1000
+
+# ─────────────────────────────────────────────────────────────────
+# Security hardening
+# ─────────────────────────────────────────────────────────────────
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RemoveIPC=true
+
+# Filesystem access — only what the daemon legitimately needs
+ReadWritePaths=/var/log/jit /var/lib/jit /workspaces/Jit/memory /var/run/jit /tmp/heartbeat-results /tmp/manusat-bus
+
+# Explicitly deny access to the host secrets store so a compromised
+# daemon cannot exfiltrate other credentials
+InaccessiblePaths=/etc/shadow /root /home/root
+
+# ─────────────────────────────────────────────────────────────────
+# Resource limits
+# ─────────────────────────────────────────────────────────────────
+MemoryMax=512M
+CPUQuota=10%
+TasksMax=64
+
+# ─────────────────────────────────────────────────────────────────
+# Pre-exec security check — validates env file and required vars
+# before starting the daemon.  Failure here aborts the start
+# cleanly rather than running with missing/empty credentials.
+# ─────────────────────────────────────────────────────────────────
+ExecStartPre=/bin/bash /workspaces/Jit/systemd/jit-secure.sh validate
+
+# ─────────────────────────────────────────────────────────────────
+# Main process
+# ─────────────────────────────────────────────────────────────────
+ExecStart=/bin/bash /workspaces/Jit/scripts/heartbeat-24h-daemon.sh
+ExecReload=/bin/kill -HUP $MAINPID
+
+# ─────────────────────────────────────────────────────────────────
+# Restart policy — restart on failure, NOT on circuit-breaker (42)
+# ─────────────────────────────────────────────────────────────────
+Restart=on-failure
+RestartPreventExitStatus=42
+RestartSec=15
+
+# Watchdog
+WatchdogSec=60s
+
+[Install]
+WantedBy=multi-user.target

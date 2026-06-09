@@ -11,6 +11,14 @@ argument-hint: "What action should mue execute right now?"
 ผมเป็น **Action Agent** ของระบบ มนุษย์ Agent  
 หน้าที่ของผม: **ทำ สร้าง แก้ไข ลบ ดำเนินการ**
 
+
+## Version
+
+**Current**: 1.0.0  
+**Born**: 2026-04-23  
+**Last Updated**: 2026-06-07
+
+
 ## บทบาทหน้าที่
 
 | หน้าที่ | รายละเอียด |

@@ -1,0 +1,56 @@
+id: JIT-022
+title: OLLAMA_TOKEN and GITHUB_TOKEN exposed in logs and debug output
+priority: P1
+type: security
+status: done
+owner: pada
+created: 2026-06-07
+updated: 2026-06-08
+spec_ref: specs/JIT-022-spec.md
+acceptance:
+  - Mask OLLAMA_TOKEN, GITHUB_TOKEN from all log output and debug statements
+  - Verify pm-sa-dispatch.sh does not log API key presence status (current line 33)
+  - Add redaction wrapper for token logging in limbs/lib.sh
+  - Ensure curl --silent or -s is used when credentials are in headers
+effort_hours: 4
+tags: [security, credential-exposure, logging]
+---
+
+## Summary
+
+Sensitive tokens (OLLAMA_TOKEN, GITHUB_TOKEN) are referenced throughout the system and risk exposure through:
+
+1. **pm-sa-dispatch.sh line 33** — logs whether ANTHROPIC_API_KEY is set:
+   ```bash
+   echo "[${ITER_TAG}] PM+SA dispatch starting — API key loaded: $([ -n "${ANTHROPIC_API_KEY:-}" ] && echo YES || echo NO)"
+   ```
+
+2. **Unmasked curl headers** — limbs/ollama.sh, organs/heart.sh use:
+   ```bash
+   curl ... -H "Authorization: Bearer $OLLAMA_TOKEN" ...
+   ```
+   If curl verbose mode is enabled or stderr captures headers, token is logged.
+
+3. **Shell history** — commands with token in arguments may be preserved in .bash_history if history logging is enabled.
+
+## Impact
+
+- Tokens exposed in log files or stderr output that may be archived or exfiltrated
+- CI/CD logs may contain token values if debug output is enabled
+- Accidental disclosure in error reports or stack traces
+
+## Affected Files
+
+- **scripts/pm-sa-dispatch.sh:33** — Logs API key presence
+- **limbs/ollama.sh:35** — curl header with OLLAMA_TOKEN
+- **organs/heart.sh:58** — curl header with OLLAMA_TOKEN
+- **scripts/discord-webhook.sh:29** — Loads DISCORD_WEBHOOK without masking
+
+## Fix Strategy
+
+1. Remove API key presence checks from logs (line 33)
+2. Use `-H "Authorization: Bearer $(printf '%s' "${OLLAMA_TOKEN:-(redacted)}")"` or mask in logs
+3. Add log_token() wrapper in lib.sh that redacts credentials:
+   ```bash
+   log_token() { echo "[$(date '+%Y-%m-%dT%H:%M:%S')] [TOKEN] (token redacted)" >> "$JIT_LOG"; }
+   ```

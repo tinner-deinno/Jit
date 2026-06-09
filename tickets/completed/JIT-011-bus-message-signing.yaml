@@ -1,0 +1,24 @@
+id: JIT-011
+title: "Add HMAC message signing to bus protocol"
+priority: P0
+type: security
+status: completed
+owner: lak
+created: 2026-06-07
+updated: 2026-06-08
+completed: 2026-06-08
+spec_ref: specs/JIT-011-spec.md
+acceptance:
+  - Each message gains an `x-signature: hmac-sha256:<hex>` header computed over from+to+subject+timestamp+body
+  - bus.sh send generates signature using a shared secret from env var MANUSAT_BUS_SECRET
+  - router.sh verify rejects messages with missing or invalid signature; emits BUS_AUTH_FAIL log entry
+  - Agents can opt-in to signature verification via MANUSAT_VERIFY_SIG=1 env flag
+  - Backward-compat: unsigned messages accepted in permissive mode (MANUSAT_STRICT_AUTH=0)
+effort_hours: 6
+tags: [bus, security, authentication, p0]
+implementation_notes: |
+  Implemented via lib.sh functions: bus_compute_signature() and bus_verify_signature()
+  - mouth.sh: Calls bus_compute_signature() and adds x-signature header
+  - ear.sh: Fixed signature parsing (x-signature:hmac-sha256=...) and calls bus_verify_signature()
+  - Secret stored in .secrets/bus-secret.env (32-byte random hex)
+  - Test suite: tests/test_bus_hmac.py (6/6 tests passed)

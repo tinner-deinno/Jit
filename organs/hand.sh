@@ -42,8 +42,35 @@ case "$CMD" in
   edit)
     FILE="$1" OLD="$2" NEW="$3"
     if [ ! -f "$FILE" ]; then err "ไม่พบ: $FILE"; exit 1; fi
+
+    # Escape special characters for sed replacement (injection protection)
+    # In GNU sed BRE: . * [ ] ^ $ are regex metacharacters
+    # Backslash \ is the escape character - must be escaped first in pattern
+    # Using | as delimiter, so escape | in both pattern and replacement
+    # In replacement: & is back-reference, \ is escape char
+    escape_sed_pattern() {
+      printf '%s\n' "$1" | \
+        sed 's/\\/\\\\/g' | \
+        sed 's/\./\\./g' | \
+        sed 's/\*/\\*/g' | \
+        sed 's/\[/\\[/g' | \
+        sed 's/\]/\\]/g' | \
+        sed 's/\^/\\^/g' | \
+        sed 's/\$/\\$/g' | \
+        sed 's/|/\\|/g'
+    }
+    escape_sed_replacement() {
+      printf '%s\n' "$1" | \
+        sed 's/\\/\\\\/g' | \
+        sed 's/&/\\&/g' | \
+        sed 's/|/\\|/g'
+    }
+
+    OLD_ESC=$(escape_sed_pattern "$OLD")
+    NEW_ESC=$(escape_sed_replacement "$NEW")
+
     cp "$FILE" "${FILE}.bak.$(date +%s)" && info "backup สร้างแล้ว"
-    sed -i "s|$OLD|$NEW|g" "$FILE"
+    sed -i "s|$OLD_ESC|$NEW_ESC|g" "$FILE"
     log_action "HAND_EDIT" "$FILE: '$OLD' → '$NEW'"
     ok "มือ แก้ไข: $FILE"
     ;;

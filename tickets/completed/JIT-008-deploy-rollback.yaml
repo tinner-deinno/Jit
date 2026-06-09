@@ -1,0 +1,18 @@
+id: JIT-008
+title: Add deploy rollback and pinned artifact version to bootstrap.sh
+priority: P1
+type: fix
+status: done
+owner: pada
+created: 2026-06-06
+updated: 2026-06-08
+spec_ref: scripts/bootstrap.sh
+source_audit: DEVOPS-003
+acceptance:
+  - Add git -C /workspaces/arra-oracle-v3 fetch --tags && git -C /workspaces/arra-oracle-v3 checkout ${ARRA_ORACLE_VERSION:-$(git -C /workspaces/arra-oracle-v3 describe --tags --abbrev=0)} before bun install
+  - Before mutating anything, snapshot the current commit: git -C /workspaces/arra-oracle-v3 rev-parse HEAD > /var/lib/jit/last-known-good.txt
+  - Add bash scripts/rollback.sh that: stops both units, git checkout $(cat /var/lib/jit/last-known-good.txt), re-runs bun install, restarts units, emits a Discord webhook on success/failure
+  - Add a pre-deploy hook that refuses to run db:push if the migration is destructive
+  - Document rollback runbook in JIT_FULL_SYSTEM_GUIDE.md
+effort_hours: 6
+tags: [devops, deploy, rollback, p1]

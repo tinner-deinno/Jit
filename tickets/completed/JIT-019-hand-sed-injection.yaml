@@ -1,0 +1,46 @@
+---
+id: JIT-019
+organ: hand
+title: Unsafe sed command with unescaped user input
+severity: P1
+status: done
+location: organs/hand.sh:46
+description: |
+  The `edit` command uses sed with user-provided OLD and NEW strings without escaping.
+  If a user passes regex special characters or path separators, sed will fail or
+  produce unexpected results. This is a code injection risk.
+
+  Current code:
+  ```bash
+  sed -i "s|$OLD|$NEW|g" "$FILE"
+  ```
+
+  Risk: If $OLD contains `|` or `\`, sed will break. If $NEW contains `\`, replacement fails.
+
+  Example attack:
+  ```
+  hand.sh edit /etc/passwd "root" "../../../etc/shadow"
+  ```
+
+impact: |
+  - Silent sed failures on special characters
+  - Potential for unintended file modifications
+  - No validation of replacement pairs
+
+fix_approach: |
+  Use proper escaping or switch to a safer method:
+  1. Use printf %s to escape sed metacharacters
+  2. Or: use perl -i with \Q \E quoting
+  3. Or: validate input and reject special chars with proper error message
+
+  Suggested fix:
+  ```bash
+  # Escape sed special chars
+  OLD_ESCAPED=$(printf '%s\n' "$OLD" | sed -e 's/[\/&]/\\&/g')
+  NEW_ESCAPED=$(printf '%s\n' "$NEW" | sed -e 's/[\/&]/\\&/g')
+  sed -i "s|$OLD_ESCAPED|$NEW_ESCAPED|g" "$FILE"
+  ```
+
+tags: [security, injection, sed]
+related: [JIT-022]
+---

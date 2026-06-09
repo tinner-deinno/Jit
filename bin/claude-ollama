@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# bin/claude-ollama — Launch Claude Code TUI with Ollama/gemma4:26b as backend via LiteLLM proxy
+#
+# How it works:
+# 1. Load .env (OLLAMA_TOKEN for auth)
+# 2. Start LiteLLM proxy on port 4000 if not already running
+# 3. Point Claude Code to the proxy as ANTHROPIC_BASE_URL=http://localhost:4000
+# 4. Launch TUI with a valid Anthropic model name (claude-haiku-4-5-20251001)
+# 5. All API calls are transparently routed to Ollama/gemma4:26b
+
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+JIT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+LITELLM_CONFIG="$JIT_ROOT/config/litellm.yaml"
+LITELLM_PORT=4000
+LITELLM_HOST=127.0.0.1
+
+# Load .env (OLLAMA_TOKEN, JIT_LOCK_DIR, etc.)
+if [ -f "$JIT_ROOT/.env" ]; then
+  set -a
+  source "$JIT_ROOT/.env"
+  set +a
+fi
+
+# Ensure lock directory exists
+mkdir -p "${JIT_LOCK_DIR:-/tmp/jit-locks}"
+
+# Check if LiteLLM is already running on port 4000
+_litellm_is_running() {
+  curl -sf "http://$LITELLM_HOST:$LITELLM_PORT/health" >/dev/null 2>&1
+}
+
+# Start LiteLLM proxy in background
+_start_litellm() {
+  echo "🚀 Starting LiteLLM proxy on port $LITELLM_PORT..." >&2
+
+  # Export OLLAMA_TOKEN so LiteLLM can access it in config
+  export OLLAMA_TOKEN="${OLLAMA_TOKEN:-}"
+
+  # Start proxy; nohup keeps it alive even if this script exits
+  nohup litellm --config "$LITELLM_CONFIG" --port "$LITELLM_PORT" \
+    >/tmp/litellm-proxy.log 2>&1 &
+
+  # Wait up to 10 seconds for port to become ready
+  local max_retries=10
+  local retry=0
+  while [ $retry -lt $max_retries ]; do
+    if _litellm_is_running; then
+      echo "✅ LiteLLM ready on http://$LITELLM_HOST:$LITELLM_PORT" >&2
+      return 0
+    fi
+    sleep 1
+    retry=$((retry+1))
+  done
+
+  echo "❌ LiteLLM failed to start within 10 seconds" >&2
+  echo "   Check logs: tail /tmp/litellm-proxy.log" >&2
+  return 1
+}
+
+# Main flow
+if ! _litellm_is_running; then
+  _start_litellm || exit 1
+else
+  echo "✅ LiteLLM already running on port $LITELLM_PORT" >&2
+fi
+
+# Launch Claude Code TUI
+# - ANTHROPIC_BASE_URL=http://localhost:4000 → proxy addr
+# - ANTHROPIC_API_KEY=sk-litellm-local → dummy key (LiteLLM doesn't validate it for proxy mode)
+# - --model claude-haiku-4-5-20251001 → valid Anthropic model name (LiteLLM maps it to ollama/gemma4:26b)
+exec env \
+  ANTHROPIC_BASE_URL="http://$LITELLM_HOST:$LITELLM_PORT" \
+  ANTHROPIC_API_KEY="sk-litellm-local" \
+  claude --model claude-haiku-4-5-20251001 "$@"

@@ -1,0 +1,13 @@
+[Unit]
+Description=Jit Health Check Timer — Run every 5 minutes
+Documentation=file:///workspaces/Jit/ops/HEALTHCHECK_RUNBOOK.md
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=1min
+Persistent=true
+RandomizedDelaySec=30
+
+[Install]
+WantedBy=timers.target

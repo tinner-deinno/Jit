@@ -1,0 +1,244 @@
+═══════════════════════════════════════════════════════════════════════════════
+  JIT-006: QUICK REFERENCE FOR QA TEST EXECUTION
+  Remove Hardcoded OLLAMA_TOKEN from jit-heartbeat.service
+═══════════════════════════════════════════════════════════════════════════════
+
+TEST OWNER: chamu (QA Lead)
+TEST PLAN: /workspaces/Jit/eval/JIT-006-test-plan.json (machine-readable)
+TEST SUMMARY: /workspaces/Jit/eval/JIT-006-TEST-SUMMARY.md (human-readable)
+DATE: 2026-06-08
+
+───────────────────────────────────────────────────────────────────────────────
+1. PRE-FLIGHT CHECKS (5 minutes)
+───────────────────────────────────────────────────────────────────────────────
+
+[ ] systemd version >= 247
+    $ systemctl --version | head -1
+
+[ ] sudo access (no password required for systemctl)
+    $ sudo -n systemctl status
+
+[ ] Git repo accessible
+    $ git status
+
+[ ] Ollama API reachable
+    $ curl -s https://ollama.mdes-innova.online/api/health
+
+[ ] Oracle running
+    $ curl -s http://localhost:47778/api/health
+
+───────────────────────────────────────────────────────────────────────────────
+2. TEST PHASES (8.5 hours total)
+───────────────────────────────────────────────────────────────────────────────
+
+PHASE 1: UNIT TESTS (1.25h) — MANDATORY
+──────────────────────────────────────
+[ ] TC-001: Service file has no hardcoded token
+    $ grep 'OLLAMA_TOKEN=' /workspaces/Jit/jit-heartbeat.service | grep -v LoadCredential
+    Expected: (empty)
+
+[ ] TC-002: Credentials directory exists (0700)
+    $ stat -c '%a %U:%G' /etc/jit-credentials
+    Expected: 700 root:root
+
+[ ] TC-003: Token file (0600, not world-readable)
+    $ stat -c '%a %U:%G' /etc/jit-credentials/ollama_token
+    Expected: 600 root:root
+    $ ls -la /etc/jit-credentials/ollama_token
+    Expected: -rw------- (6th field)
+
+[ ] TC-004: Service file passes systemd validation
+    $ systemd-analyze verify /workspaces/Jit/jit-heartbeat.service
+    Expected: OK (no errors)
+
+PHASE 2: INTEGRATION TESTS (2h) — MANDATORY
+────────────────────────────────────────────
+[ ] TC-005: Service starts and runs
+    $ sudo systemctl restart jit-heartbeat && sleep 3
+    $ systemctl is-active jit-heartbeat
+    Expected: active
+
+[ ] TC-008: Ollama connectivity verified
+    $ journalctl -u jit-heartbeat --since='30m ago' | grep -i ollama
+    Expected: successful API calls (no 401/403)
+
+[ ] TC-011: System health check passes
+    $ bash /workspaces/Jit/eval/body-check.sh 2>&1 | grep -i error | wc -l
+    Expected: 0
+
+PHASE 3: SECURITY TESTS (1.5h) — MANDATORY (parallel with Phase 2)
+──────────────────────────────────────────────────────────────────
+[ ] TC-006: Token not in process environment
+    $ ps aux | grep heartbeat | grep -v grep | grep OLLAMA_TOKEN
+    Expected: (empty)
+    $ systemctl show jit-heartbeat.service -p Environment
+    Expected: Environment= (no OLLAMA_TOKEN=)
+
+[ ] TC-007: Token removed from git history
+    $ git log --all -S '9e34679' --oneline
+    Expected: (empty)
+    $ grep -r '9e34679' /workspaces/Jit 2>/dev/null | grep -v .git | grep -v .secrets
+    Expected: (empty)
+
+[ ] TC-013: Non-root user cannot read token
+    $ sudo -u testuser cat /etc/jit-credentials/ollama_token 2>&1 | grep -i denied
+    Expected: "Permission denied"
+
+PHASE 4: FUNCTIONAL TESTS (2.5h) — RECOMMENDED
+───────────────────────────────────────────────
+[ ] TC-009: Setup script works
+    $ bash /workspaces/Jit/scripts/setup-credentials.sh --help
+    Expected: usage information or help text
+
+[ ] TC-010: Service restarts cleanly
+    $ for i in 1 2 3; do sudo systemctl restart jit-heartbeat && sleep 2 && systemctl is-active jit-heartbeat; done
+    Expected: active (3x)
+
+[ ] TC-012: Heartbeat pulse continues
+    $ journalctl -u jit-heartbeat --since='25m ago' | grep -i 'pulse\|heartbeat\|pran'
+    Expected: recent heartbeat activity
+
+PHASE 5: NEGATIVE TESTS (1.5h) — RECOMMENDED
+──────────────────────────────────────────────
+[ ] TC-014: Invalid token handled gracefully
+    $ echo 'invalid-token' | sudo tee /etc/jit-credentials/ollama_token > /dev/null
+    $ sudo systemctl restart jit-heartbeat && sleep 3
+    $ systemctl is-active jit-heartbeat
+    Expected: active (stays running despite invalid token)
+    $ journalctl -u jit-heartbeat -n 20 | grep -i '401\|403'
+    Expected: auth error logged (graceful failure)
+    [RESTORE: sudo cp /tmp/ollama_token.backup /etc/jit-credentials/ollama_token]
+
+[ ] TC-015: Missing credentials directory handled
+    $ sudo rm -rf /etc/jit-credentials
+    $ sudo systemctl restart jit-heartbeat 2>&1
+    $ systemctl is-active jit-heartbeat
+    Expected: inactive or failed (clear error in logs)
+    $ journalctl -u jit-heartbeat -n 20 | grep -i credential
+    Expected: LoadCredential error
+    [RESTORE: sudo cp -r /tmp/jit-credentials.backup /etc/jit-credentials]
+
+───────────────────────────────────────────────────────────────────────────────
+3. REGRESSION TESTS (ONGOING)
+───────────────────────────────────────────────────────────────────────────────
+
+DAILY:
+  $ journalctl -u jit-heartbeat --all | grep -E '[a-f0-9]{8}' | grep -v 'debug'
+  Expected: 0 (no secrets in logs)
+
+WEEKLY:
+  $ systemctl show jit-heartbeat.service -p Environment | grep OLLAMA_TOKEN
+  Expected: (empty)
+  
+  $ systemctl restart jit-heartbeat && sleep 3 && systemctl is-active jit-heartbeat
+  Expected: active
+
+MONTHLY:
+  $ bash /workspaces/Jit/eval/body-check.sh
+  Expected: no errors
+
+───────────────────────────────────────────────────────────────────────────────
+4. APPROVAL GATES (3 decision points)
+───────────────────────────────────────────────────────────────────────────────
+
+PRE-MERGE:
+  Owner: neta (Code Reviewer)
+  Tests: TC-001 to TC-007, TC-013 (all P0)
+  Decision: APPROVED / BLOCKED
+
+STAGING DEPLOY:
+  Owner: pada (DevOps)
+  Tests: All P0 + P1 tests
+  Decision: APPROVED / BLOCKED
+
+PRODUCTION DEPLOY:
+  Owner: jit (Master Orchestrator)
+  Tests: All tests + regression passing
+  Decision: APPROVED / BLOCKED
+
+───────────────────────────────────────────────────────────────────────────────
+5. TEST RESULT DOCUMENTATION
+───────────────────────────────────────────────────────────────────────────────
+
+For each test, record:
+  - Test ID
+  - Status: PASS / FAIL / SKIP
+  - Duration (seconds)
+  - Error message (if FAIL)
+  - Notes
+
+Output file: /workspaces/Jit/eval/JIT-006-test-results.json
+
+Template:
+{
+  "test_id": "TC-001",
+  "category": "Unit Test - File Integrity",
+  "status": "PASS",
+  "execution_timestamp": "2026-06-08T10:30:45Z",
+  "duration_seconds": 2,
+  "error_message": null,
+  "notes": "Service file verified, no hardcoded token found"
+}
+
+───────────────────────────────────────────────────────────────────────────────
+6. COMMON ISSUES & WORKAROUNDS
+───────────────────────────────────────────────────────────────────────────────
+
+ISSUE: systemd-analyze verify fails (TC-004)
+CAUSE: LoadCredential path doesn't exist
+FIX: Ensure /etc/jit-credentials exists: sudo mkdir -p /etc/jit-credentials
+
+ISSUE: Service fails to start (TC-005)
+CAUSE: Token file missing or unreadable
+FIX: Verify credentials file: ls -la /etc/jit-credentials/ollama_token
+
+ISSUE: Ollama API returns 401 (TC-008)
+CAUSE: Token invalid or rotated
+FIX: Get new token from MDES, update /etc/jit-credentials/ollama_token
+
+ISSUE: Git grep finds token (TC-007)
+CAUSE: History not scrubbed properly
+FIX: Re-run BFG or git-filter-repo, then verify
+
+───────────────────────────────────────────────────────────────────────────────
+7. SUPPORT CONTACTS
+───────────────────────────────────────────────────────────────────────────────
+
+pada (DevOps Engineer)
+  - Credential setup, systemd issues, file permissions
+  - Contact: /tmp/manusat-bus/pada/inbox/
+
+innova (Lead Developer)
+  - heartbeat-24h-daemon.sh script issues
+  - Contact: /tmp/manusat-bus/innova/inbox/
+
+neta (Code Reviewer)
+  - Security concerns, approval gate decisions
+  - Contact: /tmp/manusat-bus/neta/inbox/
+
+jit (Master Orchestrator)
+  - Final merge decisions, production sign-off
+  - Contact: /tmp/manusat-bus/jit/inbox/
+
+───────────────────────────────────────────────────────────────────────────────
+8. ESTIMATED TIMELINE
+───────────────────────────────────────────────────────────────────────────────
+
+Phase 1 (Unit Tests):        1-2 hours (TC-001 to TC-004)
+Phase 2 (Integration):       1-2 hours (TC-005, TC-008, TC-011)
+Phase 3 (Security):          0.5-1 hour (TC-006, TC-007, TC-013) [parallel]
+Phase 4 (Functional):        2-3 hours (TC-009, TC-010, TC-012)
+Phase 5 (Negative):          1-2 hours (TC-014, TC-015)
+────────────────────────────────────────────────
+TOTAL (Phase 1-4):           5-8 hours (minimal success)
+TOTAL (Phase 1-5):           6-10 hours (full success)
+Regression Tests:            Ongoing (5-10 min per test, run per schedule)
+
+───────────────────────────────────────────────────────────────────────────────
+
+READY TO BEGIN TEST EXECUTION.
+Generated: 2026-06-08
+For: chamu (QA Lead)
+By: Claude Code (Haiku 4.5)
+
+═══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,32 @@
+{
+  "test_id": "integration-5",
+  "name": "Module Compatibility Verification",
+  "provider": "Codex CLI",
+  "status": "pass",
+  "checks": {
+    "adapter_loads": {
+      "result": "pass",
+      "detail": "codex.sh exists (CLI not installed in env, expected)"
+    },
+    "config_valid": {
+      "result": "pass",
+      "detail": "providers.json valid, Codex enabled=true"
+    },
+    "gateway_routing": {
+      "result": "pass",
+      "detail": "llm.sh routes 'mue' agent to codex provider"
+    },
+    "fallback_chain": {
+      "result": "pass",
+      "detail": "mue agent has codex in fallback chain"
+    },
+    "all_adapters": {
+      "result": "pass",
+      "detail": "All 4 provider adapters present (claude, ollama, openai, codex)"
+    }
+  },
+  "completion_percent": "100",
+  "started_at": "2026-06-08T14:35:17Z",
+  "duration_ms": "4213",
+  "summary": "Module compatibility verified: Codex provider integrated into gateway, all adapters present"
+}

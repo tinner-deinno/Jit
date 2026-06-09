@@ -1,0 +1,18 @@
+id: JIT-030
+title: router.sh must reject expired messages and emit BUS_EXPIRED
+priority: P1
+type: fix
+status: open
+owner: lak
+created: 2026-06-08
+updated: 2026-06-08
+spec_ref: network/protocol.md
+source_audit: scrutinize-2026-06-08
+parent_ticket: JIT-001
+acceptance:
+  - router.sh reads `expires-at:` header from each message before dispatching
+  - If current time > expires-at, router emits `log_action "BUS_EXPIRED"` and moves message to DLQ (not silently drops)
+  - Verified with: send a message with ttl:1, sleep 2, run router.sh — message lands in _dlq/expired, not delivered
+  - No regression: unexpired messages still route correctly
+effort_hours: 2
+tags: [bus, router, ttl, reliability, p1]

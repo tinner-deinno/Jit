@@ -22,18 +22,40 @@ shift || true
 _send_msg() {
   local TO="$1" SUBJECT="$2" BODY="$3"
   local TS=$(date +%s%3N)  # millisecond timestamp
+  local TS_ISO=$(date '+%Y-%m-%dT%H:%M:%S')
   local MSG_DIR="$BUS_DIR/$TO"
   mkdir -p "$MSG_DIR"
   local MSG_FILE="$MSG_DIR/${TS}_from-${AGENT_NAME}.msg"
-  cat > "$MSG_FILE" << MSGEOF
+
+  # Compute HMAC-SHA256 signature over canonical string
+  local SIGNATURE=""
+  if [ -n "$MANUSAT_BUS_SECRET" ]; then
+    SIGNATURE=$(bus_compute_signature "$AGENT_NAME" "$TO" "$SUBJECT" "$TS_ISO" "$BODY")
+  fi
+
+  # Build message with optional signature header
+  if [ -n "$SIGNATURE" ]; then
+    cat > "$MSG_FILE" << MSGEOF
 from:$AGENT_NAME
 to:$TO
 subject:$SUBJECT
-timestamp:$(date '+%Y-%m-%dT%H:%M:%S')
+timestamp:$TS_ISO
+x-signature:hmac-sha256=$SIGNATURE
 ---
 $BODY
 MSGEOF
-  log_action "MOUTH_SEND" "to:$TO subject:$SUBJECT"
+  else
+    cat > "$MSG_FILE" << MSGEOF
+from:$AGENT_NAME
+to:$TO
+subject:$SUBJECT
+timestamp:$TS_ISO
+---
+$BODY
+MSGEOF
+  fi
+
+  log_action "MOUTH_SEND" "to:$TO subject:$SUBJECT signed:${SIGNATURE:+yes:-no}"
   echo "$MSG_FILE"
 }
 
@@ -70,12 +92,13 @@ case "$CMD" in
     else
       # ดึง agent names จาก registry
       python3 -c "
-import json
-with open('$REGISTRY') as f:
+import sys, json
+reg_path = sys.argv[1]
+with open(reg_path) as f:
     d = json.load(f)
 for a in d.get('agents', []):
     print(a['name'])
-" | while read -r AGENT; do
+" "$REGISTRY" | while read -r AGENT; do
         [ "$AGENT" = "$AGENT_NAME" ] && continue  # ไม่ส่งหาตัวเอง
         _send_msg "$AGENT" "broadcast:$SUBJECT" "$BODY" > /dev/null
         echo "  → $AGENT"
