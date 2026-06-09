@@ -1,0 +1,7 @@
+# Mirror contents are NOT tracked — see README.md for re-clone instructions
+# Only the README.md and this .gitignore are committed
+*
+!.gitignore
+!README.md
+!*/
+!*/.gitkeep
