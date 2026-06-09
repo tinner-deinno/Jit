@@ -1,0 +1,69 @@
+╔════════════════════════════════════════════════════════════════════╗
+║                    SYSTEM HEALTH ALERT SUMMARY                    ║
+║                  Body Check: 97% (40/41 Green)                    ║
+╚════════════════════════════════════════════════════════════════════╝
+
+THE 1 FAILING CHECK: Fleet Backend Health
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Status: 🔴 CRITICAL
+  Issue:  3/9 backends alive (need 5+ for safety)
+  
+  Alive:
+    ✅ commandcode (2772ms latency)
+    ✅ ollama_cloud (17515ms latency)
+    ✅ thaillm (3535ms latency)
+  
+  Down (6):
+    ❌ ollama_mdes — timeout (35037ms)
+    ❌ ollama_local — timeout (35014ms)
+    ❌ copilot — empty reply (16514ms)
+    ❌ openai — Codex CLI error (30791ms)
+    ❌ openclaude — request error (157ms)
+    ❌ innova_bot — SSE timeout (30171ms)
+
+SECONDARY WARNINGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. Neural Pulse Latency: 788ms (threshold 500ms)
+     Root: Message bus vaja→jit→soma→lak→innova→vaja cycle slow
+  
+  2. Disk Space: 97% full (462G/477G used, 15G free)
+     Impact: Marginal margin for logs/caches
+
+READINESS CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [ ] All 10 backends responding <100ms?
+        ❌ NO — only 3/10 alive
+        ❌ Latency within range for only 2 backends
+
+  [ ] Cache memory usage <500MB?
+        ⏳ UNKNOWN — not measured
+
+  [ ] Message queue <1000 pending?
+        ✅ YES — 93 pending (normal)
+
+  [ ] CPU usage <80%?
+        ⏳ UNKNOWN — Windows metrics unavailable
+
+  [ ] Disk I/O normal?
+        ⚠️  MARGINAL — 97% full, stress risk high
+
+  [ ] No daemon crashes?
+        ✅ YES — 0 crashes detected
+
+ESCALATION REQUIRED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  BLOCKER: Fleet degradation prevents TICKET-010 load test.
+  ACTION:  Restore backends before proceeding.
+  
+  Priority order:
+    1. ollama_mdes (timeout)
+    2. ollama_local (timeout)
+    3. copilot (empty reply)
+    4. openai (Codex error)
+    5. openclaude (connection)
+    6. innova_bot (SSE timeout)
+

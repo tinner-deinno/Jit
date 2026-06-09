@@ -1,0 +1,96 @@
+{
+  "timestamp": "2026-06-09T16:19:30Z",
+  "system_health": {
+    "overall_status": "DEGRADED",
+    "pass_count": 40,
+    "fail_count": 0,
+    "warning_count": 1,
+    "vitality_percentage": 97,
+    "critical_issue_count": 1
+  },
+  "checks": {
+    "body_integrity": {
+      "status": "PASS",
+      "details": "All 40 core checks passing",
+      "timestamp": "2026-06-09T16:19:18Z"
+    },
+    "bridge_health": {
+      "status": "PASS",
+      "details": "Innova bridge synchronized, 0 pending messages",
+      "process_pid": 71784
+    },
+    "fleet_status": {
+      "status": "CRITICAL_FAIL",
+      "reason": "Only 3 of 10 backends alive (need 5+)",
+      "alive_backends": [
+        "commandcode (2772ms)",
+        "ollama_cloud (17515ms)",
+        "thaillm (3535ms)"
+      ],
+      "down_backends": [
+        "ollama_mdes (timeout)",
+        "ollama_local (timeout)",
+        "copilot (empty reply)",
+        "openai (Codex CLI error)",
+        "openclaude (connection error)",
+        "innova_bot (SSE timeout)"
+      ],
+      "total_backends": 9,
+      "alive_ratio": "3/9"
+    },
+    "message_bus": {
+      "status": "WARNING",
+      "reason": "Neural pulse latency above threshold",
+      "neural_pulse_latency": "788ms",
+      "threshold": "500ms",
+      "pending_messages": 93,
+      "congestion_status": "PASS"
+    },
+    "external_services": {
+      "oracle": {
+        "status": "PASS",
+        "endpoint": "http://localhost:47778",
+        "docs_indexed": 28
+      },
+      "ollama_mdes": {
+        "status": "WARNING",
+        "reason": "Timeout during probing (may be slow)",
+        "endpoint": "https://ollama.mdes-innova.online"
+      }
+    },
+    "resource_metrics": {
+      "disk_usage": {
+        "mount": "C:/",
+        "total": "477G",
+        "used": "462G",
+        "available": "15G",
+        "percentage": 97,
+        "status": "CRITICAL_WARNING"
+      },
+      "cache_memory": "Unknown (not measured)",
+      "cpu_load": "Unknown (not available in Windows)",
+      "daemon_crashes": 0
+    }
+  },
+  "critical_alert": {
+    "severity": "HIGH",
+    "issue": "FLEET BACKEND DEGRADATION",
+    "description": "Only 3/9 production backends responding. System requires minimum 5 backends for TICKET-010 load test.",
+    "failing_check": "Fleet backend health check",
+    "impact": "Load test cannot proceed safely. Service availability compromised.",
+    "action_required": "Investigate and restore down backends before proceeding."
+  },
+  "recommendations": [
+    "PRIORITY: Restore ollama_mdes and ollama_local backends (timeout issues)",
+    "PRIORITY: Investigate Copilot backend empty reply",
+    "PRIORITY: Restore OpenAI and OpenClaude backends",
+    "PRIORITY: Restore innova_bot backend (SSE timeout)",
+    "SECONDARY: Optimize neural pulse latency (788ms vs 500ms threshold)",
+    "SECONDARY: Free disk space (97% full - 15G remaining is marginal)",
+    "DEFER: Ollama mdes endpoint may be slow but not critical"
+  ],
+  "readiness_for_load_test": {
+    "status": "NOT_READY",
+    "reason": "Fleet degradation below safe threshold"
+  }
+}

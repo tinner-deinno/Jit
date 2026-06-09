@@ -1,0 +1,76 @@
+{
+  "ticket": "TICKET-013",
+  "generated_at": "2026-06-09T00:00:00Z",
+  "target_repo": "C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-node",
+  "implementation_summary": {
+    "files_modified": [
+      "src/utils/monitoring/index.ts",
+      "src/routes/api/health.ts"
+    ],
+    "files_created": [
+      "tests/unit/healthLivenessReadiness.test.ts"
+    ],
+    "test_count": 28,
+    "test_result": "28/28 PASS",
+    "backward_compat_tests": "5/5 PASS (healthRoute.test.ts + monitoringHealth.test.ts)"
+  },
+  "architecture": {
+    "liveness_services": ["MCP Server"],
+    "readiness_services": ["Redis", "Database"],
+    "liveness_timeout_ms": 50,
+    "readiness_timeout_ms": 500,
+    "status_logic": {
+      "healthy": "liveness=green AND readiness=green",
+      "degraded": "liveness=green AND readiness=yellow/red",
+      "unhealthy": "liveness=red"
+    }
+  },
+  "new_api": {
+    "endpoint": "GET /api/health?detailed=true",
+    "response_schema": {
+      "status": "healthy | degraded | unhealthy",
+      "liveness": {
+        "status": "green | yellow | red",
+        "response_time_ms": "number",
+        "last_check": "ISO-8601 string",
+        "last_error": "string | null",
+        "checks": "Array<{ service, status, response_time_ms, message? }>"
+      },
+      "readiness": {
+        "status": "green | yellow | red",
+        "response_time_ms": "number",
+        "last_check": "ISO-8601 string",
+        "last_error": "string | null",
+        "checks": "Array<{ service, status, response_time_ms, message? }>"
+      },
+      "metrics": {
+        "uptime": "number (seconds)",
+        "memory": "{ rss, heapTotal, heapUsed, external } (MB)",
+        "process": "{ pid, version, platform, arch }"
+      },
+      "timestamp": "ISO-8601 string"
+    },
+    "http_status_codes": {
+      "200": "healthy or degraded (liveness green)",
+      "503": "unhealthy (liveness red)"
+    }
+  },
+  "backward_compatibility": {
+    "plain_GET_/api/health": "unchanged — returns legacy shape with mode/redis/mcp fields",
+    "GET_/api/health?detailed=false": "same as plain GET (legacy shape)",
+    "GET_/api/health/ready": "unchanged",
+    "GET_/api/health/live": "unchanged",
+    "GET_/api/health/keys": "unchanged",
+    "GET_/api/health/metrics": "unchanged"
+  },
+  "performance_baseline": {
+    "liveness_target_ms": 50,
+    "readiness_target_ms": 500,
+    "note": "Enforced via Promise.race with timeout sentinels. Liveness timeout returns red; readiness timeout returns yellow (stores slow != unhealthy)."
+  },
+  "ci_gate": {
+    "passes_when": "liveness=green (chat+MCP working)",
+    "passes_even_if": "Redis or PostgreSQL are offline/slow (returns degraded, not unhealthy)",
+    "http_status_on_degraded": 200
+  }
+}
