@@ -121,6 +121,31 @@ Current Date: 2026-06-09
 **Owner**: lak (architecture) + innova (implementation)  
 **Effort**: 1-3 points (depending on decision)
 
+**Technical Analysis** (2026-06-10 Loop Iteration #3):
+- ✅ Router layer **READY**: `hermes-discord/model-router.js:991-1005` implements preferBackend correctly
+  - Normalizes backend name
+  - Reorders backend order to prioritize preferred backend
+  - Both `callModel()` and `pickBackendByKey()` handle preferBackend properly
+- ❌ Proxy layer **BROKEN**: `network/proxy-thai.js:232` has malformed ternary logic
+  ```javascript
+  const preferBackend = body.model ? router._normalizeBackendName ? 'ollama_mdes' : undefined : undefined;
+  ```
+  - Always forces `'ollama_mdes'` when `body.model` exists
+  - Ignores user-provided preferBackend from request body
+  - No way to pass custom preference through proxy
+
+**Recommended Decision Path**:
+- **Option A (Implement, 2 points)**: Accept preferBackend from request body, pass through to router.callModel()
+  - Fix proxy logic at line 232
+  - Add test for custom preferBackend routing
+  - Document in API spec
+- **Option B (Document, 0.5 points)**: Formally document that preferBackend is router-only, proxy always auto-selects
+  - Update comments in proxy-thai.js
+  - Add API limitation note
+  - Mark TICKET-016 as design doc only
+
+**Blockers**: None (code inspection complete, decision awaits owners)
+
 ### 📋 TICKET-017: Zero-Width Character Handling
 **Issue**: ZWJ/ZWNJ not stripped from Thai text (edge case)  
 **Scope**: Add stripping logic or document limitation  
