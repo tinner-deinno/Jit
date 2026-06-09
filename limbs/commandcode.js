@@ -41,7 +41,7 @@ async function callCommandCode(model, prompt, format = 'openai') {
             preferBackend: 'commandcode',
             noRotate: false,   // allow rotation to other backends on failure
             model: model,
-            maxTokens: format === 'anthropic' ? 4096 : 512,
+            maxTokens: 4096,
         });
         return result.reply;
     } catch (e) {

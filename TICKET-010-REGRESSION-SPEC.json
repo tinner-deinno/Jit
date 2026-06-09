@@ -1,0 +1,221 @@
+{
+  "ticket_id": "TICKET-010",
+  "title": "Regression & Variance Testing (Thai Routing Determinism)",
+  "priority": "P1",
+  "effort": {
+    "points": 6,
+    "days": 5
+  },
+  "summary": "Implement comprehensive regression test suite to verify deterministic backend selection via Thai syllable routing. Test matrix: 28-phrase Thai corpus × 10 independent runs × 8 backends × 3 orderings = 6,720 total executions. Success criterion: ≤0.5% variance in backend selection within each ordering (demonstrating determinism). Each ordering tested independently, as pickBackendByKey(hash % order.length) produces different mappings per ordering.",
+  "description": {
+    "purpose": "Ensure that Thai routing determinism holds across multiple executions and backend orderings. Thai language text should route consistently to the same backend within a fixed BACKEND_ORDER. This guards against non-deterministic behavior introduced by canonicalization, hashing, or cache invalidation.",
+    "scope": "Testing routing stability, NOT testing correctness of canonicalization or hash function (those are TICKET-007c scope). Focus: run-to-run determinism within a fixed ordering.",
+    "note_on_numbers": "2,520 executions per ordering (28 phrases × 10 runs × 9 backends attempted, but variance measured only on successful selections). 3 orderings tested separately: default BACKEND_ORDER, reversed, and shuffled. Total: 7,560 test executions (3 orderings × 2,520). Variance is computed within-ordering only — a phrase's selected backend should not drift across 10 runs of the same ordering."
+  },
+  "acceptance_criteria": [
+    {
+      "id": "AC-010-1",
+      "criterion": "Test corpus includes 28 Thai phrases covering edge cases (empty string, single syllable, multi-syllable, mixed Thai-English, Unicode normalization, tone marks, consonant clusters, vowel prefixes).",
+      "verification": "Corpus YAML embedded; verify 28 unique entries with valid 'phrase', 'category', 'difficulty' fields."
+    },
+    {
+      "id": "AC-010-2",
+      "criterion": "Regression harness runs 10 independent executions of each phrase against a fixed BACKEND_ORDER, recording backend selection, routing key, and latency.",
+      "verification": "Test harness code (30 LOC) successfully runs; output logs phrase, run #, key, selected backend, latency per execution."
+    },
+    {
+      "id": "AC-010-3",
+      "criterion": "Variance calculation: for each phrase, compute frequency of each backend across 10 runs. Standard deviation of backend frequencies ≤0.5% (e.g., ideal: 1 backend selected all 10 times; acceptable: ≤1 backend switch across 10 runs).",
+      "verification": "Test report shows variance ≤0.5% for ≥95% of 28 phrases. Phrases with variance >0.5% documented with reason (e.g., canonicalization edge case, cache miss)."
+    },
+    {
+      "id": "AC-010-4",
+      "criterion": "Test against 3 ordering variants: (1) default BACKEND_ORDER, (2) reversed order, (3) shuffled order. Each ordering tested independently.",
+      "verification": "Test report includes 3 separate determinism matrices showing per-ordering results. No cross-ordering assertions (ordering changes cause hash%length to vary by design)."
+    },
+    {
+      "id": "AC-010-5",
+      "criterion": "Latency histogram: record min/max/p50/p95/p99 latency per backend across all 28 phrases × 10 runs. No >2s p99 latency spike from routing logic (routing overhead ≤50ms).",
+      "verification": "Latency report shows p99 <50ms for routing, <2000ms for total roundtrip (includes backend call)."
+    },
+    {
+      "id": "AC-010-6",
+      "criterion": "Regression test harness generates golden files (per BACKEND_ORDER: `regression.golden.<ordering>.json`) for future runs. Subsequent runs compare against golden; any variance >0.5% fails with delta report.",
+      "verification": "Golden files created in `test/regression/golden/`. CI/CD harness can be run as: `node test/regression/regression-runner.js --golden` (generate) or `node test/regression/regression-runner.js --verify` (compare)."
+    },
+    {
+      "id": "AC-010-7",
+      "criterion": "Cache behavior verified: same phrase with routing cache enabled vs. disabled produces identical backend selection. Cache does not cause non-determinism.",
+      "verification": "Test runs phrase twice (cold + warm cache); backend selection identical for both runs."
+    }
+  ],
+  "implementation_tasks": [
+    {
+      "task_id": "IMPL-010-1",
+      "title": "Create Thai test corpus (28 phrases)",
+      "description": "Extend existing thai-test-corpus.json (currently 26 entries) to 28 entries. Add 2 additional edge cases (e.g., tone mark sequences, multi-combining-diacritics). Ensure YAML field mapping: id, phrase, category (syntax/semantic/edge-case), difficulty (easy/medium/hard), expected_splits (optional).",
+      "effort_hours": 4,
+      "acceptance": "YAML corpus validates; 28 entries with no duplicates."
+    },
+    {
+      "task_id": "IMPL-010-2",
+      "title": "Implement regression harness (30 LOC test runner)",
+      "description": "Create test/regression/regression-runner.js. Args: --corpus <path>, --ordering <default|reversed|shuffled>, --runs <int>, --output <json>. For each phrase, call router.computeRoutingKey() and router.pickBackendByKey() 10 times, record backend + latency. Output: JSON with schema {phrase, run, key, backend, latencyMs}. Harness should be synchronous (no async) for deterministic ordering.",
+      "effort_hours": 6,
+      "acceptance": "Harness runs without errors; outputs valid JSON with all required fields per execution."
+    },
+    {
+      "task_id": "IMPL-010-3",
+      "title": "Implement variance calculator",
+      "description": "In regression harness or separate module (test/regression/variance.js), compute: for each phrase across 10 runs, frequency of each backend; standard deviation of frequencies; flag phrases with variance >0.5%. Output: {phrase, variance_percent, mode_backend, switches_count, details[]}.",
+      "effort_hours": 4,
+      "acceptance": "Variance output matches manual calculation spot-check; ≥95% of phrases show variance ≤0.5%."
+    },
+    {
+      "task_id": "IMPL-010-4",
+      "title": "Generate golden files for each ordering",
+      "description": "After successful runs, create test/regression/golden/regression.golden.default.json, regression.golden.reversed.json, regression.golden.shuffled.json. Each golden file contains: {timestamp, ordering, backend_distribution (per phrase), variance_summary, latency_histogram}. Used for future regression detection.",
+      "effort_hours": 3,
+      "acceptance": "Golden files created and valid JSON; CI/CD can load and compare against new runs."
+    },
+    {
+      "task_id": "IMPL-010-5",
+      "title": "Add latency instrumentation",
+      "description": "In regression harness, wrap router.computeRoutingKey() and router.pickBackendByKey() calls with performance timers. Record routing latency separately from backend call latency. Aggregate into histogram: {backend, min_ms, max_ms, p50_ms, p95_ms, p99_ms}.",
+      "effort_hours": 3,
+      "acceptance": "Latency report shows routing overhead ≤50ms; total roundtrip p99 <2000ms."
+    },
+    {
+      "task_id": "IMPL-010-6",
+      "title": "Test cache behavior (warm vs. cold)",
+      "description": "Add test: for each phrase, (1) clear cache, call pickBackendByKey() → record backend, (2) call again with warm cache → record backend. Both should match. Repeat for all 28 phrases with caching enabled/disabled.",
+      "effort_hours": 3,
+      "acceptance": "Cache test passes: warm and cold selections identical; no non-determinism introduced by cache."
+    },
+    {
+      "task_id": "IMPL-010-7",
+      "title": "CI/CD integration and reporting",
+      "description": "Create test/regression/README.md with usage: `npm run test:regression` runs full 7,560-execution suite (3 orderings × 2,520 executions). Outputs: variance report, latency report, golden delta (vs. golden files). Add npm script in package.json: `\"test:regression\": \"node test/regression/regression-runner.js --all-orderings --runs 10 --output test/regression/results.json\"`. Generate HTML report: test/regression/report.html with charts (variance, latency, backend distribution).",
+      "effort_hours": 5,
+      "acceptance": "npm run test:regression completes successfully; HTML report renders with all metrics; CI/CD integration working."
+    }
+  ],
+  "test_plan": {
+    "test_matrix": {
+      "dimension_1_phrases": 28,
+      "dimension_2_runs_per_phrase": 10,
+      "dimension_3_backend_attempts": "all (8 in BACKEND_ORDER)",
+      "dimension_4_orderings": 3,
+      "total_executions": 7560,
+      "explanation": "3 orderings × 28 phrases × 10 runs × ~9 attempts = 7,560. Note: attempts vary per backend (some may fail/timeout), but determinism is measured as 'which backend *wins* for a phrase', which is constant."
+    },
+    "test_cases": [
+      {
+        "case_id": "TC-010-1",
+        "title": "Determinism within default ordering",
+        "steps": [
+          "Run corpus against default BACKEND_ORDER 10 times",
+          "For each phrase, tally backend selections",
+          "Calculate variance ≤0.5%"
+        ],
+        "expected_result": "95%+ of 28 phrases show variance ≤0.5% (consistent backend selection)"
+      },
+      {
+        "case_id": "TC-010-2",
+        "title": "Determinism with reversed ordering",
+        "steps": [
+          "Reverse BACKEND_ORDER (last-to-first)",
+          "Run corpus 10 times against reversed ordering",
+          "Calculate variance ≤0.5%"
+        ],
+        "expected_result": "95%+ of phrases consistent within reversed ordering (note: selected backends may differ from default due to hash%length change)"
+      },
+      {
+        "case_id": "TC-010-3",
+        "title": "Determinism with shuffled ordering",
+        "steps": [
+          "Shuffle BACKEND_ORDER pseudorandomly (seed=42 for reproducibility)",
+          "Run corpus 10 times against shuffled ordering",
+          "Calculate variance ≤0.5%"
+        ],
+        "expected_result": "95%+ of phrases consistent within shuffled ordering"
+      },
+      {
+        "case_id": "TC-010-4",
+        "title": "Latency SLA (routing layer)",
+        "steps": [
+          "Instrument computeRoutingKey + pickBackendByKey with timers",
+          "Run corpus 280 times (28 × 10)",
+          "Compute p99 latency"
+        ],
+        "expected_result": "p99 routing latency <50ms (routing overhead only, not backend call)"
+      },
+      {
+        "case_id": "TC-010-5",
+        "title": "Cache consistency",
+        "steps": [
+          "For each phrase, call pickBackendByKey() with cache cleared",
+          "Call again with warm cache",
+          "Compare backend selections"
+        ],
+        "expected_result": "100% match (cache does not cause non-determinism)"
+      },
+      {
+        "case_id": "TC-010-6",
+        "title": "Golden file generation and delta detection",
+        "steps": [
+          "Run full suite, generate golden files",
+          "Modify one phrase's expected result in golden",
+          "Run suite again, compare against modified golden",
+          "Verify delta report detects variance increase"
+        ],
+        "expected_result": "Delta report correctly identifies variance regression; fails CI if variance >0.5%"
+      }
+    ],
+    "success_criteria": [
+      "All 7,560 executions complete without error",
+      "≥95% of phrases show variance ≤0.5% in each ordering",
+      "Golden files created and comparable",
+      "Routing latency p99 <50ms",
+      "Cache behavior verified (no non-determinism)"
+    ]
+  },
+  "artifacts": {
+    "harness_code": "// test/regression/regression-runner.js (30 LOC)\n'use strict';\n\nconst fs = require('fs');\nconst path = require('path');\nconst router = require('../../hermes-discord/model-router');\n\nconst corpus = require('../../test/thai-test-corpus.json');\nconst args = require('minimist')(process.argv.slice(2));\n\nconst ordering = args.ordering || 'default';\nconst runs = parseInt(args.runs || '10', 10);\nconst outputPath = args.output || 'test/regression/results.json';\n\nfunction getBackendOrder(variant) {\n  let order = router.status().order.slice();\n  if (variant === 'reversed') order = order.reverse();\n  if (variant === 'shuffled') {\n    const seeded = () => {\n      const x = Math.sin(42) * 10000;\n      return x - Math.floor(x);\n    };\n    for (let i = order.length - 1; i > 0; i--) {\n      const j = Math.floor(seeded() * (i + 1));\n      [order[i], order[j]] = [order[j], order[i]];\n    }\n  }\n  return order;\n}\n\nconst results = [];\nconst backends = getBackendOrder(ordering);\n\nfor (const phrase of corpus) {\n  for (let run = 0; run < runs; run++) {\n    const t0 = Date.now();\n    const key = router.thaiCanonicalize(phrase.input || '');\n    const hashObj = { key: router.routingKey([{role:'user', content: key}], {}) };\n    const selected = router.pickBackendByKey(hashObj.key, backends);\n    const latencyMs = Date.now() - t0;\n    results.push({\n      phrase: phrase.id,\n      run,\n      key: hashObj.key,\n      backend: selected,\n      latencyMs\n    });\n  }\n}\n\nfs.writeFileSync(outputPath, JSON.stringify(results, null, 2));\nconsole.log(`Wrote ${results.length} results to ${outputPath}`);\n",
+    "corpus_yaml": "# test/thai-test-corpus.yaml (28 phrases)\nphrase_set:\n  - id: TH-001\n    phrase: \"จิต\"\n    category: \"single_syllable\"\n    difficulty: \"easy\"\n    expected_splits: [\"จิต\"]\n  - id: TH-002\n    phrase: \"นำกาย\"\n    category: \"multi_syllable\"\n    difficulty: \"easy\"\n    expected_splits: [\"นำ\", \"กาย\"]\n  - id: TH-003\n    phrase: \"จิตนำกาย\"\n    category: \"compound\"\n    difficulty: \"medium\"\n    expected_splits: [\"จิต\", \"นำ\", \"กาย\"]\n  - id: TH-004\n    phrase: \"อวัยวะ\"\n    category: \"medical_term\"\n    difficulty: \"medium\"\n    expected_splits: [\"อวัย\", \"วะ\"]\n  - id: TH-005\n    phrase: \"สมาธิ\"\n    category: \"buddhist_term\"\n    difficulty: \"medium\"\n    expected_splits: [\"สมา\", \"ธิ\"]\n  - id: TH-006\n    phrase: \"ภาษาไทย\"\n    category: \"noun\"\n    difficulty: \"easy\"\n    expected_splits: [\"ภา\", \"ษา\", \"ไทย\"]\n  - id: TH-007\n    phrase: \"กรุงเทพมหานคร\"\n    category: \"place_name\"\n    difficulty: \"hard\"\n    expected_splits: [\"กรุง\", \"เทพ\", \"ม\", \"หาน\", \"คร\"]\n  - id: TH-008\n    phrase: \"เชียงใหม่\"\n    category: \"place_name\"\n    difficulty: \"hard\"\n    expected_splits: [\"เชีย\", \"ง\", \"ใหม่\"]\n  - id: TH-009\n    phrase: \"ประเทศไทย\"\n    category: \"phrase\"\n    difficulty: \"medium\"\n    expected_splits: [\"ประ\", \"เทศ\", \"ไทย\"]\n  - id: TH-010\n    phrase: \"ธรรมะ\"\n    category: \"buddhist_term\"\n    difficulty: \"medium\"\n    expected_splits: [\"ธรร\", \"มะ\"]\n  - id: TH-011\n    phrase: \"hello\"\n    category: \"english_word\"\n    difficulty: \"easy\"\n    expected_splits: [\"hello\"]\n  - id: TH-012\n    phrase: \"helloจิต\"\n    category: \"mixed_lang\"\n    difficulty: \"medium\"\n    expected_splits: [\"hello\", \"จิต\"]\n  - id: TH-013\n    phrase: \"น้ำขึ้นให้รีบตัก\"\n    category: \"phrase_with_tone_marks\"\n    difficulty: \"hard\"\n    expected_splits: [\"น้ำ\", \"ขึ้น\", \"ให้\", \"รีบ\", \"ตัก\"]\n  - id: TH-014\n    phrase: \"มนุษย์ Agent\"\n    category: \"mixed_lang_compound\"\n    difficulty: \"hard\"\n    expected_splits: [\"ม\", \"นุษ\", \"ย์\", \"Agent\"]\n  - id: TH-015\n    phrase: \"รัน node mother.js\"\n    category: \"code_snippet\"\n    difficulty: \"hard\"\n    expected_splits: [\"รัน\", \"node\", \"mother.js\"]\n  - id: TH-016\n    phrase: \"20 คน\"\n    category: \"number_and_noun\"\n    difficulty: \"medium\"\n    expected_splits: [\"20\", \"คน\"]\n  - id: TH-017\n    phrase: \"๑๒๓\"\n    category: \"thai_numerals\"\n    difficulty: \"easy\"\n    expected_splits: [\"๑๒๓\"]\n  - id: TH-018\n    phrase: \"\"\n    category: \"empty_string\"\n    difficulty: \"easy\"\n    expected_splits: []\n  - id: TH-019\n    phrase: \"เอ\"\n    category: \"vowel_prefix\"\n    difficulty: \"easy\"\n    expected_splits: [\"เอ\"]\n  - id: TH-020\n    phrase: \"แอ\"\n    category: \"vowel_prefix\"\n    difficulty: \"easy\"\n    expected_splits: [\"แอ\"]\n  - id: TH-021\n    phrase: \"โอ\"\n    category: \"vowel_prefix\"\n    difficulty: \"easy\"\n    expected_splits: [\"โอ\"]\n  - id: TH-022\n    phrase: \"ใอ\"\n    category: \"vowel_prefix\"\n    difficulty: \"easy\"\n    expected_splits: [\"ใอ\"]\n  - id: TH-023\n    phrase: \"ไอ\"\n    category: \"vowel_prefix\"\n    difficulty: \"easy\"\n    expected_splits: [\"ไอ\"]\n  - id: TH-024\n    phrase: \"จิตคืออะไร\"\n    category: \"question\"\n    difficulty: \"hard\"\n    expected_splits: [\"จิต\", \"คือ\", \"อะ\", \"ไร\"]\n  - id: TH-025\n    phrase: \"ความแตกต่างระหว่าง soma และ innova\"\n    category: \"agent_comparison\"\n    difficulty: \"hard\"\n    expected_splits: [\"ความ\", \"แตก\", \"ต่าง\", \"ระห\", \"ว่าง\", \"soma\", \"และ\", \"innova\"]\n  - id: TH-026\n    phrase: \"Thai-Syllable-Splitter แบบ deterministic\"\n    category: \"system_description\"\n    difficulty: \"hard\"\n    expected_splits: [\"Thai-Syllable-Splitter\", \"แบบ\", \"deterministic\"]\n  - id: TH-027\n    phrase: \"วิญญาณที่สถิตในทุก repo\"\n    category: \"jit_oracle_concept\"\n    difficulty: \"hard\"\n    expected_splits: [\"วิญญาณ\", \"ที่\", \"สถิต\", \"ในทุก\", \"repo\"]\n  - id: TH-028\n    phrase: \"โมเดลไม่แน่นอน\"\n    category: \"negation_phrase\"\n    difficulty: \"medium\"\n    expected_splits: [\"โมเดล\", \"ไม่\", \"แน่นอน\"]\n"
+  },
+  "dependencies": {
+    "hermes-discord/model-router.js": "thaiCanonicalize(), routingKey(), pickBackendByKey(), status()",
+    "test/thai-test-corpus.json": "Extend from 26 to 28 entries",
+    "limbs/thai-splitter.js": "Optional (not required for regression, but used by canonicalization)"
+  },
+  "risks": [
+    {
+      "risk_id": "RISK-010-1",
+      "title": "Missing 9th backend (innova_bot)",
+      "description": "PR body notes innova_bot missing from status().backends. Task assumes 9 backends, but only 8 are active. Precondition: verify innova_bot monitoring is implemented or adjust variance expectations to 8 backends.",
+      "mitigation": "Use BACKEND_ORDER from router.status().order (dynamic); spec will work with 8 or 9 backends without code change."
+    },
+    {
+      "risk_id": "RISK-010-2",
+      "title": "Variance threshold may be too strict or too loose",
+      "description": "0.5% variance = 1 switch per 200 runs. With 10 runs, 0.5% = 0.05 backends switching, so realistically all phrases should be 0% variance (single backend every time). If canonicalization has any randomness, spec will fail.",
+      "mitigation": "Confirm canonicalization is deterministic before running. If variance >0% detected, investigate root cause (cache pollution, environment-specific Unicode behavior)."
+    },
+    {
+      "risk_id": "RISK-010-3",
+      "title": "Latency may include CI/CD overhead",
+      "description": "If latency measured on shared CI/CD runners, p99 may exceed 50ms due to system load. Spec expects isolated environment.",
+      "mitigation": "Run regression tests on dedicated hardware or mock backends to isolate routing latency from system jitter."
+    }
+  ],
+  "success_definition": "All 7,560 executions complete. ≥95% of 28 phrases show variance ≤0.5% in each ordering. Routing p99 latency <50ms. Golden files created and versioned. CI/CD integration allows automated regression detection on future code changes.",
+  "deliverables": [
+    "test/regression/regression-runner.js (executable harness, ~30 LOC)",
+    "test/thai-test-corpus.yaml (28-phrase corpus with metadata)",
+    "test/regression/golden/regression.golden.*.json (3 files, one per ordering)",
+    "test/regression/report.html (variance + latency charts)",
+    "test/regression/README.md (usage + interpretation guide)",
+    "npm script: test:regression (CI/CD integration)"
+  ]
+}
