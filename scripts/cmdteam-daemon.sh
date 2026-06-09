@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
-# 🤖 Sonnet 4.6
-# cmdteam-daemon.sh — systemd wrapper: source .env, exec cmdteam self-improve, log output
+# scripts/cmdteam-daemon.sh — systemd wrapper สำหรับ cmdteam self-improve
+#
+# Daemon ที่ทำงานใน background เพื่อรัน cmdteam self-improve เป็นระยะๆ
+# ทำหน้าที่เป็น wrapper รอบคำสั่ง cmdteam self-improve เพื่อ:
+#   โหลดตัวแปรสภาพแวดล้อมจากไฟล์ .env
+#   สร้างไดเรกทอรีสำหรับเก็บ log
+#   รัน cmdteam self-improve และบันทึก output ไปยัง log file
+#   ทำงานเป็น process แทนที่ shell ปัจจุบัน (exec)
+#
+# การใช้งาน:
+#   ติดตั้งเป็น systemd service โดยใช้ไฟล์ jit-daemon.service
+#   เริ่มต้นด้วย: systemctl start jit-daemon
+#   หยุดด้วย: systemctl stop jit-daemon
+#
+# สภาพแวดล้อม:
+#   อ่านตัวแปรจาก scripts/cmdteam-daemon.env ถ้ามีอยู่
+#   บันทึก log ไปยัง logs/cmdteam-daemon.log
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

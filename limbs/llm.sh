@@ -50,6 +50,25 @@ if [ -f "$JIT_ROOT/.env" ]; then set -a; source "$JIT_ROOT/.env"; set +a; fi
 
 # ─── _resolve: emit ordered candidate rows (TSV) for a request ──────────────
 # Columns: rank \t role \t provider \t model_id \t adapter \t key_env \t base_url \t base_url_env \t cli \t timeout \t enabled
+#
+# หาลำดับความสำคัญของ provider ที่จะใช้สำหรับคำขอ LLM ตามกฎการแก้ไข:
+#   1. explicit --provider/--model flag
+#   2. explicit provider/model string e.g. 'claude/sonnet'
+#   3. per-agent entry in config/providers.json `agents`
+#   4. `default_agent`
+#   หากผู้ให้บริการที่เลือกไม่พร้อมหรือเกิดข้อผิดพลาด เกตเวย์จะเดินตาม
+#   fallback chain ของ agent โดยอัตโนมัติ (ยกเว้นเมื่อใช้ --no-fallback)
+#
+# พารามิเตอร์:
+#   $1 - agent name (optional)
+#   $2 - flag provider (optional, from --provider/-p)
+#   $3 - flag model (optional, from --model/-m)
+#   $4 - model string (optional, direct provider/model or model id)
+#   $5 - no fallback flag (optional, "1" to disable fallback)
+#
+# คืนค่า:
+#   TSV (tab-separated values) พร้อมหัวข้อคอลัมน์:
+#   rank\trole\tprovider\tmodel_id\tadapter\tkey_env\tbase_url\tbase_url_env\tcli\ttimeout\tenabled
 _resolve() {
   local agent="$1" flag_provider="$2" flag_model="$3" model_string="$4" no_fallback="$5"
   CFG="$PROVIDERS_JSON" AGENT="$agent" FLAG_PROVIDER="$flag_provider" \
