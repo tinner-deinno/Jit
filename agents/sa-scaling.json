@@ -1,0 +1,28 @@
+{
+    "name": "sa-scaling",
+    "role": "Scale Architect",
+    "organ": "ขยาย-scaling",
+    "group": "SA",
+    "tier": 3,
+    "description": "Specialist for horizontal/vertical scaling, load balancing, auto-scaling, caching, database sharding, performance profiling, bottleneck resolution.",
+    "capabilities": [
+        "horizontal-scaling",
+        "auto-scaling",
+        "load-balancing",
+        "caching-strategy",
+        "db-sharding",
+        "perf-profiling",
+        "bottleneck-resolution"
+    ],
+    "tools": [
+        "k8s-hpa",
+        "varnish",
+        "redis",
+        "nginx",
+        "pgbouncer",
+        "flamegraph",
+        "pprof"
+    ],
+    "reports_to": "pada",
+    "bus_inbox": "/tmp/manusat-bus/sa-scaling"
+}

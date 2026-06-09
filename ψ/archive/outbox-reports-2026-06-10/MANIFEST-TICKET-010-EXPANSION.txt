@@ -1,0 +1,333 @@
+================================================================================
+TICKET-010 THAI TEST CORPUS EXPANSION - DELIVERABLE MANIFEST
+================================================================================
+
+PROJECT: Jit Oracle Multi-Agent System (MDES-Innova)
+TICKET: TICKET-010 (Regression & Variance Testing)
+TASK: Expand Thai test corpus from 28 → 50 phrases
+DATE: 2026-06-09
+STATUS: COMPLETE ✓
+
+================================================================================
+DELIVERABLE ARTIFACTS (8 files)
+================================================================================
+
+1. THAI-TEST-CORPUS-EXPANDED-010.JSON
+   Size: 19 KB
+   Type: JSON array (50 objects)
+   Purpose: Main test corpus artifact
+   Content: 50 distinct Thai phrases with metadata
+   Status: Ready for test harness integration
+
+2. VALIDATION-REPORT-EXPANDED-THAI-TEST-CORPUS-010.MD
+   Size: 17 KB
+   Type: Markdown documentation (400+ lines)
+   Purpose: Comprehensive validation analysis
+   Sections: 11 major validation checks with detailed results
+   Status: Complete validation documentation
+
+3. VALIDATE-EXPANDED-CORPUS-010.JS
+   Size: 13 KB
+   Type: Node.js executable script
+   Purpose: Automated corpus validation
+   Features: 14 comprehensive validation checks
+   Usage: node validate-expanded-corpus-010.js thai-test-corpus-expanded-010.json
+   Status: Tested and working (14/14 checks pass)
+
+4. EXPANSION-SUMMARY-010.MD
+   Size: 14 KB
+   Type: Markdown documentation
+   Purpose: Executive summary with detailed metrics
+   Status: Complete with all metrics
+
+5. CORPUS-QUICK-REFERENCE-EXPANDED-010.MD
+   Size: 8.7 KB
+   Type: Markdown quick reference guide (1-page cheat sheet)
+   Purpose: Quick lookup for test engineers
+   Status: Ready for daily use
+
+6. EXPANSION-COMPLETE-REPORT.TXT
+   Size: 9.4 KB
+   Type: Plain text summary report
+   Purpose: Executive status and archive documentation
+   Status: Complete status document
+
+7. INDEX-TICKET-010-EXPANSION.MD
+   Size: 12 KB
+   Type: Markdown navigation guide
+   Purpose: Master index and quick navigation
+   Status: Complete navigation guide
+
+8. MANIFEST-TICKET-010-EXPANSION.TXT
+   Size: This file
+   Type: Plain text manifest
+   Purpose: Deliverable inventory and sign-off
+   Status: Current
+
+================================================================================
+TOTAL DELIVERABLES: 8 files, ~91 KB
+================================================================================
+
+================================================================================
+QUALITY METRICS
+================================================================================
+
+CORPUS EXPANSION
+  Original corpus:        28 phrases
+  New additions:          22 phrases
+  Expanded total:         50 phrases
+  Growth:                 +78.6%
+
+BACKEND COVERAGE
+  Backends covered:       9/9 (100%)
+  Distribution balance:   ±2 (excellent)
+  Reference backend:      6 phrases (12%)
+  Other backends:         5-6 each (10-12%)
+
+LINGUISTIC VARIETY
+  Syllable range:         1-8 syllables
+  Different lengths:      8 (1, 2, 3, 4, 5, 6, 7, 8)
+  Tone marks:             19/50 (38%)
+  Edge cases:             44/50 (88%)
+  Code-switching:         8/50 (16%)
+
+SAFETY & COMPLIANCE
+  Zero-width safe:        50/50 (100%)
+  JSON valid:             All fields correct
+  Unique entries:         50/50
+  Format compliant:       All required fields
+
+VALIDATION RESULTS
+  Automated checks:       14/14 PASSED
+  Manual spot checks:     All verified
+  Backward compat:        100% (28 original preserved)
+  Overall status:         READY FOR INTEGRATION
+
+================================================================================
+VALIDATION RESULTS (14/14 PASSED)
+================================================================================
+
+Corpus Validation
+  Load Corpus                         PASS
+  File Structure (JSON array)         PASS
+  Corpus Size (50 phrases)            PASS
+  Unique IDs (50/50)                  PASS
+  Unique Phrases (50/50)              PASS
+  ID Format (TH-010-NNN)              PASS
+
+Backend & Distribution
+  Backend Coverage (9/9)              PASS
+  Distribution Balance (±2)           PASS
+
+Linguistic Analysis
+  Syllable Variety (8 lengths)        PASS
+  Syllable Range (1-8)                PASS
+  Tone Mark Coverage (38%)            PASS
+
+Safety & Format
+  Zero-Width Safety (100%)            PASS
+  JSON Format Compliance              PASS
+  Syllable Count Accuracy             PASS
+
+Result: 14/14 checks PASSED ✓
+
+================================================================================
+NEW PHRASES ADDED (22 total)
+================================================================================
+
+DIACRITICAL ENHANCEMENTS (4)
+  TH-010-029 through TH-010-032
+  Focus: Rare tone marks and vowel combinations
+
+SEMANTIC & LINGUISTIC (5)
+  TH-010-033 through TH-010-037
+  Focus: Culinary, prefixes, animals, JavaScript imports
+
+CODE-SWITCHING & LISTS (3)
+  TH-010-038 through TH-010-040
+  Focus: Lists, special characters, Thai-numeral mixing
+
+COMPOUND & COMPLEX WORDS (10)
+  TH-010-041 through TH-010-050
+  Focus: Compounds, idioms, long phrases (up to 6 syllables)
+
+================================================================================
+QUICK START GUIDE
+================================================================================
+
+1. Load the Corpus
+   File: thai-test-corpus-expanded-010.json
+   Usage: const corpus = require('./thai-test-corpus-expanded-010.json');
+
+2. Validate the Corpus
+   Command: node validate-expanded-corpus-010.js thai-test-corpus-expanded-010.json
+   Expected: "✓ VALIDATION PASSED — 14/14 checks pass"
+
+3. Read Documentation
+   Quick start: CORPUS-QUICK-REFERENCE-EXPANDED-010.md
+   Details: VALIDATION-REPORT-expanded-thai-test-corpus-010.md
+   Navigation: INDEX-TICKET-010-EXPANSION.md
+
+4. Integrate into Tests
+   Load 50 phrases into regression harness
+   Run 10 iterations per phrase (500 decisions)
+   Expected determinism: 0% variance
+
+5. Generate Baseline
+   Capture routing decisions for each phrase
+   Create golden file for future regression detection
+   Commit baseline to repository
+
+================================================================================
+FILE LOCATIONS
+================================================================================
+
+All files in: C:\Users\USER-NT\Jit\
+
+Main Corpus:
+  thai-test-corpus-expanded-010.json
+
+Documentation:
+  VALIDATION-REPORT-expanded-thai-test-corpus-010.md
+  EXPANSION-SUMMARY-010.md
+  CORPUS-QUICK-REFERENCE-EXPANDED-010.md
+  INDEX-TICKET-010-EXPANSION.md
+  EXPANSION-COMPLETE-REPORT.txt
+
+Automation:
+  validate-expanded-corpus-010.js
+
+This Manifest:
+  MANIFEST-TICKET-010-EXPANSION.txt
+
+================================================================================
+EXPECTED REGRESSION TEST RESULTS
+================================================================================
+
+Test Parameters
+  Corpus size:       50 phrases
+  Iterations:        10 per phrase
+  Total decisions:   500
+  Per-backend:       ~56 decisions
+  Tolerance:         ±2 (±3.6%)
+
+Expected Outcome
+  Determinism:       0% variance
+  Distribution:      All backends within ±2%
+  Status:            PASS
+
+Variance Policy
+  ≤1%  → PASS (excellent)
+  1-2% → REVIEW (investigate)
+  >2%  → HOTFIX (routing instability)
+
+================================================================================
+INTEGRATION CHECKLIST
+================================================================================
+
+Pre-Integration (Done)
+  [X] Corpus expanded (28 → 50)
+  [X] All entries validated (50/50)
+  [X] Format verified (JSON valid)
+  [X] Backends distributed (9/9, balanced)
+  [X] Edge cases covered (88%)
+  [X] Zero-width safe (100%)
+  [X] Documentation complete (8 files)
+  [X] Validation script tested (14/14 pass)
+
+Integration Phase (Next Week)
+  [ ] Load corpus into test/regression-010.js
+  [ ] Implement 10-round iteration loop
+  [ ] Capture routing decisions
+  [ ] Calculate distribution statistics
+  [ ] Generate baseline golden file
+  [ ] Test BACKEND_ORDER variations
+  [ ] Document variance thresholds
+
+Post-Integration (Week 2+)
+  [ ] Run full regression suite (500 decisions)
+  [ ] Verify determinism (0% variance)
+  [ ] Validate distribution (±2%)
+  [ ] Commit baseline to repository
+  [ ] Integrate into CI/CD pipeline
+  [ ] Monitor future releases for drift
+
+================================================================================
+NEXT ACTIONS BY ROLE
+================================================================================
+
+chamu (QA/Tester)
+  Start: Read CORPUS-QUICK-REFERENCE-EXPANDED-010.md
+  Next: Load into test/regression-010.js
+  Goal: Generate baseline golden file
+
+neta (Code Reviewer)
+  Start: Read EXPANSION-SUMMARY-010.md
+  Next: Review phrases for correctness
+  Goal: Verify and sign-off on test methodology
+
+innova (Lead Developer)
+  Start: Review EXPANSION-SUMMARY-010.md
+  Next: Verify router determinism capability
+  Goal: Prepare test environment (all backends accessible)
+
+soma (Project Lead)
+  Start: Read EXPANSION-COMPLETE-REPORT.txt
+  Next: Track TICKET-010 progress
+  Goal: Document variance policy in release notes
+
+================================================================================
+QUALITY ASSURANCE SIGN-OFF
+================================================================================
+
+Task: Expand TICKET-010 Thai test corpus from 28 → 50 phrases
+Status: COMPLETE ✓
+
+Validation:
+  Automated checks:       14/14 PASSED
+  Manual spot checks:     All verified
+  Format compliance:      100%
+  Backward compatibility: 100%
+
+Quality:
+  Corpus size:            50 phrases (100% unique)
+  Backend coverage:       9/9 (balanced ±2)
+  Edge cases:             44/50 (88%)
+  Zero-width safety:      50/50 (100%)
+  Diacritical marks:      19/50 (38%)
+
+Documentation:
+  Validation report:      Comprehensive (400+ lines)
+  Quick reference:        Ready for daily use
+  Integration guide:      Complete with examples
+  Automation script:      Tested and working
+
+Overall Status: READY FOR INTEGRATION ✓
+
+================================================================================
+CONCLUSION
+================================================================================
+
+Successfully expanded TICKET-010 Thai test corpus from 28 to 50 distinct
+phrases while maintaining quality standards and improving test coverage.
+
+The expanded corpus provides comprehensive regression testing support with:
+  - Enhanced linguistic variety (1-8 syllables, 8 different lengths)
+  - Improved backend distribution (balanced ±2 across 9 backends)
+  - Expanded edge case coverage (44 cases, 88% of corpus)
+  - Increased diacritical testing (38% with tone/vowel marks)
+  - Code-switching examples (16% Thai-English mixing)
+  - Perfect zero-width safety (100% of phrases safe)
+
+All automated validation checks PASSED (14/14). Comprehensive documentation
+provided for all stakeholders. Corpus is ready for TICKET-010 regression test
+harness integration.
+
+Generated: 2026-06-09
+Status: COMPLETE AND VALIDATED ✓
+
+Generated by: Claude Code (AI) + chamu (QA/Tester)
+Project: Jit Oracle Multi-Agent System (MDES-Innova)
+Ticket: TICKET-010 (Regression & Variance Testing)
+
+================================================================================

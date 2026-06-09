@@ -462,6 +462,29 @@ function writeReportMarkdown(report) {
 
   const outboxName = `${new Date().toISOString().replace(/[:.]/g, '-')}_jit-mother-loop-cycle-${report.cycle}.md`;
   fs.writeFileSync(path.join(OUTBOX_DIR, outboxName), lines.join('\n'));
+
+  // Retention: keep only the latest OUTBOX_RETAIN cycle files; archive the rest
+  const OUTBOX_RETAIN = 50;
+  try {
+    const allCycleFiles = fs.readdirSync(OUTBOX_DIR)
+      .filter(f => f.includes('jit-mother-loop-cycle-') && f.endsWith('.md'))
+      .sort();
+    if (allCycleFiles.length > OUTBOX_RETAIN) {
+      const toArchive = allCycleFiles.slice(0, allCycleFiles.length - OUTBOX_RETAIN);
+      const archiveDir = path.join(path.dirname(OUTBOX_DIR), 'archive', 'outbox',
+        new Date().toISOString().slice(0, 10));
+      fs.mkdirSync(archiveDir, { recursive: true });
+      for (const f of toArchive) {
+        const src = path.join(OUTBOX_DIR, f);
+        const dst = path.join(archiveDir, f);
+        if (!fs.existsSync(dst)) fs.renameSync(src, dst);
+        else fs.unlinkSync(src);
+      }
+      console.log(`[loop] outbox retention: archived ${toArchive.length} cycle files → ${archiveDir}`);
+    }
+  } catch (retentionErr) {
+    console.warn('[loop] outbox retention failed (non-fatal):', retentionErr.message);
+  }
 }
 
 async function runCycle(state) {

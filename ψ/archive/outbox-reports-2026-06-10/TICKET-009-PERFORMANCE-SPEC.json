@@ -1,0 +1,35 @@
+{
+  "ticket": "TICKET-009",
+  "title": "Performance Optimization - Routing Cache & Latency Audit",
+  "objective": "Profile routing performance under load, implement bounded LRU caching, measure end-to-end latency, and validate DJB2 hash distribution fairness across 9 backends.",
+  "acceptance_criteria": [
+    "1. Cache behavior profiled: Measure hit/miss rates under 1000-message load; establish baseline metrics.",
+    "2. LRU implementation deployed: Bounded cache (max 500 entries) replaces unbounded _routeCache; measure memory overhead reduction.",
+    "3. Latency thresholds verified: thaiCanonicalize() <1ms, routingKey() <0.5ms, pickBackendByKey() <100µs per call.",
+    "4. DJB2 fairness validated: No backend receives >±5% deviation from uniform 11.11% distribution with 9 backends (28-phrase corpus, 10 runs each).",
+    "5. Regression baseline created: Golden file (eval/perf-report-009.json) documents current performance; future releases compared against it."
+  ],
+  "test_architecture": {
+    "benchmark_harness": "eval/perf-audit-009.js — Load test with Thai corpus (28 phrases), measure latency per function, track cache state",
+    "distribution_validator": "Iterate BACKEND_ORDER variations (add/remove backends), verify routing stability",
+    "memory_profiler": "Capture heap snapshots at 1k, 5k, 10k message marks; validate LRU prevents unbounded growth",
+    "golden_file": "eval/perf-report-009.json — Structure: {cache_stats, latency_percentiles, distribution_per_backend, memory_profile}"
+  },
+  "tasks": [
+    "Task 1: Implement LRU cache class (max 500 entries, FIFO eviction); replace process-local _routeCache in model-router.js",
+    "Task 2: Create eval/perf-audit-009.js harness — load 28-phrase corpus 10× each, time thaiCanonicalize/routingKey/pickBackendByKey, capture results",
+    "Task 3: Build distribution validator — run corpus with BACKEND_ORDER ±1 variations, measure skew; export eval/perf-report-009.json",
+    "Task 4: Document performance findings — add results to PR, include LRU recommendation, latency thresholds, next optimization priorities"
+  ],
+  "success_metrics": {
+    "cache_efficiency": "Cache hit rate ≥70% on repeated corpus runs; LRU prevents memory growth >5MB over 10k messages",
+    "latency": "99th percentile latency: thaiCanonicalize <1ms, routingKey <0.5ms, pickBackendByKey <100µs",
+    "fairness": "DJB2 distribution: all backends 11.11% ±5% (9.6%-12.6% acceptable range)",
+    "regression_baseline": "eval/perf-report-009.json committed; used as golden reference for Phase 2 optimization sprints"
+  },
+  "effort_points": "8",
+  "dependencies": "Completed: TICKET-007a/b/c (routing functions), TICKET-008 (proxy). Blocking: None.",
+  "owner": "innova (Lead Developer)",
+  "priority": "High (Phase 1 Foundation)",
+  "timeline": "2 weeks"
+}

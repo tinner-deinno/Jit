@@ -1,0 +1,158 @@
+{
+  "ticket_id": "TICKET-011",
+  "title": "Rate Limiting (SA Finding #2) Token Bucket Algorithm",
+  "priority": "P1",
+  "effort": {
+    "points": 4,
+    "days": 3
+  },
+  "summary": "Implement token bucket rate limiting in network/proxy-thai.js to prevent abuse. Global limit: 1,000 req/min, per-IP limit: 100 req/min. Spike test: 2,000 req/min load (verify 429 rejection). Stale-IP cleanup prevents memory leaks.",
+  "acceptance_criteria": [
+    {
+      "id": "AC-011-1",
+      "criterion": "Token bucket algorithm in proxyHandler before router.callModel(). Global: 1,000 tokens/min, Per-IP: 100 tokens/min. Each request costs 1 token.",
+      "verification": "Code review; verify refill rate matches limits."
+    },
+    {
+      "id": "AC-011-2",
+      "criterion": "Per-IP identification via X-Forwarded-For header (with fallback to req.socket.remoteAddress). Use leftmost IP from header.",
+      "verification": "Test both header and socket scenarios; correct IP extracted."
+    },
+    {
+      "id": "AC-011-3",
+      "criterion": "HTTP 429 response with JSON body {error, message, retryAfter} and Retry-After header. Match existing proxy error format.",
+      "verification": "Send requests until limit hit; verify 429, header, and JSON present."
+    },
+    {
+      "id": "AC-011-4",
+      "criterion": "Auto-cleanup: remove IP buckets not accessed within 5 minutes (CONFIG.rateLimiting.staleIpTtlMs). Prevents memory leaks.",
+      "verification": "Create 100 IPs, send 1 request each, wait 5+ min. Old buckets removed from Map."
+    },
+    {
+      "id": "AC-011-5",
+      "criterion": "Configuration via environment variables: PROXY_RATE_LIMIT_GLOBAL, PROXY_RATE_LIMIT_PER_IP, PROXY_RATE_LIMIT_WINDOW_MS, PROXY_RATE_LIMIT_STALE_TTL_MS.",
+      "verification": "Set env vars, restart proxy, verify rate limits change."
+    },
+    {
+      "id": "AC-011-6",
+      "criterion": "Spike test: 2,000 req/min for 60 seconds. Expect ~1,000 accepted, ~1,000 rejected (429). Document response distribution.",
+      "verification": "Test passes; 429s proportional to limits; no crashes."
+    },
+    {
+      "id": "AC-011-7",
+      "criterion": "Backward compatibility: request/response format unchanged. All 12 existing proxy tests pass.",
+      "verification": "npm test: 12/12 existing tests + 4 new rate limit tests."
+    }
+  ],
+  "implementation_tasks": [
+    {
+      "task_id": "IMPL-011-1",
+      "title": "TokenBucket class design",
+      "description": "Class: {tokens, lastRefillTime, capacity, refillRate}. Methods: canConsume(n=1), refill(). Global bucket: var. Per-IP buckets: Map<string, TokenBucket>.",
+      "effort_hours": 2
+    },
+    {
+      "task_id": "IMPL-011-2",
+      "title": "Integrate into proxyHandler",
+      "description": "Line 143: Extract IP, check global+per-IP buckets, return 429 if denied, consume tokens if allowed.",
+      "effort_hours": 4
+    },
+    {
+      "task_id": "IMPL-011-3",
+      "title": "Stale IP cleanup",
+      "description": "setInterval every 30 sec: remove buckets with lastRefillTime > 5 min ago. Async, non-blocking.",
+      "effort_hours": 3
+    },
+    {
+      "task_id": "IMPL-011-4",
+      "title": "CONFIG.rateLimiting setup",
+      "description": "Load env vars: PROXY_RATE_LIMIT_GLOBAL, PROXY_RATE_LIMIT_PER_IP, PROXY_RATE_LIMIT_WINDOW_MS, PROXY_RATE_LIMIT_STALE_TTL_MS.",
+      "effort_hours": 1
+    },
+    {
+      "task_id": "IMPL-011-5",
+      "title": "429 response formatting",
+      "description": "Calculate secondsUntilReset, return HTTP 429 with Retry-After header and JSON body.",
+      "effort_hours": 1
+    },
+    {
+      "task_id": "IMPL-011-6",
+      "title": "extractClientIp helper",
+      "description": "Parse X-Forwarded-For header or fallback to req.socket.remoteAddress. Handle IPv4/IPv6.",
+      "effort_hours": 2
+    },
+    {
+      "task_id": "IMPL-011-7",
+      "title": "Logging for rate limits",
+      "description": "Log rejections and cleanup events using existing log() function.",
+      "effort_hours": 1
+    }
+  ],
+  "test_plan": {
+    "unit_tests": [
+      {"test_id": "UT-011-1", "title": "TokenBucket refill and consumption"},
+      {"test_id": "UT-011-2", "title": "extractClientIp with X-Forwarded-For"},
+      {"test_id": "UT-011-3", "title": "Global rate limit enforcement"},
+      {"test_id": "UT-011-4", "title": "Per-IP rate limit enforcement"},
+      {"test_id": "UT-011-5", "title": "Retry-After header calculation"},
+      {"test_id": "UT-011-6", "title": "Stale IP cleanup"}
+    ],
+    "integration_tests": [
+      {"test_id": "IT-011-1", "title": "Rate limit + routing integration"},
+      {"test_id": "IT-011-2", "title": "429 response format correctness"},
+      {"test_id": "IT-011-3", "title": "Global limit across multiple IPs"}
+    ],
+    "spike_test": {
+      "test_id": "ST-011-1",
+      "title": "Spike to 2,000 req/min",
+      "description": "20 concurrent IPs, 100 req/min each, 60 seconds",
+      "expected": {
+        "accepted": "~1,000 (limited by global cap)",
+        "rejected": "~1,000 (429 responses)",
+        "latency_p99": "<100ms",
+        "memory_growth": "<50MB"
+      }
+    }
+  },
+  "dependencies": {
+    "network/proxy-thai.js": "Core implementation",
+    "test/proxy-thai.test.js": "Add 4 new tests"
+  },
+  "environment_variables": [
+    {"name": "PROXY_RATE_LIMIT_ENABLED", "default": "true"},
+    {"name": "PROXY_RATE_LIMIT_GLOBAL", "default": "1000"},
+    {"name": "PROXY_RATE_LIMIT_PER_IP", "default": "100"},
+    {"name": "PROXY_RATE_LIMIT_WINDOW_MS", "default": "60000"},
+    {"name": "PROXY_RATE_LIMIT_STALE_TTL_MS", "default": "300000"},
+    {"name": "PROXY_RATE_LIMIT_CLEANUP_INTERVAL", "default": "30000"}
+  ],
+  "risks": [
+    {
+      "risk_id": "RISK-011-1",
+      "title": "IP spoofing via X-Forwarded-For",
+      "mitigation": "Add PROXY_RATE_LIMIT_TRUST_PROXY flag (default false)"
+    },
+    {
+      "risk_id": "RISK-011-2",
+      "title": "Clock skew in token refill",
+      "mitigation": "Use process.hrtime.bigint() instead of Date.now()"
+    },
+    {
+      "risk_id": "RISK-011-3",
+      "title": "Cleanup race condition",
+      "mitigation": "Copy IP keys before cleanup iteration"
+    },
+    {
+      "risk_id": "RISK-011-4",
+      "title": "Global limit too aggressive",
+      "mitigation": "Document limits; allow adjustment via env var"
+    }
+  ],
+  "success_definition": "Rate limiting implemented and tested. 429 responses with Retry-After header. Spike test documents behavior. Stale IP cleanup prevents leaks. All 12 existing tests pass.",
+  "deliverables": [
+    "network/proxy-thai.js (rate limiting integrated)",
+    "test/rate-limit-spike.js (spike test harness)",
+    "test/proxy-thai.test.js (4 new tests)",
+    "docs/RATE_LIMITING.md (configuration guide)"
+  ]
+}

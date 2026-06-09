@@ -1,0 +1,213 @@
+{
+  "meta": {
+    "ticket": "TICKET-011",
+    "generatedAt": "2026-06-09T18:06:32.219Z",
+    "corpusSize": 45,
+    "backends": [
+      "ollama_mdes",
+      "thaillm",
+      "commandcode",
+      "ollama_cloud",
+      "copilot",
+      "openai",
+      "innova_bot",
+      "ollama_local",
+      "openclaude"
+    ],
+    "runs": 10,
+    "note": "Deterministic routing — all 10 runs identical. Distribution is informational."
+  },
+  "routing": {
+    "TH-010-001": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-002": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-003": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-004": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-005": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-006": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-007": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-008": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-009": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-010": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-011": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-012": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-013": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-014": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-015": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-016": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-017": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-018": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-019": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-020": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-021": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-022": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-023": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-024": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-025": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-026": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-027": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-028": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-029": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-030": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-031": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-032": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-033": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-034": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-035": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-036": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-037": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-038": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-039": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-040": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-041": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-042": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-043": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-044": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    },
+    "TH-010-045": {
+      "backend": "openclaude",
+      "routingKey": "msgCount:1|lang:other"
+    }
+  },
+  "distribution": {
+    "ollama_mdes": 0,
+    "thaillm": 0,
+    "commandcode": 0,
+    "ollama_cloud": 0,
+    "copilot": 0,
+    "openai": 0,
+    "innova_bot": 0,
+    "ollama_local": 0,
+    "openclaude": 45
+  }
+}

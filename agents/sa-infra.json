@@ -1,0 +1,25 @@
+{
+    "name": "sa-infra",
+    "role": "Infrastructure Steward",
+    "organ": "โครงสร้าง-infra",
+    "group": "SA",
+    "tier": 3,
+    "description": "Specialist for infrastructure provisioning, IaC, container orchestration, deployment pipelines, environment parity, capacity planning.",
+    "capabilities": [
+        "iac-terraform",
+        "container-orchestration",
+        "deployment-pipelines",
+        "env-parity",
+        "capacity-planning",
+        "cost-optimization"
+    ],
+    "tools": [
+        "terraform",
+        "docker",
+        "kubernetes",
+        "github-actions",
+        "ansible"
+    ],
+    "reports_to": "pada",
+    "bus_inbox": "/tmp/manusat-bus/sa-infra"
+}

@@ -1,0 +1,35 @@
+{
+  "ticket": "TICKET-010",
+  "title": "Regression & Variance Testing - Thai Corpus Stability",
+  "objective": "Validate routing consistency across extended runs with real Thai language corpus. Verify backend selection remains stable under repeated routing decisions and document variance thresholds when BACKEND_ORDER is modified.",
+  "acceptance_criteria": [
+    "1. Corpus Regression Test: Run full Thai corpus (28 phrases) 10 times each against all 9 backends; capture routing distribution per backend (expected ~11% per backend, allow ≤0.5% variance).",
+    "2. Distribution Fairness: Verify zero regressions vs. baseline — all phrases route to same backend when input unchanged; no backend receives >11.66% or <10.34% traffic (±0.5% threshold).",
+    "3. Backend Order Variations: Test BACKEND_ORDER modifications (remove one backend, add hypothetical 10th); document variance in routing distribution after each change.",
+    "4. Regression Baseline: Create and commit regression baseline JSON (golden file, eval/regression-baseline-010.json) with routing distribution per phrase/backend; serve as truth source for future releases.",
+    "5. Variance Documentation: Establish variance tolerance policy (>0.5% skew triggers code review; >1% triggers hotfix); include in release notes."
+  ],
+  "test_architecture": {
+    "regression_harness": "test/regression-010.js — Load Thai corpus (28 phrases), execute 10 rounds against all 9 backends, capture backend selection per phrase, compute distribution statistics",
+    "distribution_validator": "Analyze routing distribution: verify each backend receives ~11% ±0.5%; flag any backend outside tolerance range",
+    "backend_order_tester": "Run regression suite with 3 BACKEND_ORDER variations: (1) baseline all 9, (2) remove 1 backend, (3) add hypothetical 10th; measure distribution shift per variation",
+    "golden_file": "eval/regression-baseline-010.json — Structure: {corpus_stats, distribution_per_backend, variance_per_backend, tolerance_threshold, timestamp, test_harness_version}"
+  },
+  "tasks": [
+    "Task 1: Create test/regression-010.js harness — load Thai corpus 28 phrases, execute 10 rounds each, collect backend selections into distribution matrix (phrases × backends × rounds)",
+    "Task 2: Implement distribution analyzer — compute per-backend frequency, variance, ±threshold checks; generate JSON report with pass/fail per backend",
+    "Task 3: Build BACKEND_ORDER variation tester — run regression harness with 3 order configurations, compare distributions, document variance per variation in eval/regression-baseline-010.json",
+    "Task 4: Create regression baseline golden file (eval/regression-baseline-010.json) with baseline distribution, establish 0.5% tolerance policy, document in PR release notes"
+  ],
+  "success_metrics": {
+    "regression_stability": "All 28 phrases consistently route to same backend across 10 runs; variance per backend ≤0.5% (tolerance range 10.34%-11.66% for 9-backend uniform distribution)",
+    "distribution_fairness": "No backend outside ±0.5% threshold; golden baseline established and committed",
+    "variation_impact": "Documented variance when removing/adding backends; clear policy for future BACKEND_ORDER changes",
+    "baseline_quality": "eval/regression-baseline-010.json committed; test harness version and date recorded for reproducibility"
+  },
+  "effort_points": "6",
+  "dependencies": "Completed: TICKET-007a/b/c (routing functions), TICKET-008 (proxy), TICKET-009 (performance baseline). Blocking: None.",
+  "owner": "chamu (QA/Tester)",
+  "priority": "High (Phase 2 Stability)",
+  "timeline": "5 days"
+}

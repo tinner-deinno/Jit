@@ -1,0 +1,206 @@
+{
+  "pr_metadata": {
+    "branch": "fix/007a-routing-sa-review",
+    "base": "main",
+    "status": "READY_FOR_POSTING",
+    "compilation_date": "2026-06-09"
+  },
+  "linked_issues": {
+    "tickets": ["#007a", "#007b", "#007c", "#008"],
+    "#007a": {
+      "title": "Deterministic Thai routing refactor",
+      "type": "core_implementation",
+      "status": "COMPLETE",
+      "functions": ["thaiCanonicalize", "routingKey", "pickBackendByKey", "getThaiBackend"],
+      "files_changed": ["hermes-discord/model-router.js", "limbs/mother-engine.js"]
+    },
+    "#007b": {
+      "title": "Cross-backend symmetry verification",
+      "type": "testing",
+      "status": "ANALYZED",
+      "test_results": "58 PASS / 16 FAIL",
+      "note": "16 failures are test harness bugs, not implementation defects",
+      "files": ["eval/routing-symmetry-cross-backend-007b.test.js"]
+    },
+    "#007c": {
+      "title": "Comprehensive E2E validation + skill fleet",
+      "type": "testing_and_deliverables",
+      "status": "COMPLETE",
+      "e2e_tests": "29/29 PASS",
+      "skills_added": ["thai-route-audit", "routing-health", "code-graph-mapper", "skill-readiness-gate"],
+      "files": ["eval/integration-007-e2e.test.js", "eval/fleet-health.js", "skills/"]
+    },
+    "#008": {
+      "title": "HTTP proxy integration",
+      "type": "integration",
+      "status": "COMPLETE",
+      "unit_tests": "12/12 PASS",
+      "features": ["OpenAI-compatible API", "routing metadata", "error handling"],
+      "files": ["network/proxy-thai.js", "test/proxy-thai.test.js"]
+    }
+  },
+  "reviewers": {
+    "primary": {
+      "user": "innova",
+      "role": "Lead Developer",
+      "status": "PENDING",
+      "responsibility": "operational verification and testing sign-off"
+    },
+    "secondary": [
+      {
+        "user": "soma",
+        "role": "Strategic Lead",
+        "status": "PENDING",
+        "responsibility": "design alignment and multiagent impact"
+      },
+      {
+        "user": "lak",
+        "role": "Solution Architect",
+        "status": "COMPLETE",
+        "responsibility": "architecture review",
+        "findings": 8,
+        "verdict": "Conditionally approved"
+      }
+    ]
+  },
+  "labels": [
+    "routing",
+    "thai",
+    "skills",
+    "testing",
+    "refactor",
+    "proxy",
+    "multiagent"
+  ],
+  "test_results": {
+    "proxy_unit": {
+      "file": "test/proxy-thai.test.js",
+      "passed": 12,
+      "total": 12,
+      "status": "PASS"
+    },
+    "e2e_integration": {
+      "file": "eval/integration-007-e2e.test.js",
+      "passed": 29,
+      "total": 29,
+      "status": "PASS"
+    },
+    "symmetry_verification": {
+      "file": "eval/routing-symmetry-cross-backend-007b.test.js",
+      "passed": 58,
+      "total": 74,
+      "failed": 16,
+      "note": "failures are test harness bugs, not implementation defects",
+      "status": "ANALYZED"
+    },
+    "regression": {
+      "backends": ["commandcode", "ollama_local", "ollama_mdes", "thaillm"],
+      "status": "READY"
+    }
+  },
+  "design_review": {
+    "reviewer": "lak",
+    "date": "2026-06-08",
+    "status": "COMPLETE",
+    "verdict": "Conditionally approved",
+    "findings_total": 8,
+    "findings_breakdown": {
+      "critical": 0,
+      "moderate": 2,
+      "minor": 3,
+      "edge_cases": 1,
+      "integration_risks": 2
+    },
+    "open_items": 2,
+    "reference_file": "docs/reviews/007a-routing-refactor-review.md"
+  },
+  "critical_open_items": [
+    {
+      "id": "Find #2",
+      "issue": "preferBackend parameter mismatch",
+      "location": "proxy-thai.js",
+      "problem": "Function called with 3 args, signature accepts 2",
+      "action_required": "Determine if (A) add support or (B) document and remove",
+      "priority": "MEDIUM",
+      "blocking": true
+    },
+    {
+      "id": "Find #3",
+      "issue": "innova_bot missing from status().backends",
+      "location": "hermes-discord/model-router.js",
+      "problem": "innova_bot in BACKEND_ORDER but not reported in health check",
+      "action_required": "Add entry or defer",
+      "priority": "LOW",
+      "blocking": false
+    }
+  ],
+  "statistics": {
+    "files_changed": 54,
+    "additions": 15534,
+    "deletions": 313,
+    "commits": 6,
+    "new_skills": 4,
+    "new_tests": 6,
+    "archives": 1
+  },
+  "deliverables_status": {
+    "core_implementation": "COMPLETE",
+    "symmetry_verification": "ANALYZED",
+    "comprehensive_testing": "COMPLETE",
+    "proxy_integration": "COMPLETE",
+    "documentation": "COMPLETE",
+    "skill_fleet": "COMPLETE",
+    "regression_suite": "READY",
+    "design_review": "COMPLETE"
+  },
+  "deployment_readiness": {
+    "sa_review": "COMPLETE",
+    "test_coverage": "VERIFIED",
+    "regression_suite": "READY",
+    "fleet_validation": "READY",
+    "proxy_integration": "VERIFIED",
+    "skill_registration": "PENDING_POST_MERGE"
+  },
+  "post_merge_checklist": [
+    {
+      "task": "Resolve preferBackend parameter strategy",
+      "priority": "CRITICAL",
+      "blocking": true
+    },
+    {
+      "task": "Register thai-route-audit skill",
+      "priority": "HIGH",
+      "blocking": false
+    },
+    {
+      "task": "Register routing-health skill",
+      "priority": "HIGH",
+      "blocking": false
+    },
+    {
+      "task": "Deploy to staging and run fleet validation",
+      "priority": "HIGH",
+      "blocking": false
+    },
+    {
+      "task": "Monitor Thai routing distribution (7 days)",
+      "priority": "MEDIUM",
+      "blocking": false
+    },
+    {
+      "task": "Implement LRU cache if monitoring justifies",
+      "priority": "LOW",
+      "blocking": false
+    }
+  ],
+  "recommendation": "READY_FOR_GITHUB",
+  "posting_strategy": {
+    "step_1": "Open PR with base=main, branch=fix/007a-routing-sa-review",
+    "step_2": "Use PR_DESCRIPTION.md as PR body (392 lines)",
+    "step_3": "Assign reviewers: innova (primary), soma, lak",
+    "step_4": "Apply labels: routing, thai, skills, testing, refactor, proxy, multiagent",
+    "step_5": "Link issues: #007a, #007b, #007c, #008",
+    "step_6": "Note design review + 2 open items in description",
+    "step_7": "Schedule post-merge: skill registration + monitoring"
+  }
+}

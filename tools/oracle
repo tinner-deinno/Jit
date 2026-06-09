@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# oracle — Oracle Pattern CLI wrapper
+# Wraps `maw oracle` and friends into a single `oracle` command per the
+# the-oracle-pattern book convention.
+#
+# Usage:
+#   oracle                 → `maw oracle list`
+#   oracle ls              → list all oracles
+#   oracle scan            → `maw oracle scan` (discover peers)
+#   oracle fleet           → `maw oracle fleet`
+#   oracle about <name>    → `maw oracle about <name>`
+#   oracle prism <topic>   → 10-DNA prism analysis (uses maw oracle + custom fall-back)
+#   oracle plan <topic>    → DNA-diverse hypothesis sprint
+#   oracle learn <repo>    → incubate study material from a repo
+
+set -e
+
+cmd="${1:-ls}"
+shift || true
+
+maw_oracle() {
+  maw oracle "$@"
+}
+
+case "$cmd" in
+  ls|list)        maw_oracle list ;;
+  scan)           maw_oracle scan ;;
+  fleet)          maw_oracle fleet ;;
+  about)          maw_oracle about "$@" ;;
+  prism)
+    topic="${1:-untitled}"
+    echo "→ 10-DNA Prism analysis: $topic"
+    echo "  (see maw oracle prism for the full DNA list)"
+    maw_oracle prism "$topic" 2>/dev/null || echo "  hint: maw oracle prism --help"
+    ;;
+  plan)
+    topic="${1:-untitled}"
+    echo "→ DNA-diverse hypothesis sprint: $topic"
+    maw_oracle plan "$topic" 2>/dev/null || echo "  hint: maw oracle plan --help"
+    ;;
+  learn|incubate)
+    repo="${1:-.}"
+    echo "→ Incubating oracle study material from: $repo"
+    maw incubate "$repo"
+    ;;
+  --help|-h|"")
+    cat <<EOF
+oracle — Oracle Pattern CLI
+
+Subcommands:
+  ls              List oracles
+  scan            Discover peer oracles
+  fleet           Show fleet registry
+  about <name>    Show info about an oracle
+  prism <topic>   10-DNA multi-perspective analysis
+  plan <topic>    DNA-diverse hypothesis sprint
+  learn <repo>    Incubate study material from a repo
+
+All subcommands forward to 'maw oracle' under the hood.
+EOF
+    ;;
+  *) maw_oracle "$cmd" "$@" ;;
+esac

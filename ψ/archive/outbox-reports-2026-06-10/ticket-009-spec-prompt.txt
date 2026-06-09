@@ -1,0 +1,27 @@
+You are a senior technical architect for innomcp. Write a DETAILED technical specification for TICKET-009: Performance Optimization.
+
+SCOPE:
+1. Profile routing cache behavior (current process-local _routeCache)
+2. Optimize LRU cache implementation (currently unbounded, SA identified)
+3. Measure end-to-end latency across routing pipeline
+4. Validate fairness of DJB2 hash with 9 backends
+
+CONTEXT:
+- Current functions: thaiCanonicalize(), routingKey(), pickBackendByKey() exist
+- Backends: 9 total 
+- Thai corpus: 28 test phrases available for benchmark
+- Load target: 1000+ message throughput
+
+REQUIRED OUTPUT (as JSON with these keys):
+{
+  "ticket": "TICKET-009",
+  "title": "Performance Optimization - Routing Cache & Latency Audit",
+  "objective": "Measure and optimize routing performance with bounded caching and validate DJB2 fairness",
+  "acceptance_criteria": ["criterion 1", "criterion 2", ...],
+  "test_architecture": "how tests will be structured",
+  "tasks": ["Task 1", "Task 2", ...],
+  "success_metrics": "how to measure completion",
+  "effort_points": "story points estimate"
+}
+
+Be concise but complete. Provide 5-7 acceptance criteria, 4-6 implementation tasks.

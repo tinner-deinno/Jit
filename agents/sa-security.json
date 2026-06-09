@@ -1,0 +1,25 @@
+{
+    "name": "sa-security",
+    "role": "Security Sentinel",
+    "organ": "เกราะ-security",
+    "group": "SA",
+    "tier": 3,
+    "description": "Specialist for security hardening, threat modeling, secret scanning, supply-chain verification, incident response, zero-trust policy.",
+    "capabilities": [
+        "secret-scanning",
+        "sast-dast",
+        "threat-modeling",
+        "supply-chain-audit",
+        "incident-response",
+        "zero-trust-policy"
+    ],
+    "tools": [
+        "trufflehog",
+        "snyk",
+        "owasp-zap",
+        "gh-advisory-database",
+        "osv-scanner"
+    ],
+    "reports_to": "neta",
+    "bus_inbox": "/tmp/manusat-bus/sa-security"
+}

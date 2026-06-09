@@ -1,0 +1,294 @@
+================================================================================
+REGRESSION BASELINE EXECUTION REPORT — TICKET-010
+chamu (QA/Tester) — 2026-06-09
+================================================================================
+
+CRITICAL PATH REQUIREMENT: Establish regression baseline for Thai routing SA review
+
+EXECUTION SUMMARY
+═════════════════════════════════════════════════════════════════════════════
+
+Baseline Type:    Regression Framework Establishment
+Execution Date:   2026-06-09T09:31:34.258Z
+Corpus Size:      26 test cases (TH-001 to TH-026)
+Backends Tested:  9 (ollama_mdes, thaillm, commandcode, ollama_local, ollama_cloud, copilot, openai, openclaude, innova_bot)
+Total Runs:       234 (26 cases × 9 backends)
+
+RESULTS SUMMARY
+═════════════════════════════════════════════════════════════════════════════
+
+Total Runs:       234
+Passes:           87  (37.2%)
+Failures:         147 (62.8%)
+Variances:        186 (79.5%)
+
+STATUS: BASELINE_COMPLETE_WITH_CRITICAL_BLOCKERS
+
+
+CRITICAL FINDINGS
+═════════════════════════════════════════════════════════════════════════════
+
+1. THAI SYLLABLE SPLITTER REGRESSION [SEVERITY: HIGH]
+   ────────────────────────────────────────────────────
+
+   Issue:        Thai syllable boundary detection is broken
+   Location:     limbs/thai-splitter.js
+   Symptom:      All 186 variance cases are "syllable-mismatch"
+
+   Examples:
+   - TH-001: Input "จิต" expects ["จิต"] but got ["จิ", "ต"]
+   - TH-003: Input "จิตนำกาย" expects ["จิต", "นำ", "กาย"] but got ["จิ", "ตน", "ำ", "กา", "ย"]
+   - TH-004: Input "อวัยวะ" expects ["อวัย", "วะ"] but got ["อวัย", "ว", "ะ"]
+
+   Root Cause Hypothesis:
+   - Thai vowel mark processing broken (เ, แ, โ, ใ, ไ may not be handled correctly)
+   - Consonant cluster detection broken (may be splitting clusters incorrectly)
+   - Thai tone mark detection may have regressed
+
+   Impact: ALL Thai language routing validation is blocked
+
+
+2. ROUTING KEY GENERATION FAILURE [SEVERITY: HIGH]
+   ─────────────────────────────────────────────────
+
+   Issue:        Routing key is empty string for all test cases
+   Location:     hermes-discord/model-router.js → _routingKey() method
+   Evidence:     routingKey field = "" in all 234 results
+
+   Impact:
+   - Cannot validate deterministic routing decisions
+   - Backend distribution variance tracking is disabled
+   - Routing decision logic cannot be analyzed
+
+   Root Cause Hypothesis:
+   - _routingKey() method returning empty or null
+   - Input canonicalization not working (canonical field shows values like "จิ-ต")
+   - Key generation logic skipped or broken
+
+
+3. OLLAMA SERVICE CONNECTIVITY [SEVERITY: HIGH]
+   ─────────────────────────────────────────────
+
+   Issue:        ollama_mdes backend consistently timing out
+   Backend:      ollama_mdes
+   Symptom:      100% of calls return "Ollama timeout" error
+   Timeout:      8000ms threshold (all calls exceed this)
+
+   Evidence:
+   - [model-router] ollama_mdes failed: Ollama timeout (repeated 26 times)
+
+   Root Cause Hypothesis:
+   - Ollama service not running at expected endpoint
+   - Network connectivity issue to Ollama server
+   - Service health degraded (slow response)
+
+   Impact: Cannot validate live backend integration
+
+
+BLOCKED REQUIREMENTS (from CRITICAL PATH)
+═════════════════════════════════════════════════════════════════════════════
+
+[ ] All 28-phrase corpus routes deterministically
+    BLOCKED: Routing key is empty (empty string), preventing deterministic routing
+    NOTE: Corpus has 26 cases, not 28 as specified
+
+[ ] Latency P99 <1ms
+    FAILED: Mean latency far exceeds 1ms (dominated by 8s+ timeouts)
+    Cannot measure true latency until Ollama timeout is resolved
+
+[ ] Backend distribution within ±2%
+    BLOCKED: Empty routing key prevents backend selection variance analysis
+    Cannot measure distribution consistency
+
+[ ] No cache corruption
+    UNKNOWN: No cache layer present in test. Cannot validate.
+
+[ ] No timeouts or errors
+    FAILED: 147 failures (62.8% error rate)
+    - Ollama timeouts dominate the failures
+
+
+GOLDEN FILES STATUS
+═════════════════════════════════════════════════════════════════════════════
+
+Location:       test/regression/golden-files/
+Files Created:  9 golden files (one per backend)
+
+Files:
+  - ollama_mdes.json      ✓ Created (with broken baseline)
+  - thaillm.json          ✓ Created (with broken baseline)
+  - commandcode.json      ✓ Created (with broken baseline)
+  - ollama_local.json     ✓ Created (with broken baseline)
+  - ollama_cloud.json     ✓ Created (with broken baseline)
+  - copilot.json          ✓ Created (with broken baseline)
+  - openai.json           ✓ Created (with broken baseline)
+  - openclaude.json       ✓ Created (with broken baseline)
+  - innova_bot.json       ✓ Created (with broken baseline)
+
+WARNING: These golden files were created with broken splitter and routing key.
+They MUST be regenerated after fixes are applied.
+
+
+RECOMMENDED FIXES (Priority Order)
+═════════════════════════════════════════════════════════════════════════════
+
+PRIORITY 1 - FIX THAI SYLLABLE SPLITTER [BLOCKER]
+──────────────────────────────────────────────────
+Target:       limbs/thai-splitter.js
+Effort:       HIGH (requires Thai language expertise)
+Complexity:   Thai consonants, vowels, tone marks, vowel combinations
+
+Steps:
+1. Audit splitThaiSyllables() function in thai-splitter.js
+2. Review Thai syllable rules (especially vowel mark combinations)
+3. Test with simple cases: "จิต" should yield ["จิต"]
+4. Test with vowel marks: "เอ" should be single syllable
+5. Test consonant clusters: "ต", "ร", etc.
+
+Success Criteria:
+- All 26 test cases pass syllable split validation
+- Expected syllables match actual syllables exactly
+
+
+PRIORITY 2 - FIX ROUTING KEY GENERATION [BLOCKER]
+─────────────────────────────────────────────────
+Target:       hermes-discord/model-router.js → _routingKey()
+Effort:       MEDIUM
+Complexity:   Canonicalization and key generation logic
+
+Steps:
+1. Add debug output to _routingKey() to see what's happening
+2. Verify input canonicalization (_thaiCanonicalize) is working
+3. Check that routing key algorithm is being executed
+4. Trace through key generation for a simple test case ("จิต")
+
+Success Criteria:
+- routingKey field is non-empty for all test cases
+- routingKey is deterministic (same input → same key)
+- Different inputs produce different keys
+
+
+PRIORITY 3 - VERIFY OLLAMA SERVICE HEALTH [OPERATIONAL]
+────────────────────────────────────────────────────
+Target:       External Ollama service (ollama.mdes-innova.online)
+Effort:       LOW (operational check)
+
+Steps:
+1. Verify Ollama service is running: curl http://ollama.mdes-innova.online/health
+2. Check network connectivity from test environment
+3. Verify API tokens/authentication if required
+4. Check Ollama service logs for error patterns
+
+Success Criteria:
+- Ollama responds within <100ms to health check
+- At least one successful model call completes
+
+
+VALIDATION WORKFLOW (After Fixes)
+═════════════════════════════════════════════════════════════════════════════
+
+1. Fix Thai Splitter (Priority 1)
+   $ cd /c/Users/USER-NT/Jit
+   # Make fixes to limbs/thai-splitter.js
+   # Run simple test to verify
+
+2. Fix Routing Key (Priority 2)
+   # Make fixes to hermes-discord/model-router.js
+   # Add console logging to verify key generation
+
+3. Clean Golden Files
+   $ rm test/regression/golden-files/*.json
+
+4. Re-run Regression Baseline
+   $ node test/regression/regression-runner.js > eval/regression-baseline-010-retry.txt 2>&1
+
+5. Verify Results
+   - All variances should drop to 0
+   - All 234 runs should pass
+   - Latency metrics should be measurable
+
+
+CURRENT STATUS FOR TICKET-010
+═════════════════════════════════════════════════════════════════════════════
+
+Ready for Routing SA Review:  NO ✗
+Status Code:                  NOT_READY
+Blockers:                     3 CRITICAL
+
+Validation Blockers:
+1. Thai syllable splitter broken (79.5% variance rate)
+2. Routing key generation returns empty
+3. Ollama backend timeout (connectivity issue)
+
+Next Action:
+- Coordinate with innova (lead developer) to fix Thai splitter and routing key
+- Verify Ollama service health
+- Re-run baseline after fixes
+- Update golden files with clean baseline
+- Proceed to Routing SA Review once baseline is stable
+
+
+DELIVERABLES CREATED
+═════════════════════════════════════════════════════════════════════════════
+
+✓ eval/regression-baseline-010.txt       (Console output captured)
+✓ eval/regression-baseline-010.json      (Metrics and findings in JSON)
+✓ test/regression/report.json            (Full detailed report)
+✓ test/regression/golden-files/          (9 golden files created)
+
+
+FILES REFERENCED
+═════════════════════════════════════════════════════════════════════════════
+
+Source Code:
+- test/regression/regression-runner.js       (Test harness)
+- test/thai-test-corpus.json                 (26 test cases)
+- limbs/thai-splitter.js                     (Thai syllable splitter)
+- hermes-discord/model-router.js             (Routing logic)
+
+Reports:
+- eval/regression-baseline-010.txt           (This file)
+- eval/regression-baseline-010.json          (JSON metrics)
+- test/regression/report.json                (Detailed results)
+
+Output:
+- test/regression/golden-files/*.json        (9 golden reference files)
+
+
+EXECUTION TRACE
+═════════════════════════════════════════════════════════════════════════════
+
+[RegressionRunner] TICKET-009 — Regression Automation Framework
+Started at 2026-06-09T09:31:34.258Z
+Corpus size: 26 cases
+Backends to test: ollama_mdes, thaillm, commandcode, ollama_local, ollama_cloud, copilot, openai, openclaude, innova_bot
+
+-- Backend: ollama_mdes --
+[26 iterations] All calls timeout with "Ollama timeout" error
+[26 iterations] All syllable splits show mismatch
+All routing keys empty
+
+-- Backend: [thaillm through innova_bot] --
+[Similar pattern across all backends]
+
+Reports written:
+  JSON: test/regression/report.json
+  MD  : test/regression/report.md (NOT GENERATED - likely error in markdown rendering)
+
+Summary:
+  Total runs : 234
+  Passes     : 87
+  Failures   : 147
+  Variances  : 186
+
+CONCLUSION: VARIANCE DETECTED — blockers require fixes
+
+
+================================================================================
+END REPORT
+================================================================================
+
+Generated by: chamu (QA/Tester) Agent
+Generated at: 2026-06-09T09:31:34.258Z
+Ticket: TICKET-010
+Status: REGRESSION_BASELINE_BLOCKED_PENDING_FIXES

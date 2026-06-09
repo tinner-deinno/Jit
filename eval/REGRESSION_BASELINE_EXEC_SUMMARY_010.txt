@@ -1,0 +1,165 @@
+================================================================================
+REGRESSION BASELINE EXECUTIVE SUMMARY — TICKET-010
+chamu (QA/Tester) — 2026-06-09
+================================================================================
+
+BASELINE EXECUTION COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Date:           2026-06-09T09:31:34.258Z
+Test Corpus:    26 Thai test cases (TH-001 to TH-026)
+Backends:       9 (ollama_mdes, thaillm, commandcode, ollama_local, ollama_cloud, copilot, openai, openclaude, innova_bot)
+Total Runs:     234 (26 cases × 9 backends)
+
+Results:
+  Passes:       87   (37.2%)
+  Failures:     147  (62.8%)
+  Variances:    186  (79.5%)
+
+Status:         BASELINE_COMPLETE_WITH_BLOCKERS
+
+
+BLOCKER SUMMARY (Why Baseline is NOT Ready)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Three critical infrastructure failures prevent validation:
+
+1. THAI SYLLABLE SPLITTER BROKEN
+   ├─ Severity: HIGH
+   ├─ Symptom: All 186 variances are "syllable-mismatch"
+   ├─ Example: Input "จิต" expects ["จิต"] but gets ["จิ", "ต"]
+   └─ Impact: ALL Thai routing validation blocked
+
+2. ROUTING KEY GENERATION EMPTY
+   ├─ Severity: HIGH
+   ├─ Symptom: routingKey = "" for all 234 test results
+   ├─ Location: hermes-discord/model-router.js → _routingKey()
+   └─ Impact: Deterministic routing cannot be validated
+
+3. OLLAMA SERVICE TIMEOUT
+   ├─ Severity: HIGH
+   ├─ Symptom: 100% of ollama_mdes calls timeout (>8000ms)
+   ├─ Error: [model-router] ollama_mdes failed: Ollama timeout
+   └─ Impact: Live backend integration cannot be tested
+
+
+CRITICAL PATH REQUIREMENTS STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ ] All 28-phrase corpus routes deterministically
+    Status: BLOCKED — Routing key is empty; corpus has 26 cases, not 28
+
+[ ] Latency P99 <1ms
+    Status: FAILED — Dominated by 8s+ timeouts; cannot measure
+
+[ ] Backend distribution within ±2%
+    Status: BLOCKED — Empty routing key prevents variance analysis
+
+[ ] No cache corruption
+    Status: UNKNOWN — No cache layer in regression test
+
+[ ] No timeouts or errors
+    Status: FAILED — 147 failures (62.8% error rate)
+
+
+NEXT STEPS FOR chamu
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Coordinate with innova (lead developer):
+
+1. FIX THAI SPLITTER (Priority 1) — HIGH EFFORT
+   ├─ Location: limbs/thai-splitter.js
+   ├─ Issue: splitThaiSyllables() function broken
+   └─ Success: "จิต" → ["จิต"] (not ["จิ", "ต"])
+
+2. FIX ROUTING KEY (Priority 2) — MEDIUM EFFORT
+   ├─ Location: hermes-discord/model-router.js → _routingKey()
+   ├─ Issue: Returns empty string for all inputs
+   └─ Success: "จิต" → non-empty deterministic key
+
+3. VERIFY OLLAMA (Priority 3) — LOW EFFORT
+   ├─ Check: curl http://ollama.mdes-innova.online/health
+   └─ Restore: Service must respond <100ms
+
+After fixes:
+  - Clean golden files: rm test/regression/golden-files/*.json
+  - Re-run baseline: node test/regression/regression-runner.js
+  - Expect: 234 passes, 0 failures, 0 variances
+  - Re-establish baseline before proceeding to Routing SA Review
+
+
+DELIVERABLES CREATED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ eval/regression-baseline-010.txt
+  └─ Full console output and diagnostic trace
+
+✓ eval/regression-baseline-010.json
+  └─ Machine-readable metrics and root cause analysis
+
+✓ test/regression/report.json
+  └─ Detailed test results for all 234 runs (188 KB)
+
+✓ test/regression/golden-files/ (9 files)
+  ├─ ollama_mdes.json
+  ├─ thaillm.json
+  ├─ commandcode.json
+  ├─ ollama_local.json
+  ├─ ollama_cloud.json
+  ├─ copilot.json
+  ├─ openai.json
+  ├─ openclaude.json
+  └─ innova_bot.json
+
+  NOTE: Golden files must be regenerated after fixes
+
+
+VALIDATION CHECKLIST FOR innova
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Fix Thai Splitter:
+  [ ] Audit Thai syllable rules (vowel combinations, tone marks)
+  [ ] Test: echo "จิต" | node -e "const {splitThaiSyllables} = require('./limbs/thai-splitter.js'); console.log(JSON.stringify(splitThaiSyllables(require('fs').readFileSync(0, 'utf8').trim())))"
+  [ ] Expected: ["จิต"]
+  [ ] Verify all 26 test cases pass
+
+Fix Routing Key:
+  [ ] Add debug logging to _routingKey() method
+  [ ] Test: const key = router._routingKey("จิต"); console.log(key);
+  [ ] Expected: non-empty string
+  [ ] Verify deterministic (same input → same key)
+
+Verify Ollama:
+  [ ] Check service health: curl http://ollama.mdes-innova.online/health
+  [ ] Expected: 200 OK, response time <100ms
+  [ ] Run a test call: model-router.callModelPromise([{role: 'user', content: 'test'}], {preferBackend: 'ollama_mdes'})
+  [ ] Expected: success or graceful fallback
+
+Re-establish Baseline:
+  [ ] Delete golden files: rm test/regression/golden-files/*.json
+  [ ] Run baseline: node test/regression/regression-runner.js > eval/regression-baseline-010-final.txt
+  [ ] Verify: 234 passes, 0 failures, 0 variances
+  [ ] Golden files regenerated with clean data
+
+
+READY FOR TICKET-010 ROUTING SA REVIEW?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current Status:  ✗ NOT READY
+
+Blockers:  3 CRITICAL (Thai splitter, routing key, Ollama timeout)
+
+When Ready:
+  - All 234 test runs pass
+  - All variances = 0
+  - Latency P99 measurable and <1ms
+  - Backend distribution stable within ±2%
+  - Then proceed to SA review
+
+
+================================================================================
+Generated by: chamu (QA/Tester) — MDES-Innova (มนุษย์ Agent)
+Ticket: TICKET-010
+Status Code: REGRESSION_BASELINE_COMPLETE_WITH_BLOCKERS
+Contact: innova (lead developer) for fixes
+================================================================================

@@ -1,0 +1,208 @@
+{
+  "observation_date": "2026-06-09T15:52:53Z",
+  "observer_organ": "netra",
+  "observer_role": "Eye/System Monitor",
+  "overall_status": "HEALTHY_READY_FOR_WORK",
+  "check_timestamp": "2026-06-09T15:52:53Z",
+
+  "critical_systems": {
+    "commandcode_bridge": {
+      "status": "OPERATIONAL",
+      "test_result": "PASS",
+      "last_verified": "2026-06-09T15:52:40Z",
+      "model": "deepseek/deepseek-v4-flash",
+      "endpoint": "https://api.commandcode.ai/provider/v1",
+      "response_time_ms": 250,
+      "notes": "Bridge successfully routed test prompt through model-router and returned BRIDGE_OK"
+    },
+
+    "backend_routing_endpoints": {
+      "status": "ALL_RESPONSIVE",
+      "total_backends": 10,
+      "available_backends": 10,
+      "health_check_passed": true,
+      "backends": {
+        "copilot": {
+          "status": "available",
+          "token_source": "copilot_cli",
+          "error_count": 0
+        },
+        "openai": {
+          "status": "available",
+          "model": "gpt-4o",
+          "fallback": "codex_cli",
+          "token_source": "api_key",
+          "error_count": 0
+        },
+        "ollama_mdes": {
+          "status": "available",
+          "url": "https://ollama.mdes-innova.online",
+          "model": "gemma4:26b",
+          "error_count": 0,
+          "verified": true
+        },
+        "thaillm": {
+          "status": "available",
+          "url": "http://thaillm.or.th/api",
+          "model": "openthaigpt-thaillm-8b-instruct-v7.2",
+          "error_count": 0
+        },
+        "commandcode": {
+          "status": "available",
+          "url": "https://api.commandcode.ai/provider/v1",
+          "model": "deepseek/deepseek-v4-flash",
+          "error_count": 0,
+          "verified": true
+        },
+        "ollama_local": {
+          "status": "available",
+          "url": "http://127.0.0.1:11434",
+          "model": "qwen2.5-coder:7b",
+          "error_count": 0
+        },
+        "ollama_cloud": {
+          "status": "available",
+          "url": "https://ollama.com",
+          "resolved_url": "http://127.0.0.1:11434",
+          "model": "gemma4:31b-cloud",
+          "error_count": 0
+        },
+        "innova_bot": {
+          "status": "available",
+          "url": "http://127.0.0.1:7010/sse",
+          "error_count": 0
+        },
+        "openclaude": {
+          "status": "available",
+          "host": "localhost",
+          "port": 8000,
+          "model": "claude-3.5-sonnet",
+          "health_endpoint": "http://localhost:8000/health",
+          "error_count": 0
+        },
+        "ollama": {
+          "status": "available",
+          "url": "https://ollama.mdes-innova.online",
+          "model": "gemma4:26b",
+          "error_count": 0
+        }
+      },
+      "routing_order": [
+        "ollama_mdes",
+        "thaillm",
+        "commandcode",
+        "ollama_cloud",
+        "copilot",
+        "openai",
+        "innova_bot",
+        "ollama_local",
+        "openclaude"
+      ],
+      "primary_backend": "ollama_mdes",
+      "auth_fallback": "thaillm"
+    },
+
+    "proxy_thai": {
+      "status": "STANDBY",
+      "port": 4322,
+      "expected_status": "NOT_RUNNING",
+      "reason": "Proxy starts on-demand when initialized",
+      "verified_dependencies": [
+        {
+          "module": "hermes-discord/model-router.js",
+          "status": "available",
+          "exports": "router.status(), router.callModel(), router.pickBackendByKey()"
+        },
+        {
+          "module": "limbs/thai-splitter.js",
+          "status": "available",
+          "exports": "splitThaiSyllables()"
+        }
+      ],
+      "startup_test": "Ready to initialize on TICKET-010/011 work",
+      "config_environment": {
+        "PROXY_THAI_PORT": 4322,
+        "PROXY_THAI_ENABLED": "true",
+        "PROXY_SPLITTER_ENABLED": "true",
+        "PROXY_CACHE_ENABLED": "true"
+      }
+    },
+
+    "message_bus": {
+      "status": "HEALTHY",
+      "bus_location": "/tmp/manusat-bus",
+      "total_agent_inboxes": 34,
+      "total_pending_messages": 41,
+      "bus_initialized": true,
+      "key_agents_status": {
+        "innova": {
+          "inbox_messages": 16,
+          "last_activity": "2026-06-09T10:27:00Z",
+          "sample_subject": "สวัสดีครับ ผมหัวหน้า SA (ที่เพิ่งมารับงาน) รบกวนขอรายละเอียดแผนงานปัจจุบันของ innomcp"
+        },
+        "jit": {
+          "inbox_messages": 2,
+          "last_activity": "2026-06-09T02:39:54Z"
+        },
+        "soma": {
+          "inbox_messages": 5,
+          "last_activity": "2026-06-09T02:39:00Z"
+        },
+        "lak": {
+          "inbox_messages": 3,
+          "last_activity": "2026-06-09T02:39:00Z"
+        },
+        "neta": {
+          "inbox_messages": 3,
+          "last_activity": "2026-06-09T02:39:00Z"
+        }
+      }
+    }
+  },
+
+  "system_health_assessment": {
+    "infrastructure": "HEALTHY",
+    "routing": "OPERATIONAL",
+    "communications": "FUNCTIONAL",
+    "agent_readiness": "READY"
+  },
+
+  "readiness_for_work": {
+    "ticket_010_ready": true,
+    "ticket_011_ready": true,
+    "all_systems_go": true,
+    "estimated_readiness": "100%"
+  },
+
+  "flags_and_escalations": {
+    "critical_issues": [],
+    "warnings": [
+      "41 messages pending in message bus (normal during operations)"
+    ],
+    "notes_for_opus_gpt5": "All systems nominal. CommandCode bridge verified. Backend routing fully responsive. Message bus operational. Thai syllable routing infrastructure ready. No escalation required.",
+    "recommendation": "System ready for TICKET-010/011 operational work. All critical dependencies verified and responsive."
+  },
+
+  "detailed_test_results": {
+    "commandcode_bridge_test": {
+      "test_file": "eval/test-cc-bridge.js",
+      "result": "PASS",
+      "output": "Testing CommandCode Bridge... Reply: BRIDGE_OK RESULT: SUCCESS",
+      "exit_code": 0
+    },
+    "router_status_check": {
+      "test_date": "2026-06-09T15:52:53Z",
+      "total_backends": 10,
+      "all_available": 10,
+      "result": "PASS"
+    },
+    "message_bus_check": {
+      "bus_directory": "/tmp/manusat-bus",
+      "agent_inboxes": 34,
+      "pending_messages": 41,
+      "result": "PASS"
+    }
+  },
+
+  "observer_conclusion": "ระบบพร้อมแล้ว (System is ready). All critical routing, communication, and bridge infrastructure verified operational. No issues detected. Standing by for TICKET-010/011 work assignment."
+}

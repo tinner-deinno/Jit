@@ -1,0 +1,189 @@
+{
+  "ticket": "TICKET-010",
+  "baseline_type": "regression_framework_establishment",
+  "execution_date": "2026-06-09T09:31:34.258Z",
+  "runner": "chamu (QA/Tester)",
+  "status": "BASELINE_COMPLETE_WITH_BLOCKERS",
+
+  "corpus_metrics": {
+    "total_test_cases": 26,
+    "test_cases": [
+      "TH-001 through TH-026 (Thai language + mixed content)"
+    ],
+    "corpus_path": "test/thai-test-corpus.json"
+  },
+
+  "backend_configuration": {
+    "total_backends_configured": 9,
+    "backends": [
+      "ollama_mdes",
+      "thaillm",
+      "commandcode",
+      "ollama_local",
+      "ollama_cloud",
+      "copilot",
+      "openai",
+      "openclaude",
+      "innova_bot"
+    ]
+  },
+
+  "execution_results": {
+    "total_runs": 234,
+    "passes": 87,
+    "failures": 147,
+    "variances_detected": 186,
+    "variance_rate_percent": 79.5
+  },
+
+  "critical_findings": {
+    "syllable_split_regression": {
+      "severity": "HIGH",
+      "description": "Thai syllable splitter is producing incorrect splits across all 9 backends",
+      "examples": [
+        {
+          "case_id": "TH-001",
+          "input": "จิต",
+          "expected": ["จิต"],
+          "actual": ["จิ", "ต"],
+          "issue": "Thai syllable boundary detection broken"
+        },
+        {
+          "case_id": "TH-003",
+          "input": "จิตนำกาย",
+          "expected": ["จิต", "นำ", "กาย"],
+          "actual": ["จิ", "ตน", "ำ", "กา", "ย"],
+          "issue": "Multiple syllable boundary violations"
+        }
+      ],
+      "affected_cases": "All Thai-only and Thai-mixed test cases"
+    },
+
+    "backend_timeout_pattern": {
+      "severity": "HIGH",
+      "description": "ollama_mdes backend consistently timing out (8000ms threshold)",
+      "pattern": "Every call to ollama_mdes returns 'Ollama timeout' error",
+      "affected_backends": ["ollama_mdes"],
+      "root_cause_hypothesis": "Ollama service unavailable or unreachable at expected endpoint"
+    },
+
+    "routing_key_empty": {
+      "severity": "MEDIUM",
+      "description": "Deterministic routing key is empty string for all test cases",
+      "value": "\"\" (empty string)",
+      "implication": "Routing decision logic cannot differentiate between prompts",
+      "affected_metric": "Backend distribution variance tracking disabled"
+    }
+  },
+
+  "blocked_requirements": [
+    {
+      "requirement": "All 28-phrase corpus routes deterministically",
+      "status": "BLOCKED",
+      "reason": "Only 26 test cases in corpus (not 28). Routing key is empty, preventing deterministic routing validation."
+    },
+    {
+      "requirement": "Latency P99 <1ms",
+      "status": "BLOCKED",
+      "reason": "Backend timeouts dominate (8s+ per call). Mean latency far exceeds 1ms target."
+    },
+    {
+      "requirement": "Backend distribution within ±2%",
+      "status": "BLOCKED",
+      "reason": "Routing key is empty, backend selection is non-deterministic. Cannot measure distribution consistency."
+    },
+    {
+      "requirement": "No cache corruption",
+      "status": "UNKNOWN",
+      "reason": "No cache layer present in regression test suite. Unable to validate."
+    },
+    {
+      "requirement": "No timeouts or errors",
+      "status": "FAILED",
+      "reason": "147 failures (63%) - mostly Ollama timeout errors."
+    }
+  ],
+
+  "root_cause_analysis": {
+    "primary_issue_1_thai_splitter": {
+      "location": "limbs/thai-splitter.js",
+      "description": "Thai syllable boundary detection is broken or regressed",
+      "evidence": "All syllable split expectations are not met across 186 variance cases",
+      "impact": "Cannot validate Thai language routing logic"
+    },
+
+    "primary_issue_2_routing_key_generation": {
+      "location": "hermes-discord/model-router.js (method: _routingKey)",
+      "description": "Routing key generation returns empty string for all inputs",
+      "evidence": "routingKey field is empty string in all 234 test results",
+      "impact": "Deterministic routing cannot be validated"
+    },
+
+    "primary_issue_3_ollama_connectivity": {
+      "location": "External dependency: Ollama service",
+      "description": "ollama_mdes backend not responding within timeout window",
+      "evidence": "100% of ollama_mdes calls return 'Ollama timeout' error",
+      "impact": "Cannot validate live backend calls"
+    }
+  },
+
+  "golden_files_status": {
+    "directory": "test/regression/golden-files/",
+    "files_created": 9,
+    "backends_with_golden": [
+      "ollama_mdes.json",
+      "thaillm.json",
+      "commandcode.json",
+      "ollama_local.json",
+      "ollama_cloud.json",
+      "copilot.json",
+      "openai.json",
+      "openclaude.json",
+      "innova_bot.json"
+    ],
+    "note": "Golden files created with current (broken) baseline. These must be regenerated after fixes."
+  },
+
+  "recommended_fixes_priority_order": [
+    {
+      "priority": 1,
+      "issue": "Thai syllable splitter regression (TH-001...TH-026)",
+      "fix": "Audit limbs/thai-splitter.js syllable boundary logic. Likely cause: vowel mark handling or consonant cluster detection broken.",
+      "estimated_effort": "HIGH - requires deep Thai language understanding",
+      "blocker": true
+    },
+    {
+      "priority": 2,
+      "issue": "Routing key generation empty",
+      "fix": "Investigate model-router.js _routingKey() method. Verify it's receiving valid input and producing non-empty canonical keys.",
+      "estimated_effort": "MEDIUM",
+      "blocker": true
+    },
+    {
+      "priority": 3,
+      "issue": "Ollama service timeout",
+      "fix": "Verify Ollama service is running and responding at expected endpoint. Check network connectivity and service health.",
+      "estimated_effort": "LOW - operational issue",
+      "blocker": false
+    }
+  ],
+
+  "next_steps_for_chamu": [
+    "1. Coordinate with innova (lead dev) to fix Thai splitter regression",
+    "2. Verify model-router routing key generation with simple debug output",
+    "3. Confirm Ollama service health (curl endpoint or health check)",
+    "4. Re-run regression baseline after each fix to track improvement",
+    "5. Once blockers cleared, re-establish baseline with clean golden files"
+  ],
+
+  "status_for_ticket_010": {
+    "ready_to_validate": false,
+    "validation_blockers": [
+      "Thai syllable splitter broken (79.5% variance)",
+      "Routing key generation returns empty",
+      "Ollama backend connectivity failure"
+    ],
+    "status_code": "NOT_READY",
+    "reason": "Critical infrastructure failures prevent regression validation. Must fix before proceeding with routing SA review."
+  }
+}

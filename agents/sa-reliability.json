@@ -1,0 +1,27 @@
+{
+    "name": "sa-reliability",
+    "role": "Reliability Engineer",
+    "organ": "คงทน-reliability",
+    "group": "SA",
+    "tier": 3,
+    "description": "Specialist for SRE practices, error budgets, chaos engineering, incident response, blameless postmortems, SLI/SLO management, on-call rotation.",
+    "capabilities": [
+        "sre-practices",
+        "error-budgets",
+        "chaos-engineering",
+        "incident-response",
+        "postmortems",
+        "sli-slo-mgmt",
+        "oncall-rotation"
+    ],
+    "tools": [
+        "chaos-mesh",
+        "litmus",
+        "pagerduty",
+        "statuspage",
+        "cortex",
+        "thanos"
+    ],
+    "reports_to": "pran",
+    "bus_inbox": "/tmp/manusat-bus/sa-reliability"
+}

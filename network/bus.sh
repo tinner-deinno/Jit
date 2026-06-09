@@ -22,6 +22,19 @@ BUS_ROOT="/tmp/manusat-bus"
 STAGING_DIR="/tmp/manusat-bus-staging"
 REGISTRY="$SCRIPT_DIR/registry.json"
 
+# to_win: convert a unix-style path to a Windows path node can read
+# (cygpath may not be present on git-bash; fall back to pwd -W)
+to_win() {
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -w "$1"
+  else
+    # Best-effort: cd to dir, get absolute path, append filename
+    local dir
+    dir="$(cd "$(dirname "$1")" 2>/dev/null && pwd)"
+    echo "${dir}/${1##*/}"
+  fi
+}
+
 # Initialize bus structure
 _init_bus() {
   mkdir -p "$BUS_ROOT"
@@ -41,7 +54,7 @@ _init_bus() {
       });
     } catch (e) {
       console.error('Error initializing bus from registry: ' + e.message);
-    }" "$(cygpath -w "$BUS_ROOT")" "$(cygpath -w "$REGISTRY")"
+    }" "$(to_win "$BUS_ROOT")" "$(to_win "$REGISTRY")"
 
   else
     # Fallback for basic agents if registry is missing
@@ -113,7 +126,7 @@ case "$CMD" in
     fi
     _init_bus
     if [ -f "$REGISTRY" ]; then
-      agents=$(node -e "const fs = require('fs'); const registry = process.argv[1]; const content = fs.readFileSync(registry, 'utf8').replace(/^﻿/, ''); const d = JSON.parse(content); console.log((d.agents || []).map(a => a.name).join('\n'))" "$(cygpath -w "$REGISTRY")")
+      agents=$(node -e "const fs = require('fs'); const registry = process.argv[1]; const content = fs.readFileSync(registry, 'utf8').replace(/^﻿/, ''); const d = JSON.parse(content); console.log((d.agents || []).map(a => a.name).join('\n'))" "$(to_win "$REGISTRY")")
       for agent in $agents; do
         _deliver "$agent" "$priority" "$subject" "$body" "$from"
       done

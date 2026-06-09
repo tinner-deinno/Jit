@@ -1,0 +1,41 @@
+================================================================================
+REGRESSION BASELINE STATUS — TICKET-010
+chamu (QA/Tester) — 2026-06-09
+================================================================================
+
+BASELINE ESTABLISHMENT: COMPLETE
+STATUS: NOT READY FOR ROUTING SA REVIEW
+
+Three blockers identified and documented:
+1. Thai syllable splitter regression (79.5% variance)
+2. Routing key generation returns empty
+3. Ollama service timeout (connectivity)
+
+CRITICAL PATH REQUIREMENTS: ALL BLOCKED
+─────────────────────────────────────
+- Deterministic routing validation: BLOCKED (empty routing key)
+- Latency P99 <1ms: FAILED (8s+ timeouts dominate)
+- Backend distribution ±2%: BLOCKED (empty routing key)
+- No errors: FAILED (147 failures, 62.8% error rate)
+
+NEXT ACTION REQUIRED:
+─────────────────────
+innova (lead developer) must fix:
+1. limbs/thai-splitter.js — Thai syllable boundary detection
+2. hermes-discord/model-router.js → _routingKey() method
+3. Verify Ollama service health
+
+DELIVERABLES READY FOR REVIEW:
+───────────────────────────────
+eval/REGRESSION_BASELINE_EXEC_SUMMARY_010.txt  — Executive summary
+eval/REGRESSION_BASELINE_REPORT_010.txt        — Detailed analysis
+eval/regression-baseline-010.json              — Metrics + findings
+eval/regression-baseline-010.txt               — Console output
+test/regression/report.json                    — Full test results (234 runs)
+test/regression/golden-files/                  — 9 golden reference files
+
+Golden files MUST be regenerated after fixes.
+
+For details: Read eval/REGRESSION_BASELINE_EXEC_SUMMARY_010.txt
+
+================================================================================

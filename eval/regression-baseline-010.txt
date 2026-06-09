@@ -1,0 +1,53 @@
+[RegressionRunner] TICKET-009 — Regression Automation Framework
+Started at 2026-06-09T09:31:34.258Z
+Corpus size: 26 cases
+Backends to test: ollama_mdes, thaillm, commandcode, ollama_local, ollama_cloud, copilot, openai, openclaude, innova_bot
+
+-- Backend: ollama_mdes --
+[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+.[model-router] -> ollama_mdes
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
+[model-router] ollama_mdes failed: Ollama timeout
+.[model-router] -> ollama_mdes
