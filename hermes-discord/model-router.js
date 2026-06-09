@@ -1123,6 +1123,7 @@ function status() {
       commandcode: { available: !!COMMANDCODE_TOKEN, url: COMMANDCODE_BASE_URL, model: COMMANDCODE_MODEL, errors: _errors.commandcode || 0 },
       ollama_local: { available: !!OLLAMA_LOCAL_URL, url: OLLAMA_LOCAL_URL, model: OLLAMA_LOCAL_MODEL, errors: _errors.ollama || 0 },
       ollama_cloud: { available: !!OLLAMA_CLOUD_URL, url: OLLAMA_CLOUD_URL, resolvedUrl: cloudCfg.url, model: OLLAMA_CLOUD_MODEL, apiModel: _modelForOllamaBackend(OLLAMA_CLOUD_MODEL, 'ollama_cloud', cloudCfg.url), targetModel: JIT_CLOUD_MODEL, errors: _errors.ollama || 0 },
+      innova_bot: { available: !!INNOVA_BOT_BRIDGE_URL, url: INNOVA_BOT_BRIDGE_URL, model: 'innova-bot-default', errors: _errors.innova_bot || 0 },
       // Backward-compatible alias for older callers.
       ollama: { available: !!OLLAMA_MDES_URL, url: OLLAMA_MDES_URL, model: OLLAMA_MDES_MODEL, errors: _errors.ollama || 0 },
       openclaude: { available: ocStatus.available, configured: ocStatus.configured, host: ocStatus.host, port: ocStatus.port, model: ocStatus.model, healthEndpoint: ocStatus.healthEndpoint, errors: _errors.openclaude || 0 },
@@ -1220,15 +1221,22 @@ function routingKey(messages, options) {
  * Select a backend deterministically from a routing key.
  * Same key always returns same backend from the same backend list.
  */
-function pickBackendByKey(key, backends) {
-  if (!key || !backends || backends.length === 0) {
+function pickBackendByKey(key, backends, preferBackend) {
+  var backendList = Array.isArray(backends) ? backends : BACKEND_ORDER;
+
+  // If preferBackend is specified and exists in the list, return it immediately
+  if (preferBackend && backendList.indexOf(preferBackend) !== -1) {
+    return preferBackend;
+  }
+
+  if (!key || !backendList || backendList.length === 0) {
     return BACKEND_ORDER[0] || 'ollama_mdes';
   }
 
   // Check cache first
   if (_routeCache[key]) {
     var cached = _routeCache[key];
-    if (backends.indexOf(cached) !== -1) {
+    if (backendList.indexOf(cached) !== -1) {
       return cached;
     }
   }
@@ -1240,7 +1248,6 @@ function pickBackendByKey(key, backends) {
     hash = hash & hash; // 32-bit int
   }
 
-  var backendList = Array.isArray(backends) ? backends : BACKEND_ORDER;
   var index = Math.abs(hash) % backendList.length;
   var selected = backendList[index];
 
