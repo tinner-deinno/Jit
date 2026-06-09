@@ -16,9 +16,27 @@ class MotherEngine {
   }
 
   loadState() {
-    this.registry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
-    this.leaderboard = JSON.parse(fs.readFileSync(this.leaderboardPath, 'utf8'));
-    this.routing = JSON.parse(fs.readFileSync(this.routingPath, 'utf8'));
+    try {
+      this.registry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
+    } catch (e) {
+      console.error(`[Mother] Failed to load registry (${this.registryPath}): ${e.message}`);
+      this.registry = { agents: [] }; // fallback default
+    }
+
+    try {
+      this.leaderboard = JSON.parse(fs.readFileSync(this.leaderboardPath, 'utf8'));
+    } catch (e) {
+      console.error(`[Mother] Failed to load leaderboard (${this.leaderboardPath}): ${e.message}`);
+      this.leaderboard = { fleet: {} }; // fallback default
+    }
+
+    try {
+      this.routing = JSON.parse(fs.readFileSync(this.routingPath, 'utf8'));
+    } catch (e) {
+      console.error(`[Mother] Failed to load routing config (${this.routingPath}): ${e.message}`);
+      this.routing = { providers: {} }; // fallback default
+    }
+
     this.hydrateLeaderboard();
     this.liveProvider = this.pickLiveProvider();
 
