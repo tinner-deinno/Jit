@@ -71,6 +71,7 @@ async function runTests() {
 function setup() {
   return new Promise(resolve => {
     process.env.PROXY_THAI_PORT = String(PORT);
+    process.env.PROXY_RATE_LIMIT_ENABLED = 'false'; // disable rate limiting so existing tests don't hit 429
     origCallModel = router.callModel;
     server = proxy.createServer();
     server.listen(PORT, resolve);

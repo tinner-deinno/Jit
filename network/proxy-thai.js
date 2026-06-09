@@ -42,6 +42,15 @@ const CONFIG = {
   timeout: {
     clientMs: parseInt(process.env.PROXY_CLIENT_TIMEOUT || '120000', 10),
     backendMs: parseInt(process.env.PROXY_BACKEND_TIMEOUT || '90000', 10)
+  },
+  rateLimiting: {
+    enabled:            process.env.PROXY_RATE_LIMIT_ENABLED !== 'false',
+    globalPerMinute:    parseInt(process.env.PROXY_RATE_LIMIT_GLOBAL        || '1000',  10),
+    perIpPerMinute:     parseInt(process.env.PROXY_RATE_LIMIT_PER_IP        || '100',   10),
+    windowMs:           parseInt(process.env.PROXY_RATE_LIMIT_WINDOW_MS     || '60000', 10),
+    staleIpTtlMs:       parseInt(process.env.PROXY_RATE_LIMIT_STALE_TTL_MS  || '300000', 10),
+    cleanupIntervalMs:  parseInt(process.env.PROXY_RATE_LIMIT_CLEANUP_INTERVAL || '30000', 10),
+    trustProxy:         process.env.PROXY_RATE_LIMIT_TRUST_PROXY === 'true'
   }
 };
 
@@ -64,6 +73,49 @@ class LRUCache {
 }
 
 const routeCache = CONFIG.cache.enabled ? new LRUCache(CONFIG.splitter.cacheSize) : null;
+
+// ── Token Bucket Rate Limiting (TICKET-011) ───────────────────────────
+class TokenBucket {
+  constructor(capacity, refillPerMs) {
+    this.capacity    = capacity;
+    this.refillPerMs = refillPerMs;
+    this.tokens      = capacity;
+    this.lastRefill  = Date.now();
+    this.lastAccess  = Date.now();
+  }
+  refill() {
+    const now = Date.now();
+    this.tokens = Math.min(this.capacity, this.tokens + (now - this.lastRefill) * this.refillPerMs);
+    this.lastRefill = this.lastAccess = now;
+  }
+  canConsume() { this.refill(); return this.tokens >= 1; }
+  consume()    { this.tokens -= 1; }
+  msUntilToken() { this.refill(); return this.tokens >= 1 ? 0 : Math.ceil((1 - this.tokens) / this.refillPerMs); }
+}
+
+const RL            = CONFIG.rateLimiting;
+const globalBucket  = new TokenBucket(RL.globalPerMinute, RL.globalPerMinute / RL.windowMs);
+const ipBuckets     = new Map();
+
+function _getIpBucket(ip) {
+  if (!ipBuckets.has(ip)) ipBuckets.set(ip, new TokenBucket(RL.perIpPerMinute, RL.perIpPerMinute / RL.windowMs));
+  return ipBuckets.get(ip);
+}
+function _clientIp(req) {
+  if (RL.trustProxy) { const xff = req.headers['x-forwarded-for']; if (xff) return xff.split(',')[0].trim(); }
+  return (req.socket && req.socket.remoteAddress) || '127.0.0.1';
+}
+// Stale bucket cleanup — .unref() prevents blocking test process teardown
+const _rlCleanup = setInterval(() => {
+  const cutoff = Date.now() - RL.staleIpTtlMs;
+  for (const [ip, b] of ipBuckets) if (b.lastAccess < cutoff) ipBuckets.delete(ip);
+}, RL.cleanupIntervalMs).unref();
+
+function _resetRateLimitBuckets() {
+  globalBucket.tokens = globalBucket.capacity;
+  globalBucket.lastRefill = Date.now();
+  ipBuckets.clear();
+}
 
 // ── Logging ────────────────────────────────────────────────────────────
 function log(level, msg, meta) {
@@ -149,6 +201,23 @@ function proxyHandler(req, res) {
   if (req.method !== 'POST' || req.url !== '/v1/chat/completions') {
     res.statusCode = 404;
     return res.end(JSON.stringify({ error: 'Not found', path: req.url, method: req.method }));
+  }
+
+  // ── Rate limiting (TICKET-011) ──────────────────────────────────────
+  if (RL.enabled) {
+    const clientIp = _clientIp(req);
+    const ipBucket = _getIpBucket(clientIp);
+    // Check both before consuming either — atomicity prevents global drain on per-IP reject
+    if (!globalBucket.canConsume() || !ipBucket.canConsume()) {
+      const retryAfter = Math.ceil(Math.max(globalBucket.msUntilToken(), ipBucket.msUntilToken()) / 1000) || 1;
+      res.statusCode = 429;
+      res.setHeader('Retry-After', String(retryAfter));
+      log('warn', 'rate limited', { reqId, clientIp, retryAfter,
+        globalTokens: Math.floor(globalBucket.tokens), ipTokens: Math.floor(ipBucket.tokens) });
+      return res.end(JSON.stringify({ error: 'rate_limited', message: 'Too many requests.', retryAfter }));
+    }
+    globalBucket.consume();
+    ipBucket.consume();
   }
 
   parseBody(req, (err, body) => {
@@ -300,7 +369,10 @@ module.exports = {
   computeRoutingKey,
   pickBackend,
   extractPromptText,
-  log
+  log,
+  globalBucket,
+  ipBuckets,
+  _resetRateLimitBuckets
 };
 
 // CLI direct run
