@@ -75,3 +75,14 @@ network/leaderboard.db-shm
 network/mother-events.jsonl
 network/artifacts/
 network/breaker-state.json
+
+# Scratch and temporary work directories (not part of source control)
+/scratch/
+/labs/scratch/
+
+# Session state and runtime probes (regenerated each session)
+.omx/state/session.json
+network/provider-status.json
+
+# One-off skill spawning and audit scripts
+spawn_skill_agents.js
