@@ -1,18 +1,34 @@
 #!/usr/bin/env bash
+# scripts/gsd.sh — Jit Service Daemon
 #
-# GSD — Jit Service Daemon
-# Global Service Daemon managing all Jit system operations
-# 
-# Controls: heartbeat, hermes-discord, oracle, tests, git
-# Purpose: 24/7 autonomous system with self-healing
+# Global Service Daemon ที่จัดการการทำงานทั้งหมดของระบบ Jit agent
+# ทำหน้าที่เป็นศูนย์กลางในการควบคุมและตรวจสอบบริการต่างๆ ของระบบ
+# เพื่อให้ระบบสามารถทำงานได้อย่างต่อเนื่อง 24/7 พร้อมความสามารถในการฟื้นฟูตัวเอง
 #
-# Usage:
-#   gsd status          — Check all services
-#   gsd start           — Start all services
-#   gsd stop            — Stop all services
-#   gsd restart         — Restart services
-#   gsd health          — Full health check
-#   gsd log             — View all logs
+# บริการที่ควบคุม:
+#   - heartbeat.sh - ระบบชีพจรสำคัญ (หัวใจ/pran)
+#   - hermes-discord.sh - ระบบแจ้งเตือนผ่าน Discord
+#   - start-oracle.sh - ระบบจัดการฐานความรู้ Oracle
+#   - ต่างๆ ใน eval/ - ระบบทดสอบและตรวจสอบสุขภาพ
+#   - กระบวนการ git - การจัดการเวอร์ชันโค้ด
+#
+# วัตถุประสงค์หลัก:
+#   ให้ระบบ Jit สามารถทำงานได้อย่างต่อเนื่องตลอด 24 ชั่วโมง
+#   มีความสามารถในการตรวจจับปัญหาและฟื้นฟูตัวเองอัตโนมัติ (self-healing)
+#   ประสานงานบริการต่างๆ ให้ทำงานสอดคล้องกัน
+#
+# การใช้งาน:
+#   gsd status          — ตรวจสอบสถานะของทุกบริการ
+#   gsd start           — เริ่มต้นทุกบริการ
+#   gsd stop            — หยุดทุกบริการ
+#   gsd restart         — รีสตาร์ททุกบริการ
+#   gsd health          — ตรวจสอบสุขภาพอย่างละเอียดของระบบทั้งหมด
+#   gsd log             — ดูบันทึกการทำงานของทุกบริการ
+#
+# ตัวอย่างการใช้งานในสภาพแวดล้อมการผลิต:
+#   ติดตั้งเป็น systemd service เพื่อให้เริ่มต้นอัตโนมัติเมื่อระบบบูต
+#   ตรวจสอบสถานะเป็นระยะผ่านคำสั่ง gsd status
+#   ดูบันทึกข้อผิดพลาดผ่านคำสั่ง gsd log
 #   gsd test            — Run test suite
 #   gsd deploy          — Deploy to production
 #   gsd self-heal       — Detect and fix issues

@@ -79,6 +79,28 @@ Limbs represent the cognitive layer of the system, analogous to the nervous syst
 - **Not intended for direct invocation** - used by other scripts
 - **Functions**: logging, error handling, JSON parsing, HTTP utilities, crypto functions
 
+### Provider Abstraction Layer (`limbs/providers/`)
+- **Purpose**: Unified interface for multiple LLM providers (Claude, Ollama, OpenAI, Codex)
+- **Design Pattern**: Strategy pattern with fallback chains
+- **Provider Scripts**:
+  - `claude.sh` - Anthropic Claude via claude CLI / CommandCode proxy
+  - `ollama.sh` - Local Ollama models via HTTP API
+  - `openai.sh` - OpenAI GPT models via HTTP API
+  - `codex.sh` - OpenAI Codex models via HTTP API
+- **Shared Contract** (implemented by all providers):
+  - `available` → Exit 0 if provider can serve a call now
+  - `call <model_id> <system> <user>` → Print completion to stdout; non-zero exit on failure
+- **Configuration**: Injected by llm.sh via environment variables:
+  - `PROVIDER_API_KEY` - API key for the provider
+  - `PROVIDER_CLI` - CLI binary name (for CLI-based providers)
+  - `PROVIDER_BASE_URL` - Base URL override (for HTTP providers)
+  - `PROVIDER_TIMEOUT` - Timeout in seconds
+- **Usage Pattern**: Agents never call providers directly - they use `limbs/llm.sh` which handles:
+  1. Provider selection based on flags, agent configuration, or defaults
+  2. Fallback chain traversal when primary provider fails
+  3. Environment variable injection for each provider call
+  4. Result collection and error handling
+
 ## Usage Patterns
 
 Agents typically invoke limb scripts through their organ-specific interfaces:

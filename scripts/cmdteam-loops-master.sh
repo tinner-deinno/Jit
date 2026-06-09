@@ -1,6 +1,31 @@
 #!/usr/bin/env bash
-# Master loop driver: status (15m), cleanup (1h), self-improve (2h)
-# Each loop runs as separate background process for crash isolation
+# scripts/cmdteam-loops-master.sh — master loop driver สำหรับงานพื้นหลังของ cmdteam
+#
+# ผู้จัดการลูปหลักที่รันงานพื้นหลังต่างๆ ของ cmdteam เป็นกระบวนการพื้นหลังแยกกัน
+# เพื่อความทนทานต่อข้อผิดพลาด (หากลูปหนึ่งล้มเหลว ลูปอื่นๆ ยังทำงานต่อได้)
+#
+# ลูปที่จัดการ:
+#   - status-loop: รายงานสถานะระบบทุก 15 นาที
+#   - cleanup-loop: ทำความสะอาดไฟล์ชั่วคราวทุก 1 ชั่วโมง
+#   - self-improve-loop: พยายามปรับปรุงตนเองทุก 2 ชั่วโมง
+#
+# การทำงาน:
+#   แต่ละลูปทำงานเป็นกระบวนการพื้นหลังอิสระ
+#   หากลูปใดลูปหนึ่งล้มเหลวหรือหยุดทำงาน ลูปอื่นๆ จะไม่ได้รับผลกระทบ
+#   ผลลัพธ์และข้อผิดพลาดของแต่ละลูปจะถูกบันทึกไปยังไฟล์ log ของตนเอง
+#
+# การตั้งค่า:
+#   ไดเรกทอรีชั่วคราว: /tmp/cmdteam/
+#   ไฟล์ log อยู่ในไดเรกทอรี log/ ของแต่ละลูป
+#
+# การใช้งาน:
+#   รันเป็น daemon พื้นหลัง:
+#     bash scripts/cmdteam-loops-master.sh &
+#   หรือรันเป็น systemd service (ดู jit-daemon.service ตัวอย่าง)
+#
+# การหยุดทำงาน:
+#   pkill -f "cmdteam-loops-master.sh"    # หยุดทุกลูป
+#   หรือจัดการลูปแต่ละตัวแยกกันผ่าน process ID
 mkdir -p /tmp/cmdteam
 
 # Status monitor (15 min = 900s)
