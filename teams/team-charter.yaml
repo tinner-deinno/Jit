@@ -658,3 +658,41 @@ dependencies:
     url: "https://ollama.mdes-innova.online"
     model: "gemma4:26b"
     purpose: "Thai language processing"
+
+# ============================================================
+# KNOWN LIMITATIONS — TICKET-016 (proxy-thai preferBackend)
+# ============================================================
+# Documented 2026-06-10 | Status: OPEN | Severity: medium
+# See: commit 64d41cb, network/proxy-thai.js:232, PR_DESCRIPTION.md finding #2
+# ============================================================
+limitations:
+  - id: "L-2026-06-10-01"
+    ticket: "TICKET-016"
+    component: "network/proxy-thai.js"
+    location: "line 232"
+    title: "proxy-thai preferBackend ternary is malformed"
+    observed:
+      - "Line 232 contains a nested ternary that always evaluates to either 'ollama_mdes' or undefined."
+      - "User-supplied body.model in /v1/chat/completions payload is silently ignored."
+      - "Routing always falls back to ollama_mdes regardless of caller intent."
+    root_cause:
+      - "Author intent (inferred): 'if body.model provided, normalize it; else undefined'."
+      - "Actual expression: body.model ? router._normalizeBackendName ? 'ollama_mdes' : undefined : undefined"
+      - "The body.model branch resolves to 'ollama_mdes' unconditionally because router._normalizeBackendName is truthy (method exists)."
+    upstream_uncertainty:
+      - "Router is located at hermes-discord/model-router.js (NOT network/model-router.js as some docs state)."
+      - "PR_DESCRIPTION.md finding #2: pickBackendByKey(key, backends, preferBackend) called with 3 args, function takes 2; the 3rd arg is silently ignored."
+      - "Whether _normalizeBackendName exists on the actual router module is unverified in this pass."
+    decision: "Option B (document) chosen over Option A (implement)."
+    decision_rationale:
+      - "Honest: matches Pattern Over Intentions (Principle #2) — system does not honor preferBackend today, so we say so."
+      - "Safe: a 'fix' without verified upstream signature would trade one silent no-op for another."
+      - "Fast: ships in <2 min; leaves a clear contract for the TICKET-016 follow-up."
+    workarounds:
+      - "Callers requiring a specific backend should call that backend directly (network/router.sh, or the backend's own client)."
+      - "Do NOT rely on body.model field in proxy-thai requests — it is currently decorative."
+    fix_blocked_by:
+      - "Confirm hermes-discord/model-router.pickBackendByKey signature (2-arg vs 3-arg)."
+      - "Confirm router._normalizeBackendName exists and returns a normalized string."
+      - "Decide PR_DESCRIPTION.md Q: add preferBackend support to router, or remove preferBackend from all callers."
+    follow_up_ticket: "TICKET-016-fix"
