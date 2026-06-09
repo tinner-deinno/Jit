@@ -1,5 +1,5 @@
 {
-  "probed_at_ms": 1780990876059,
+  "probed_at_ms": 1780991061240,
   "timeout_ms": 35000,
   "full_probe": true,
   "probed_backends": [
@@ -15,89 +15,80 @@
   ],
   "usable": [
     "commandcode",
-    "innova_bot",
     "ollama_cloud",
-    "ollama_local",
-    "ollama_mdes",
     "thaillm"
   ],
   "cached_usable": [
     "commandcode",
-    "innova_bot",
     "ollama_cloud",
-    "ollama_local",
-    "ollama_mdes",
     "thaillm"
   ],
   "results": {
     "ollama_mdes": {
       "backend": "ollama_mdes",
-      "status": "ALIVE",
-      "ms": 4608,
-      "served_by": "ollama_mdes",
-      "sample": "OK",
-      "probed_at_ms": 1780990876059
+      "status": "UNREACHABLE",
+      "ms": 35037,
+      "error": "timeout",
+      "probed_at_ms": 1780991061240
     },
     "ollama_local": {
       "backend": "ollama_local",
-      "status": "ALIVE",
-      "ms": 4875,
-      "served_by": "ollama_local",
-      "sample": "OK",
-      "probed_at_ms": 1780990876059
+      "status": "UNREACHABLE",
+      "ms": 35014,
+      "error": "timeout",
+      "probed_at_ms": 1780991061240
     },
     "ollama_cloud": {
       "backend": "ollama_cloud",
       "status": "ALIVE",
-      "ms": 4581,
+      "ms": 17515,
       "served_by": "ollama_cloud",
       "sample": "OK",
-      "probed_at_ms": 1780990876059
+      "probed_at_ms": 1780991061240
     },
     "thaillm": {
       "backend": "thaillm",
       "status": "ALIVE",
-      "ms": 4581,
+      "ms": 3535,
       "served_by": "thaillm",
       "sample": "<think> Okay, I need to respond to the user's query. The use",
-      "probed_at_ms": 1780990876059
+      "probed_at_ms": 1780991061240
     },
     "copilot": {
       "backend": "copilot",
       "status": "ERROR",
-      "ms": 16849,
+      "ms": 16514,
       "error": "empty reply from copilot",
-      "probed_at_ms": 1780990876059
+      "probed_at_ms": 1780991061240
     },
     "openai": {
       "backend": "openai",
       "status": "ERROR",
-      "ms": 25786,
+      "ms": 30791,
       "error": "Codex CLI failed: OpenAI Codex v0.132.0\n--------\nworkdir: C:\\Users\\USER-NT\\Jit\nm",
-      "probed_at_ms": 1780990876059
+      "probed_at_ms": 1780991061240
     },
     "openclaude": {
       "backend": "openclaude",
       "status": "UNREACHABLE",
-      "ms": 145,
+      "ms": 157,
       "error": "OpenClaude request error: ECONNREFUSED",
-      "probed_at_ms": 1780990876059
+      "probed_at_ms": 1780991061240
     },
     "innova_bot": {
       "backend": "innova_bot",
-      "status": "ALIVE",
-      "ms": 2428,
-      "served_by": "innova_bot",
-      "sample": "stub-ok: USER: Reply with exactly: OK ASSISTANT:",
-      "probed_at_ms": 1780990876059
+      "status": "UNREACHABLE",
+      "ms": 30171,
+      "error": "SSE connection timeout: Endpoint not received within 30s",
+      "probed_at_ms": 1780991061240
     },
     "commandcode": {
       "backend": "commandcode",
       "status": "ALIVE",
-      "ms": 2372,
+      "ms": 2772,
       "served_by": "commandcode",
       "sample": "OK",
-      "probed_at_ms": 1780990876059
+      "probed_at_ms": 1780991061240
     }
   }
 }

@@ -312,7 +312,7 @@ class BackendManager {
 const backendManager = new BackendManager();
 
 // ── Error counters (reset on success) ────────────────────────────────
-const _errors = { copilot: 0, openai: 0, ollama: 0, ollama_mdes: 0, ollama_local: 0, ollama_cloud: 0, thaillm: 0, openclaude: 0, commandcode: 0 };
+const _errors = { copilot: 0, openai: 0, ollama: 0, ollama_mdes: 0, ollama_local: 0, ollama_cloud: 0, thaillm: 0, openclaude: 0, commandcode: 0, innova_bot: 0 };
 
 // Circuit breaker (per architect-agent review: protect the orchestrator→provider
 // boundary). A lane that fails BREAKER_THRESHOLD times in a row is "open" and
@@ -1123,7 +1123,7 @@ function status() {
       commandcode: { available: !!COMMANDCODE_TOKEN, url: COMMANDCODE_BASE_URL, model: COMMANDCODE_MODEL, errors: _errors.commandcode || 0 },
       ollama_local: { available: !!OLLAMA_LOCAL_URL, url: OLLAMA_LOCAL_URL, model: OLLAMA_LOCAL_MODEL, errors: _errors.ollama || 0 },
       ollama_cloud: { available: !!OLLAMA_CLOUD_URL, url: OLLAMA_CLOUD_URL, resolvedUrl: cloudCfg.url, model: OLLAMA_CLOUD_MODEL, apiModel: _modelForOllamaBackend(OLLAMA_CLOUD_MODEL, 'ollama_cloud', cloudCfg.url), targetModel: JIT_CLOUD_MODEL, errors: _errors.ollama || 0 },
-      innova_bot: { available: !!INNOVA_BOT_BRIDGE_URL, url: INNOVA_BOT_BRIDGE_URL, model: 'innova-bot-default', errors: _errors.innova_bot || 0 },
+      innova_bot: { available: !!process.env.INNOVA_BOT_SSE_URL, url: process.env.INNOVA_BOT_SSE_URL || 'http://127.0.0.1:7010/sse', model: process.env.INNOVA_BOT_MODEL || null, errors: _errors.innova_bot || 0 },
       // Backward-compatible alias for older callers.
       ollama: { available: !!OLLAMA_MDES_URL, url: OLLAMA_MDES_URL, model: OLLAMA_MDES_MODEL, errors: _errors.ollama || 0 },
       openclaude: { available: ocStatus.available, configured: ocStatus.configured, host: ocStatus.host, port: ocStatus.port, model: ocStatus.model, healthEndpoint: ocStatus.healthEndpoint, errors: _errors.openclaude || 0 },
