@@ -1,0 +1,111 @@
+{
+  "plan_id": "CC-TEAM-2026-06-11",
+  "planned_by": "jit (Fable 5)",
+  "sa_reviewer": "sonnet",
+  "provider": "commandcode",
+  "created_at": "2026-06-11T02:17:00+07:00",
+  "groups": [
+    {
+      "id": "A",
+      "mission": "TICKET-002: Thai Knowledge Routing Audit — produce test corpus, harness, and hardening proposals",
+      "members": [
+        {
+          "id": "A1",
+          "role": "dev",
+          "model": "deepseek/deepseek-v4-pro",
+          "status": "done",
+          "task": "You are a senior Thai NLP engineer. Produce a JSON array of exactly 24 Thai-language test prompts for auditing a deterministic routing system that assigns prompts to lanes: innova (code/dev work), chamu (testing/QA), rupa (UI/design), pada (deploy/infra), netra (monitoring/observation). Each element: {\"id\": \"T01\"..\"T24\", \"prompt\": \"<realistic Thai prompt>\", \"expected_lane\": \"<lane>\", \"rationale\": \"<1 sentence Thai>\"}. Cover: 8 coding requests, 4 testing, 4 design, 4 deploy, 4 monitoring. Mix formal/casual Thai. Output ONLY the JSON array, no markdown fences.",
+          "output": "ψ\\outbox\\cc-team\\A-A1-dev.md",
+          "finished_at": "2026-06-10T19:20:00.544Z"
+        },
+        {
+          "id": "A2",
+          "role": "dev",
+          "model": "Qwen/Qwen3.7-Max",
+          "status": "done",
+          "task": "You are a systems architect reviewing a multi-backend LLM routing system. The system routes jobs deterministically using a Thai syllable splitter hash on routing keys, across lanes with weights (ollama_mdes, thaillm, commandcode weight=18, concurrency limit 2). Known constraints: routing key must be non-empty (past bug), same goal+worker must always route to same backend, circuit breaker trips after 3 consecutive errors with 60s cooldown. Write a determinism hardening proposal in Thai with sections: (1) 5 failure modes that break determinism, (2) concrete mitigation per mode, (3) 3 invariant checks to add to CI. Be specific and implementation-ready. Output markdown.",
+          "output": "ψ\\outbox\\cc-team\\A-A2-dev.md",
+          "finished_at": "2026-06-10T19:20:32.109Z"
+        },
+        {
+          "id": "A3",
+          "role": "test",
+          "model": "deepseek/deepseek-v4-flash",
+          "status": "done",
+          "task": "Write a complete Node.js test file named thai-routing-audit.test.js (no external deps, plain node:assert + node:test). It must: (1) load a prompt corpus from eval/thai-routing-prompts.json (array of {id,prompt,expected_lane}), (2) for each prompt compute a routing lane via a function routeLane(prompt) imported from ../limbs/route-lane.js (assume it exists, document the expected signature), (3) assert determinism by calling routeLane 5 times per prompt and asserting identical results, (4) assert non-empty routing keys, (5) print a summary table pass/fail. Output ONLY the JavaScript code, no markdown fences.",
+          "output": "ψ\\outbox\\cc-team\\A-A3-test.md",
+          "finished_at": "2026-06-10T19:20:33.802Z"
+        },
+        {
+          "id": "A4",
+          "role": "test",
+          "model": "zai-org/GLM-5.1",
+          "status": "done",
+          "task": "You are a QA engineer specializing in Thai language edge cases. Produce a JSON array of exactly 12 edge-case prompts for testing a Thai text routing system: code-switching Thai-English (3), Thai numerals and Arabic numerals mixed (2), emoji-heavy (2), transliterated English in Thai script (2), very long prompt 500+ chars (1), whitespace/zero-width chars (1), empty-adjacent like single space (1). Each element: {\"id\": \"E01\"..\"E12\", \"prompt\": \"<the edge case text>\", \"category\": \"<category>\", \"expected_behavior\": \"<what a robust router must do, in Thai>\"}. Output ONLY the JSON array, no markdown fences.",
+          "output": "ψ\\outbox\\cc-team\\A-A4-test.md",
+          "finished_at": "2026-06-10T19:23:11.514Z"
+        },
+        {
+          "id": "A5",
+          "role": "test",
+          "model": "moonshotai/Kimi-K2.6",
+          "status": "done",
+          "task": "You are a security-minded QA lead. Write an adversarial test checklist (markdown, in Thai) for an LLM routing system with file-based message bus at /tmp/manusat-bus/<agent>/. Cover: (1) prompt injection attempting to change routing lane, (2) empty/null routing keys, (3) path traversal in agent names, (4) oversized payloads, (5) unicode normalization attacks, (6) concurrent write races on inbox files. For each: attack scenario, expected safe behavior, one-line test idea. 6 sections, concise, implementation-ready.",
+          "output": "ψ\\outbox\\cc-team\\A-A5-test.md",
+          "finished_at": "2026-06-10T19:21:22.641Z"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "mission": "TICKET-006 Phase 2: Manus-pattern integration PoC for innomcp — request_id wrapper, skill registration, tests",
+      "members": [
+        {
+          "id": "B1",
+          "role": "dev",
+          "model": "deepseek/deepseek-v4-pro",
+          "status": "done",
+          "task": "Write a complete Node.js module manus-wrapper.js (CommonJS, no external deps) implementing the Manus response pattern for a multi-agent system: (1) generateRequestId() returning 'req_' + timestamp + random suffix, (2) wrapOk(request_id, data) returning {ok:true, request_id, data}, (3) wrapErr(request_id, code, message) returning {ok:false, request_id, error:{code,message}}, (4) withRequestId(fn) higher-order wrapper that injects request_id, catches exceptions into wrapErr, and logs '[req_id] start/end/error' lines, (5) module.exports for all. Include JSDoc on every function. Output ONLY JavaScript, no markdown fences.",
+          "output": "ψ\\outbox\\cc-team\\B-B1-dev.md",
+          "finished_at": "2026-06-10T19:21:41.989Z"
+        },
+        {
+          "id": "B2",
+          "role": "dev",
+          "model": "Qwen/Qwen3.7-Max",
+          "status": "done",
+          "task": "Design skill registration definitions following the Manus Skills pattern for 3 organs of a multi-agent system: mouth (broadcast message to agent inbox: inputs agent/message/prefix, outputs message_id/delivered_at/inbox_size), oracle (knowledge search: inputs query/limit, outputs results[]/search_time_ms), verifier (test runner: inputs test_suite/tests[], outputs passed/failed/total/pass_rate/failures[]). Output a single JSON object: {\"skills\": [ {\"id\", \"name\", \"description\", \"inputs\": {<field>: {\"type\", \"required\", \"default?\"}}, \"outputs\": {<field>: {\"type\"}}, \"errors\": [{\"code\", \"when\"}］} x3 ]}. Use proper JSON (no ］, use ]). Output ONLY JSON, no markdown fences.",
+          "output": "ψ\\outbox\\cc-team\\B-B2-dev.md",
+          "finished_at": "2026-06-10T19:22:38.173Z"
+        },
+        {
+          "id": "B3",
+          "role": "test",
+          "model": "deepseek/deepseek-v4-flash",
+          "status": "done",
+          "task": "Write a complete Node.js test file manus-wrapper.test.js using node:test and node:assert (no external deps) for a module ../limbs/manus-wrapper.js exporting generateRequestId, wrapOk, wrapErr, withRequestId. Tests: (1) request ids unique across 1000 calls and match /^req_/, (2) wrapOk shape exact, (3) wrapErr shape exact, (4) withRequestId passes through return value wrapped in ok envelope, (5) withRequestId converts thrown Error into {ok:false,...} with same request_id, (6) async function support. Output ONLY JavaScript, no markdown fences.",
+          "output": "ψ\\outbox\\cc-team\\B-B3-test.md",
+          "finished_at": "2026-06-10T19:22:51.512Z"
+        },
+        {
+          "id": "B4",
+          "role": "test",
+          "model": "zai-org/GLM-5.1",
+          "status": "done",
+          "task": "Write a webhook handler specification (markdown, Thai) for task-completion webhooks in a multi-agent system following the Manus pattern. Endpoint: POST /webhooks/manus/:event with body {request_id, task_id, project_id, status, data, timestamp}. Spec sections: (1) signature validation flow, (2) event types table (task:completed, task:failed, input:required) with required actions, (3) error cases table: bad signature 401, unknown event 400, replayed request_id 409, oversized body 413, handler crash 500 — each with response body and retry semantics, (4) idempotency strategy, (5) 5 acceptance criteria. Concise, implementation-ready.",
+          "output": "ψ\\outbox\\cc-team\\B-B4-test.md",
+          "finished_at": "2026-06-10T19:23:49.203Z"
+        },
+        {
+          "id": "B5",
+          "role": "test",
+          "model": "MiniMaxAI/MiniMax-M3",
+          "status": "done",
+          "task": "Write an end-to-end integration test plan (markdown, Thai) for: agent task submitted -> skill executes (mouth broadcast writes file to /tmp/manusat-bus/<agent>/) -> webhook fires on completion -> requesting agent receives notification. Sections: (1) test environment setup steps, (2) 6 E2E scenarios (happy path, skill error, webhook endpoint down, duplicate request_id, concurrent 10 tasks, bus directory missing) each with given/when/then, (3) verification commands (bash one-liners), (4) pass criteria. Implementation-ready, concise.",
+          "output": "ψ\\outbox\\cc-team\\B-B5-test.md",
+          "finished_at": "2026-06-10T19:24:27.302Z"
+        }
+      ]
+    }
+  ]
+}
