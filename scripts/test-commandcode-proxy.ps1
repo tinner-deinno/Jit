@@ -55,7 +55,8 @@ try {
 
 # ── Test 4: Streaming SSE ────────────────────────────────────────────
 $body = @{
-    model = $Model; max_tokens = 32; stream = $true
+    # reasoning models (deepseek) spend tokens on thinking first — give headroom
+    model = $Model; max_tokens = 256; stream = $true
     messages = @(@{ role = "user"; content = "Reply with exactly: STREAM_OK" })
 } | ConvertTo-Json -Depth 5
 try {
