@@ -32,12 +32,14 @@ function run(command, args, options) {
 }
 
 function readJson(file) {
-  return JSON.parse(fs.readFileSync(path.join(ROOT, file), 'utf8'));
+  const raw = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  return JSON.parse(raw.charCodeAt(0) === 0xFEFF ? raw.slice(1) : raw);
 }
 
 function readJsonPath(file, fallback) {
   try {
-    return JSON.parse(fs.readFileSync(file, 'utf8'));
+    const raw = fs.readFileSync(file, 'utf8');
+    return JSON.parse(raw.charCodeAt(0) === 0xFEFF ? raw.slice(1) : raw);
   } catch (_) {
     return fallback;
   }
