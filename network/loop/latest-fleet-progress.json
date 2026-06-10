@@ -1,42 +1,46 @@
 {
-  "runId": "fleet-batch-2026-06-08T10-05-16-144Z",
-  "goal": "Verify Thai GeoTool integration: Query 'กรุงเทพมหานคร' and 'เชียงใหม่'. Verify if the results match the provincial data in limbs/thai-geo.js (e.g., BKK 10200, CNX 60000). Give a confidence score.",
-  "updatedAt": "2026-06-08T10:05:50.401Z",
-  "label": "complete",
+  "runId": "fleet-batch-2026-06-10T16-51-11-872Z",
+  "goal": "Harden Jit Mother and innomcp tonight: find concrete risks, propose the next safe fix, and keep evidence concise.",
+  "updatedAt": "2026-06-10T16:52:25.907Z",
+  "label": "running",
   "summary": {
-    "runId": "fleet-batch-2026-06-08T10-05-16-144Z",
-    "goal": "Verify Thai GeoTool integration: Query 'กรุงเทพมหานคร' and 'เชียงใหม่'. Verify if the results match the provincial data in limbs/thai-geo.js (e.g., BKK 10200, CNX 60000). Give a confidence score.",
-    "count": 10,
-    "completed": 10,
-    "pending": 0,
-    "ok": 10,
+    "runId": "fleet-batch-2026-06-10T16-51-11-872Z",
+    "goal": "Harden Jit Mother and innomcp tonight: find concrete risks, propose the next safe fix, and keep evidence concise.",
+    "count": 84,
+    "completed": 32,
+    "pending": 52,
+    "ok": 32,
     "fail": 0,
     "concurrency": 8,
-    "durationMs": 34135,
+    "durationMs": 74034,
     "notifyEvery": 8,
     "byBackend": {
       "thaillm": {
-        "total": 10,
-        "ok": 10,
+        "total": 32,
+        "ok": 32,
         "fail": 0,
         "models": {
-          "openthaigpt-thaillm-8b-instruct-v7.2": 3,
-          "pathumma-thaillm-qwen3-8b-think-3.0.0": 3,
-          "typhoon-s-thaillm-8b-instruct": 2,
-          "thalle-0.2-thaillm-8b-fa": 2
+          "openthaigpt-thaillm-8b-instruct-v7.2": 8,
+          "pathumma-thaillm-qwen3-8b-think-3.0.0": 8,
+          "typhoon-s-thaillm-8b-instruct": 9,
+          "thalle-0.2-thaillm-8b-fa": 7
         },
-        "workers": 10,
-        "avgLatencyMs": 10191
+        "workers": 32,
+        "avgLatencyMs": 8147
       }
     },
     "roster": {
-      "plannedWorkers": 10,
-      "completedWorkers": 10,
-      "uniquePersonas": 10,
+      "plannedWorkers": 84,
+      "completedWorkers": 32,
+      "uniquePersonas": 19,
       "perspectives": {
-        "coordinator": 8,
-        "analyst": 1,
-        "verifier": 1
+        "coordinator": 19,
+        "analyst": 17,
+        "verifier": 16,
+        "executor": 16,
+        "critic": 4,
+        "scribe": 4,
+        "observer": 8
       },
       "sampleWorkers": [
         "agent-commandcode-coordinator-01",
@@ -48,7 +52,9 @@
         "chamu-verifier-01",
         "gemma4-31b-cloud-coordinator-01",
         "innova-coordinator-01",
-        "innova-bot-coordinator-01"
+        "innova-bot-coordinator-01",
+        "jit-coordinator-01",
+        "jit-claudecode-coordinator-01"
       ]
     },
     "proof": {
@@ -60,9 +66,7 @@
       "selectedLanes": [
         "thaillm"
       ],
-      "requestedLanes": [
-        "thaillm"
-      ],
+      "requestedLanes": [],
       "excludedLanes": [],
       "backendLimits": {
         "ollama_mdes": 1,
@@ -71,21 +75,24 @@
         "ollama_local": 2,
         "copilot": 1,
         "openai": 1,
+        "openclaude": 1,
         "innova_bot": 1,
         "commandcode": 2
       }
     }
   },
-  "latest": null,
-  "notify": {
-    "discordSent": false,
-    "innovaSent": {
-      "ok": true
-    }
+  "latest": {
+    "id": 35,
+    "workerId": "mue-executor-02",
+    "agent": "mue",
+    "perspective": "executor",
+    "backend": "thaillm",
+    "model": "typhoon-s-thaillm-8b-instruct",
+    "ok": true,
+    "latencyMs": 849,
+    "error": "",
+    "reply": "Risk: 100% chance of data corruption if Jit Mother worker executes unverified code during innomcp tonight due to missing input validation (confidence: 100). Action: Pause innomcp execution until input validation layer is"
   },
-  "artifacts": {
-    "dir": "network/artifacts/fleet-batch-2026-06-08T10-05-16-144Z",
-    "summaryJson": "network/artifacts/fleet-batch-2026-06-08T10-05-16-144Z/summary.json",
-    "summaryMd": "network/artifacts/fleet-batch-2026-06-08T10-05-16-144Z/summary.md"
-  }
+  "notify": null,
+  "artifacts": null
 }
