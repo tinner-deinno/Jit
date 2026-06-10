@@ -1,22 +1,14 @@
 {
-  "probed_at_ms": 1781110346194,
+  "probed_at_ms": 1781115619545,
   "timeout_ms": 35000,
-  "full_probe": true,
+  "full_probe": false,
   "probed_backends": [
-    "ollama_mdes",
-    "ollama_local",
-    "ollama_cloud",
+    "commandcode",
     "thaillm",
-    "copilot",
-    "openai",
-    "openclaude",
-    "innova_bot",
-    "commandcode"
+    "ollama_mdes"
   ],
   "usable": [
     "commandcode",
-    "innova_bot",
-    "ollama_local",
     "ollama_mdes",
     "thaillm"
   ],
@@ -31,10 +23,10 @@
     "ollama_mdes": {
       "backend": "ollama_mdes",
       "status": "ALIVE",
-      "ms": 7367,
+      "ms": 5238,
       "served_by": "ollama_mdes",
       "sample": "OK",
-      "probed_at_ms": 1781110346194
+      "probed_at_ms": 1781115619545
     },
     "ollama_local": {
       "backend": "ollama_local",
@@ -54,10 +46,10 @@
     "thaillm": {
       "backend": "thaillm",
       "status": "ALIVE",
-      "ms": 1731,
+      "ms": 554,
       "served_by": "thaillm",
       "sample": "<think> Okay, the user wants me to reply with exactly \"OK\". ",
-      "probed_at_ms": 1781110346194
+      "probed_at_ms": 1781115619545
     },
     "copilot": {
       "backend": "copilot",
@@ -91,10 +83,10 @@
     "commandcode": {
       "backend": "commandcode",
       "status": "ALIVE",
-      "ms": 4052,
+      "ms": 1930,
       "served_by": "commandcode",
       "sample": "OK",
-      "probed_at_ms": 1781110346194
+      "probed_at_ms": 1781115619545
     }
   }
 }
