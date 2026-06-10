@@ -52,8 +52,13 @@ OLLAMA_LOCAL_URL   = os.environ.get("OLLAMA_LOCAL_URL", "http://127.0.0.1:11434"
 OLLAMA_LOCAL_MODEL = os.environ.get("OLLAMA_LOCAL_MODEL", "qwen2.5-coder:7b")
 OLLAMA_LOCAL_TOKEN = os.environ.get("OLLAMA_LOCAL_TOKEN", "")
 
+# CommandCode (http://api.commandcode.ai)
+COMMANDCODE_API_KEY  = os.environ.get("COMMANDCODE_API_KEY", "") or os.environ.get("CC_KEY", "")
+COMMANDCODE_BASE_URL = os.environ.get("COMMANDCODE_BASE_URL", "https://api.commandcode.ai/provider/v1")
+COMMANDCODE_MODEL    = os.environ.get("COMMANDCODE_MODEL", "deepseek/deepseek-v4-pro")
+
 # Backend order — first available wins, rotates on quota error
-_BACKEND_ORDER_ENV = os.environ.get("MULTI_BACKEND_ORDER", "ollama,copilot,thaillm,local,openai")
+_BACKEND_ORDER_ENV = os.environ.get("MULTI_BACKEND_ORDER", "ollama,commandcode,copilot,thaillm,local,openai")
 BACKEND_ORDER = [b.strip() for b in _BACKEND_ORDER_ENV.split(",") if b.strip()]
 
 # ─── Copilot token auto-detect ────────────────────────────────────────
@@ -188,8 +193,11 @@ def _init_backends():
             print(f"[MULTI] ✓ Local Ollama backend ({len(local_models)} models: {', '.join(local_models[:3])}...)", flush=True)
         else:
             print("[MULTI] ○ Local Ollama: running but no models installed", flush=True)
-    except Exception:
-        print(f"[MULTI] ○ Local Ollama: not reachable at {OLLAMA_LOCAL_URL}", flush=True)
+    if COMMANDCODE_API_KEY:
+        available.append("commandcode")
+        print(f"[MULTI] ✓ CommandCode backend (model: {COMMANDCODE_MODEL})", flush=True)
+    else:
+        print("[MULTI] ○ CommandCode: no COMMANDCODE_API_KEY", flush=True)
 
     ordered = [b for b in BACKEND_ORDER if b in available]
     if not ordered:
@@ -566,12 +574,32 @@ def _call_local(body: dict, model_override: str = None) -> dict:
         return ollama_to_anthropic(raw, f"local/{model}")
 
 
+def _call_commandcode(body: dict, model_override: str = None) -> dict:
+    """Call CommandCode API"""
+    model    = model_override or COMMANDCODE_MODEL
+    oai_body = anthropic_to_openai(body, model)
+    payload  = json.dumps(oai_body).encode()
+    req = urllib.request.Request(
+        f"{COMMANDCODE_BASE_URL}/chat/completions",
+        data=payload,
+        headers={
+            "Content-Type":  "application/json",
+            "Authorization": f"Bearer {COMMANDCODE_API_KEY}",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=180) as resp:
+        raw = json.loads(resp.read())
+        return openai_to_anthropic(raw, f"commandcode/{model}")
+
+
 _BACKEND_CALLERS = {
-    "openai":   _call_openai,
-    "copilot":  _call_copilot,
-    "ollama":   _call_ollama,
-    "thaillm":  _call_thaillm,
-    "local":    _call_local,
+    "openai":      _call_openai,
+    "copilot":     _call_copilot,
+    "ollama":      _call_ollama,
+    "thaillm":     _call_thaillm,
+    "local":       _call_local,
+    "commandcode": _call_commandcode,
 }
 
 # ─── Backend rotation ─────────────────────────────────────────────────
@@ -599,14 +627,16 @@ def _current_backend() -> str:
 def _parse_model_prefix(raw_model: str):
     """
     Returns (backend, clean_model).
-    Prefixes: copilot/, mdes/, thaillm/, local/, openai/
+    Prefixes: copilot/, mdes/, thaillm/, local/, openai/, commandcode/, cc/
     """
     for prefix, backend in (
-        ("copilot/",  "copilot"),
-        ("mdes/",     "ollama"),
-        ("thaillm/",  "thaillm"),
-        ("local/",    "local"),
-        ("openai/",   "openai"),
+        ("copilot/",     "copilot"),
+        ("mdes/",        "ollama"),
+        ("thaillm/",     "thaillm"),
+        ("local/",       "local"),
+        ("openai/",      "openai"),
+        ("commandcode/", "commandcode"),
+        ("cc/",          "commandcode"),
     ):
         if raw_model.lower().startswith(prefix):
             return backend, raw_model[len(prefix):]
@@ -723,6 +753,13 @@ class ProxyHandler(BaseHTTPRequestHandler):
             })
         elif "/v1/models" in self.path:
             models = [
+                # CommandCode
+                {"id": "commandcode/deepseek/deepseek-v4-pro",   "object": "model"},
+                {"id": "commandcode/deepseek/deepseek-v4-flash", "object": "model"},
+                {"id": "commandcode/qwen/qwen3.7-max",          "object": "model"},
+                {"id": "commandcode/minimax/minimax-m3",        "object": "model"},
+                {"id": "cc/deepseek/deepseek-v4-pro",           "object": "model"},
+                {"id": "cc/deepseek/deepseek-v4-flash",         "object": "model"},
                 # MDES Ollama
                 {"id": "mdes/gemma4:26b",           "object": "model"},
                 {"id": "mdes/qwen3.5:9b",            "object": "model"},
@@ -880,6 +917,7 @@ def banner():
     avail = " + ".join(_available_backends) if _available_backends else "NONE"
     thaillm_stat = ("✓ " + THAILLM_MODEL) if THAILLM_TOKEN else "✗ no THAILLM_TOKEN"
     local_stat   = "✓ local Ollama" if "local" in _available_backends else "✗ not reachable"
+    cc_stat      = ("✓ " + COMMANDCODE_MODEL) if COMMANDCODE_API_KEY else "✗ no key"
     print(f"""
 ╔══════════════════════════════════════════════════════════════╗
 ║  🤖 Multi-Backend Proxy (multi-proxy.py)                    ║
@@ -888,6 +926,7 @@ def banner():
 ║  Active       : {avail:<46} ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  MDES/Ollama  : {"✓ " + OLLAMA_MODEL if OLLAMA_TOKEN else "✗ no OLLAMA_TOKEN":<44} ║
+║  CommandCode  : {cc_stat:<44} ║
 ║  Copilot      : {"✓ " + COPILOT_MODEL if _copilot_bearer else "✗ no token":<44} ║
 ║  ThaiLLM      : {thaillm_stat:<44} ║
 ║  Local Ollama : {local_stat:<44} ║
