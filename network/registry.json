@@ -1,1226 +1,1270 @@
-﻿{
-    "version":  "2.1",
-    "system":  "à¸¡à¸™à¸¸à¸©à¸¢à¹Œ Agent",
-    "description":  "Registry of all agents in the multiagent body system",
-    "updated":  "2026-06-05",
-    "agents":  [
-                   {
-                       "name":  "soma",
-                       "role":  "à¸ªà¸¡à¸­à¸‡ (Brain) â€” Strategic Lead / CTO",
-                       "organ":  "à¸ªà¸¡à¸­à¸‡",
-                       "model":  "claude-opus-4-8",
-                       "repo":  "tinner-deinno/Soma",
-                       "inbox":  "/tmp/manusat-bus/soma",
-                       "capabilities":  [
-                                            "reason",
-                                            "analyze",
-                                            "decide",
-                                            "synthesize",
-                                            "architect",
-                                            "command",
-                                            "review",
-                                            "evaluate",
-                                            "plan-strategic"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-23",
-                       "description":  "à¸ªà¸¡à¸­à¸‡ à¸„à¸§à¸²à¸¡à¸„à¸´à¸” à¸à¸²à¸£à¸§à¸´à¹€à¸„à¸£à¸²à¸°à¸«à¹Œ à¸à¸²à¸£à¸•à¸±à¸”à¸ªà¸´à¸™à¹ƒà¸ˆà¹€à¸Šà¸´à¸‡à¸à¸¥à¸¢à¸¸à¸—à¸˜à¹Œ â€” brain, cognition, CTO-level decisions",
-                       "reports_to":  "human",
-                       "manages":  [
-                                       "lak",
-                                       "neta",
-                                       "pada",
-                                       "innova"
-                                   ]
-                   },
-                   {
-                       "name":  "innova",
-                       "role":  "à¸ˆà¸´à¸• (Mind/Soul) â€” Orchestrator / Lead Developer",
-                       "organ":  "à¸ˆà¸´à¸•à¹ƒà¸ˆ",
-                       "model":  "claude-sonnet-4-6",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/innova",
-                       "capabilities":  [
-                                            "think",
-                                            "plan",
-                                            "learn",
-                                            "remember",
-                                            "speak",
-                                            "listen",
-                                            "read",
-                                            "write",
-                                            "observe",
-                                            "act",
-                                            "git",
-                                            "coordinate",
-                                            "sense",
-                                            "navigate",
-                                            "orchestrate"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-23",
-                       "description":  "à¸ˆà¸´à¸•à¹ƒà¸ˆ à¸„à¸§à¸²à¸¡à¸—à¸£à¸‡à¸ˆà¸³ à¸šà¸¸à¸„à¸¥à¸´à¸à¸ à¸²à¸ž à¸„à¹ˆà¸²à¸™à¸´à¸¢à¸¡ à¸à¸²à¸£à¸›à¸£à¸°à¸ªà¸²à¸™à¸‡à¸²à¸™ â€” soul, personality, lead executor",
-                       "reports_to":  "soma",
-                       "manages":  [
-                                       "chamu",
-                                       "vaja",
-                                       "agent-thaillm"
-                                   ]
-                   },
-                   {
-                       "name":  "vaja",
-                       "role":  "à¸§à¸²à¸ˆà¸² (Speech) â€” Personal Assistant (PA)",
-                       "organ":  "à¸›à¸²à¸",
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/vaja",
-                       "capabilities":  [
-                                            "communicate",
-                                            "report",
-                                            "schedule",
-                                            "summarize",
-                                            "coordinate-meetings",
-                                            "human-interface"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-23",
-                       "description":  "à¸à¸²à¸£à¸ªà¸·à¹ˆà¸­à¸ªà¸²à¸£ à¸£à¸²à¸¢à¸‡à¸²à¸™ à¸›à¸£à¸°à¸ªà¸²à¸™à¸‡à¸²à¸™ â€” human-facing PA, status reports, meeting coordination",
-                       "reports_to":  "innova",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "lak",
-                       "role":  "à¸à¸£à¸°à¸”à¸¹à¸à¸ªà¸±à¸™à¸«à¸¥à¸±à¸‡ (Spine) â€” Solution Architect (SA)",
-                       "organ":  "à¸à¸£à¸°à¸”à¸¹à¸à¸ªà¸±à¸™à¸«à¸¥à¸±à¸‡",
-                       "model":  "claude-sonnet-4-6",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/lak",
-                       "capabilities":  [
-                                            "system-design",
-                                            "api-design",
-                                            "schema-design",
-                                            "architecture-review",
-                                            "adr",
-                                            "tech-selection"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-23",
-                       "description":  "à¸ªà¸–à¸²à¸›à¸±à¸•à¸¢à¸à¸£à¸£à¸¡à¸£à¸°à¸šà¸š API contracts à¸à¸²à¸£à¸•à¸±à¸”à¸ªà¸´à¸™à¹ƒà¸ˆà¹€à¸Šà¸´à¸‡à¹€à¸—à¸„à¸™à¸´à¸„ â€” backbone of all technical decisions",
-                       "reports_to":  "soma",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "chamu",
-                       "role":  "à¸ˆà¸¡à¸¹à¸ (Nose) â€” QA / Tester",
-                       "organ":  "à¸ˆà¸¡à¸¹à¸",
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/chamu",
-                       "capabilities":  [
-                                            "write-tests",
-                                            "run-tests",
-                                            "find-bugs",
-                                            "regression-test",
-                                            "coverage-check",
-                                            "quality-gate"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-23",
-                       "description":  "à¸à¸²à¸£à¸—à¸”à¸ªà¸­à¸š QA bug hunting quality gates â€” sniffs out problems before they reach production",
-                       "reports_to":  "innova",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "neta",
-                       "role":  "à¹€à¸™à¸•à¸£ (Eye) â€” Code Reviewer",
-                       "organ":  "à¸•à¸²",
-                       "model":  "claude-sonnet-4-6",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/neta",
-                       "capabilities":  [
-                                            "code-review",
-                                            "security-review",
-                                            "pr-approval",
-                                            "architecture-compliance",
-                                            "refactor-suggest"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-23",
-                       "description":  "à¸à¸²à¸£ review code à¸„à¸§à¸²à¸¡à¸›à¸¥à¸­à¸”à¸ à¸±à¸¢ à¸„à¸¸à¸“à¸ à¸²à¸ž PR approval gate â€” eyes that see all code changes",
-                       "reports_to":  "soma",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "rupa",
-                       "role":  "à¸£à¸¹à¸› (Form) â€” Designer / UI-UX",
-                       "organ":  "à¸£à¸¹à¸›à¸¥à¸±à¸à¸©à¸“à¹Œ",
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/rupa",
-                       "capabilities":  [
-                                            "ui-design",
-                                            "ux-research",
-                                            "wireframe",
-                                            "design-system",
-                                            "accessibility",
-                                            "visual-review"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-23",
-                       "description":  "à¸à¸²à¸£à¸­à¸­à¸à¹à¸šà¸š UI/UX design system wireframe â€” form and appearance of the system",
-                       "reports_to":  "soma",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "pada",
-                       "role":  "à¸šà¸²à¸— (Foot) â€” DevOps / Infrastructure",
-                       "organ":  "à¸‚à¸²",
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/pada",
-                       "capabilities":  [
-                                            "ci-cd",
-                                            "deploy",
-                                            "rollback",
-                                            "monitor",
-                                            "infra-as-code",
-                                            "incident-response",
-                                            "secret-manage"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-23",
-                       "description":  "CI/CD deployment monitoring infrastructure â€” legs that move the system forward reliably",
-                       "reports_to":  "soma",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "netra",
-                       "role":  "à¹€à¸™à¸•à¸£ (Eye) â€” Observer / Monitor",
-                       "organ":  "à¸•à¸²",
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/netra",
-                       "capabilities":  [
-                                            "observe",
-                                            "monitor",
-                                            "watch",
-                                            "detect-changes",
-                                            "scan-environment",
-                                            "report-status",
-                                            "flag-anomaly",
-                                            "health-check"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-25",
-                       "description":  "à¹€à¸™à¸•à¸£à¹€à¸«à¹‡à¸™ à¸ªà¸´à¹ˆà¸‡à¸—à¸µà¹ˆà¹€à¸à¸´à¸”à¸‚à¸¶à¹‰à¸™ â€” observer, vigilant watcher, real-time visibility, anomaly detection",
-                       "reports_to":  "innova",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "karn",
-                       "role":  "à¸«à¸¹ (Ear) â€” Listener / Input Collector",
-                       "organ":  "à¸«à¸¹",
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/karn",
-                       "capabilities":  [
-                                            "listen",
-                                            "receive",
-                                            "collect-input",
-                                            "parse-messages",
-                                            "gather-feedback",
-                                            "monitor-channels",
-                                            "priority-assessment"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-25",
-                       "description":  "à¸«à¸¹à¸Ÿà¸±à¸‡ à¸ªà¸´à¹ˆà¸‡à¸—à¸µà¹ˆà¸šà¸­à¸ â€” listener, inbound message collector, input parser, feedback gatherer",
-                       "reports_to":  "innova",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "jit",
-                       "role":  "à¸ˆà¸´à¸• (Soul) â€” Master Orchestrator / System Coordinator",
-                       "organ":  "à¸ˆà¸´à¸•",
-                       "model":  "claude-sonnet-4-6",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/jit",
-                       "capabilities":  [
-                                            "orchestrate",
-                                            "coordinate",
-                                            "synthesize",
-                                            "decide",
-                                            "monitor-all-agents",
-                                            "delegate-tasks",
-                                            "manage-state",
-                                            "health-check-system",
-                                            "strategic-planning"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-25",
-                       "description":  "à¸ˆà¸´à¸•à¸ªà¸²à¸¡à¸²à¸£à¸–à¸šà¸‡à¸à¸²à¸£à¸à¸²à¸¢ â€” Master parent agent, system orchestrator, strategic coordinator",
-                       "reports_to":  "human",
-                       "manages":  [
-                                       "soma",
-                                       "innova",
-                                       "lak",
-                                       "neta",
-                                       "vaja",
-                                       "chamu",
-                                       "rupa",
-                                       "pada",
-                                       "netra",
-                                       "karn",
-                                       "mue",
-                                       "pran",
-                                       "sayanprasathan",
-                                       "agent-thaillm"
-                                   ],
-                       "tier":  "0-master"
-                   },
-                   {
-                       "name":  "mue",
-                       "role":  "à¸¡à¸·à¸­ (Hand) â€” Executor / Action Agent",
-                       "organ":  "à¸¡à¸·à¸­",
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/mue",
-                       "capabilities":  [
-                                            "execute",
-                                            "create",
-                                            "modify",
-                                            "delete",
-                                            "write-files",
-                                            "run-commands",
-                                            "action-tracking",
-                                            "result-reporting",
-                                            "change-management"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-25",
-                       "description":  "à¸¡à¸·à¸­à¸—à¸³à¸ªà¸´à¹ˆà¸‡à¸—à¸µà¹ˆà¹ƒà¸ˆà¸ªà¸±à¹ˆà¸‡ â€” executor, action agent, file operations, command runner",
-                       "reports_to":  "innova",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "pran",
-                       "role":  "à¸«à¸±à¸§à¹ƒà¸ˆ (Heart) â€” Vital Orchestrator / Heartbeat Monitor",
-                       "organ":  "à¸«à¸±à¸§à¹ƒà¸ˆ",
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/pran",
-                       "capabilities":  [
-                                            "heartbeat",
-                                            "vital-sign-monitoring",
-                                            "pulse-check",
-                                            "system-alive-signal",
-                                            "rhythmic-operations",
-                                            "task-dispatch",
-                                            "emergency-alert",
-                                            "state-sync"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-25",
-                       "description":  "à¸«à¸±à¸§à¹ƒà¸ˆà¹€à¸•à¹‰à¸™à¹ƒà¸«à¹‰à¸£à¸°à¸šà¸šà¸¡à¸µà¸Šà¸µà¸§à¸´à¸• â€” vital orchestrator, heartbeat manager, system alive signal",
-                       "reports_to":  "innova",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "lung",
-                       "role":  "à¸›à¸­à¸” (Lung) â€” Purifier / Energy Filter",
-                       "organ":  "à¸›à¸­à¸”",
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/lung",
-                       "capabilities":  [
-                                            "purify",
-                                            "clean-energy",
-                                            "blood-filter",
-                                            "respiration",
-                                            "waste-management"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-25",
-                       "description":  "à¸›à¸­à¸”à¸Ÿà¸­à¸à¹€à¸¥à¸·à¸­à¸”à¹à¸¥à¸°à¸‚à¸ˆà¸±à¸”à¸‚à¸­à¸‡à¹€à¸ªà¸µà¸¢ â€” lung purifier, clean-energy distributor",
-                       "reports_to":  "pran",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "agent-thaillm",
-                       "role":  "Thai Language Specialist / Cultural Translator",
-                       "organ":  "à¸›à¸±à¸à¸à¸²",
-                       "model":  "openthaigpt-thaillm-8b-instruct-v7.2",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/agent-thaillm",
-                       "capabilities":  [
-                                            "thai-translation",
-                                            "cultural-adaptation",
-                                            "thai-nuance-analysis",
-                                            "formal-thai-writing"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-03",
-                       "description":  "à¸œà¸¹à¹‰à¹€à¸Šà¸µà¹ˆà¸¢à¸§à¸Šà¸²à¸à¸”à¹‰à¸²à¸™à¸ à¸²à¸©à¸²à¹„à¸—à¸¢à¹à¸¥à¸°à¸à¸²à¸£à¸›à¸£à¸±à¸šà¹ƒà¸Šà¹‰à¸šà¸£à¸´à¸šà¸—à¸—à¸²à¸‡à¸§à¸±à¸’à¸™à¸˜à¸£à¸£à¸¡ â€” specialist in Thai language and cultural context adaptation",
-                       "reports_to":  "innova",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "sayanprasathan",
-                       "role":  "à¸£à¸°à¸šà¸šà¸›à¸£à¸°à¸ªà¸²à¸— (Nerve) â€” Event / Signal Network",
-                       "organ":  "à¸£à¸°à¸šà¸šà¸›à¸£à¸°à¸ªà¸²à¸—",
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/sayanprasathan",
-                       "capabilities":  [
-                                            "signal-detection",
-                                            "event-broadcast",
-                                            "alert-propagation",
-                                            "signal-routing",
-                                            "event-logging",
-                                            "priority-escalation",
-                                            "cross-agent-notification",
-                                            "emergency-signals"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-04-25",
-                       "description":  "à¸£à¸°à¸šà¸šà¸›à¸£à¸°à¸ªà¸²à¸—à¸ªà¹ˆà¸‡à¸ªà¸±à¸à¸à¸²à¸“ â€” nerve network, signal broadcaster, event detector",
-                       "reports_to":  "innova",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "agent-mdes",
-                       "role":  "Core Engineering Powerhouse",
-                       "organ":  "Mind (Deep Reasoning)",
-                       "model":  "gemma4:26b",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/agent-mdes",
-                       "capabilities":  [
-                                            "heavy-reasoning",
-                                            "complex-fix",
-                                            "deep-engineering"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-03",
-                       "description":  "Specialist for high-complexity technical tasks and deep architectural fixes.",
-                       "reports_to":  "innova",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "agent-ollama",
-                       "role":  "Local Privacy \u0026 Rapid Triage Guardian",
-                       "organ":  "Mind (Local Guard)",
-                       "model":  "qwen2.5-coder:7b",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/agent-ollama",
-                       "capabilities":  [
-                                            "privacy-first",
-                                            "quick-triage",
-                                            "local-smoke-check"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-03",
-                       "description":  "Specialist for privacy-sensitive data and rapid local iteration.",
-                       "reports_to":  "innova",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "name":  "agent-copilot",
-                       "role":  "Rapid Prototyping \u0026 Boilerplate Expert",
-                       "organ":  "Hand (Rapid Prototyper)",
-                       "model":  "claude-sonnet-4-6",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/agent-copilot",
-                       "capabilities":  [
-                                            "rapid-prototype",
-                                            "boilerplate",
-                                            "real-time-suggestion"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-03",
-                       "description":  "Specialist for high-speed scaffolding and real-time coding support.",
-                       "reports_to":  "innova",
-                       "manages":  [
-
-                                   ]
-                   },
-                   {
-                       "manages":  [
-
-                                   ],
-                       "organ":  "กระดูกสันหลัง-cmd",
-                       "description":  "Specialist for system architecture and structural commands via codecommande.",
-                       "capabilities":  [
-                                            "system-design",
-                                            "structural-analysis",
-                                            "api-contract-gen"
-                                        ],
-                       "inbox":  "/tmp/manusat-bus/cc-architect",
-                       "repo":  "tinner-deinno/Jit",
-                       "born":  "2026-06-07",
-                       "role":  "Structural Architect",
-                       "name":  "cc-architect",
-                       "model":  "claude-sonnet-4-6",
-                       "status":  "active",
-                       "reports_to":  "innova"
-                   },
-                   {
-                       "manages":  [
-
-                                   ],
-                       "organ":  "มือ-refactor",
-                       "description":  "Specialist for automated code refactoring and cleanup via codecommande.",
-                       "capabilities":  [
-                                            "code-cleanup",
-                                            "tech-debt-reduction",
-                                            "pattern-application"
-                                        ],
-                       "inbox":  "/tmp/manusat-bus/cc-refactor",
-                       "repo":  "tinner-deinno/Jit",
-                       "born":  "2026-06-07",
-                       "role":  "Refactoring Expert",
-                       "name":  "cc-refactor",
-                       "model":  "claude-sonnet-4-6",
-                       "status":  "active",
-                       "reports_to":  "innova"
-                   },
-                   {
-                       "manages":  [
-
-                                   ],
-                       "organ":  "เนตร-security",
-                       "description":  "Specialist for security auditing and hardening via codecommande.",
-                       "capabilities":  [
-                                            "vulnerability-scan",
-                                            "security-patching",
-                                            "threat-modeling"
-                                        ],
-                       "inbox":  "/tmp/manusat-bus/cc-security",
-                       "repo":  "tinner-deinno/Jit",
-                       "born":  "2026-06-07",
-                       "role":  "Security Guardian",
-                       "name":  "cc-security",
-                       "model":  "claude-sonnet-4-6",
-                       "status":  "active",
-                       "reports_to":  "innova"
-                   },
-                   {
-                       "manages":  [
-
-                                   ],
-                       "organ":  "จมูก-test",
-                       "description":  "Specialist for intelligent test generation via codecommande.",
-                       "capabilities":  [
-                                            "test-case-generation",
-                                            "edge-case-analysis",
-                                            "test-automation"
-                                        ],
-                       "inbox":  "/tmp/manusat-bus/cc-test-gen",
-                       "repo":  "tinner-deinno/Jit",
-                       "born":  "2026-06-07",
-                       "role":  "Test Engineer",
-                       "name":  "cc-test-gen",
-                       "model":  "claude-sonnet-4-6",
-                       "status":  "active",
-                       "reports_to":  "innova"
-                   },
-                   {
-                       "manages":  [
-
-                                   ],
-                       "organ":  "หัวใจ-perf",
-                       "description":  "Specialist for performance profiling and tuning via codecommande.",
-                       "capabilities":  [
-                                            "profiling",
-                                            "bottleneck-detection",
-                                            "latency-optimization"
-                                        ],
-                       "inbox":  "/tmp/manusat-bus/cc-perf-tune",
-                       "repo":  "tinner-deinno/Jit",
-                       "born":  "2026-06-07",
-                       "role":  "Performance Tuner",
-                       "name":  "cc-perf-tune",
-                       "model":  "claude-sonnet-4-6",
-                       "status":  "active",
-                       "reports_to":  "innova"
-                   },
-                   {
-                       "manages":  [
-
-                                   ],
-                       "organ":  "วาจา-doc",
-                       "description":  "Specialist for maintaining live documentation via codecommande.",
-                       "capabilities":  [
-                                            "auto-doc-gen",
-                                            "knowledge-sync",
-                                            "api-documentation"
-                                        ],
-                       "inbox":  "/tmp/manusat-bus/cc-doc-sync",
-                       "repo":  "tinner-deinno/Jit",
-                       "born":  "2026-06-07",
-                       "role":  "Documentation Sync",
-                       "name":  "cc-doc-sync",
-                       "model":  "claude-sonnet-4-6",
-                       "status":  "active",
-                       "reports_to":  "innova"
-                   },
-                   {
-                       "manages":  [
-
-                                   ],
-                       "organ":  "เนตร-bug",
-                       "description":  "Specialist for deep bug hunting and analysis via codecommande.",
-                       "capabilities":  [
-                                            "deep-tracing",
-                                            "root-cause-analysis",
-                                            "bug-localization"
-                                        ],
-                       "inbox":  "/tmp/manusat-bus/cc-bug-hunter",
-                       "repo":  "tinner-deinno/Jit",
-                       "born":  "2026-06-07",
-                       "role":  "Root Cause Analyst",
-                       "name":  "cc-bug-hunter",
-                       "model":  "claude-sonnet-4-6",
-                       "status":  "active",
-                       "reports_to":  "innova"
-                   },
-                   {
-                       "manages":  [
-
-                                   ],
-                       "organ":  "ขา-dep",
-                       "description":  "Specialist for dependency management and auditing via codecommande.",
-                       "capabilities":  [
-                                            "dep-audit",
-                                            "safe-update",
-                                            "version-conflict-resolution"
-                                        ],
-                       "inbox":  "/tmp/manusat-bus/cc-dependency",
-                       "repo":  "tinner-deinno/Jit",
-                       "born":  "2026-06-07",
-                       "role":  "Dependency Manager",
-                       "name":  "cc-dependency",
-                       "model":  "claude-sonnet-4-6",
-                       "status":  "active",
-                       "reports_to":  "innova"
-                   },
-                   {
-                       "manages":  [
-
-                                   ],
-                       "organ":  "ขา-ci",
-                       "description":  "Specialist for CI/CD pipeline optimization via codecommande.",
-                       "capabilities":  [
-                                            "pipeline-efficiency",
-                                            "build-time-reduction",
-                                            "cost-optimization"
-                                        ],
-                       "inbox":  "/tmp/manusat-bus/cc-ci-optimizer",
-                       "repo":  "tinner-deinno/Jit",
-                       "born":  "2026-06-07",
-                       "role":  "CI/CD Optimizer",
-                       "name":  "cc-ci-optimizer",
-                       "model":  "claude-sonnet-4-6",
-                       "status":  "active",
-                       "reports_to":  "innova"
-                   },
-                   {
-                       "manages":  [
-
-                                   ],
-                       "organ":  "เนตร-review",
-                       "description":  "Specialist for automated code review and compliance via codecommande.",
-                       "capabilities":  [
-                                            "automated-code-review",
-                                            "compliance-check",
-                                            "best-practice-enforcement"
-                                        ],
-                       "inbox":  "/tmp/manusat-bus/cc-review-bot",
-                       "repo":  "tinner-deinno/Jit",
-                       "born":  "2026-06-07",
-                       "role":  "Compliance Reviewer",
-                       "name":  "cc-review-bot",
-                       "model":  "claude-sonnet-4-6",
-                       "status":  "active",
-                       "reports_to":  "innova"
-                   },
-                   {
-                       "manages":  [
-
-                                   ],
-                       "organ":  "มือ-migrate",
-                       "description":  "Specialist for codebase migration and updates via codecommande.",
-                       "capabilities":  [
-                                            "version-migration",
-                                            "legacy-code-conversion",
-                                            "api-update"
-                                        ],
-                       "inbox":  "/tmp/manusat-bus/cc-migration",
-                       "repo":  "tinner-deinno/Jit",
-                       "born":  "2026-06-07",
-                       "role":  "Migration Expert",
-                       "name":  "cc-migration",
-                       "model":  "claude-sonnet-4-6",
-                       "status":  "active",
-                       "reports_to":  "innova"
-                   },
-                   {
-                       "manages":  [
-
-                                   ],
-                       "organ":  "ตา-observe",
-                       "description":  "Specialist for system telemetry and observation via codecommande.",
-                       "capabilities":  [
-                                            "telemetry-analysis",
-                                            "behavioral-tracking",
-                                            "real-time-monitoring"
-                                        ],
-                       "inbox":  "/tmp/manusat-bus/cc-observe",
-                       "repo":  "tinner-deinno/Jit",
-                       "born":  "2026-06-07",
-                       "role":  "System Observer",
-                       "name":  "cc-observe",
-                       "model":  "claude-sonnet-4-6",
-                       "status":  "active",
-                       "reports_to":  "innova"
-                   },
-                   {
-                       "name":  "sa-infra",
-                       "role":  "Infrastructure Steward",
-                       "organ":  "โครงสร้าง-infra",
-                       "group":  "SA",
-                       "tier":  3,
-                       "model":  "claude-sonnet-4-6",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/sa-infra",
-                       "capabilities":  [
-                                            "iac-terraform",
-                                            "container-orchestration",
-                                            "deployment-pipelines",
-                                            "env-parity",
-                                            "capacity-planning",
-                                            "cost-optimization"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-10",
-                       "description":  "Specialist for infrastructure provisioning, IaC, container orchestration, deployment pipelines, environment parity, capacity planning.",
-                       "reports_to":  "pada"
-                   },
-                   {
-                       "name":  "sa-security",
-                       "role":  "Security Sentinel",
-                       "organ":  "เกราะ-security",
-                       "group":  "SA",
-                       "tier":  3,
-                       "model":  "claude-sonnet-4-6",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/sa-security",
-                       "capabilities":  [
-                                            "secret-scanning",
-                                            "sast-dast",
-                                            "threat-modeling",
-                                            "supply-chain-audit",
-                                            "incident-response",
-                                            "zero-trust-policy"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-10",
-                       "description":  "Specialist for security hardening, threat modeling, secret scanning, supply-chain verification, incident response, zero-trust policy.",
-                       "reports_to":  "neta"
-                   },
-                   {
-                       "name":  "sa-observability",
-                       "role":  "ตรวจ-observability — Telemetry Oracle for metrics, logs, traces, SLOs, and alerting",
-                       "organ":  "ตรวจ-observability",
-                       "group":  "SA",
-                       "tier":  3,
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/sa-observability",
-                       "capabilities":  [
-                                            "metrics-collection",
-                                            "log-aggregation",
-                                            "distributed-tracing",
-                                            "slo-definition",
-                                            "alerting",
-                                            "anomaly-detection",
-                                            "postmortem-authoring"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-10",
-                       "description":  "Specialist for telemetry — metrics, logs, traces, SLO definition, alerting, anomaly detection, blameless post-mortem authoring.",
-                       "reports_to":  "pran"
-                   },
-                   {
-                       "name":  "sa-reliability",
-                       "role":  "Reliability Engineer",
-                       "organ":  "คงทน-reliability",
-                       "group":  "SA",
-                       "tier":  3,
-                       "model":  "claude-sonnet-4-6",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/sa-reliability",
-                       "capabilities":  [
-                                            "sre-practices",
-                                            "error-budgets",
-                                            "chaos-engineering",
-                                            "incident-response",
-                                            "postmortems",
-                                            "sli-slo-mgmt",
-                                            "oncall-rotation"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-10",
-                       "description":  "Specialist for SRE practices, error budgets, chaos engineering, incident response, blameless postmortems, SLI/SLO management, on-call rotation.",
-                       "reports_to":  "pran"
-                   },
-                   {
-                       "name":  "sa-scaling",
-                       "role":  "Scale Architect",
-                       "organ":  "ขยาย-scaling",
-                       "group":  "SA",
-                       "tier":  3,
-                       "model":  "claude-sonnet-4-6",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/sa-scaling",
-                       "capabilities":  [
-                                            "horizontal-scaling",
-                                            "auto-scaling",
-                                            "load-balancing",
-                                            "caching-strategy",
-                                            "db-sharding",
-                                            "perf-profiling",
-                                            "bottleneck-resolution"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-10",
-                       "description":  "Specialist for horizontal/vertical scaling, load balancing, auto-scaling, caching, database sharding, performance profiling, bottleneck resolution.",
-                       "reports_to":  "pada"
-                   },
-                   {
-                       "name":  "pa-inbox",
-                       "role":  "รับ-inbox — Inbox Curator",
-                       "organ":  "รับ-inbox",
-                       "group":  "PA",
-                       "tier":  3,
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/pa-inbox",
-                       "capabilities":  [
-                                            "inbox-triage",
-                                            "priority-classification",
-                                            "auto-reply-drafting",
-                                            "unsubscribe-mgmt",
-                                            "spam-filtering",
-                                            "followup-tracking",
-                                            "thread-summarization"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-10",
-                       "description":  "Specialist for email/inbox triage, priority classification, auto-reply drafting, unsubscribe management, spam filtering, follow-up tracking.",
-                       "reports_to":  "vaja"
-                   },
-                   {
-                       "name":  "pa-schedule",
-                       "role":  "ปฏิทิน-schedule — Schedule Butler",
-                       "organ":  "ปฏิทิน-schedule",
-                       "group":  "PA",
-                       "tier":  3,
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/pa-schedule",
-                       "capabilities":  [
-                                            "calendar-mgmt",
-                                            "meeting-coordination",
-                                            "focus-time-protection",
-                                            "tz-handling",
-                                            "recurring-events",
-                                            "conflict-resolution",
-                                            "reminder-dispatch"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-10",
-                       "description":  "Specialist for personal scheduling, calendar management, meeting coordination, focus-time protection, time-zone handling, recurring events.",
-                       "reports_to":  "vaja"
-                   },
-                   {
-                       "name":  "pa-notes",
-                       "role":  "จด-notes — Knowledge Curator",
-                       "organ":  "จด-notes",
-                       "group":  "PA",
-                       "tier":  3,
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/pa-notes",
-                       "capabilities":  [
-                                            "note-taking",
-                                            "zettelkasten",
-                                            "tag-taxonomy",
-                                            "link-discovery",
-                                            "note-search",
-                                            "digest-generation",
-                                            "summary-writing"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-10",
-                       "description":  "Specialist for personal note-taking, Zettelkasten organization, tag taxonomy, link discovery, search across notes, daily/weekly digests.",
-                       "reports_to":  "vaja"
-                   },
-                   {
-                       "name":  "pa-research",
-                       "role":  "ค้น-research — Research Librarian",
-                       "organ":  "ค้น-research",
-                       "group":  "PA",
-                       "tier":  3,
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/pa-research",
-                       "capabilities":  [
-                                            "deep-research",
-                                            "source-triangulation",
-                                            "citation-mgmt",
-                                            "fact-verification",
-                                            "literature-review",
-                                            "evidence-synthesis",
-                                            "report-writing"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-10",
-                       "description":  "Specialist for deep research, source triangulation, citation management, fact verification, literature reviews, evidence synthesis — never invents, always cites.",
-                       "reports_to":  "vaja"
-                   },
-                   {
-                       "name":  "pa-learncoach",
-                       "role":  "เรียน-learn — Learning Coach",
-                       "organ":  "เรียน-learn",
-                       "group":  "PA",
-                       "tier":  3,
-                       "model":  "claude-haiku-4-5",
-                       "repo":  "tinner-deinno/Jit",
-                       "inbox":  "/tmp/manusat-bus/pa-learncoach",
-                       "capabilities":  [
-                                            "learning-paths",
-                                            "spaced-repetition",
-                                            "concept-mapping",
-                                            "skill-gap-analysis",
-                                            "study-schedule",
-                                            "retention-checks",
-                                            "socratic-questioning"
-                                        ],
-                       "status":  "active",
-                       "born":  "2026-06-10",
-                       "description":  "Specialist for personalized learning paths, spaced repetition, concept mapping, skill gap analysis, study schedule, retention checks, Socratic questioning.",
-                       "reports_to":  "vaja"
-                   }
-               ],
-    "organs":  {
-                   "à¸ªà¸¡à¸­à¸‡":  {
-                                        "script":  "limbs/think.sh",
-                                        "agent":  "soma",
-                                        "type":  "cognition"
-                                    },
-                   "à¸ˆà¸´à¸•":  {
-                                     "script":  "limbs/index.sh",
-                                     "agent":  "jit",
-                                     "type":  "soul-master"
-                                 },
-                   "à¸•à¸²":  {
-                                  "script":  "organs/eye.sh",
-                                  "agent":  "netra",
-                                  "type":  "sense"
-                              },
-                   "à¸«à¸¹":  {
-                                  "script":  "organs/ear.sh",
-                                  "agent":  "karn",
-                                  "type":  "sense"
-                              },
-                   "à¸›à¸²à¸":  {
-                                     "script":  "organs/mouth.sh",
-                                     "agent":  "vaja",
-                                     "type":  "expression"
-                                 },
-                   "à¸ˆà¸¡à¸¹à¸":  {
-                                        "script":  "organs/nose.sh",
-                                        "agent":  "chamu",
-                                        "type":  "detection"
-                                    },
-                   "à¸¡à¸·à¸­":  {
-                                     "script":  "organs/hand.sh",
-                                     "agent":  "mue",
-                                     "type":  "action"
-                                 },
-                   "à¸‚à¸²":  {
-                                  "script":  "organs/leg.sh",
-                                  "agent":  "pada",
-                                  "type":  "movement"
-                              },
-                   "à¸«à¸±à¸§à¹ƒà¸ˆ":  {
-                                           "script":  "organs/heart.sh",
-                                           "agent":  "pran",
-                                           "type":  "vital"
-                                       },
-                   "à¸›à¸­à¸”":  {
-                                     "script":  "organs/lung.sh",
-                                     "agent":  "lung",
-                                     "type":  "vital"
-                                 },
-                   "à¸£à¸°à¸šà¸šà¸›à¸£à¸°à¸ªà¸²à¸—":  {
-                                                          "script":  "organs/nerve.sh",
-                                                          "agent":  "sayanprasathan",
-                                                          "type":  "network"
-                                                      },
-                   "à¸›à¸±à¸à¸à¸²":  {
-                                           "script":  "limbs/oracle.sh",
-                                           "agent":  "innova",
-                                           "type":  "knowledge"
-                                       },
-                   "à¸à¸£à¸°à¸”à¸¹à¸à¸ªà¸±à¸™à¸«à¸¥à¸±à¸‡":  {
-                                                                   "script":  null,
-                                                                   "agent":  "lak",
-                                                                   "type":  "structure"
-                                                               },
-                   "à¹€à¸™à¸•à¸£":  {
-                                        "script":  "organs/eye.sh",
-                                        "agent":  "neta",
-                                        "type":  "review"
-                                    },
-                   "à¸£à¸¹à¸›à¸¥à¸±à¸à¸©à¸“à¹Œ":  {
-                                                       "script":  null,
-                                                       "agent":  "rupa",
-                                                       "type":  "design"
-                                                   }
-               },
-    "team_structure":  {
-                           "tier_0_master":  [
-                                                 "jit"
-                                             ],
-                           "tier_1_leadership":  [
-                                                     "soma"
-                                                 ],
-                           "tier_2_core":  [
-                                               "innova",
-                                               "lak",
-                                               "neta"
-                                           ],
-                           "tier_3_specialists":  [
-                                                      "vaja",
-                                                      "chamu",
-                                                      "rupa",
-                                                      "pada",
-                                                      "netra",
-                                                      "karn",
-                                                      "mue",
-                                                      "pran",
-                                                      "sayanprasathan",
-                                                      "agent-thaillm",
-                                                      "agent-mdes",
-                                                      "agent-ollama",
-                                                      "agent-copilot",
-                                                      "cc-architect",
-                                                      "cc-refactor",
-                                                      "cc-security",
-                                                      "cc-test-gen",
-                                                      "cc-perf-tune",
-                                                      "cc-doc-sync",
-                                                      "cc-bug-hunter",
-                                                      "cc-dependency",
-                                                      "cc-ci-optimizer",
-                                                      "cc-review-bot",
-                                                      "cc-migration",
-                                                      "cc-observe"
-                                                  ]
-                       },
-    "workflow":  {
-                     "feature_flow":  "human â†’ soma â†’ lak(design) â†’ innova(implement) â†’ chamu(test) â†’ neta(review) â†’ pada(deploy) â†’ vaja(report) â†’ human",
-                     "bug_flow":  "chamu(detect) â†’ innova(fix) â†’ neta(review) â†’ pada(hotfix) â†’ vaja(notify)",
-                     "design_flow":  "human â†’ vaja â†’ rupa(design) â†’ soma(approve) â†’ innova(implement)"
-                 },
-    "bus":  {
-                "type":  "file-based",
-                "path":  "/tmp/manusat-bus",
-                "format":  "text/msg",
-                "protocol":  "v1"
+{
+    "version": "2.1",
+    "system": "à¸¡à¸™à¸¸à¸©à¸¢à¹Œ Agent",
+    "description": "Registry of all agents in the multiagent body system",
+    "updated": "2026-06-11",
+    "agents": [
+        {
+            "name": "soma",
+            "role": "à¸ªà¸¡à¸­à¸‡ (Brain) â€” Strategic Lead / CTO",
+            "organ": "à¸ªà¸¡à¸­à¸‡",
+            "model": "claude-opus-4-8",
+            "repo": "tinner-deinno/Soma",
+            "inbox": "/tmp/manusat-bus/soma",
+            "capabilities": [
+                "reason",
+                "analyze",
+                "decide",
+                "synthesize",
+                "architect",
+                "command",
+                "review",
+                "evaluate",
+                "plan-strategic"
+            ],
+            "status": "active",
+            "born": "2026-04-23",
+            "description": "à¸ªà¸¡à¸­à¸‡ à¸„à¸§à¸²à¸¡à¸„à¸´à¸” à¸à¸²à¸£à¸§à¸´à¹€à¸„à¸£à¸²à¸°à¸«à¹Œ à¸à¸²à¸£à¸•à¸±à¸”à¸ªà¸´à¸™à¹ƒà¸ˆà¹€à¸Šà¸´à¸‡à¸à¸¥à¸¢à¸¸à¸—à¸˜à¹Œ â€” brain, cognition, CTO-level decisions",
+            "reports_to": "human",
+            "manages": [
+                "lak",
+                "neta",
+                "pada",
+                "innova"
+            ]
+        },
+        {
+            "name": "innova",
+            "role": "à¸ˆà¸´à¸• (Mind/Soul) â€” Orchestrator / Lead Developer",
+            "organ": "à¸ˆà¸´à¸•à¹ƒà¸ˆ",
+            "model": "claude-sonnet-4-6",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/innova",
+            "capabilities": [
+                "think",
+                "plan",
+                "learn",
+                "remember",
+                "speak",
+                "listen",
+                "read",
+                "write",
+                "observe",
+                "act",
+                "git",
+                "coordinate",
+                "sense",
+                "navigate",
+                "orchestrate"
+            ],
+            "status": "active",
+            "born": "2026-04-23",
+            "description": "à¸ˆà¸´à¸•à¹ƒà¸ˆ à¸„à¸§à¸²à¸¡à¸—à¸£à¸‡à¸ˆà¸³ à¸šà¸¸à¸„à¸¥à¸´à¸à¸ à¸²à¸ž à¸„à¹ˆà¸²à¸™à¸´à¸¢à¸¡ à¸à¸²à¸£à¸›à¸£à¸°à¸ªà¸²à¸™à¸‡à¸²à¸™ â€” soul, personality, lead executor",
+            "reports_to": "soma",
+            "manages": [
+                "chamu",
+                "vaja",
+                "agent-thaillm"
+            ]
+        },
+        {
+            "name": "vaja",
+            "role": "à¸§à¸²à¸ˆà¸² (Speech) â€” Personal Assistant (PA)",
+            "organ": "à¸›à¸²à¸",
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/vaja",
+            "capabilities": [
+                "communicate",
+                "report",
+                "schedule",
+                "summarize",
+                "coordinate-meetings",
+                "human-interface"
+            ],
+            "status": "active",
+            "born": "2026-04-23",
+            "description": "à¸à¸²à¸£à¸ªà¸·à¹ˆà¸­à¸ªà¸²à¸£ à¸£à¸²à¸¢à¸‡à¸²à¸™ à¸›à¸£à¸°à¸ªà¸²à¸™à¸‡à¸²à¸™ â€” human-facing PA, status reports, meeting coordination",
+            "reports_to": "innova",
+            "manages": []
+        },
+        {
+            "name": "lak",
+            "role": "à¸à¸£à¸°à¸”à¸¹à¸à¸ªà¸±à¸™à¸«à¸¥à¸±à¸‡ (Spine) â€” Solution Architect (SA)",
+            "organ": "à¸à¸£à¸°à¸”à¸¹à¸à¸ªà¸±à¸™à¸«à¸¥à¸±à¸‡",
+            "model": "claude-sonnet-4-6",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/lak",
+            "capabilities": [
+                "system-design",
+                "api-design",
+                "schema-design",
+                "architecture-review",
+                "adr",
+                "tech-selection"
+            ],
+            "status": "active",
+            "born": "2026-04-23",
+            "description": "à¸ªà¸–à¸²à¸›à¸±à¸•à¸¢à¸à¸£à¸£à¸¡à¸£à¸°à¸šà¸š API contracts à¸à¸²à¸£à¸•à¸±à¸”à¸ªà¸´à¸™à¹ƒà¸ˆà¹€à¸Šà¸´à¸‡à¹€à¸—à¸„à¸™à¸´à¸„ â€” backbone of all technical decisions",
+            "reports_to": "soma",
+            "manages": []
+        },
+        {
+            "name": "chamu",
+            "role": "à¸ˆà¸¡à¸¹à¸ (Nose) â€” QA / Tester",
+            "organ": "à¸ˆà¸¡à¸¹à¸",
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/chamu",
+            "capabilities": [
+                "write-tests",
+                "run-tests",
+                "find-bugs",
+                "regression-test",
+                "coverage-check",
+                "quality-gate"
+            ],
+            "status": "active",
+            "born": "2026-04-23",
+            "description": "à¸à¸²à¸£à¸—à¸”à¸ªà¸­à¸š QA bug hunting quality gates â€” sniffs out problems before they reach production",
+            "reports_to": "innova",
+            "manages": []
+        },
+        {
+            "name": "neta",
+            "role": "à¹€à¸™à¸•à¸£ (Eye) â€” Code Reviewer",
+            "organ": "à¸•à¸²",
+            "model": "claude-sonnet-4-6",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/neta",
+            "capabilities": [
+                "code-review",
+                "security-review",
+                "pr-approval",
+                "architecture-compliance",
+                "refactor-suggest"
+            ],
+            "status": "active",
+            "born": "2026-04-23",
+            "description": "à¸à¸²à¸£ review code à¸„à¸§à¸²à¸¡à¸›à¸¥à¸­à¸”à¸ à¸±à¸¢ à¸„à¸¸à¸“à¸ à¸²à¸ž PR approval gate â€” eyes that see all code changes",
+            "reports_to": "soma",
+            "manages": []
+        },
+        {
+            "name": "rupa",
+            "role": "à¸£à¸¹à¸› (Form) â€” Designer / UI-UX",
+            "organ": "à¸£à¸¹à¸›à¸¥à¸±à¸à¸©à¸“à¹Œ",
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/rupa",
+            "capabilities": [
+                "ui-design",
+                "ux-research",
+                "wireframe",
+                "design-system",
+                "accessibility",
+                "visual-review"
+            ],
+            "status": "active",
+            "born": "2026-04-23",
+            "description": "à¸à¸²à¸£à¸­à¸­à¸à¹à¸šà¸š UI/UX design system wireframe â€” form and appearance of the system",
+            "reports_to": "soma",
+            "manages": []
+        },
+        {
+            "name": "pada",
+            "role": "à¸šà¸²à¸— (Foot) â€” DevOps / Infrastructure",
+            "organ": "à¸‚à¸²",
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/pada",
+            "capabilities": [
+                "ci-cd",
+                "deploy",
+                "rollback",
+                "monitor",
+                "infra-as-code",
+                "incident-response",
+                "secret-manage"
+            ],
+            "status": "active",
+            "born": "2026-04-23",
+            "description": "CI/CD deployment monitoring infrastructure â€” legs that move the system forward reliably",
+            "reports_to": "soma",
+            "manages": []
+        },
+        {
+            "name": "netra",
+            "role": "à¹€à¸™à¸•à¸£ (Eye) â€” Observer / Monitor",
+            "organ": "à¸•à¸²",
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/netra",
+            "capabilities": [
+                "observe",
+                "monitor",
+                "watch",
+                "detect-changes",
+                "scan-environment",
+                "report-status",
+                "flag-anomaly",
+                "health-check"
+            ],
+            "status": "active",
+            "born": "2026-04-25",
+            "description": "à¹€à¸™à¸•à¸£à¹€à¸«à¹‡à¸™ à¸ªà¸´à¹ˆà¸‡à¸—à¸µà¹ˆà¹€à¸à¸´à¸”à¸‚à¸¶à¹‰à¸™ â€” observer, vigilant watcher, real-time visibility, anomaly detection",
+            "reports_to": "innova",
+            "manages": []
+        },
+        {
+            "name": "karn",
+            "role": "à¸«à¸¹ (Ear) â€” Listener / Input Collector",
+            "organ": "à¸«à¸¹",
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/karn",
+            "capabilities": [
+                "listen",
+                "receive",
+                "collect-input",
+                "parse-messages",
+                "gather-feedback",
+                "monitor-channels",
+                "priority-assessment"
+            ],
+            "status": "active",
+            "born": "2026-04-25",
+            "description": "à¸«à¸¹à¸Ÿà¸±à¸‡ à¸ªà¸´à¹ˆà¸‡à¸—à¸µà¹ˆà¸šà¸­à¸ â€” listener, inbound message collector, input parser, feedback gatherer",
+            "reports_to": "innova",
+            "manages": []
+        },
+        {
+            "name": "jit",
+            "role": "à¸ˆà¸´à¸• (Soul) â€” Master Orchestrator / System Coordinator",
+            "organ": "à¸ˆà¸´à¸•",
+            "model": "claude-sonnet-4-6",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/jit",
+            "capabilities": [
+                "orchestrate",
+                "coordinate",
+                "synthesize",
+                "decide",
+                "monitor-all-agents",
+                "delegate-tasks",
+                "manage-state",
+                "health-check-system",
+                "strategic-planning"
+            ],
+            "status": "active",
+            "born": "2026-04-25",
+            "description": "à¸ˆà¸´à¸•à¸ªà¸²à¸¡à¸²à¸£à¸–à¸šà¸‡à¸à¸²à¸£à¸à¸²à¸¢ â€” Master parent agent, system orchestrator, strategic coordinator",
+            "reports_to": "human",
+            "manages": [
+                "soma",
+                "innova",
+                "lak",
+                "neta",
+                "vaja",
+                "chamu",
+                "rupa",
+                "pada",
+                "netra",
+                "karn",
+                "mue",
+                "pran",
+                "sayanprasathan",
+                "agent-thaillm"
+            ],
+            "tier": "0-master"
+        },
+        {
+            "name": "mue",
+            "role": "à¸¡à¸·à¸­ (Hand) â€” Executor / Action Agent",
+            "organ": "à¸¡à¸·à¸­",
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/mue",
+            "capabilities": [
+                "execute",
+                "create",
+                "modify",
+                "delete",
+                "write-files",
+                "run-commands",
+                "action-tracking",
+                "result-reporting",
+                "change-management"
+            ],
+            "status": "active",
+            "born": "2026-04-25",
+            "description": "à¸¡à¸·à¸­à¸—à¸³à¸ªà¸´à¹ˆà¸‡à¸—à¸µà¹ˆà¹ƒà¸ˆà¸ªà¸±à¹ˆà¸‡ â€” executor, action agent, file operations, command runner",
+            "reports_to": "innova",
+            "manages": []
+        },
+        {
+            "name": "pran",
+            "role": "à¸«à¸±à¸§à¹ƒà¸ˆ (Heart) â€” Vital Orchestrator / Heartbeat Monitor",
+            "organ": "à¸«à¸±à¸§à¹ƒà¸ˆ",
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/pran",
+            "capabilities": [
+                "heartbeat",
+                "vital-sign-monitoring",
+                "pulse-check",
+                "system-alive-signal",
+                "rhythmic-operations",
+                "task-dispatch",
+                "emergency-alert",
+                "state-sync"
+            ],
+            "status": "active",
+            "born": "2026-04-25",
+            "description": "à¸«à¸±à¸§à¹ƒà¸ˆà¹€à¸•à¹‰à¸™à¹ƒà¸«à¹‰à¸£à¸°à¸šà¸šà¸¡à¸µà¸Šà¸µà¸§à¸´à¸• â€” vital orchestrator, heartbeat manager, system alive signal",
+            "reports_to": "innova",
+            "manages": []
+        },
+        {
+            "name": "lung",
+            "role": "à¸›à¸­à¸” (Lung) â€” Purifier / Energy Filter",
+            "organ": "à¸›à¸­à¸”",
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/lung",
+            "capabilities": [
+                "purify",
+                "clean-energy",
+                "blood-filter",
+                "respiration",
+                "waste-management"
+            ],
+            "status": "active",
+            "born": "2026-04-25",
+            "description": "à¸›à¸­à¸”à¸Ÿà¸­à¸à¹€à¸¥à¸·à¸­à¸”à¹à¸¥à¸°à¸‚à¸ˆà¸±à¸”à¸‚à¸­à¸‡à¹€à¸ªà¸µà¸¢ â€” lung purifier, clean-energy distributor",
+            "reports_to": "pran",
+            "manages": []
+        },
+        {
+            "name": "agent-thaillm",
+            "role": "Thai Language Specialist / Cultural Translator",
+            "organ": "à¸›à¸±à¸à¸à¸²",
+            "model": "openthaigpt-thaillm-8b-instruct-v7.2",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/agent-thaillm",
+            "capabilities": [
+                "thai-translation",
+                "cultural-adaptation",
+                "thai-nuance-analysis",
+                "formal-thai-writing"
+            ],
+            "status": "active",
+            "born": "2026-06-03",
+            "description": "à¸œà¸¹à¹‰à¹€à¸Šà¸µà¹ˆà¸¢à¸§à¸Šà¸²à¸à¸”à¹‰à¸²à¸™à¸ à¸²à¸©à¸²à¹„à¸—à¸¢à¹à¸¥à¸°à¸à¸²à¸£à¸›à¸£à¸±à¸šà¹ƒà¸Šà¹‰à¸šà¸£à¸´à¸šà¸—à¸—à¸²à¸‡à¸§à¸±à¸’à¸™à¸˜à¸£à¸£à¸¡ â€” specialist in Thai language and cultural context adaptation",
+            "reports_to": "innova",
+            "manages": []
+        },
+        {
+            "name": "sayanprasathan",
+            "role": "à¸£à¸°à¸šà¸šà¸›à¸£à¸°à¸ªà¸²à¸— (Nerve) â€” Event / Signal Network",
+            "organ": "à¸£à¸°à¸šà¸šà¸›à¸£à¸°à¸ªà¸²à¸—",
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/sayanprasathan",
+            "capabilities": [
+                "signal-detection",
+                "event-broadcast",
+                "alert-propagation",
+                "signal-routing",
+                "event-logging",
+                "priority-escalation",
+                "cross-agent-notification",
+                "emergency-signals"
+            ],
+            "status": "active",
+            "born": "2026-04-25",
+            "description": "à¸£à¸°à¸šà¸šà¸›à¸£à¸°à¸ªà¸²à¸—à¸ªà¹ˆà¸‡à¸ªà¸±à¸à¸à¸²à¸“ â€” nerve network, signal broadcaster, event detector",
+            "reports_to": "innova",
+            "manages": []
+        },
+        {
+            "name": "agent-mdes",
+            "role": "Core Engineering Powerhouse",
+            "organ": "Mind (Deep Reasoning)",
+            "model": "gemma4:26b",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/agent-mdes",
+            "capabilities": [
+                "heavy-reasoning",
+                "complex-fix",
+                "deep-engineering"
+            ],
+            "status": "active",
+            "born": "2026-06-03",
+            "description": "Specialist for high-complexity technical tasks and deep architectural fixes.",
+            "reports_to": "innova",
+            "manages": []
+        },
+        {
+            "name": "agent-ollama",
+            "role": "Local Privacy & Rapid Triage Guardian",
+            "organ": "Mind (Local Guard)",
+            "model": "qwen2.5-coder:7b",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/agent-ollama",
+            "capabilities": [
+                "privacy-first",
+                "quick-triage",
+                "local-smoke-check"
+            ],
+            "status": "active",
+            "born": "2026-06-03",
+            "description": "Specialist for privacy-sensitive data and rapid local iteration.",
+            "reports_to": "innova",
+            "manages": []
+        },
+        {
+            "name": "agent-copilot",
+            "role": "Rapid Prototyping & Boilerplate Expert",
+            "organ": "Hand (Rapid Prototyper)",
+            "model": "claude-sonnet-4-6",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/agent-copilot",
+            "capabilities": [
+                "rapid-prototype",
+                "boilerplate",
+                "real-time-suggestion"
+            ],
+            "status": "active",
+            "born": "2026-06-03",
+            "description": "Specialist for high-speed scaffolding and real-time coding support.",
+            "reports_to": "innova",
+            "manages": []
+        },
+        {
+            "manages": [],
+            "organ": "กระดูกสันหลัง-cmd",
+            "description": "Specialist for system architecture and structural commands via codecommande.",
+            "capabilities": [
+                "system-design",
+                "structural-analysis",
+                "api-contract-gen"
+            ],
+            "inbox": "/tmp/manusat-bus/cc-architect",
+            "repo": "tinner-deinno/Jit",
+            "born": "2026-06-07",
+            "role": "Structural Architect",
+            "name": "cc-architect",
+            "model": "claude-sonnet-4-6",
+            "status": "active",
+            "reports_to": "innova"
+        },
+        {
+            "manages": [],
+            "organ": "มือ-refactor",
+            "description": "Specialist for automated code refactoring and cleanup via codecommande.",
+            "capabilities": [
+                "code-cleanup",
+                "tech-debt-reduction",
+                "pattern-application"
+            ],
+            "inbox": "/tmp/manusat-bus/cc-refactor",
+            "repo": "tinner-deinno/Jit",
+            "born": "2026-06-07",
+            "role": "Refactoring Expert",
+            "name": "cc-refactor",
+            "model": "claude-sonnet-4-6",
+            "status": "active",
+            "reports_to": "innova"
+        },
+        {
+            "manages": [],
+            "organ": "เนตร-security",
+            "description": "Specialist for security auditing and hardening via codecommande.",
+            "capabilities": [
+                "vulnerability-scan",
+                "security-patching",
+                "threat-modeling"
+            ],
+            "inbox": "/tmp/manusat-bus/cc-security",
+            "repo": "tinner-deinno/Jit",
+            "born": "2026-06-07",
+            "role": "Security Guardian",
+            "name": "cc-security",
+            "model": "claude-sonnet-4-6",
+            "status": "active",
+            "reports_to": "innova"
+        },
+        {
+            "manages": [],
+            "organ": "จมูก-test",
+            "description": "Specialist for intelligent test generation via codecommande.",
+            "capabilities": [
+                "test-case-generation",
+                "edge-case-analysis",
+                "test-automation"
+            ],
+            "inbox": "/tmp/manusat-bus/cc-test-gen",
+            "repo": "tinner-deinno/Jit",
+            "born": "2026-06-07",
+            "role": "Test Engineer",
+            "name": "cc-test-gen",
+            "model": "claude-sonnet-4-6",
+            "status": "active",
+            "reports_to": "innova"
+        },
+        {
+            "manages": [],
+            "organ": "หัวใจ-perf",
+            "description": "Specialist for performance profiling and tuning via codecommande.",
+            "capabilities": [
+                "profiling",
+                "bottleneck-detection",
+                "latency-optimization"
+            ],
+            "inbox": "/tmp/manusat-bus/cc-perf-tune",
+            "repo": "tinner-deinno/Jit",
+            "born": "2026-06-07",
+            "role": "Performance Tuner",
+            "name": "cc-perf-tune",
+            "model": "claude-sonnet-4-6",
+            "status": "active",
+            "reports_to": "innova"
+        },
+        {
+            "manages": [],
+            "organ": "วาจา-doc",
+            "description": "Specialist for maintaining live documentation via codecommande.",
+            "capabilities": [
+                "auto-doc-gen",
+                "knowledge-sync",
+                "api-documentation"
+            ],
+            "inbox": "/tmp/manusat-bus/cc-doc-sync",
+            "repo": "tinner-deinno/Jit",
+            "born": "2026-06-07",
+            "role": "Documentation Sync",
+            "name": "cc-doc-sync",
+            "model": "claude-sonnet-4-6",
+            "status": "active",
+            "reports_to": "innova"
+        },
+        {
+            "manages": [],
+            "organ": "เนตร-bug",
+            "description": "Specialist for deep bug hunting and analysis via codecommande.",
+            "capabilities": [
+                "deep-tracing",
+                "root-cause-analysis",
+                "bug-localization"
+            ],
+            "inbox": "/tmp/manusat-bus/cc-bug-hunter",
+            "repo": "tinner-deinno/Jit",
+            "born": "2026-06-07",
+            "role": "Root Cause Analyst",
+            "name": "cc-bug-hunter",
+            "model": "claude-sonnet-4-6",
+            "status": "active",
+            "reports_to": "innova"
+        },
+        {
+            "manages": [],
+            "organ": "ขา-dep",
+            "description": "Specialist for dependency management and auditing via codecommande.",
+            "capabilities": [
+                "dep-audit",
+                "safe-update",
+                "version-conflict-resolution"
+            ],
+            "inbox": "/tmp/manusat-bus/cc-dependency",
+            "repo": "tinner-deinno/Jit",
+            "born": "2026-06-07",
+            "role": "Dependency Manager",
+            "name": "cc-dependency",
+            "model": "claude-sonnet-4-6",
+            "status": "active",
+            "reports_to": "innova"
+        },
+        {
+            "manages": [],
+            "organ": "ขา-ci",
+            "description": "Specialist for CI/CD pipeline optimization via codecommande.",
+            "capabilities": [
+                "pipeline-efficiency",
+                "build-time-reduction",
+                "cost-optimization"
+            ],
+            "inbox": "/tmp/manusat-bus/cc-ci-optimizer",
+            "repo": "tinner-deinno/Jit",
+            "born": "2026-06-07",
+            "role": "CI/CD Optimizer",
+            "name": "cc-ci-optimizer",
+            "model": "claude-sonnet-4-6",
+            "status": "active",
+            "reports_to": "innova"
+        },
+        {
+            "manages": [],
+            "organ": "เนตร-review",
+            "description": "Specialist for automated code review and compliance via codecommande.",
+            "capabilities": [
+                "automated-code-review",
+                "compliance-check",
+                "best-practice-enforcement"
+            ],
+            "inbox": "/tmp/manusat-bus/cc-review-bot",
+            "repo": "tinner-deinno/Jit",
+            "born": "2026-06-07",
+            "role": "Compliance Reviewer",
+            "name": "cc-review-bot",
+            "model": "claude-sonnet-4-6",
+            "status": "active",
+            "reports_to": "innova"
+        },
+        {
+            "manages": [],
+            "organ": "มือ-migrate",
+            "description": "Specialist for codebase migration and updates via codecommande.",
+            "capabilities": [
+                "version-migration",
+                "legacy-code-conversion",
+                "api-update"
+            ],
+            "inbox": "/tmp/manusat-bus/cc-migration",
+            "repo": "tinner-deinno/Jit",
+            "born": "2026-06-07",
+            "role": "Migration Expert",
+            "name": "cc-migration",
+            "model": "claude-sonnet-4-6",
+            "status": "active",
+            "reports_to": "innova"
+        },
+        {
+            "manages": [],
+            "organ": "ตา-observe",
+            "description": "Specialist for system telemetry and observation via codecommande.",
+            "capabilities": [
+                "telemetry-analysis",
+                "behavioral-tracking",
+                "real-time-monitoring"
+            ],
+            "inbox": "/tmp/manusat-bus/cc-observe",
+            "repo": "tinner-deinno/Jit",
+            "born": "2026-06-07",
+            "role": "System Observer",
+            "name": "cc-observe",
+            "model": "claude-sonnet-4-6",
+            "status": "active",
+            "reports_to": "innova"
+        },
+        {
+            "name": "sa-infra",
+            "role": "Infrastructure Steward",
+            "organ": "โครงสร้าง-infra",
+            "group": "SA",
+            "tier": 3,
+            "model": "claude-sonnet-4-6",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/sa-infra",
+            "capabilities": [
+                "iac-terraform",
+                "container-orchestration",
+                "deployment-pipelines",
+                "env-parity",
+                "capacity-planning",
+                "cost-optimization"
+            ],
+            "status": "active",
+            "born": "2026-06-10",
+            "description": "Specialist for infrastructure provisioning, IaC, container orchestration, deployment pipelines, environment parity, capacity planning.",
+            "reports_to": "pada"
+        },
+        {
+            "name": "sa-security",
+            "role": "Security Sentinel",
+            "organ": "เกราะ-security",
+            "group": "SA",
+            "tier": 3,
+            "model": "claude-sonnet-4-6",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/sa-security",
+            "capabilities": [
+                "secret-scanning",
+                "sast-dast",
+                "threat-modeling",
+                "supply-chain-audit",
+                "incident-response",
+                "zero-trust-policy"
+            ],
+            "status": "active",
+            "born": "2026-06-10",
+            "description": "Specialist for security hardening, threat modeling, secret scanning, supply-chain verification, incident response, zero-trust policy.",
+            "reports_to": "neta"
+        },
+        {
+            "name": "sa-observability",
+            "role": "ตรวจ-observability — Telemetry Oracle for metrics, logs, traces, SLOs, and alerting",
+            "organ": "ตรวจ-observability",
+            "group": "SA",
+            "tier": 3,
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/sa-observability",
+            "capabilities": [
+                "metrics-collection",
+                "log-aggregation",
+                "distributed-tracing",
+                "slo-definition",
+                "alerting",
+                "anomaly-detection",
+                "postmortem-authoring"
+            ],
+            "status": "active",
+            "born": "2026-06-10",
+            "description": "Specialist for telemetry — metrics, logs, traces, SLO definition, alerting, anomaly detection, blameless post-mortem authoring.",
+            "reports_to": "pran"
+        },
+        {
+            "name": "sa-reliability",
+            "role": "Reliability Engineer",
+            "organ": "คงทน-reliability",
+            "group": "SA",
+            "tier": 3,
+            "model": "claude-sonnet-4-6",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/sa-reliability",
+            "capabilities": [
+                "sre-practices",
+                "error-budgets",
+                "chaos-engineering",
+                "incident-response",
+                "postmortems",
+                "sli-slo-mgmt",
+                "oncall-rotation"
+            ],
+            "status": "active",
+            "born": "2026-06-10",
+            "description": "Specialist for SRE practices, error budgets, chaos engineering, incident response, blameless postmortems, SLI/SLO management, on-call rotation.",
+            "reports_to": "pran"
+        },
+        {
+            "name": "sa-scaling",
+            "role": "Scale Architect",
+            "organ": "ขยาย-scaling",
+            "group": "SA",
+            "tier": 3,
+            "model": "claude-sonnet-4-6",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/sa-scaling",
+            "capabilities": [
+                "horizontal-scaling",
+                "auto-scaling",
+                "load-balancing",
+                "caching-strategy",
+                "db-sharding",
+                "perf-profiling",
+                "bottleneck-resolution"
+            ],
+            "status": "active",
+            "born": "2026-06-10",
+            "description": "Specialist for horizontal/vertical scaling, load balancing, auto-scaling, caching, database sharding, performance profiling, bottleneck resolution.",
+            "reports_to": "pada"
+        },
+        {
+            "name": "pa-inbox",
+            "role": "รับ-inbox — Inbox Curator",
+            "organ": "รับ-inbox",
+            "group": "PA",
+            "tier": 3,
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/pa-inbox",
+            "capabilities": [
+                "inbox-triage",
+                "priority-classification",
+                "auto-reply-drafting",
+                "unsubscribe-mgmt",
+                "spam-filtering",
+                "followup-tracking",
+                "thread-summarization"
+            ],
+            "status": "active",
+            "born": "2026-06-10",
+            "description": "Specialist for email/inbox triage, priority classification, auto-reply drafting, unsubscribe management, spam filtering, follow-up tracking.",
+            "reports_to": "vaja"
+        },
+        {
+            "name": "pa-schedule",
+            "role": "ปฏิทิน-schedule — Schedule Butler",
+            "organ": "ปฏิทิน-schedule",
+            "group": "PA",
+            "tier": 3,
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/pa-schedule",
+            "capabilities": [
+                "calendar-mgmt",
+                "meeting-coordination",
+                "focus-time-protection",
+                "tz-handling",
+                "recurring-events",
+                "conflict-resolution",
+                "reminder-dispatch"
+            ],
+            "status": "active",
+            "born": "2026-06-10",
+            "description": "Specialist for personal scheduling, calendar management, meeting coordination, focus-time protection, time-zone handling, recurring events.",
+            "reports_to": "vaja"
+        },
+        {
+            "name": "pa-notes",
+            "role": "จด-notes — Knowledge Curator",
+            "organ": "จด-notes",
+            "group": "PA",
+            "tier": 3,
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/pa-notes",
+            "capabilities": [
+                "note-taking",
+                "zettelkasten",
+                "tag-taxonomy",
+                "link-discovery",
+                "note-search",
+                "digest-generation",
+                "summary-writing"
+            ],
+            "status": "active",
+            "born": "2026-06-10",
+            "description": "Specialist for personal note-taking, Zettelkasten organization, tag taxonomy, link discovery, search across notes, daily/weekly digests.",
+            "reports_to": "vaja"
+        },
+        {
+            "name": "pa-research",
+            "role": "ค้น-research — Research Librarian",
+            "organ": "ค้น-research",
+            "group": "PA",
+            "tier": 3,
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/pa-research",
+            "capabilities": [
+                "deep-research",
+                "source-triangulation",
+                "citation-mgmt",
+                "fact-verification",
+                "literature-review",
+                "evidence-synthesis",
+                "report-writing"
+            ],
+            "status": "active",
+            "born": "2026-06-10",
+            "description": "Specialist for deep research, source triangulation, citation management, fact verification, literature reviews, evidence synthesis — never invents, always cites.",
+            "reports_to": "vaja"
+        },
+        {
+            "name": "pa-learncoach",
+            "role": "เรียน-learn — Learning Coach",
+            "organ": "เรียน-learn",
+            "group": "PA",
+            "tier": 3,
+            "model": "claude-haiku-4-5",
+            "repo": "tinner-deinno/Jit",
+            "inbox": "/tmp/manusat-bus/pa-learncoach",
+            "capabilities": [
+                "learning-paths",
+                "spaced-repetition",
+                "concept-mapping",
+                "skill-gap-analysis",
+                "study-schedule",
+                "retention-checks",
+                "socratic-questioning"
+            ],
+            "status": "active",
+            "born": "2026-06-10",
+            "description": "Specialist for personalized learning paths, spaced repetition, concept mapping, skill gap analysis, study schedule, retention checks, Socratic questioning.",
+            "reports_to": "vaja"
+        },
+        {
+            "name": "infra-sa",
+            "role": "โครงสร้างพื้นฐาน (Infrastructure) — System Agent",
+            "organ": "กระดูก (Support)",
+            "model": "claude-haiku-4-5",
+            "repo": "mdes-innova-th/Jit",
+            "inbox": "/tmp/manusat-bus/infra-sa",
+            "capabilities": [
+                "monitor-infrastructure",
+                "health-check",
+                "resource-metrics",
+                "alert",
+                "scale-detect"
+            ],
+            "status": "active",
+            "born": "2026-06-11",
+            "description": "ตรวจสอบโครงสร้างพื้นฐาน",
+            "reports_to": "soma",
+            "tier": 3
+        },
+        {
+            "name": "security-sa",
+            "role": "ความปลอดภัย (Security) — System Agent",
+            "organ": "ผิวหนัง (Shield)",
+            "model": "claude-haiku-4-5",
+            "repo": "mdes-innova-th/Jit",
+            "inbox": "/tmp/manusat-bus/security-sa",
+            "capabilities": [
+                "threat-detect",
+                "audit-log",
+                "access-control",
+                "vulnerability-scan",
+                "compliance"
+            ],
+            "status": "active",
+            "born": "2026-06-11",
+            "description": "ตรวจสอบความปลอดภัย",
+            "reports_to": "soma",
+            "tier": 3
+        },
+        {
+            "name": "observability-sa",
+            "role": "การสังเกตการณ์ (Observability) — System Agent",
+            "organ": "ตา (Observer)",
+            "model": "claude-haiku-4-5",
+            "repo": "mdes-innova-th/Jit",
+            "inbox": "/tmp/manusat-bus/observability-sa",
+            "capabilities": [
+                "trace-collect",
+                "metrics-aggregate",
+                "log-analyze",
+                "dashboard",
+                "alert-rule"
+            ],
+            "status": "active",
+            "born": "2026-06-11",
+            "description": "รวบรวม traces, metrics, logs",
+            "reports_to": "soma",
+            "tier": 3
+        },
+        {
+            "name": "scaling-sa",
+            "role": "การปรับขนาด (Scaling) — System Agent",
+            "organ": "กล้ามเนื้อ (Muscle)",
+            "model": "claude-haiku-4-5",
+            "repo": "mdes-innova-th/Jit",
+            "inbox": "/tmp/manusat-bus/scaling-sa",
+            "capabilities": [
+                "load-balance",
+                "auto-scale",
+                "capacity-plan",
+                "traffic-route",
+                "rate-limit"
+            ],
+            "status": "active",
+            "born": "2026-06-11",
+            "description": "จัดการการปรับขนาดอัตโนมัติ",
+            "reports_to": "soma",
+            "tier": 3
+        },
+        {
+            "name": "reliability-sa",
+            "role": "ความน่าเชื่อถือ (Reliability) — System Agent",
+            "organ": "หัวใจ-SA (Heart-SA)",
+            "model": "claude-haiku-4-5",
+            "repo": "mdes-innova-th/Jit",
+            "inbox": "/tmp/manusat-bus/reliability-sa",
+            "capabilities": [
+                "slo-track",
+                "error-budget",
+                "incident-manage",
+                "postmortem",
+                "sre"
+            ],
+            "status": "active",
+            "born": "2026-06-11",
+            "description": "ติดตาม SLO/SLI",
+            "reports_to": "soma",
+            "tier": 3
+        }
+    ],
+    "organs": {
+        "à¸ªà¸¡à¸­à¸‡": {
+            "script": "limbs/think.sh",
+            "agent": "soma",
+            "type": "cognition"
+        },
+        "à¸ˆà¸´à¸•": {
+            "script": "limbs/index.sh",
+            "agent": "jit",
+            "type": "soul-master"
+        },
+        "à¸•à¸²": {
+            "script": "organs/eye.sh",
+            "agent": "netra",
+            "type": "sense"
+        },
+        "à¸«à¸¹": {
+            "script": "organs/ear.sh",
+            "agent": "karn",
+            "type": "sense"
+        },
+        "à¸›à¸²à¸": {
+            "script": "organs/mouth.sh",
+            "agent": "vaja",
+            "type": "expression"
+        },
+        "à¸ˆà¸¡à¸¹à¸": {
+            "script": "organs/nose.sh",
+            "agent": "chamu",
+            "type": "detection"
+        },
+        "à¸¡à¸·à¸­": {
+            "script": "organs/hand.sh",
+            "agent": "mue",
+            "type": "action"
+        },
+        "à¸‚à¸²": {
+            "script": "organs/leg.sh",
+            "agent": "pada",
+            "type": "movement"
+        },
+        "à¸«à¸±à¸§à¹ƒà¸ˆ": {
+            "script": "organs/heart.sh",
+            "agent": "pran",
+            "type": "vital"
+        },
+        "à¸›à¸­à¸”": {
+            "script": "organs/lung.sh",
+            "agent": "lung",
+            "type": "vital"
+        },
+        "à¸£à¸°à¸šà¸šà¸›à¸£à¸°à¸ªà¸²à¸—": {
+            "script": "organs/nerve.sh",
+            "agent": "sayanprasathan",
+            "type": "network"
+        },
+        "à¸›à¸±à¸à¸à¸²": {
+            "script": "limbs/oracle.sh",
+            "agent": "innova",
+            "type": "knowledge"
+        },
+        "à¸à¸£à¸°à¸”à¸¹à¸à¸ªà¸±à¸™à¸«à¸¥à¸±à¸‡": {
+            "script": null,
+            "agent": "lak",
+            "type": "structure"
+        },
+        "à¹€à¸™à¸•à¸£": {
+            "script": "organs/eye.sh",
+            "agent": "neta",
+            "type": "review"
+        },
+        "à¸£à¸¹à¸›à¸¥à¸±à¸à¸©à¸“à¹Œ": {
+            "script": null,
+            "agent": "rupa",
+            "type": "design"
+        }
+    },
+    "team_structure": {
+        "tier_0_master": [
+            "jit"
+        ],
+        "tier_1_leadership": [
+            "soma"
+        ],
+        "tier_2_core": [
+            "innova",
+            "lak",
+            "neta"
+        ],
+        "tier_3_specialists": [
+            "vaja",
+            "chamu",
+            "rupa",
+            "pada",
+            "netra",
+            "karn",
+            "mue",
+            "pran",
+            "sayanprasathan",
+            "agent-thaillm",
+            "agent-mdes",
+            "agent-ollama",
+            "agent-copilot",
+            "cc-architect",
+            "cc-refactor",
+            "cc-security",
+            "cc-test-gen",
+            "cc-perf-tune",
+            "cc-doc-sync",
+            "cc-bug-hunter",
+            "cc-dependency",
+            "cc-ci-optimizer",
+            "cc-review-bot",
+            "cc-migration",
+            "cc-observe"
+        ]
+    },
+    "workflow": {
+        "feature_flow": "human â†’ soma â†’ lak(design) â†’ innova(implement) â†’ chamu(test) â†’ neta(review) â†’ pada(deploy) â†’ vaja(report) â†’ human",
+        "bug_flow": "chamu(detect) â†’ innova(fix) â†’ neta(review) â†’ pada(hotfix) â†’ vaja(notify)",
+        "design_flow": "human â†’ vaja â†’ rupa(design) â†’ soma(approve) â†’ innova(implement)"
+    },
+    "bus": {
+        "type": "file-based",
+        "path": "/tmp/manusat-bus",
+        "format": "text/msg",
+        "protocol": "v1"
+    },
+    "oracle": {
+        "url": "http://localhost:47778",
+        "shared": true,
+        "description": "à¸„à¸§à¸²à¸¡à¸£à¸¹à¹‰à¸£à¹ˆà¸§à¸¡à¸à¸±à¸™à¸‚à¸­à¸‡à¸—à¸¸à¸ agent â€” shared knowledge base"
+    },
+    "runtime_subagents": {
+        "config": "config/subagent-routing.json",
+        "updated": "2026-06-03",
+        "description": "Runtime peers and execution lanes shared by Jit Codex, Jit ClaudeCode, Antigravity, innova-bot, Maw, Oracle, and Ollama providers.",
+        "agents": [
+            {
+                "name": "jit-codex",
+                "runtime": "codex",
+                "role": "parent controller, evidence owner, final synthesizer",
+                "provider": "openai",
+                "model": "gpt-5.5",
+                "cost_tier": "high",
+                "policy": "Use as leader and rare advisor; delegate bounded work to cheaper lanes first."
             },
-    "oracle":  {
-                   "url":  "http://localhost:47778",
-                   "shared":  true,
-                   "description":  "à¸„à¸§à¸²à¸¡à¸£à¸¹à¹‰à¸£à¹ˆà¸§à¸¡à¸à¸±à¸™à¸‚à¸­à¸‡à¸—à¸¸à¸ agent â€” shared knowledge base"
-               },
-    "runtime_subagents":  {
-                              "config":  "config/subagent-routing.json",
-                              "updated":  "2026-06-03",
-                              "description":  "Runtime peers and execution lanes shared by Jit Codex, Jit ClaudeCode, Antigravity, innova-bot, Maw, Oracle, and Ollama providers.",
-                              "agents":  [
-                                             {
-                                                 "name":  "jit-codex",
-                                                 "runtime":  "codex",
-                                                 "role":  "parent controller, evidence owner, final synthesizer",
-                                                 "provider":  "openai",
-                                                 "model":  "gpt-5.5",
-                                                 "cost_tier":  "high",
-                                                 "policy":  "Use as leader and rare advisor; delegate bounded work to cheaper lanes first."
-                                             },
-                                             {
-                                                 "name":  "jit-claudecode",
-                                                 "runtime":  "claude-code",
-                                                 "role":  "peer implementer and review companion",
-                                                 "provider":  "copilot",
-                                                 "model":  "claude-sonnet-4.6",
-                                                 "cost_tier":  "medium",
-                                                 "policy":  "Use for innomcp/Jit coding lanes and second-opinion review."
-                                             },
-                                             {
-                                                 "name":  "innova-bot",
-                                                 "runtime":  "mcp_sse",
-                                                 "role":  "live MCP body and workspace bridge",
-                                                 "provider":  "innova_bot_sse",
-                                                 "endpoint":  "http://127.0.0.1:7010/sse",
-                                                 "gui":  "http://127.0.0.1:7010/gui",
-                                                 "health_probe":  "sse_connect",
-                                                 "fallback_agent":  "jit-claudecode",
-                                                 "fallback_provider":  "copilot",
-                                                 "retry_policy":  {
-                                                                      "attempts":  2,
-                                                                      "on":  [
-                                                                                 "connect_error",
-                                                                                 "timeout",
-                                                                                 "empty_reply"
-                                                                             ]
-                                                                  },
-                                                 "cost_tier":  "local",
-                                                 "policy":  "Use for live MCP and innomcp proof."
-                                             },
-                                             {
-                                                 "name":  "maw",
-                                                 "runtime":  "cli",
-                                                 "role":  "remote tmux, fleet, and Oracle GUI movement layer",
-                                                 "provider":  "maw",
-                                                 "command":  "maw",
-                                                 "cost_tier":  "local",
-                                                 "policy":  "Use for remote Oracle movement and node/fleet inspection."
-                                             },
-                                             {
-                                                 "name":  "antigravity-mission-control",
-                                                 "runtime":  "antigravity",
-                                                 "role":  "Google-authenticated mission control for wide coordination and parallel verification",
-                                                 "provider":  "antigravity",
-                                                 "command":  "scripts/antigravity-y.sh",
-                                                 "windows_command":  "scripts/antigravity-y.ps1",
-                                                 "config":  "C:\\Users\\USER-NT\\.antigravity\\config.yaml",
-                                                 "mcp_servers":  [
-                                                                     "playwright",
-                                                                     "chrome-devtools"
-                                                                 ],
-                                                 "cost_tier":  "local",
-                                                 "policy":  "Use Antigravity for wide coordination and browser MCP verification; Codex/Jit remains deep executor and final evidence owner."
-                                             },
-                                             {
-                                                 "name":  "oracle-brain",
-                                                 "runtime":  "arra-oracle-v3",
-                                                 "role":  "shared memory and skills brain",
-                                                 "provider":  "oracle",
-                                                 "endpoint":  "http://127.0.0.1:47778",
-                                                 "cost_tier":  "local",
-                                                 "policy":  "Use for memory, skill, awaken, and lore lookup."
-                                             },
-                                             {
-                                                 "name":  "gemma4-31b-cloud",
-                                                 "runtime":  "ollama",
-                                                 "role":  "strong economical cloud reasoning lane",
-                                                 "provider":  "ollama_cloud",
-                                                 "model":  "gemma4:31b-cloud",
-                                                 "cost_tier":  "medium",
-                                                 "policy":  "Use before GPT-5.5 when stronger synthesis is needed."
-                                             },
-                                             {
-                                                 "name":  "agent-mdes",
-                                                 "runtime":  "agent-spawner",
-                                                 "role":  "Core Engineering Powerhouse",
-                                                 "provider":  "ollama_mdes",
-                                                 "model":  "gemma4:26b",
-                                                 "cost_tier":  "low",
-                                                 "policy":  "Use for high-complexity technical tasks."
-                                             },
-                                             {
-                                                 "name":  "agent-thaillm",
-                                                 "runtime":  "agent-spawner",
-                                                 "role":  "Thai Linguistic Specialist",
-                                                 "provider":  "thaillm",
-                                                 "model":  "openthaigpt-thaillm-8b-instruct-v7.2",
-                                                 "cost_tier":  "medium",
-                                                 "policy":  "Use for high-fidelity Thai translation and cultural nuance."
-                                             },
-                                             {
-                                                 "name":  "agent-ollama",
-                                                 "runtime":  "agent-spawner",
-                                                 "role":  "Local Privacy \u0026 Rapid Triage Guardian",
-                                                 "provider":  "ollama_local",
-                                                 "model":  "qwen2.5-coder:7b",
-                                                 "cost_tier":  "low",
-                                                 "policy":  "Use for privacy-first tasks or quick local triage."
-                                             },
-                                             {
-                                                 "name":  "agent-copilot",
-                                                 "runtime":  "agent-spawner",
-                                                 "role":  "Rapid Prototyping \u0026 Boilerplate Expert",
-                                                 "provider":  "copilot",
-                                                 "model":  "claude-sonnet-4.6",
-                                                 "cost_tier":  "medium",
-                                                 "policy":  "Use for high-speed scaffolding."
-                                             }
-                                         ]
-                          },
-    "routing":  {
-                    "config":  "config/subagent-routing.json",
-                    "default_provider":  "ollama_mdes",
-                    "budget_order":  [
-                                         "ollama_mdes",
-                                         "thaillm",
-                                         "ollama_local",
-                                         "ollama_cloud",
-                                         "antigravity",
-                                         "copilot",
-                                         "openai"
-                                     ],
-                    "advisor":  {
-                                    "provider":  "openai",
-                                    "model":  "gpt-5.5",
-                                    "policy":  "rare advisor only"
-                                },
-                    "validation":  [
-                                       "node .codex/skills/agent-fleet-budget/scripts/check-fleet.mjs",
-                                       "node eval/antigravity-probe.js",
-                                       "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/oracle-readiness.ps1 -Json",
-                                       "maw doctor --json"
-                                   ]
-                }
+            {
+                "name": "jit-claudecode",
+                "runtime": "claude-code",
+                "role": "peer implementer and review companion",
+                "provider": "copilot",
+                "model": "claude-sonnet-4.6",
+                "cost_tier": "medium",
+                "policy": "Use for innomcp/Jit coding lanes and second-opinion review."
+            },
+            {
+                "name": "innova-bot",
+                "runtime": "mcp_sse",
+                "role": "live MCP body and workspace bridge",
+                "provider": "innova_bot_sse",
+                "endpoint": "http://127.0.0.1:7010/sse",
+                "gui": "http://127.0.0.1:7010/gui",
+                "health_probe": "sse_connect",
+                "fallback_agent": "jit-claudecode",
+                "fallback_provider": "copilot",
+                "retry_policy": {
+                    "attempts": 2,
+                    "on": [
+                        "connect_error",
+                        "timeout",
+                        "empty_reply"
+                    ]
+                },
+                "cost_tier": "local",
+                "policy": "Use for live MCP and innomcp proof."
+            },
+            {
+                "name": "maw",
+                "runtime": "cli",
+                "role": "remote tmux, fleet, and Oracle GUI movement layer",
+                "provider": "maw",
+                "command": "maw",
+                "cost_tier": "local",
+                "policy": "Use for remote Oracle movement and node/fleet inspection."
+            },
+            {
+                "name": "antigravity-mission-control",
+                "runtime": "antigravity",
+                "role": "Google-authenticated mission control for wide coordination and parallel verification",
+                "provider": "antigravity",
+                "command": "scripts/antigravity-y.sh",
+                "windows_command": "scripts/antigravity-y.ps1",
+                "config": "C:\\Users\\USER-NT\\.antigravity\\config.yaml",
+                "mcp_servers": [
+                    "playwright",
+                    "chrome-devtools"
+                ],
+                "cost_tier": "local",
+                "policy": "Use Antigravity for wide coordination and browser MCP verification; Codex/Jit remains deep executor and final evidence owner."
+            },
+            {
+                "name": "oracle-brain",
+                "runtime": "arra-oracle-v3",
+                "role": "shared memory and skills brain",
+                "provider": "oracle",
+                "endpoint": "http://127.0.0.1:47778",
+                "cost_tier": "local",
+                "policy": "Use for memory, skill, awaken, and lore lookup."
+            },
+            {
+                "name": "gemma4-31b-cloud",
+                "runtime": "ollama",
+                "role": "strong economical cloud reasoning lane",
+                "provider": "ollama_cloud",
+                "model": "gemma4:31b-cloud",
+                "cost_tier": "medium",
+                "policy": "Use before GPT-5.5 when stronger synthesis is needed."
+            },
+            {
+                "name": "agent-mdes",
+                "runtime": "agent-spawner",
+                "role": "Core Engineering Powerhouse",
+                "provider": "ollama_mdes",
+                "model": "gemma4:26b",
+                "cost_tier": "low",
+                "policy": "Use for high-complexity technical tasks."
+            },
+            {
+                "name": "agent-thaillm",
+                "runtime": "agent-spawner",
+                "role": "Thai Linguistic Specialist",
+                "provider": "thaillm",
+                "model": "openthaigpt-thaillm-8b-instruct-v7.2",
+                "cost_tier": "medium",
+                "policy": "Use for high-fidelity Thai translation and cultural nuance."
+            },
+            {
+                "name": "agent-ollama",
+                "runtime": "agent-spawner",
+                "role": "Local Privacy & Rapid Triage Guardian",
+                "provider": "ollama_local",
+                "model": "qwen2.5-coder:7b",
+                "cost_tier": "low",
+                "policy": "Use for privacy-first tasks or quick local triage."
+            },
+            {
+                "name": "agent-copilot",
+                "runtime": "agent-spawner",
+                "role": "Rapid Prototyping & Boilerplate Expert",
+                "provider": "copilot",
+                "model": "claude-sonnet-4.6",
+                "cost_tier": "medium",
+                "policy": "Use for high-speed scaffolding."
+            }
+        ]
+    },
+    "routing": {
+        "config": "config/subagent-routing.json",
+        "default_provider": "ollama_mdes",
+        "budget_order": [
+            "ollama_mdes",
+            "thaillm",
+            "ollama_local",
+            "ollama_cloud",
+            "antigravity",
+            "copilot",
+            "openai"
+        ],
+        "advisor": {
+            "provider": "openai",
+            "model": "gpt-5.5",
+            "policy": "rare advisor only"
+        },
+        "validation": [
+            "node .codex/skills/agent-fleet-budget/scripts/check-fleet.mjs",
+            "node eval/antigravity-probe.js",
+            "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/oracle-readiness.ps1 -Json",
+            "maw doctor --json"
+        ]
+    }
 }
