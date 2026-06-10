@@ -22,7 +22,7 @@ Claude Code:
 """
 
 import os, json, time, re, threading, urllib.request, urllib.error, glob
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
 # ─── Config ───────────────────────────────────────────────────────────
 PROXY_PORT = int(os.environ.get("MULTI_PROXY_PORT", "4322"))
@@ -193,6 +193,9 @@ def _init_backends():
             print(f"[MULTI] ✓ Local Ollama backend ({len(local_models)} models: {', '.join(local_models[:3])}...)", flush=True)
         else:
             print("[MULTI] ○ Local Ollama: running but no models installed", flush=True)
+    except Exception:
+        print("[MULTI] ○ Local Ollama: not reachable", flush=True)
+
     if COMMANDCODE_API_KEY:
         available.append("commandcode")
         print(f"[MULTI] ✓ CommandCode backend (model: {COMMANDCODE_MODEL})", flush=True)
@@ -575,8 +578,33 @@ def _call_local(body: dict, model_override: str = None) -> dict:
 
 
 def _call_commandcode(body: dict, model_override: str = None) -> dict:
-    """Call CommandCode API"""
-    model    = model_override or COMMANDCODE_MODEL
+    """Call CommandCode API — dual-format hub.
+    claude-* models → native Anthropic /messages (pass-through);
+    everything else → OpenAI /chat/completions (translated)."""
+    model = model_override or COMMANDCODE_MODEL
+
+    if model.lower().startswith("claude"):
+        # Native Anthropic wire format — pass body through unchanged
+        cc_body = {k: v for k, v in body.items() if k != "stream"}
+        cc_body["model"] = model
+        cc_body.setdefault("max_tokens", 4096)
+        payload = json.dumps(cc_body).encode()
+        req = urllib.request.Request(
+            f"{COMMANDCODE_BASE_URL}/messages",
+            data=payload,
+            headers={
+                "Content-Type":  "application/json",
+                "Authorization": f"Bearer {COMMANDCODE_API_KEY}",
+                # Cloudflare blocks the default Python-urllib UA with 403
+                "User-Agent":    "claude-multi-proxy/1.0",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=180) as resp:
+            raw = json.loads(resp.read())
+            raw["model"] = f"commandcode/{model}"
+            return raw
+
     oai_body = anthropic_to_openai(body, model)
     payload  = json.dumps(oai_body).encode()
     req = urllib.request.Request(
@@ -585,6 +613,8 @@ def _call_commandcode(body: dict, model_override: str = None) -> dict:
         headers={
             "Content-Type":  "application/json",
             "Authorization": f"Bearer {COMMANDCODE_API_KEY}",
+            # Cloudflare blocks the default Python-urllib UA with 403
+            "User-Agent":    "claude-multi-proxy/1.0",
         },
         method="POST",
     )
@@ -749,6 +779,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
                     "ollama":   bool(OLLAMA_TOKEN),
                     "thaillm":  bool(THAILLM_TOKEN),
                     "local":    "local" in _available_backends,
+                    "commandcode": bool(COMMANDCODE_API_KEY),
                 },
             })
         elif "/v1/models" in self.path:
@@ -818,6 +849,15 @@ class ProxyHandler(BaseHTTPRequestHandler):
 
         path   = self.path.split("?")[0]
         is_stream = body.get("stream", False)
+
+        if "/count_tokens" in path:
+            # Claude Code token-counting stub — rough estimate (chars/4)
+            try:
+                est = max(1, len(json.dumps(body.get("messages", []), ensure_ascii=False)) // 4)
+            except Exception:
+                est = 1
+            self._send_json(200, {"input_tokens": est})
+            return
 
         if "/messages" in path or "/complete" in path:
             # Anthropic format — pass through to call_with_rotation
@@ -944,7 +984,7 @@ def main():
     global _available_backends
     _available_backends = _init_backends()
     banner()
-    server = HTTPServer((PROXY_HOST, PROXY_PORT), ProxyHandler)
+    server = ThreadingHTTPServer((PROXY_HOST, PROXY_PORT), ProxyHandler)
     print(f"[MULTI] 🚀 Ready at http://{PROXY_HOST}:{PROXY_PORT}/health\n", flush=True)
     try:
         server.serve_forever()
