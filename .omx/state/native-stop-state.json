@@ -1379,6 +1379,36 @@
         "last_turn_id": "019e99d5-b8d6-7b93-ad34-bdac25e296bd",
         "last_thread_id": null
       }
+    },
+    "019eb4fa-76cf-7a73-9cd8-bdac465f4fd9": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|ok openai",
+        "first_seen_at": "2026-06-11T04:39:44.582Z",
+        "last_seen_at": "2026-06-11T04:39:44.582Z",
+        "repeat_count": 1,
+        "last_turn_id": "019eb4fa-775f-78c1-8391-9b78803baac1",
+        "last_thread_id": null
+      }
+    },
+    "019eb4fc-6569-7ff0-9465-f8150159fec0": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|ok openai",
+        "first_seen_at": "2026-06-11T04:41:50.996Z",
+        "last_seen_at": "2026-06-11T04:41:50.996Z",
+        "repeat_count": 1,
+        "last_turn_id": "019eb4fc-65ee-7440-92dc-c7a1b0ccd0ea",
+        "last_thread_id": null
+      }
+    },
+    "019eb4ff-2dc6-7fa1-807a-d48c4a4d2745": {
+      "ordinary_no_progress_guard": {
+        "fingerprint": "ordinary|ok openai",
+        "first_seen_at": "2026-06-11T04:44:53.663Z",
+        "last_seen_at": "2026-06-11T04:44:53.663Z",
+        "repeat_count": 1,
+        "last_turn_id": "019eb4ff-2e74-7ee2-89cb-8bc82cea5fed",
+        "last_thread_id": null
+      }
     }
   }
 }

@@ -1,16 +1,12 @@
 {
-  "probed_at_ms": 1781115619545,
-  "timeout_ms": 35000,
+  "probed_at_ms": 1781152995837,
+  "timeout_ms": 30000,
   "full_probe": false,
   "probed_backends": [
-    "commandcode",
-    "thaillm",
-    "ollama_mdes"
+    "commandcode"
   ],
   "usable": [
-    "commandcode",
-    "ollama_mdes",
-    "thaillm"
+    "commandcode"
   ],
   "cached_usable": [
     "commandcode",
@@ -83,10 +79,10 @@
     "commandcode": {
       "backend": "commandcode",
       "status": "ALIVE",
-      "ms": 1930,
+      "ms": 2422,
       "served_by": "commandcode",
       "sample": "OK",
-      "probed_at_ms": 1781115619545
+      "probed_at_ms": 1781152995837
     }
   }
 }

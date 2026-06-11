@@ -2,12 +2,26 @@
 
 import http from "node:http";
 import https from "node:https";
+import fs from "node:fs";
 import net from "node:net";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const jitRoot = path.resolve(__dirname, "../../../..");
+
+function loadEnvFile(envPath) {
+  if (!fs.existsSync(envPath)) return;
+  const lines = fs.readFileSync(envPath, "utf8").split(/\r?\n/);
+  for (const line of lines) {
+    const match = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
+    if (match && !process.env[match[1]]) {
+      process.env[match[1]] = match[2].replace(/^["']|["']$/g, "");
+    }
+  }
+}
+
+loadEnvFile(path.join(jitRoot, ".env"));
 const modelRouter = await import(pathToFileURL(path.join(jitRoot, "hermes-discord", "model-router.js")).href);
 const smokeMode = process.argv.includes("--smoke");
 
@@ -216,6 +230,22 @@ async function probeThaiLLM(url, token, model) {
   return out;
 }
 
+async function probeCommandCode(url, token) {
+  const baseUrl = String(url || "https://api.commandcode.ai/provider/v1").replace(/\/+$/, "");
+  if (!token) return { ok: false, status: 0, error: "missing token", baseUrl };
+  const headers = { Authorization: `Bearer ${token}` };
+  const modelsProbe = await requestJson(`${baseUrl}/models`, headers, 10000);
+  const models = Array.isArray(modelsProbe.json?.data)
+    ? modelsProbe.json.data.map((item) => String(item.id || item.model || "")).filter(Boolean)
+    : Array.isArray(modelsProbe.json?.models)
+    ? modelsProbe.json.models.map((item) => String(item.id || item.name || item.model || "")).filter(Boolean)
+    : [];
+  const out = { ...modelsProbe, baseUrl };
+  delete out.json;
+  if (models.length) out.models = models.slice(0, 80);
+  return out;
+}
+
 async function probeFirstStatus(urls, headers = {}, timeoutMs = 5000) {
   let last = null;
   for (const targetUrl of urls.filter(Boolean)) {
@@ -247,6 +277,7 @@ async function main() {
     thaillm: await probeThaiLLM(backends.thaillm?.url, process.env.THAILLM_TOKEN || "", backends.thaillm?.model),
     ollama_local: await probeOllama(backends.ollama_local?.url, process.env.OLLAMA_LOCAL_TOKEN || ""),
     ollama_cloud: await probeOllama(backends.ollama_cloud?.url, process.env.OLLAMA_CLOUD_TOKEN || ""),
+    commandcode: await probeCommandCode(backends.commandcode?.url, process.env.COMMANDCODE_API_KEY || ""),
     openclaude: await requestStatus(
       backends.openclaude?.healthEndpoint || `http://${backends.openclaude?.host || "localhost"}:${Number(backends.openclaude?.port || 8000)}/health`
     ),
@@ -290,6 +321,7 @@ async function main() {
       thaillm: summarize("thaillm", Boolean(backends.thaillm?.available), probes.thaillm),
       ollama_local: summarize("ollama_local", Boolean(backends.ollama_local?.available), probes.ollama_local),
       ollama_cloud: summarize("ollama_cloud", Boolean(backends.ollama_cloud?.available), probes.ollama_cloud, { requireTargetModel: true }),
+      commandcode: summarize("commandcode", Boolean(backends.commandcode?.available), probes.commandcode),
       copilot: {
         state: backends.copilot?.available ? "configured" : "offline",
         details: backends.copilot,
@@ -304,7 +336,7 @@ async function main() {
   };
 
   if (smokeMode) {
-    const smokeBackends = ["ollama_mdes", "thaillm", "ollama_local", "ollama_cloud", "copilot", "openai", "openclaude"];
+    const smokeBackends = ["ollama_mdes", "thaillm", "commandcode", "ollama_local", "ollama_cloud", "copilot", "openai", "openclaude"];
     const smokeResults = [];
     for (const backend of smokeBackends) {
       const startedAt = Date.now();
