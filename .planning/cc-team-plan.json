@@ -14,449 +14,505 @@
           "id": "A01",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-pro",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A01-test-auth.md",
-          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: login page renders form, invalid creds shows Thai error, login form has email+password fields, navigating to /login from guest shows login CTA. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A01-dev.md",
+          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: login page renders form, invalid creds shows Thai error, login form has email+password fields, navigating to /login from guest shows login CTA. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case.",
+          "finished_at": "2026-06-12T19:28:03.431Z"
         },
         {
           "id": "A02",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-pro",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A02-test-chat.md",
-          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: on /living-chat the chat input + Send button render, typing a message enables Send, the message appears in the transcript after send, mode selector (Local) is present. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A02-dev.md",
+          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: on /living-chat the chat input + Send button render, typing a message enables Send, the message appears in the transcript after send, mode selector (Local) is present. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case.",
+          "finished_at": "2026-06-12T19:28:04.048Z"
         },
         {
           "id": "A03",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A03-test-modelselector.md",
-          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: the AI model selector / mode dropdown renders on /living-chat, switching mode updates the active model badge, options include Local. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A03-dev.md",
+          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: the AI model selector / mode dropdown renders on /living-chat, switching mode updates the active model badge, options include Local. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case.",
+          "finished_at": "2026-06-12T19:33:08.794Z"
         },
         {
           "id": "A04",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A04-test-leaderboard.md",
-          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: Agent Leaderboard panel renders with agent rows, filter tabs (All/MDES/Claude/GPT/Local) are clickable, sort columns (Score/Req/Lat) present. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A04-dev.md",
+          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: Agent Leaderboard panel renders with agent rows, filter tabs (All/MDES/Claude/GPT/Local) are clickable, sort columns (Score/Req/Lat) present. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case.",
+          "finished_at": "2026-06-12T19:33:11.458Z"
         },
         {
           "id": "A05",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A05-test-dashboard.md",
-          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: /dashboard route loads (or redirects to login for guest), if logged-out shows login prompt, page title contains INNOMCP. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A05-dev.md",
+          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: /dashboard route loads (or redirects to login for guest), if logged-out shows login prompt, page title contains INNOMCP. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case.",
+          "finished_at": "2026-06-12T19:27:52.224Z"
         },
         {
           "id": "A06",
           "role": "dev",
-          "model": "commandcode/minimax/minimax-m3",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A06-test-workspace.md",
-          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: opening the Workspace Files panel renders a file list region without console errors, panel close (X) works. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A06-dev.md",
+          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: opening the Workspace Files panel renders a file list region without console errors, panel close (X) works. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case.",
+          "finished_at": "2026-06-12T19:33:06.685Z"
         },
         {
           "id": "A07",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A07-test-memory.md",
-          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: Memory panel opens, shows a memories list region or empty-state text, no uncaught page errors on load. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A07-dev.md",
+          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: Memory panel opens, shows a memories list region or empty-state text, no uncaught page errors on load. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case.",
+          "finished_at": "2026-06-12T19:28:03.982Z"
         },
         {
           "id": "A08",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A08-test-providerhealth.md",
-          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: provider health indicators render (dots ● with provider names like ollama-local, anthropic, openai), at least one provider row visible on /living-chat. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A08-dev.md",
+          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: provider health indicators render (dots ● with provider names like ollama-local, anthropic, openai), at least one provider row visible on /living-chat. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case.",
+          "finished_at": "2026-06-12T19:33:14.354Z"
         },
         {
           "id": "A09",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-pro",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A09-test-ws-reconnect.md",
-          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: on /living-chat the page survives a simulated offline/online (use page.context().setOffline true then false), no permanent crash, chat input still interactive after reconnect. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A09-dev.md",
+          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: on /living-chat the page survives a simulated offline/online (use page.context().setOffline true then false), no permanent crash, chat input still interactive after reconnect. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case.",
+          "finished_at": "2026-06-12T19:28:20.240Z"
         },
         {
           "id": "A10",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A10-test-guestbanner.md",
-          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: guest mode shows the \"ใช้งานได้ประมาณ 50%\" banner with a login CTA \"เข้าสู่ระบบ\", banner is dismissible or persists across reload. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A10-dev.md",
+          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: guest mode shows the \"ใช้งานได้ประมาณ 50%\" banner with a login CTA \"เข้าสู่ระบบ\", banner is dismissible or persists across reload. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case.",
+          "finished_at": "2026-06-12T19:28:20.468Z"
         },
         {
           "id": "A11",
           "role": "dev",
-          "model": "commandcode/minimax/minimax-m3",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A11-test-mobile.md",
-          "task": "Output ONLY raw TypeScript (no fences). Playwright spec, Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Focus: mobile responsive at viewport 375x812 — /living-chat has no horizontal overflow (document.scrollWidth <= innerWidth + 2), chat input reachable, sidebar collapses. test.describe + test.use({ viewport: { width: 375, height: 812 } }), self-contained tests, setTimeout 30000, strict TS."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A11-dev.md",
+          "task": "Output ONLY raw TypeScript (no fences). Playwright spec, Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Focus: mobile responsive at viewport 375x812 — /living-chat has no horizontal overflow (document.scrollWidth <= innerWidth + 2), chat input reachable, sidebar collapses. test.describe + test.use({ viewport: { width: 375, height: 812 } }), self-contained tests, setTimeout 30000, strict TS.",
+          "finished_at": "2026-06-12T19:33:07.511Z"
         },
         {
           "id": "A12",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A12-test-theme.md",
-          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: theme toggle button (aria-label Toggle theme) present, clicking it flips html/body class between light and dark, preference persists on reload. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A12-dev.md",
+          "task": "Output ONLY raw TypeScript (no markdown fences, no commentary, start with the import line). Write a Playwright spec using @playwright/test for innomcp at http://localhost:3000. Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Spec focus: theme toggle button (aria-label Toggle theme) present, clicking it flips html/body class between light and dark, preference persists on reload. Use test.describe, test.use({ viewport: { width: 1440, height: 900 } }), each test self-contained (own page.goto, dismiss onboarding by clicking text \"ข้าม\" wrapped in try/catch), test.setTimeout(30000). Assertions must be resilient (use getByRole/getByText, waitForTimeout where needed, tolerate guest mode). Strict TypeScript, typed arrays. 3-6 tests covering happy path + one edge case.",
+          "finished_at": "2026-06-12T19:33:04.211Z"
         },
         {
           "id": "A13",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-pro",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A13-unit-ratelimiter.md",
-          "task": "Output ONLY raw TypeScript (no fences). Write a vitest/jest-agnostic unit test using node:test + node:assert for an Express rate limiter middleware. Assume import { createRateLimiter } from \"../middleware/rateLimiter\" exporting a factory (windowMs, max) => (req,res,next). Test: allows up to max requests then 429s, resets after window (use fake timers or small window), keys by req.ip, sets RateLimit headers. Document the assumed signature in a top comment. Standalone, runnable with: node --test."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A13-dev.md",
+          "task": "Output ONLY raw TypeScript (no fences). Write a vitest/jest-agnostic unit test using node:test + node:assert for an Express rate limiter middleware. Assume import { createRateLimiter } from \"../middleware/rateLimiter\" exporting a factory (windowMs, max) => (req,res,next). Test: allows up to max requests then 429s, resets after window (use fake timers or small window), keys by req.ip, sets RateLimit headers. Document the assumed signature in a top comment. Standalone, runnable with: node --test.",
+          "finished_at": "2026-06-12T19:28:46.802Z"
         },
         {
           "id": "A14",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-pro",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-A14-unit-healthagg.md",
-          "task": "Output ONLY raw TypeScript (no fences). Unit test (node:test + node:assert) for a health aggregator that combines per-service statuses into overall {status: healthy|degraded|unhealthy, services:[...]}. Assume import { aggregateHealth } from \"../services/healthAggregator\". Test: all healthy => healthy, one unhealthy => degraded or unhealthy, empty => unknown/unhealthy, preserves service names. Document assumed signature in a comment. Runnable via node --test."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-A14-dev.md",
+          "task": "Output ONLY raw TypeScript (no fences). Unit test (node:test + node:assert) for a health aggregator that combines per-service statuses into overall {status: healthy|degraded|unhealthy, services:[...]}. Assume import { aggregateHealth } from \"../services/healthAggregator\". Test: all healthy => healthy, one unhealthy => degraded or unhealthy, empty => unknown/unhealthy, preserves service names. Document assumed signature in a comment. Runnable via node --test.",
+          "finished_at": "2026-06-12T19:28:17.580Z"
         },
         {
           "id": "B01",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-B01-release-checklist.md",
-          "task": "Output ONLY raw markdown. Write RELEASE-CHECKLIST.md for innomcp (Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/.). Thai language, English technical terms. Sections: pre-release gates (tsc EXIT 0 both packages, Playwright e2e pass, gitleaks clean, no .env committed, docker build ok), release steps (tag, build images, db migrate, deploy compose, smoke test), post-release verification (health endpoints, chat roundtrip, browser signoff), rollback trigger conditions. Use checkbox lists. Reference the dead-port:3011->:3015 fix and MEGA-100 fence-corruption lesson as historical gates. Under 90 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-B01-dev.md",
+          "task": "Output ONLY raw markdown. Write RELEASE-CHECKLIST.md for innomcp (Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/.). Thai language, English technical terms. Sections: pre-release gates (tsc EXIT 0 both packages, Playwright e2e pass, gitleaks clean, no .env committed, docker build ok), release steps (tag, build images, db migrate, deploy compose, smoke test), post-release verification (health endpoints, chat roundtrip, browser signoff), rollback trigger conditions. Use checkbox lists. Reference the dead-port:3011->:3015 fix and MEGA-100 fence-corruption lesson as historical gates. Under 90 lines.",
+          "finished_at": "2026-06-12T19:33:16.511Z"
         },
         {
           "id": "B02",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-B02-deploy-runbook.md",
-          "task": "Output ONLY raw markdown. DEPLOYMENT-RUNBOOK.md for innomcp docker-compose (mariadb :3308, redis, api :3015->container:3011, web :3000). Thai. Steps: prerequisites (.env required vars), docker compose build + up -d, healthcheck waits, db readiness, verifying each service, common failures (port held, db unhealthy, NEXT_PUBLIC baked wrong) + fixes. Under 100 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-B02-dev.md",
+          "task": "Output ONLY raw markdown. DEPLOYMENT-RUNBOOK.md for innomcp docker-compose (mariadb :3308, redis, api :3015->container:3011, web :3000). Thai. Steps: prerequisites (.env required vars), docker compose build + up -d, healthcheck waits, db readiness, verifying each service, common failures (port held, db unhealthy, NEXT_PUBLIC baked wrong) + fixes. Under 100 lines.",
+          "finished_at": "2026-06-12T19:28:31.916Z"
         },
         {
           "id": "B03",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-B03-rollback-plan.md",
-          "task": "Output ONLY raw markdown. ROLLBACK-PLAN.md for innomcp. Thai. When to rollback, how (docker compose down + checkout previous tag + rebuild + up), db migration rollback caution, preserving user data, verifying rollback success, comms. Honor Nothing-is-Deleted (tag don't delete). Under 80 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-B03-dev.md",
+          "task": "Output ONLY raw markdown. ROLLBACK-PLAN.md for innomcp. Thai. When to rollback, how (docker compose down + checkout previous tag + rebuild + up), db migration rollback caution, preserving user data, verifying rollback success, comms. Honor Nothing-is-Deleted (tag don't delete). Under 80 lines.",
+          "finished_at": "2026-06-12T19:28:28.591Z"
         },
         {
           "id": "B04",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-B04-smoke-test.md",
-          "task": "Output ONLY raw bash (no fences), shebang for bash. smoke-test.sh for innomcp: curl health endpoints (http://localhost:3015/api/health and http://localhost:3000), assert HTTP 200 + JSON status field, check web title contains INNOMCP, check WS port reachable, print PASS/FAIL summary table, exit non-zero on any fail. Double-quote vars, no bashisms beyond [[ ]]. Under 90 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-B04-dev.md",
+          "task": "Output ONLY raw bash (no fences), shebang for bash. smoke-test.sh for innomcp: curl health endpoints (http://localhost:3015/api/health and http://localhost:3000), assert HTTP 200 + JSON status field, check web title contains INNOMCP, check WS port reachable, print PASS/FAIL summary table, exit non-zero on any fail. Double-quote vars, no bashisms beyond [[ ]]. Under 90 lines.",
+          "finished_at": "2026-06-12T19:33:40.640Z"
         },
         {
           "id": "B05",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-B05-env-matrix.md",
-          "task": "Output ONLY raw markdown. ENV-MATRIX.md for innomcp: a table of every env var (NEXT_PUBLIC_BACKEND_URL, NEXT_PUBLIC_WS_URL, NODE_BACKEND_HOST, DB_HOST/PORT/NAME/USER/PASSWORD, MARIADB_*, REDIS_URL, OLLAMA_URL, COMMANDCODE_API_KEY, JWT_SECRET, INNOMCP_MODE) with columns: var | scope (build/runtime/both) | dev value | docker value | secret? | notes. Mark which are build-time-baked for Next.js. Thai notes. Under 90 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-B05-dev.md",
+          "task": "Output ONLY raw markdown. ENV-MATRIX.md for innomcp: a table of every env var (NEXT_PUBLIC_BACKEND_URL, NEXT_PUBLIC_WS_URL, NODE_BACKEND_HOST, DB_HOST/PORT/NAME/USER/PASSWORD, MARIADB_*, REDIS_URL, OLLAMA_URL, COMMANDCODE_API_KEY, JWT_SECRET, INNOMCP_MODE) with columns: var | scope (build/runtime/both) | dev value | docker value | secret? | notes. Mark which are build-time-baked for Next.js. Thai notes. Under 90 lines.",
+          "finished_at": "2026-06-12T19:28:39.533Z"
         },
         {
           "id": "B06",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-pro",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-B06-api-contract.md",
-          "task": "Output ONLY raw markdown. API-CONTRACT.md for innomcp-node Express backend. Document the known REST endpoints: GET /api/health, POST /api/auth/login, GET /api/auth/me, POST /api/auth/refresh, GET/POST /api/projects, GET /api/tasks, GET /api/dashboard, GET /api/mdes/models, chat/stream endpoints, GET /api/memories. For each: method, path, auth required?, request shape, response shape (best-effort), status codes. Mark UNVERIFIED where inferred. Table or per-endpoint blocks. Under 110 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-B06-dev.md",
+          "task": "Output ONLY raw markdown. API-CONTRACT.md for innomcp-node Express backend. Document the known REST endpoints: GET /api/health, POST /api/auth/login, GET /api/auth/me, POST /api/auth/refresh, GET/POST /api/projects, GET /api/tasks, GET /api/dashboard, GET /api/mdes/models, chat/stream endpoints, GET /api/memories. For each: method, path, auth required?, request shape, response shape (best-effort), status codes. Mark UNVERIFIED where inferred. Table or per-endpoint blocks. Under 110 lines.",
+          "finished_at": "2026-06-12T19:28:46.306Z"
         },
         {
           "id": "B07",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-B07-monitoring.md",
-          "task": "Output ONLY raw markdown. MONITORING.md for innomcp. Thai. What to monitor (health endpoint status degraded/unhealthy, DB connection, Redis, WS connections, provider availability, error rate, latency), how (health endpoint polling, log patterns), alert thresholds, dashboards to build, where logs live. Under 90 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-B07-dev.md",
+          "task": "Output ONLY raw markdown. MONITORING.md for innomcp. Thai. What to monitor (health endpoint status degraded/unhealthy, DB connection, Redis, WS connections, provider availability, error rate, latency), how (health endpoint polling, log patterns), alert thresholds, dashboards to build, where logs live. Under 90 lines.",
+          "finished_at": "2026-06-12T19:33:18.012Z"
         },
         {
           "id": "B08",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-B08-known-issues.md",
-          "task": "Output ONLY raw markdown. KNOWN-ISSUES.md for innomcp. Thai. List current known issues with status: zombie :3011 daemon needs admin kill on Windows, DB host port was 3306 vs 3308 (fixed), chat greeting returned garbage \"ห้ามเดาโว้ย\" (Phase 3.1 pending), NEXT_PUBLIC baked at build (docker rebuild needed for url change), GLM model dies on large Thai prompts via CC. Each: symptom, cause, workaround, fix-status. Under 80 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-B08-dev.md",
+          "task": "Output ONLY raw markdown. KNOWN-ISSUES.md for innomcp. Thai. List current known issues with status: zombie :3011 daemon needs admin kill on Windows, DB host port was 3306 vs 3308 (fixed), chat greeting returned garbage \"ห้ามเดาโว้ย\" (Phase 3.1 pending), NEXT_PUBLIC baked at build (docker rebuild needed for url change), GLM model dies on large Thai prompts via CC. Each: symptom, cause, workaround, fix-status. Under 80 lines.",
+          "finished_at": "2026-06-12T19:28:43.065Z"
         },
         {
           "id": "C01",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-pro",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-C01-hook-session-start.md",
-          "task": "Output ONLY raw JavaScript (no fences), node shebang + comment. Target: Jit oracle (Claude Code project on Windows + Git Bash, hooks under .githooks/ or .claude/hooks/, node v20+ available, bash available). Hooks are Claude Code settings.json hooks OR git hooks — specify which. Keep cross-platform (Windows path-safe, no /tmp hardcode — use os.tmpdir()). Write .claude/hooks/session-start.js: a Claude Code SessionStart hook (reads hook JSON from stdin, writes context to stdout) that loads bounded prior context (<=8000 chars, env ECC_SESSION_START_MAX_CHARS override) from the most recent file under ψ/inbox/handoff/ and the latest ψ/memory/retrospectives entry, plus git last-commit line. Output a concise context block. Fail-safe (never throw, empty output on error). Under 90 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-C01-dev.md",
+          "task": "Output ONLY raw JavaScript (no fences), node shebang + comment. Target: Jit oracle (Claude Code project on Windows + Git Bash, hooks under .githooks/ or .claude/hooks/, node v20+ available, bash available). Hooks are Claude Code settings.json hooks OR git hooks — specify which. Keep cross-platform (Windows path-safe, no /tmp hardcode — use os.tmpdir()). Write .claude/hooks/session-start.js: a Claude Code SessionStart hook (reads hook JSON from stdin, writes context to stdout) that loads bounded prior context (<=8000 chars, env ECC_SESSION_START_MAX_CHARS override) from the most recent file under ψ/inbox/handoff/ and the latest ψ/memory/retrospectives entry, plus git last-commit line. Output a concise context block. Fail-safe (never throw, empty output on error). Under 90 lines.",
+          "finished_at": "2026-06-12T19:29:04.398Z"
         },
         {
           "id": "C02",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-pro",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-C02-hook-pre-compact.md",
-          "task": "Output ONLY raw JavaScript (no fences), node shebang + comment. Target: Jit oracle (Claude Code project on Windows + Git Bash, hooks under .githooks/ or .claude/hooks/, node v20+ available, bash available). Hooks are Claude Code settings.json hooks OR git hooks — specify which. Keep cross-platform (Windows path-safe, no /tmp hardcode — use os.tmpdir()). Write .claude/hooks/pre-compact.js: a PreCompact hook that snapshots current session state to ψ/inbox/handoff/auto-compact-<ISO-from-stdin-or-arg>.md (no Date.now — read timestamp from hook input or argv). Includes: pending git status summary (via child_process git status --short), last 5 commits, a placeholder for the model to fill. Fail-safe. Under 90 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-C02-dev.md",
+          "task": "Output ONLY raw JavaScript (no fences), node shebang + comment. Target: Jit oracle (Claude Code project on Windows + Git Bash, hooks under .githooks/ or .claude/hooks/, node v20+ available, bash available). Hooks are Claude Code settings.json hooks OR git hooks — specify which. Keep cross-platform (Windows path-safe, no /tmp hardcode — use os.tmpdir()). Write .claude/hooks/pre-compact.js: a PreCompact hook that snapshots current session state to ψ/inbox/handoff/auto-compact-<ISO-from-stdin-or-arg>.md (no Date.now — read timestamp from hook input or argv). Includes: pending git status summary (via child_process git status --short), last 5 commits, a placeholder for the model to fill. Fail-safe. Under 90 lines.",
+          "finished_at": "2026-06-12T19:30:59.058Z"
         },
         {
           "id": "C03",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-C03-hook-stop-typecheck.md",
-          "task": "Output ONLY raw bash (no fences), shebang. Target: Jit oracle (Claude Code project on Windows + Git Bash, hooks under .githooks/ or .claude/hooks/, node v20+ available, bash available). Hooks are Claude Code settings.json hooks OR git hooks — specify which. Keep cross-platform (Windows path-safe, no /tmp hardcode — use os.tmpdir()). Write .claude/hooks/stop-format-typecheck.sh: a Stop hook that, once per response, batch-runs tsc --noEmit in any package dir that had edited .ts/.tsx files (read accumulated paths from a temp file written by a post-edit step, e.g. $TMPDIR/jit-edited-files). If tsc fails, print the errors and exit 2 (block). Skip silently if no ts files touched or no tsconfig. Under 80 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-C03-dev.md",
+          "task": "Output ONLY raw bash (no fences), shebang. Target: Jit oracle (Claude Code project on Windows + Git Bash, hooks under .githooks/ or .claude/hooks/, node v20+ available, bash available). Hooks are Claude Code settings.json hooks OR git hooks — specify which. Keep cross-platform (Windows path-safe, no /tmp hardcode — use os.tmpdir()). Write .claude/hooks/stop-format-typecheck.sh: a Stop hook that, once per response, batch-runs tsc --noEmit in any package dir that had edited .ts/.tsx files (read accumulated paths from a temp file written by a post-edit step, e.g. $TMPDIR/jit-edited-files). If tsc fails, print the errors and exit 2 (block). Skip silently if no ts files touched or no tsconfig. Under 80 lines.",
+          "finished_at": "2026-06-12T19:33:21.154Z"
         },
         {
           "id": "C04",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-C04-hook-config-protection.md",
-          "task": "Output ONLY raw JavaScript (no fences), node shebang + comment. Target: Jit oracle (Claude Code project on Windows + Git Bash, hooks under .githooks/ or .claude/hooks/, node v20+ available, bash available). Hooks are Claude Code settings.json hooks OR git hooks — specify which. Keep cross-platform (Windows path-safe, no /tmp hardcode — use os.tmpdir()). Write .claude/hooks/config-protection.js: a PreToolUse hook (Edit|Write matcher) that reads the hook JSON from stdin, and if the target file path matches a protected-config list (.eslintrc*, .prettierrc*, tsconfig.json, .gitleaks.toml, .gitignore, eslint.config.*, commitlint.config.*) it exits 2 with a message steering the agent to fix code rather than weaken config. Allow override via env ECC_CONFIG_PROTECTION=off. Under 80 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-C04-dev.md",
+          "task": "Output ONLY raw JavaScript (no fences), node shebang + comment. Target: Jit oracle (Claude Code project on Windows + Git Bash, hooks under .githooks/ or .claude/hooks/, node v20+ available, bash available). Hooks are Claude Code settings.json hooks OR git hooks — specify which. Keep cross-platform (Windows path-safe, no /tmp hardcode — use os.tmpdir()). Write .claude/hooks/config-protection.js: a PreToolUse hook (Edit|Write matcher) that reads the hook JSON from stdin, and if the target file path matches a protected-config list (.eslintrc*, .prettierrc*, tsconfig.json, .gitleaks.toml, .gitignore, eslint.config.*, commitlint.config.*) it exits 2 with a message steering the agent to fix code rather than weaken config. Allow override via env ECC_CONFIG_PROTECTION=off. Under 80 lines.",
+          "finished_at": "2026-06-12T19:33:27.742Z"
         },
         {
           "id": "C05",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-C05-skill-confidence-gate.md",
-          "task": "Output ONLY raw markdown (SKILL.md). Write a Claude Code skill named confidence-gate with frontmatter (name, description: gate findings/actions below 80% confidence; use for code review by neta organ and before secret-using actions). Body: the 80% confidence rule (only report findings you are >80% sure of; manufacturing findings erodes trust faster than misses), how to self-estimate confidence, when to escalate vs proceed, examples. Reference neta (code reviewer organ). Under 70 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-C05-dev.md",
+          "task": "Output ONLY raw markdown (SKILL.md). Write a Claude Code skill named confidence-gate with frontmatter (name, description: gate findings/actions below 80% confidence; use for code review by neta organ and before secret-using actions). Body: the 80% confidence rule (only report findings you are >80% sure of; manufacturing findings erodes trust faster than misses), how to self-estimate confidence, when to escalate vs proceed, examples. Reference neta (code reviewer organ). Under 70 lines.",
+          "finished_at": "2026-06-12T19:28:55.360Z"
         },
         {
           "id": "C06",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-C06-hook-observe.md",
-          "task": "Output ONLY raw JavaScript (no fences), node shebang + comment. Target: Jit oracle (Claude Code project on Windows + Git Bash, hooks under .githooks/ or .claude/hooks/, node v20+ available, bash available). Hooks are Claude Code settings.json hooks OR git hooks — specify which. Keep cross-platform (Windows path-safe, no /tmp hardcode — use os.tmpdir()). Write .claude/hooks/observe.js: an async PreToolUse/PostToolUse observer that appends a one-line JSONL record (timestamp from input, tool name, brief target) to ψ/memory/learnings/tool-observe.jsonl for continuous-learning mining. Must be non-blocking (exit 0 fast), bounded file (rotate if > 5MB), never throw. Under 80 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-C06-dev.md",
+          "task": "Output ONLY raw JavaScript (no fences), node shebang + comment. Target: Jit oracle (Claude Code project on Windows + Git Bash, hooks under .githooks/ or .claude/hooks/, node v20+ available, bash available). Hooks are Claude Code settings.json hooks OR git hooks — specify which. Keep cross-platform (Windows path-safe, no /tmp hardcode — use os.tmpdir()). Write .claude/hooks/observe.js: an async PreToolUse/PostToolUse observer that appends a one-line JSONL record (timestamp from input, tool name, brief target) to ψ/memory/learnings/tool-observe.jsonl for continuous-learning mining. Must be non-blocking (exit 0 fast), bounded file (rotate if > 5MB), never throw. Under 80 lines.",
+          "finished_at": "2026-06-12T19:29:15.718Z"
         },
         {
           "id": "C07",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-pro",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-C07-skill-orch-pipeline.md",
-          "task": "Output ONLY raw markdown (SKILL.md). Write a Claude Code skill orch-pipeline adapting everything-claude-code orchestration to Jit 14-organ system. Body: gated phases Research -> Plan -> [GATE: human/jit approval] -> Implement(innova) -> Test(chamu) -> Review(neta, confidence gate) -> [GATE] -> Deploy(pada) -> Report(vaja). Task sizing (small/standard/large) decides which phases run. Map each phase to the organ + how to dispatch via bus (organs/mouth.sh tell <organ>). Under 100 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-C07-dev.md",
+          "task": "Output ONLY raw markdown (SKILL.md). Write a Claude Code skill orch-pipeline adapting everything-claude-code orchestration to Jit 14-organ system. Body: gated phases Research -> Plan -> [GATE: human/jit approval] -> Implement(innova) -> Test(chamu) -> Review(neta, confidence gate) -> [GATE] -> Deploy(pada) -> Report(vaja). Task sizing (small/standard/large) decides which phases run. Map each phase to the organ + how to dispatch via bus (organs/mouth.sh tell <organ>). Under 100 lines.",
+          "finished_at": "2026-06-12T19:29:11.613Z"
         },
         {
           "id": "C08",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-C08-hook-gateguard.md",
-          "task": "Output ONLY raw JavaScript (no fences), node shebang + comment. Target: Jit oracle (Claude Code project on Windows + Git Bash, hooks under .githooks/ or .claude/hooks/, node v20+ available, bash available). Hooks are Claude Code settings.json hooks OR git hooks — specify which. Keep cross-platform (Windows path-safe, no /tmp hardcode — use os.tmpdir()). Write .claude/hooks/gateguard.js: a PreToolUse(Edit) hook implementing fact-forcing — on the FIRST edit to a given file in a session, exit 2 with a message demanding the agent first investigate importers/callers/schema of that file (prevents blind edits, the MEGA-100 lesson). Track seen files in a session temp file. Allow ECC_GATEGUARD=off. Subsequent edits to the same file pass. Under 90 lines."
+          "model": "commandcode/deepseek/deepseek-v4-pro",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-C08-dev.md",
+          "task": "Output ONLY raw JavaScript (no fences), node shebang + comment. Target: Jit oracle (Claude Code project on Windows + Git Bash, hooks under .githooks/ or .claude/hooks/, node v20+ available, bash available). Hooks are Claude Code settings.json hooks OR git hooks — specify which. Keep cross-platform (Windows path-safe, no /tmp hardcode — use os.tmpdir()). Write .claude/hooks/gateguard.js: a PreToolUse(Edit) hook implementing fact-forcing — on the FIRST edit to a given file in a session, exit 2 with a message demanding the agent first investigate importers/callers/schema of that file (prevents blind edits, the MEGA-100 lesson). Track seen files in a session temp file. Allow ECC_GATEGUARD=off. Subsequent edits to the same file pass. Under 90 lines.",
+          "finished_at": "2026-06-12T19:33:53.682Z"
         },
         {
           "id": "C09",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-C09-hooks-json.md",
-          "task": "Output ONLY raw JSON (no fences). Write .claude/hooks.json wiring the Jit hooks: SessionStart->session-start.js, PreCompact->pre-compact.js, PreToolUse matcher Edit|Write -> config-protection.js and gateguard.js, PreToolUse matcher * -> observe.js, Stop -> stop-format-typecheck.sh. Support a profile concept via comments (minimal/standard/strict). Valid JSON, correct Claude Code hooks schema (hooks object keyed by event, arrays of {matcher, hooks:[{type:command, command}]})."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-C09-dev.md",
+          "task": "Output ONLY raw JSON (no fences). Write .claude/hooks.json wiring the Jit hooks: SessionStart->session-start.js, PreCompact->pre-compact.js, PreToolUse matcher Edit|Write -> config-protection.js and gateguard.js, PreToolUse matcher * -> observe.js, Stop -> stop-format-typecheck.sh. Support a profile concept via comments (minimal/standard/strict). Valid JSON, correct Claude Code hooks schema (hooks object keyed by event, arrays of {matcher, hooks:[{type:command, command}]}).",
+          "finished_at": "2026-06-12T19:29:19.424Z"
         },
         {
           "id": "C10",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-C10-token-economy.md",
-          "task": "Output ONLY raw markdown. Write docs/token-economy.md for Jit. Thai. The provider ladder: CommandCode (bulk codegen, via proxy :4322) -> Haiku subagent (cheap exploration/tool-use) -> Sonnet subagent (complex code/analysis) -> Fable 5 main loop (orchestration + SA review ONLY). Settings: CLAUDE_CODE_SUBAGENT_MODEL=haiku, MAX_THINKING_TOKENS~10000. When to use which. A cost-discipline checklist. Reference the rule that Fable 5 must not be burned on mechanical work. Under 90 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-C10-dev.md",
+          "task": "Output ONLY raw markdown. Write docs/token-economy.md for Jit. Thai. The provider ladder: CommandCode (bulk codegen, via proxy :4322) -> Haiku subagent (cheap exploration/tool-use) -> Sonnet subagent (complex code/analysis) -> Fable 5 main loop (orchestration + SA review ONLY). Settings: CLAUDE_CODE_SUBAGENT_MODEL=haiku, MAX_THINKING_TOKENS~10000. When to use which. A cost-discipline checklist. Reference the rule that Fable 5 must not be burned on mechanical work. Under 90 lines.",
+          "finished_at": "2026-06-12T19:29:16.679Z"
         },
         {
           "id": "D01",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D01-organ-jit.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"jit\" (จิต) in the มนุษย์ Agent / Jit oracle system. Role: Master Orchestrator (Tier 0). Model: claude-sonnet-4.6. Duties: ประสานงานทั้ง 13 agents, รายงานต่อ innova(human), delegate ไป soma+specialists. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/jit/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell jit \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D01-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"jit\" (จิต) in the มนุษย์ Agent / Jit oracle system. Role: Master Orchestrator (Tier 0). Model: claude-sonnet-4.6. Duties: ประสานงานทั้ง 13 agents, รายงานต่อ innova(human), delegate ไป soma+specialists. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/jit/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell jit \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:33:32.163Z"
         },
         {
           "id": "D02",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D02-organ-soma.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"soma\" (สมอง) in the มนุษย์ Agent / Jit oracle system. Role: Brain / Strategic Lead (Tier 1). Model: claude-opus-4.7. Duties: การตัดสินใจเชิงกลยุทธ์, architecture, code review, delegate ไป innova. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/soma/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell soma \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D02-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"soma\" (สมอง) in the มนุษย์ Agent / Jit oracle system. Role: Brain / Strategic Lead (Tier 1). Model: claude-opus-4.7. Duties: การตัดสินใจเชิงกลยุทธ์, architecture, code review, delegate ไป innova. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/soma/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell soma \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:29:30.868Z"
         },
         {
           "id": "D03",
           "role": "dev",
-          "model": "commandcode/minimax/minimax-m3",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D03-organ-innova.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"innova\" (จิต/ปัญญา) in the มนุษย์ Agent / Jit oracle system. Role: Mind / Lead Developer (Tier 2). Model: claude-sonnet-4.6. Duties: เขียนโค้ดหลัก, นำทีม operational, จัดการ vaja+chamu. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/innova/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell innova \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D03-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"innova\" (จิต/ปัญญา) in the มนุษย์ Agent / Jit oracle system. Role: Mind / Lead Developer (Tier 2). Model: claude-sonnet-4.6. Duties: เขียนโค้ดหลัก, นำทีม operational, จัดการ vaja+chamu. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/innova/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell innova \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:33:30.525Z"
         },
         {
           "id": "D04",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D04-organ-lak.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"lak\" (กระดูกสันหลัง) in the มนุษย์ Agent / Jit oracle system. Role: Solution Architect (Tier 2). Model: claude-sonnet-4.6. Duties: ออกแบบ solution, โครงสร้างระบบ. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/lak/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell lak \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D04-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"lak\" (กระดูกสันหลัง) in the มนุษย์ Agent / Jit oracle system. Role: Solution Architect (Tier 2). Model: claude-sonnet-4.6. Duties: ออกแบบ solution, โครงสร้างระบบ. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/lak/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell lak \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:33:33.699Z"
         },
         {
           "id": "D05",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D05-organ-neta.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"neta\" (เนตร) in the มนุษย์ Agent / Jit oracle system. Role: Code Reviewer (Tier 2). Model: claude-sonnet-4.6. Duties: ตรวจรีวิวโค้ด, confidence gate, quality. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/neta/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell neta \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D05-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"neta\" (เนตร) in the มนุษย์ Agent / Jit oracle system. Role: Code Reviewer (Tier 2). Model: claude-sonnet-4.6. Duties: ตรวจรีวิวโค้ด, confidence gate, quality. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/neta/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell neta \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:29:32.756Z"
         },
         {
           "id": "D06",
           "role": "dev",
-          "model": "commandcode/minimax/minimax-m3",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D06-organ-vaja.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"vaja\" (วาจา) in the มนุษย์ Agent / Jit oracle system. Role: Personal Assistant (Tier 3). Model: claude-haiku-4.5. Duties: สื่อสารกับ human, รายงานสรุป. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/vaja/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell vaja \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D06-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"vaja\" (วาจา) in the มนุษย์ Agent / Jit oracle system. Role: Personal Assistant (Tier 3). Model: claude-haiku-4.5. Duties: สื่อสารกับ human, รายงานสรุป. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/vaja/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell vaja \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:33:38.795Z"
         },
         {
           "id": "D07",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D07-organ-chamu.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"chamu\" (จมูก) in the มนุษย์ Agent / Jit oracle system. Role: QA / Tester (Tier 3). Model: claude-haiku-4.5. Duties: ทดสอบ, ตรวจจับ bug, QA. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/chamu/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell chamu \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D07-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"chamu\" (จมูก) in the มนุษย์ Agent / Jit oracle system. Role: QA / Tester (Tier 3). Model: claude-haiku-4.5. Duties: ทดสอบ, ตรวจจับ bug, QA. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/chamu/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell chamu \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:33:46.022Z"
         },
         {
           "id": "D08",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D08-organ-rupa.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"rupa\" (รูป) in the มนุษย์ Agent / Jit oracle system. Role: Designer / UI-UX (Tier 3). Model: claude-haiku-4.5. Duties: ออกแบบ UI/UX, design system. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/rupa/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell rupa \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D08-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"rupa\" (รูป) in the มนุษย์ Agent / Jit oracle system. Role: Designer / UI-UX (Tier 3). Model: claude-haiku-4.5. Duties: ออกแบบ UI/UX, design system. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/rupa/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell rupa \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:29:48.777Z"
         },
         {
           "id": "D09",
           "role": "dev",
-          "model": "commandcode/minimax/minimax-m3",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D09-organ-pada.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"pada\" (บาท) in the มนุษย์ Agent / Jit oracle system. Role: DevOps / Infrastructure (Tier 3). Model: claude-haiku-4.5. Duties: deploy, infra, hotfix. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/pada/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell pada \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D09-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"pada\" (บาท) in the มนุษย์ Agent / Jit oracle system. Role: DevOps / Infrastructure (Tier 3). Model: claude-haiku-4.5. Duties: deploy, infra, hotfix. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/pada/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell pada \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:33:44.915Z"
         },
         {
           "id": "D10",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D10-organ-netra.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"netra\" (เนตร(ตา)) in the มนุษย์ Agent / Jit oracle system. Role: Eye / Observer (Tier 3). Model: claude-haiku-4.5. Duties: สังเกตการณ์ระบบ, monitoring. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/netra/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell netra \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D10-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"netra\" (เนตร(ตา)) in the มนุษย์ Agent / Jit oracle system. Role: Eye / Observer (Tier 3). Model: claude-haiku-4.5. Duties: สังเกตการณ์ระบบ, monitoring. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/netra/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell netra \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:33:43.235Z"
         },
         {
           "id": "D11",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D11-organ-karn.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"karn\" (หู) in the มนุษย์ Agent / Jit oracle system. Role: Ear / Listener (Tier 3). Model: claude-haiku-4.5. Duties: รับฟัง event, inbox. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/karn/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell karn \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D11-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"karn\" (หู) in the มนุษย์ Agent / Jit oracle system. Role: Ear / Listener (Tier 3). Model: claude-haiku-4.5. Duties: รับฟัง event, inbox. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/karn/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell karn \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:29:57.939Z"
         },
         {
           "id": "D12",
           "role": "dev",
-          "model": "commandcode/minimax/minimax-m3",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D12-organ-mue.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"mue\" (มือ) in the มนุษย์ Agent / Jit oracle system. Role: Hand / Executor (Tier 3). Model: claude-haiku-4.5. Duties: รันคำสั่ง, execute. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/mue/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell mue \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D12-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"mue\" (มือ) in the มนุษย์ Agent / Jit oracle system. Role: Hand / Executor (Tier 3). Model: claude-haiku-4.5. Duties: รันคำสั่ง, execute. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/mue/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell mue \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:33:54.224Z"
         },
         {
           "id": "D13",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D13-organ-pran.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"pran\" (หัวใจ) in the มนุษย์ Agent / Jit oracle system. Role: Heart / Vital Coordinator (Tier 3). Model: claude-haiku-4.5. Duties: ตรวจ vital signs, dispatch ไป organ. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/pran/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell pran \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D13-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"pran\" (หัวใจ) in the มนุษย์ Agent / Jit oracle system. Role: Heart / Vital Coordinator (Tier 3). Model: claude-haiku-4.5. Duties: ตรวจ vital signs, dispatch ไป organ. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/pran/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell pran \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:33:52.052Z"
         },
         {
           "id": "D14",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-D14-organ-sayanprasathan.md",
-          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"sayanprasathan\" (ระบบประสาท) in the มนุษย์ Agent / Jit oracle system. Role: Nerve / Event Network (Tier 3). Model: claude-haiku-4.5. Duties: เครือข่าย signal, broadcast alert. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/sayanprasathan/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell sayanprasathan \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-D14-dev.md",
+          "task": "Output ONLY raw markdown. Write a polished organ profile doc for the agent \"sayanprasathan\" (ระบบประสาท) in the มนุษย์ Agent / Jit oracle system. Role: Nerve / Event Network (Tier 3). Model: claude-haiku-4.5. Duties: เครือข่าย signal, broadcast alert. Sections (Thai, English technical terms): ## ตัวตน (identity, organ metaphor, tier), ## หน้าที่หลัก (responsibilities bullets), ## Inputs/Outputs (what messages it receives via bus inbox /tmp/manusat-bus/sayanprasathan/ and what it emits, subject prefixes task:/report:/alert:), ## ความสัมพันธ์ (who it reports to, who it delegates to), ## ตัวอย่างคำสั่ง (2-3 example: bash organs/mouth.sh tell sayanprasathan \"...\"), ## หลักพุทธที่ยึด (one Buddhist principle it embodies). Keep authentic to a Thai multi-agent oracle. Under 75 lines.",
+          "finished_at": "2026-06-12T19:30:05.241Z"
         },
         {
           "id": "E01",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-E01-ux-loading.md",
-          "task": "Output ONLY raw markdown (a design spec/proposal, NOT code). Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Write a UX spec for: loading skeletons. Replace bare \"Loading…\" text (e.g. Agent Leaderboard \"Loading… · Refreshing in 26s\") with skeleton placeholders matching final layout to reduce perceived latency. Thai + English terms. Include: problem, proposed solution, component-level changes (which files under innomcp-next/src/app/components/), acceptance criteria, edge cases. This is a proposal for review, do not assume it is applied. Under 80 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-E01-dev.md",
+          "task": "Output ONLY raw markdown (a design spec/proposal, NOT code). Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Write a UX spec for: loading skeletons. Replace bare \"Loading…\" text (e.g. Agent Leaderboard \"Loading… · Refreshing in 26s\") with skeleton placeholders matching final layout to reduce perceived latency. Thai + English terms. Include: problem, proposed solution, component-level changes (which files under innomcp-next/src/app/components/), acceptance criteria, edge cases. This is a proposal for review, do not assume it is applied. Under 80 lines.",
+          "finished_at": "2026-06-12T19:33:56.476Z"
         },
         {
           "id": "E02",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-E02-ux-empty.md",
-          "task": "Output ONLY raw markdown (a design spec/proposal, NOT code). Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Write a UX spec for: empty states. Design empty-state components for: empty chat transcript, no agents in leaderboard filter, no workspace files, no memories — each with icon, Thai headline, helpful CTA. Thai + English terms. Include: problem, proposed solution, component-level changes (which files under innomcp-next/src/app/components/), acceptance criteria, edge cases. This is a proposal for review, do not assume it is applied. Under 80 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-E02-dev.md",
+          "task": "Output ONLY raw markdown (a design spec/proposal, NOT code). Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Write a UX spec for: empty states. Design empty-state components for: empty chat transcript, no agents in leaderboard filter, no workspace files, no memories — each with icon, Thai headline, helpful CTA. Thai + English terms. Include: problem, proposed solution, component-level changes (which files under innomcp-next/src/app/components/), acceptance criteria, edge cases. This is a proposal for review, do not assume it is applied. Under 80 lines.",
+          "finished_at": "2026-06-12T19:30:09.966Z"
         },
         {
           "id": "E03",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-E03-ux-errors.md",
-          "task": "Output ONLY raw markdown (a design spec/proposal, NOT code). Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Write a UX spec for: error toast taxonomy. Define a consistent error-toast system: categories (network/auth/validation/server), Thai messages, severity colors, auto-dismiss timing, retry affordance. Map the current 401-loop and 404 cases. Thai + English terms. Include: problem, proposed solution, component-level changes (which files under innomcp-next/src/app/components/), acceptance criteria, edge cases. This is a proposal for review, do not assume it is applied. Under 80 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-E03-dev.md",
+          "task": "Output ONLY raw markdown (a design spec/proposal, NOT code). Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Write a UX spec for: error toast taxonomy. Define a consistent error-toast system: categories (network/auth/validation/server), Thai messages, severity colors, auto-dismiss timing, retry affordance. Map the current 401-loop and 404 cases. Thai + English terms. Include: problem, proposed solution, component-level changes (which files under innomcp-next/src/app/components/), acceptance criteria, edge cases. This is a proposal for review, do not assume it is applied. Under 80 lines.",
+          "finished_at": "2026-06-12T19:33:57.745Z"
         },
         {
           "id": "E04",
           "role": "dev",
-          "model": "commandcode/minimax/minimax-m3",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-E04-ux-a11y.md",
-          "task": "Output ONLY raw markdown (a design spec/proposal, NOT code). Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Write a UX spec for: accessibility audit. A11y checklist for the chat UI: keyboard nav (tab order, focus traps in modals/SlideOver), aria-labels on icon buttons, color contrast in dark mode, screen-reader labels for the leaderboard table, the onboarding modal focus management. Thai + English terms. Include: problem, proposed solution, component-level changes (which files under innomcp-next/src/app/components/), acceptance criteria, edge cases. This is a proposal for review, do not assume it is applied. Under 80 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-E04-dev.md",
+          "task": "Output ONLY raw markdown (a design spec/proposal, NOT code). Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Write a UX spec for: accessibility audit. A11y checklist for the chat UI: keyboard nav (tab order, focus traps in modals/SlideOver), aria-labels on icon buttons, color contrast in dark mode, screen-reader labels for the leaderboard table, the onboarding modal focus management. Thai + English terms. Include: problem, proposed solution, component-level changes (which files under innomcp-next/src/app/components/), acceptance criteria, edge cases. This is a proposal for review, do not assume it is applied. Under 80 lines.",
+          "finished_at": "2026-06-12T19:33:59.387Z"
         },
         {
           "id": "E05",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-E05-ux-i18n.md",
-          "task": "Output ONLY raw markdown (a design spec/proposal, NOT code). Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Write a UX spec for: i18n th/en coverage. Audit Thai/English consistency: identify mixed-language strings, hardcoded text that should be keyed, propose a lightweight i18n approach (or a strings constants file) without a heavy framework. List screens with mixed languages. Thai + English terms. Include: problem, proposed solution, component-level changes (which files under innomcp-next/src/app/components/), acceptance criteria, edge cases. This is a proposal for review, do not assume it is applied. Under 80 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-E05-dev.md",
+          "task": "Output ONLY raw markdown (a design spec/proposal, NOT code). Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Write a UX spec for: i18n th/en coverage. Audit Thai/English consistency: identify mixed-language strings, hardcoded text that should be keyed, propose a lightweight i18n approach (or a strings constants file) without a heavy framework. List screens with mixed languages. Thai + English terms. Include: problem, proposed solution, component-level changes (which files under innomcp-next/src/app/components/), acceptance criteria, edge cases. This is a proposal for review, do not assume it is applied. Under 80 lines.",
+          "finished_at": "2026-06-12T19:30:17.862Z"
         },
         {
           "id": "E06",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-E06-ux-shortcuts.md",
-          "task": "Output ONLY raw markdown (a design spec/proposal, NOT code). Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Write a UX spec for: keyboard shortcuts. Propose a keyboard-shortcut map for power users: send message (Enter/Ctrl+Enter), toggle theme (Ctrl+Shift+T exists), open panels, focus chat input (/), close modal (Esc), switch model. Include a discoverable shortcuts help overlay (?). Thai + English terms. Include: problem, proposed solution, component-level changes (which files under innomcp-next/src/app/components/), acceptance criteria, edge cases. This is a proposal for review, do not assume it is applied. Under 80 lines."
+          "model": "commandcode/deepseek/deepseek-v4-flash",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-E06-dev.md",
+          "task": "Output ONLY raw markdown (a design spec/proposal, NOT code). Project innomcp: Next.js 14 app-router frontend (innomcp-next, :3000), Express/Node22 backend (innomcp-node, REST at :3015 in docker / :3011 in container, WS too), MariaDB :3308, Redis, pnpm workspaces, Playwright e2e in tests/e2e/tests/ (use @playwright/test, baseURL http://localhost:3000, viewport via test.use). Chat UI route /living-chat, login /login, dashboard /dashboard. Thai+English UI. Browser-reachable backend via NEXT_PUBLIC_BACKEND_URL=http://localhost:3015. Onboarding modal has a \"ข้าม\" skip button. Components under innomcp-next/src/app/components/chat/. Write a UX spec for: keyboard shortcuts. Propose a keyboard-shortcut map for power users: send message (Enter/Ctrl+Enter), toggle theme (Ctrl+Shift+T exists), open panels, focus chat input (/), close modal (Esc), switch model. Include a discoverable shortcuts help overlay (?). Thai + English terms. Include: problem, proposed solution, component-level changes (which files under innomcp-next/src/app/components/), acceptance criteria, edge cases. This is a proposal for review, do not assume it is applied. Under 80 lines.",
+          "finished_at": "2026-06-12T19:34:05.775Z"
         },
         {
           "id": "F01",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-pro",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-F01-bus-guardrail.md",
-          "task": "Output ONLY raw markdown with one fenced bash code block showing a proposed guard function. Propose a \"Nothing-is-Deleted\" + destructive-action guardrail to embed in Jit network/bus.sh (POSIX sh): a function that inspects an outgoing message body for destructive patterns (rm -rf, git push --force, DROP TABLE, DELETE FROM without WHERE, truncate) and blocks/flags before routing, logging the attempt (Nothing-is-Deleted). Thai explanation + the code block + where to hook it into bus.sh. Under 80 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-F01-dev.md",
+          "task": "Output ONLY raw markdown with one fenced bash code block showing a proposed guard function. Propose a \"Nothing-is-Deleted\" + destructive-action guardrail to embed in Jit network/bus.sh (POSIX sh): a function that inspects an outgoing message body for destructive patterns (rm -rf, git push --force, DROP TABLE, DELETE FROM without WHERE, truncate) and blocks/flags before routing, logging the attempt (Nothing-is-Deleted). Thai explanation + the code block + where to hook it into bus.sh. Under 80 lines.",
+          "finished_at": "2026-06-12T19:30:47.492Z"
         },
         {
           "id": "F02",
           "role": "dev",
-          "model": "commandcode/qwen/qwen3.7-max",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-F02-hybrid-ipc-snapshot.md",
-          "task": "Output ONLY raw markdown. Spec for \"Hybrid IPC Snapshot\" for Jit (from the Oracle-guide prism verdict): the fast file-bus at /tmp/manusat-bus stays for real-time routing, BUT on session-end or critical decision, auto git-commit a snapshot of bus state + active context for auditability + Soul Sync. Thai. Define: what gets snapshotted, trigger points, file layout under ψ/, how it complements existing jarvis self-heal checkpoints, race-condition avoidance. Under 90 lines."
+          "model": "commandcode/deepseek/deepseek-v4-pro",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-F02-dev.md",
+          "task": "Output ONLY raw markdown. Spec for \"Hybrid IPC Snapshot\" for Jit (from the Oracle-guide prism verdict): the fast file-bus at /tmp/manusat-bus stays for real-time routing, BUT on session-end or critical decision, auto git-commit a snapshot of bus state + active context for auditability + Soul Sync. Thai. Define: what gets snapshotted, trigger points, file layout under ψ/, how it complements existing jarvis self-heal checkpoints, race-condition avoidance. Under 90 lines.",
+          "finished_at": "2026-06-12T19:34:16.592Z"
         },
         {
           "id": "F03",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-F03-rbac-matrix.md",
-          "task": "Output ONLY raw markdown. RBAC matrix doc for Jit secrets/tokens. Thai. A table: token (OLLAMA_TOKEN, COMMANDCODE_API_KEY, THAILLM_TOKEN, DISCORD_TOKEN, CODEX_API_KEY, GitHub PAT) × who/what can use it (which organ/script/CI) × least-privilege scope × rotation owner. Plus a principles section (least privilege, separate service accounts per organ where possible). Under 80 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-F03-dev.md",
+          "task": "Output ONLY raw markdown. RBAC matrix doc for Jit secrets/tokens. Thai. A table: token (OLLAMA_TOKEN, COMMANDCODE_API_KEY, THAILLM_TOKEN, DISCORD_TOKEN, CODEX_API_KEY, GitHub PAT) × who/what can use it (which organ/script/CI) × least-privilege scope × rotation owner. Plus a principles section (least privilege, separate service accounts per organ where possible). Under 80 lines.",
+          "finished_at": "2026-06-12T19:30:28.465Z"
         },
         {
           "id": "F04",
           "role": "dev",
           "model": "commandcode/deepseek/deepseek-v4-flash",
-          "status": "pending",
-          "output": "ψ\\outbox\\cc-team\\MEGA-F04-supplychain-sbom.md",
-          "task": "Output ONLY raw markdown. Supply-chain security doc for the monorepo. Thai. Covers: the npx -y / unpinned-dependency risk (lesson), pinning strategy, generating an SBOM (npm sbom / syft), dependency scanning (Trivy/Snyk/npm audit), the bulk-LLM-generation fence-corruption risk (MEGA-100) and the tsc-gate-before-commit mitigation, verifying agent-referenced artifacts exist before use. Under 90 lines."
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\MEGA-F04-dev.md",
+          "task": "Output ONLY raw markdown. Supply-chain security doc for the monorepo. Thai. Covers: the npx -y / unpinned-dependency risk (lesson), pinning strategy, generating an SBOM (npm sbom / syft), dependency scanning (Trivy/Snyk/npm audit), the bulk-LLM-generation fence-corruption risk (MEGA-100) and the tsc-gate-before-commit mitigation, verifying agent-referenced artifacts exist before use. Under 90 lines.",
+          "finished_at": "2026-06-12T19:30:33.468Z"
         }
       ]
     }
