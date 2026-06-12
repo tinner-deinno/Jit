@@ -1,334 +1,50 @@
 {
-  "plan_id": "innomcp-hyper-burn-v1",
-  "mission": "Exhaustive Bug Hunting and Fixing for innomcp (CommandCode Fleet)",
+  "plan_id": "CC-TEAM-2026-06-13-AGY-BRIDGE",
+  "planned_by": "jit (Fable 5)",
+  "sa_reviewer": "jit",
+  "provider": "commandcode",
+  "created_at": "2026-06-13T00:55:00+07:00",
+  "context": "Antigravity CLI (agy 1.0.7) bridge for the Jit 14-organ multi-agent system. agy.exe at %LOCALAPPDATA%/agy/bin/agy.exe. VERIFIED flags: -p/--print (non-interactive), --print-timeout (default 5m0s, Go duration format), --model, -c/--continue, --conversation <id>, --dangerously-skip-permissions, --add-dir, --sandbox, -i/--prompt-interactive, --log-file. Subcommands: models, plugin, update, changelog, install. NO --output-format json flag — stdout is plain text. Auth shares Google account (Google AI Pro: 1500 req/day shared quota).",
   "groups": [
     {
-      "id": "dim-ui",
-      "mission": "Frontend UI/UX Analysis",
+      "id": "G",
+      "mission": "Antigravity (agy) bridge: Node wrapper, bash limb, Claude Code skill, fusion patterns doc",
       "members": [
         {
-          "id": "ui-hunter",
-          "role": "Bug Hunter",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Deeply analyze C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-next for UI/UX bugs, layout shifts, and styling inconsistencies. Return a list of issues with file paths and suggested fixes.",
+          "id": "G1",
+          "role": "dev",
+          "model": "deepseek/deepseek-v4-pro",
           "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-ui-ui-hunter-Bug Hunter.md",
-          "finished_at": "2026-06-12T10:27:37.696Z"
+          "output": "ψ\\outbox\\cc-team\\G-G1-dev.md",
+          "task": "Output ONLY raw JavaScript (no markdown fences, no commentary, start with #!/usr/bin/env node then a /** comment). Write scripts/agy-bridge.js — a zero-dependency Node.js (v20+) CommonJS wrapper around Google Antigravity CLI for Windows. Requirements: (1) locate agy.exe: env AGY_BIN, else process.env.LOCALAPPDATA + agy\binagy.exe, else plain agy (PATH); verify existence with fs.existsSync where path is absolute. (2) parse argv: --prompt <text> (required unless --models or --continue-id given), --model <id> (optional), --timeout <go-duration, default 10m0s>, --cwd <dir> (spawn cwd, default process.cwd()), --skip-permissions (adds --dangerously-skip-permissions), --add-dir <dir> (repeatable), --continue-id <conversationId> (adds --conversation <id>), --models (runs agy models subcommand), --json (wrap result in JSON envelope). (3) build agy args: for prompt mode: [-p, prompt, --print-timeout, timeout] plus optional [--model, m]. (4) spawn with child_process.spawn, windowsHide true, capture stdout+stderr as utf8, enforce a JS-side hard kill at parsed timeout + 30s grace (parse Go duration like 10m0s, 90s, 1h2m into ms; helper function). (5) on completion print: if --json, single-line JSON {ok: exitCode===0, exitCode, model: model||null, durationMs, stdout, stderr: stderr.slice(0,2000)}; else raw stdout passthrough and stderr to process.stderr. (6) exit with the child exit code (124 on JS-side timeout kill). (7) NO external deps, strict mode, clear --help text listing all options. Keep under 180 lines.",
+          "finished_at": "2026-06-12T17:52:37.402Z"
         },
         {
-          "id": "ui-skeptic",
-          "role": "Skeptic",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Review the findings of ui-hunter in C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-next. Challenge every assumption and find missing edge cases.",
+          "id": "G2",
+          "role": "dev",
+          "model": "Qwen/Qwen3.7-Max",
           "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-ui-ui-skeptic-Skeptic.md",
-          "finished_at": "2026-06-12T10:27:32.016Z"
+          "output": "ψ\\outbox\\cc-team\\G-G2-dev.md",
+          "task": "Output ONLY raw bash script content (no markdown fences), starting with #!/usr/bin/env bash. Write limbs/antigravity.sh for a Thai multi-agent system (มนุษย์ Agent, organ naming convention). Header comment in Thai+English following this style: a Buddhist-principle line, then Usage block. Subcommands: ask \"prompt\" [model] — one-shot via node \"$JIT_ROOT/scripts/agy-bridge.js\" --prompt ... --json; think \"prompt\" — same but prepends a short Thai system-style instruction asking for structured reasoning; code \"task\" [dir] — runs bridge with --skip-permissions --cwd dir for code-editing tasks (echo a warning first in Thai that auto-approve is on); models — list models via bridge --models; status — check agy binary exists and print version (call agy.exe --version directly). Resolve SCRIPT_DIR and JIT_ROOT like: SCRIPT_DIR=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")\" && pwd)\"; JIT_ROOT=\"${SCRIPT_DIR}/..\". Source \"$SCRIPT_DIR/lib.sh\" if it exists (guard with [ -f ]). AGY_BIN default: \"$LOCALAPPDATA/agy/bin/agy.exe\" with fallback to plain agy. Use case statement, default branch prints usage. Keep under 120 lines, POSIX-friendly bash, double-quote all expansions.",
+          "finished_at": "2026-06-12T17:52:42.520Z"
         },
         {
-          "id": "ui-fixer",
-          "role": "Fix Planner",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Based on ui-hunter and ui-skeptic, provide the exact code diffs to fix all UI/UX bugs in C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-next.",
+          "id": "G3",
+          "role": "dev",
+          "model": "zai-org/GLM-5.1",
           "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-ui-ui-fixer-Fix Planner.md",
-          "finished_at": "2026-06-12T10:28:01.290Z"
-        }
-      ]
-    },
-    {
-      "id": "dim-api-client",
-      "mission": "Frontend API Integration Analysis",
-      "members": [
-        {
-          "id": "api-c-hunter",
-          "role": "Bug Hunter",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Analyze C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-next for bugs in API calling logic, WebSocket handling, and state synchronization.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-api-client-api-c-hunter-Bug Hunter.md",
-          "finished_at": "2026-06-12T10:27:37.311Z"
+          "output": "ψ\\outbox\\cc-team\\G-G3-dev.md",
+          "task": "Output ONLY raw markdown file content (no surrounding fences, no commentary). Write SKILL.md for a Claude Code skill named antigravity. Frontmatter: --- then name: antigravity, description: (one paragraph: Dispatch tasks to Google Antigravity CLI (agy) — Gemini 3 models via Google AI Pro. Use when user says antigravity, agy, gemini, ask google, second opinion from gemini, or wants long-context/multimodal analysis or parallel heavy execution outside Claude. Do NOT trigger for CommandCode tasks (use cc-team) or Ollama Thai tasks (use limbs/ollama.sh).), then --- . Body sections: (1) Quick reference table of invocations: node scripts/agy-bridge.js --prompt \"...\" --json | --model gemini-3-flash | --skip-permissions --cwd <repo> | --models. Also bash limbs/antigravity.sh ask|think|code|models|status. (2) Model selection guidance: gemini-3-flash for fast/cheap, gemini-3-pro / gemini-3.1-pro for deep reasoning, note quota 1500 req/day shared Google AI Pro pool — prefer flash by default. (3) Patterns section with 4 named patterns: Second Opinion (verify Claude claim via agy one-shot), Long-Context Reader (dump big file/diff via stdin or --add-dir, ask for summary), Parallel Specialist (agy works in separate git worktree with --skip-permissions while Claude orchestrates), CC-Fusion (CommandCode generates code cheaply, agy reviews with fresh eyes, Claude arbitrates disagreements). Each pattern: when-to-use one-liner + exact command. (4) Safety rules: never --skip-permissions outside an isolated worktree; quota burn warning (background chatter counts against daily quota); first run requires browser auth by human (suggest typing: ! agy auth in terminal). Windows-safe paths (no /tmp). Keep total under 110 lines.",
+          "finished_at": "2026-06-12T17:53:18.121Z"
         },
         {
-          "id": "api-c-skeptic",
-          "role": "Skeptic",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Review api-c-hunter findings. Identify race conditions or missing error boundaries in the frontend API layer.",
+          "id": "G4",
+          "role": "dev",
+          "model": "moonshotai/Kimi-K2.6",
           "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-api-client-api-c-skeptic-Skeptic.md",
-          "finished_at": "2026-06-12T10:27:53.276Z"
-        },
-        {
-          "id": "api-c-fixer",
-          "role": "Fix Planner",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Provide exact code diffs to fix frontend API integration bugs in C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-next.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-api-client-api-c-fixer-Fix Planner.md",
-          "finished_at": "2026-06-12T10:27:40.067Z"
-        }
-      ]
-    },
-    {
-      "id": "dim-api-core",
-      "mission": "Backend API Core Analysis",
-      "members": [
-        {
-          "id": "api-core-hunter",
-          "role": "Bug Hunter",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Deeply analyze C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-node for bugs in controllers, middleware, and business logic.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-api-core-api-core-hunter-Bug Hunter.md",
-          "finished_at": "2026-06-12T10:27:46.061Z"
-        },
-        {
-          "id": "api-core-skeptic",
-          "role": "Skeptic",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Review api-core-hunter findings. Challenge the logic and find potential crashes or data corruption paths.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-api-core-api-core-skeptic-Skeptic.md",
-          "finished_at": "2026-06-12T10:28:07.626Z"
-        },
-        {
-          "id": "api-core-fixer",
-          "role": "Fix Planner",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Provide exact code diffs to fix backend API core bugs in C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-node.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-api-core-api-core-fixer-Fix Planner.md",
-          "finished_at": "2026-06-12T10:27:45.816Z"
-        }
-      ]
-    },
-    {
-      "id": "dim-db",
-      "mission": "Database Layer Analysis",
-      "members": [
-        {
-          "id": "db-hunter",
-          "role": "Bug Hunter",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Analyze C:\\Users\\USER-NT\\DEV\\innomcp for DB connection leaks, incorrect port configs (3306 vs 3308), and inefficient queries.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-db-db-hunter-Bug Hunter.md",
-          "finished_at": "2026-06-12T10:27:56.912Z"
-        },
-        {
-          "id": "db-skeptic",
-          "role": "Skeptic",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Review db-hunter findings. Verify if the port fixes are truly deterministic and handle all environment modes.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-db-db-skeptic-Skeptic.md",
-          "finished_at": "2026-06-12T10:28:11.928Z"
-        },
-        {
-          "id": "db-fixer",
-          "role": "Fix Planner",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Provide exact code diffs to fix all database related bugs in C:\\Users\\USER-NT\\DEV\\innomcp.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-db-db-fixer-Fix Planner.md",
-          "finished_at": "2026-06-12T10:28:01.582Z"
-        }
-      ]
-    },
-    {
-      "id": "dim-mcp",
-      "mission": "MCP Server Logic Analysis",
-      "members": [
-        {
-          "id": "mcp-hunter",
-          "role": "Bug Hunter",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Analyze C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-server-node for MCP protocol compliance, tool definition bugs, and session management issues.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-mcp-mcp-hunter-Bug Hunter.md",
-          "finished_at": "2026-06-12T10:28:08.385Z"
-        },
-        {
-          "id": "mcp-skeptic",
-          "role": "Skeptic",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Review mcp-hunter findings. Look for protocol violations or tool-call hallucinations.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-mcp-mcp-skeptic-Skeptic.md",
-          "finished_at": "2026-06-12T10:28:09.229Z"
-        },
-        {
-          "id": "mcp-fixer",
-          "role": "Fix Planner",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Provide exact code diffs to fix MCP server bugs in C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-server-node.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-mcp-mcp-fixer-Fix Planner.md",
-          "finished_at": "2026-06-12T10:28:21.791Z"
-        }
-      ]
-    },
-    {
-      "id": "dim-docker",
-      "mission": "Env & Docker Config Analysis",
-      "members": [
-        {
-          "id": "docker-hunter",
-          "role": "Bug Hunter",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Analyze docker-compose.yml and .env files in C:\\Users\\USER-NT\\DEV\\innomcp for networking issues, stale volume configs, or missing env vars.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-docker-docker-hunter-Bug Hunter.md",
-          "finished_at": "2026-06-12T10:28:13.811Z"
-        },
-        {
-          "id": "docker-skeptic",
-          "role": "Skeptic",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Review docker-hunter findings. Verify if the published ports and internal DNS are correctly aligned.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-docker-docker-skeptic-Skeptic.md",
-          "finished_at": "2026-06-12T10:28:30.355Z"
-        },
-        {
-          "id": "docker-fixer",
-          "role": "Fix Planner",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Provide exact code diffs to fix Docker and Env configuration issues in C:\\Users\\USER-NT\\DEV\\innomcp.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-docker-docker-fixer-Fix Planner.md",
-          "finished_at": "2026-06-12T10:28:13.765Z"
-        }
-      ]
-    },
-    {
-      "id": "dim-error",
-      "mission": "Error Handling Analysis",
-      "members": [
-        {
-          "id": "err-hunter",
-          "role": "Bug Hunter",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Analyze C:\\Users\\USER-NT\\DEV\\innomcp for empty catch blocks, unhandled promise rejections, and poor error messaging.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-error-err-hunter-Bug Hunter.md",
-          "finished_at": "2026-06-12T10:28:21.806Z"
-        },
-        {
-          "id": "err-skeptic",
-          "role": "Skeptic",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Review err-hunter findings. Find paths where errors are swallowed and hide critical system failures.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-error-err-skeptic-Skeptic.md",
-          "finished_at": "2026-06-12T10:28:26.113Z"
-        },
-        {
-          "id": "err-fixer",
-          "role": "Fix Planner",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Provide exact code diffs to implement robust error handling and logging across the system.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-error-err-fixer-Fix Planner.md",
-          "finished_at": "2026-06-12T10:28:35.181Z"
-        }
-      ]
-    },
-    {
-      "id": "dim-auth",
-      "mission": "Auth & JWT Analysis",
-      "members": [
-        {
-          "id": "auth-hunter",
-          "role": "Bug Hunter",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Analyze JWT validation, secret management, and authentication middleware in C:\\Users\\USER-NT\\DEV\\innomcp.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-auth-auth-hunter-Bug Hunter.md",
-          "finished_at": "2026-06-12T10:32:03.769Z"
-        },
-        {
-          "id": "auth-skeptic",
-          "role": "Skeptic",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Review auth-hunter findings. Search for potential token leakage or authentication bypass vulnerabilities.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-auth-auth-skeptic-Skeptic.md",
-          "finished_at": "2026-06-12T10:28:37.481Z"
-        },
-        {
-          "id": "auth-fixer",
-          "role": "Fix Planner",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Provide exact code diffs to harden the authentication and JWT layer.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-auth-auth-fixer-Fix Planner.md",
-          "finished_at": "2026-06-12T10:28:50.669Z"
-        }
-      ]
-    },
-    {
-      "id": "dim-perf",
-      "mission": "Performance Analysis",
-      "members": [
-        {
-          "id": "perf-hunter",
-          "role": "Bug Hunter",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Analyze C:\\Users\\USER-NT\\DEV\\innomcp for memory leaks, slow DB queries, and blocking Event Loop operations.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-perf-perf-hunter-Bug Hunter.md",
-          "finished_at": "2026-06-12T10:28:51.062Z"
-        },
-        {
-          "id": "perf-skeptic",
-          "role": "Skeptic",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Review perf-hunter findings. Question the impact of identified bottlenecks on real-world usage.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-perf-perf-skeptic-Skeptic.md",
-          "finished_at": "2026-06-12T10:28:50.879Z"
-        },
-        {
-          "id": "perf-fixer",
-          "role": "Fix Planner",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Provide exact code diffs to optimize performance and resolve identified leaks.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-perf-perf-fixer-Fix Planner.md",
-          "finished_at": "2026-06-12T10:28:42.323Z"
-        }
-      ]
-    },
-    {
-      "id": "dim-edge",
-      "mission": "Edge Case Analysis",
-      "members": [
-        {
-          "id": "edge-hunter",
-          "role": "Bug Hunter",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Analyze C:\\Users\\USER-NT\\DEV\\innomcp for edge cases: empty states, extreme inputs, network timeouts, and race conditions.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-edge-edge-hunter-Bug Hunter.md",
-          "finished_at": "2026-06-12T10:28:50.224Z"
-        },
-        {
-          "id": "edge-skeptic",
-          "role": "Skeptic",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Review edge-hunter findings. Propose even more extreme scenarios that could break the system.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-edge-edge-skeptic-Skeptic.md",
-          "finished_at": "2026-06-12T10:29:21.343Z"
-        },
-        {
-          "id": "edge-fixer",
-          "role": "Fix Planner",
-          "model": "deepseek/deepseek-v4-flash",
-          "task": "Provide exact code diffs to make the system resilient against all identified edge cases.",
-          "status": "done",
-          "output": "ψ\\outbox\\cc-team\\dim-edge-edge-fixer-Fix Planner.md",
-          "finished_at": "2026-06-12T10:28:54.840Z"
+          "output": "ψ\\outbox\\cc-team\\G-G4-dev.md",
+          "task": "Output ONLY raw markdown content (no fences around the whole doc, no commentary). Write docs/antigravity-cc-fusion.md — Thai-language (technical terms in English) playbook ผนวกกำลัง Google Antigravity (agy CLI, Gemini 3, quota 1500 req/day Google AI Pro) กับ CommandCode provider (มี quota เหลือ, models: deepseek-v4-pro, Qwen3.7-Max, GLM-5.1, Kimi-K2.6, claude-sonnet-4-6 ฯลฯ) ในระบบ มนุษย์ Agent ที่มี Claude Code (Fable 5) เป็น orchestrator. Sections: (1) หลักการแบ่งงาน 3 ชั้น — ตารางเปรียบเทียบ: CommandCode = bulk codegen/text-gen ราคาคุ้มสุด embed context ได้, Antigravity/Gemini = long-context (1M), multimodal, agentic execution พร้อม tool use ใน sandbox, Claude Fable = orchestration + SA review + ตัดสินใจ. (2) Fusion Patterns 5 แบบ พร้อม ascii data-flow diagram สั้นๆ ต่อแบบ: Generate-Review-Arbitrate (CC สร้าง → agy review → Claude ตัดสิน), Long-Context Scout (agy อ่าน codebase ใหญ่ สรุป contract → CC สร้างโค้ดตาม contract → Claude apply+gate), Parallel Burst (CC 4 tasks ขนาน + agy 1 heavy task ขนาน → Claude รวม), Cross-Examination (คำตอบสำคัญให้ทั้ง CC model และ agy ตอบอิสระ → เทียบ → ถ้าต่างให้ Claude สอบสวน), Quota Ladder (เริ่ม CC ก่อนเสมอ → agy flash เมื่อต้อง tool-use/long-context → agy pro เมื่อ flash ไม่พอ → Fable 5 เป็น last resort). (3) ตาราง cost/quota discipline: provider, เพดาน, งานที่เหมาะ, งานที่ห้าม. (4) Failure handling: agy timeout/auth fail → fallback CC; CC fence-marker corruption → tsc gate ก่อน commit เสมอ (บทเรียน MEGA-100). Under 150 lines.",
+          "finished_at": "2026-06-12T17:53:39.125Z"
         }
       ]
     }
