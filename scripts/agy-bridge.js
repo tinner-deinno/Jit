@@ -162,10 +162,90 @@ child.on('error', err => {
   process.exit(1);
 });
 
+// ––– Response recovery from conversation DB –––
+// agy 1.0.7 print mode renders via its TUI layer, which goes silent when
+// stdout is not a TTY — the reply only lands in the per-conversation SQLite
+// store. Steps of type 15 carry it as protobuf field 20.1 (20.3 = thinking).
+function readVarint(buf, o) {
+  let r = 0n, s = 0n, i = o;
+  for (;;) {
+    const x = buf[i++];
+    r |= BigInt(x & 0x7f) << s;
+    if (!(x & 0x80)) break;
+    s += 7n;
+  }
+  return [r, i];
+}
+
+function pbField(buf, wantField) {
+  const out = [];
+  let o = 0;
+  while (o < buf.length) {
+    let key;
+    try { [key, o] = readVarint(buf, o); } catch { return out; }
+    const field = Number(key >> 3n), wire = Number(key & 7n);
+    if (wire === 0) { [, o] = readVarint(buf, o); }
+    else if (wire === 2) {
+      let len; [len, o] = readVarint(buf, o); len = Number(len);
+      if (o + len > buf.length) return out;
+      if (field === wantField) out.push(buf.subarray(o, o + len));
+      o += len;
+    }
+    else if (wire === 5) o += 4;
+    else if (wire === 1) o += 8;
+    else return out;
+  }
+  return out;
+}
+
+function recoverFromDb(sinceMs) {
+  try {
+    const { DatabaseSync } = require('node:sqlite');
+    const convDir = path.join(
+      process.env.USERPROFILE || process.env.HOME || '', '.gemini', 'antigravity-cli', 'conversations');
+    if (!fs.existsSync(convDir)) return null;
+    const dbs = fs.readdirSync(convDir)
+      .filter(f => f.endsWith('.db'))
+      .map(f => ({ f, m: fs.statSync(path.join(convDir, f)).mtimeMs }))
+      .filter(x => x.m >= sinceMs - 2000)
+      .sort((a, b) => b.m - a.m);
+    if (!dbs.length) return null;
+    const conversationId = dbs[0].f.replace(/\.db$/, '');
+    const db = new DatabaseSync(path.join(convDir, dbs[0].f), { readOnly: true });
+    const rows = db.prepare('SELECT step_payload FROM steps WHERE step_type = 15 ORDER BY idx').all();
+    const parts = [];
+    for (const row of rows) {
+      const buf = Buffer.from(String(row.step_payload).split(',').map(Number));
+      for (const msg of pbField(buf, 20)) {
+        for (const str of pbField(msg, 1)) {
+          const t = str.toString('utf8').trim();
+          if (t) parts.push(t);
+        }
+      }
+    }
+    db.close();
+    return { conversationId, response: parts.join('\n\n') || null };
+  } catch {
+    return null;
+  }
+}
+
 child.on('close', (code, signal) => {
   clearTimeout(killTimer);
   const durationMs = Date.now() - startTime;
   const exitCode = timedOut ? 124 : (code != null ? code : 1);
+
+  let response = stdout.trim() || null;
+  let conversationId = null;
+  let source = response ? 'stdout' : null;
+  if (!opts.models && !response) {
+    const rec = recoverFromDb(startTime);
+    if (rec) {
+      response = rec.response;
+      conversationId = rec.conversationId;
+      source = rec.response ? 'db' : null;
+    }
+  }
 
   if (opts.json) {
     const envelope = JSON.stringify({
@@ -173,12 +253,16 @@ child.on('close', (code, signal) => {
       exitCode,
       model: opts.model || null,
       durationMs,
+      response,
+      conversationId,
+      source,
       stdout,
       stderr: stderr.slice(0, 2000),
     });
     console.log(envelope);
   } else {
-    if (stdout) process.stdout.write(stdout);
+    if (response) process.stdout.write(response + '\n');
+    else if (stdout) process.stdout.write(stdout);
     if (stderr) process.stderr.write(stderr);
   }
   process.exit(exitCode);
