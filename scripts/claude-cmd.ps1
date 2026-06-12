@@ -15,6 +15,8 @@ param(
     [switch]$ProxyOnly,
     [switch]$Stop,
     [switch]$Status,
+    [switch]$SetGlobal,   # Set Windows User env vars so ALL terminals use proxy
+    [switch]$ResetGlobal, # Clear Windows User env vars (back to Anthropic direct)
     [Parameter(ValueFromRemainingArguments = $true)][string[]]$Rest
 )
 
@@ -80,10 +82,27 @@ function Start-ProxyIfNeeded {
 
 Load-DotEnv
 
-if ($Stop)   { Stop-Proxy; exit 0 }
+if ($Stop)        { Stop-Proxy; exit 0 }
+if ($SetGlobal) {
+    [System.Environment]::SetEnvironmentVariable("ANTHROPIC_BASE_URL", $ProxyUrl, "User")
+    [System.Environment]::SetEnvironmentVariable("ANTHROPIC_API_KEY",  "multi-proxy", "User")
+    Write-Host "[SET] ANTHROPIC_BASE_URL = $ProxyUrl (User-level, all new terminals)"
+    Write-Host "[SET] ANTHROPIC_API_KEY  = multi-proxy"
+    Write-Host "Open a NEW terminal for changes to take effect."
+    exit 0
+}
+if ($ResetGlobal) {
+    [System.Environment]::SetEnvironmentVariable("ANTHROPIC_BASE_URL", $null, "User")
+    [System.Environment]::SetEnvironmentVariable("ANTHROPIC_API_KEY",  $null, "User")
+    Write-Host "[RESET] Removed ANTHROPIC_BASE_URL and ANTHROPIC_API_KEY from User env."
+    Write-Host "Open a NEW terminal — Claude will use Anthropic API directly again."
+    exit 0
+}
 if ($Status) {
     $h = Get-ProxyHealth
     if ($h) { $h | ConvertTo-Json -Depth 4 } else { Write-Host "Proxy NOT running on $ProxyUrl" }
+    $globalUrl = [System.Environment]::GetEnvironmentVariable("ANTHROPIC_BASE_URL","User")
+    Write-Host "Global ANTHROPIC_BASE_URL: $( if ($globalUrl) { $globalUrl } else { '(not set)' } )"
     exit 0
 }
 
@@ -97,7 +116,8 @@ if ($ProxyOnly) { Write-Host "Proxy ready at $ProxyUrl (order: $($health.backend
 # Route Claude Code through the proxy
 $env:ANTHROPIC_BASE_URL = $ProxyUrl
 $env:ANTHROPIC_API_KEY  = "multi-proxy"
-if (-not $Model) { $Model = "cc/" + ($(if ($env:COMMANDCODE_MODEL) { $env:COMMANDCODE_MODEL } else { "deepseek/deepseek-v4-flash" })) }
+# Use real model names (no cc/ prefix) — proxy routes to CommandCode via MULTI_BACKEND_ORDER
+if (-not $Model) { $Model = $(if ($env:COMMANDCODE_MODEL) { $env:COMMANDCODE_MODEL } else { "claude-sonnet-4-6" }) }
 
 $claudeArgs = @("--model", $Model)
 if ($Prompt) { $claudeArgs += @("--print", $Prompt) }
