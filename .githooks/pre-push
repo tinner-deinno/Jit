@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Jit pre-commit — secret guard (see .githooks/secrets-guard.sh)
+DIR="$(cd "$(dirname "$0")" && pwd)"
+sh "$DIR/secrets-guard.sh" || exit 1

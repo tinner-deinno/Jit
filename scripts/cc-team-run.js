@@ -14,6 +14,7 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const http = require('http');
 
 const REPO = path.resolve(__dirname, '..');
 const PLAN_PATH = path.join(REPO, '.planning', 'cc-team-plan.json');
@@ -52,10 +53,15 @@ function callCC(model, prompt) {
     messages: [{ role: 'user', content: prompt }],
   });
   const url = new URL(CC_BASE + '/chat/completions');
+  // honor the URL's protocol + port — supports the local proxy (http://127.0.0.1:4322)
+  // as well as the default api.commandcode.ai (https:443). Previously hardcoded https
+  // which made http proxy URLs hit :443 and fail with ECONNREFUSED.
+  const transport = url.protocol === 'http:' ? http : https;
   return new Promise((resolve, reject) => {
-    const req = https.request({
+    const req = transport.request({
       hostname: url.hostname,
-      path: url.pathname,
+      port: url.port || (url.protocol === 'http:' ? 80 : 443),
+      path: url.pathname + url.search,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
