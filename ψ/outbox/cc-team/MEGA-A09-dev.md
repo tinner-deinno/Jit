@@ -1,7 +1,7 @@
 <!-- cc-team deliverable
  group: MEGA (56-task parallel burn across innomcp + Jit)
  member: A09 role=dev model=commandcode/deepseek/deepseek-v4-pro
- finish_reason: refined_via_debug-mantra_loop | iterations: 2/10
+ finish_reason: refined_via_debug-mantra_loop | iterations: 10/10
  generated: 2026-06-13T00:00:00.000Z -->
 import { test, expect } from '@playwright/test';
 
@@ -11,10 +11,14 @@ test.describe('Living Chat Offline Resilience', () => {
 
   async function navigateAndSkip(page) {
     await page.goto('/living-chat');
-    // Using a more robust selector for the skip button if it's a common onboarding pattern
-    const skipBtn = page.getByText('ข้าม');
-    if (await skipBtn.isVisible()) {
+    try {
+      // Robust selection for the "Skip" button across potential implementations
+      const skipBtn = page.locator('button:has-text("ข้าม"), a:has-text("ข้าม"), [role="button"]:has-text("ข้าม"), .skip-button').first();
+      await skipBtn.waitFor({ state: 'visible', timeout: 8000 });
       await skipBtn.click();
+      await expect(skipBtn).toBeHidden({ timeout: 3000 });
+    } catch (e) {
+      // Onboarding already skipped or not present
     }
   }
 
@@ -23,6 +27,7 @@ test.describe('Living Chat Offline Resilience', () => {
     const chatInput = page.getByRole('textbox').first();
     await expect(chatInput).toBeVisible({ timeout: 10000 });
 
+    // Cycle: Online -> Offline -> Online
     await page.context().setOffline(true);
     await expect(chatInput).toBeEnabled();
     
@@ -33,48 +38,71 @@ test.describe('Living Chat Offline Resilience', () => {
     await expect(chatInput).toHaveValue('Hello after reconnect');
   });
 
-  test('should handle multiple offline/online cycles without crashing', async ({ page }) => {
+  test('should handle rapid network flickers without UI regression', async ({ page }) => {
     await navigateAndSkip(page);
     const chatInput = page.getByRole('textbox').first();
     await expect(chatInput).toBeVisible({ timeout: 10000 });
 
-    for (let i = 0; i < 5; i++) {
+    // Rapidly flip network state to test for race conditions in state handlers
+    for (let i = 0; i < 15; i++) {
       await page.context().setOffline(true);
-      await expect(chatInput).toBeEnabled();
       await page.context().setOffline(false);
-      // Verify connectivity by checking if the input is still ready
-      await expect(chatInput).toBeEnabled();
     }
-
-    await chatInput.fill('cycle test');
-    await expect(chatInput).toHaveValue('cycle test');
+    
+    await expect(chatInput).toBeEnabled();
+    await chatInput.fill('flicker test');
+    await expect(chatInput).toHaveValue('flicker test');
   });
 
-  test('should allow typing while offline and remain functional after reconnect', async ({ page }) => {
+  test('should maintain input content across network transitions', async ({ page }) => {
     await navigateAndSkip(page);
     const chatInput = page.getByRole('textbox').first();
     await expect(chatInput).toBeVisible({ timeout: 10000 });
 
+    const offlineMsg = 'message typed while offline';
+    
     await page.context().setOffline(true);
-    await chatInput.fill('offline message');
-    await expect(chatInput).toHaveValue('offline message');
+    await chatInput.fill(offlineMsg);
+    await expect(chatInput).toHaveValue(offlineMsg);
 
     await page.context().setOffline(false);
+    // Ensure the restoration doesn't trigger a re-render that wipes the uncontrolled input
+    await expect(chatInput).toHaveValue(offlineMsg);
+    
     await chatInput.clear();
     await chatInput.fill('reconnected');
     await expect(chatInput).toHaveValue('reconnected');
   });
 
-  test('should not display unhandled errors after offline/online', async ({ page }) => {
+  test('should handle "Send" attempt while offline without crashing and preserve input state', async ({ page }) => {
+    await navigateAndSkip(page);
+    const chatInput = page.getByRole('textbox').first();
+    const sendButton = page.getByRole('button', { name: /send|ส่ง/i }).first();
+
+    await page.context().setOffline(true);
+    const offlineMsg = 'offline send test';
+    await chatInput.fill(offlineMsg);
+    
+    if (await sendButton.isVisible()) {
+      await sendButton.click();
+    } else {
+      await chatInput.press('Enter');
+    }
+    
+    // The application should handle the failed request gracefully.
+    // We verify the chat interface is still operational.
+    await expect(chatInput).toBeVisible();
+    
+    await page.context().setOffline(false);
+    await expect(chatInput).toBeVisible();
+  });
+
+  test('should not trigger page reload or crash on network restoration', async ({ page }) => {
     const errors: Error[] = [];
     page.on('pageerror', (error) => errors.push(error));
     page.on('console', (msg) => {
-      if (msg.type() === 'error') {
-        // We ignore expected network errors when offline, 
-        // but we'll track them if we want strictness.
-        if (!msg.text().includes('net::ERR_INTERNET_DISCONNECTED')) {
-          errors.push(new Error(msg.text()));
-        }
+      if (msg.type() === 'error' && !msg.text().includes('net::ERR_INTERNET_DISCONNECTED')) {
+        errors.push(new Error(msg.text()));
       }
     });
 
@@ -83,9 +111,13 @@ test.describe('Living Chat Offline Resilience', () => {
     await expect(chatInput).toBeVisible({ timeout: 10000 });
 
     await page.context().setOffline(true);
-    await chatInput.fill('test error');
+    await chatInput.fill('state check');
+    
     await page.context().setOffline(false);
-
+    
+    // Verifying no full page reload happened by checking for value persistence
+    await expect(chatInput).toBeVisible();
+    await expect(chatInput).toHaveValue('state check');
     expect(errors).toHaveLength(0);
   });
 });

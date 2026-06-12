@@ -13,11 +13,28 @@
 
 set -o pipefail
 
+# ---------- Configuration ----------
+HOST=${HOST:-"localhost"}
+WEB_PORT=${WEB_PORT:-3000}
+API_PORT=${API_PORT:-3015}
+TIMEOUT=${TIMEOUT:-5}
+
 # ---------- helper functions ----------
 pass_count=0
 fail_count=0
 declare -a test_names
 declare -a test_results
+
+# Check dependencies
+check_deps() {
+    local deps=("curl" "jq" "sed" "grep")
+    for dep in "${deps[@]}"; do
+        if ! command -v "$dep" &> /dev/null; then
+            echo "Error: Dependency '$dep' not found. Please install it." >&2
+            exit 1
+        fi
+    done
+}
 
 record_result() {
     local description="$1"
@@ -35,6 +52,7 @@ run_test() {
     local description="$1"
     shift
     local cmd_output
+    # Use a subshell to execute the test command
     cmd_output=$(eval "$@" 2>&1)
     local rc=$?
     if [[ $rc -eq 0 ]]; then
@@ -49,7 +67,7 @@ check_http_status() {
     local url="$1"
     local expected_http="$2"
     local http_code
-    http_code=$(curl -s -o /dev/null -w "%{http_code}" "$url" --connect-timeout 5 --max-time 10 2>/dev/null)
+    http_code=$(curl -s -o /dev/null -w "%{http_code}" "$url" --connect-timeout "$TIMEOUT" --max-time 10 2>/dev/null)
     if [[ "$http_code" -eq "$expected_http" ]]; then
         return 0
     else
@@ -61,11 +79,11 @@ check_http_status() {
 check_json_status() {
     local url="$1"
     local json
-    json=$(curl -s "$url" --connect-timeout 5 --max-time 10 2>/dev/null)
+    json=$(curl -s "$url" --connect-timeout "$TIMEOUT" --max-time 10 2>/dev/null)
     if echo "$json" | jq -e '.status == "ok"' >/dev/null 2>&1; then
         return 0
     else
-        echo "JSON status field missing or not 'ok' in response from $url"
+        echo "JSON status field missing or not 'ok' in response from $url. Response: $(echo "$json" | head -c 100)..."
         return 1
     fi
 }
@@ -73,9 +91,14 @@ check_json_status() {
 extract_title() {
     local url="$1"
     local html
-    html=$(curl -s "$url" --connect-timeout 5 --max-time 10 2>/dev/null)
+    html=$(curl -s "$url" --connect-timeout "$TIMEOUT" --max-time 10 2>/dev/null)
+    if [[ -z "$html" ]]; then
+        echo "Failed to fetch HTML from $url"
+        return 1
+    fi
     local title
-    title=$(echo "$html" | sed -n 's/.*<title>\(.*\)<\/title>.*/\1/p')
+    # More robust title extraction: handle case-insensitive <TITLE> and multiple lines
+    title=$(echo "$html" | grep -ioP '(?<=<title>).*?(?=</title>)' | head -n 1)
     if echo "$title" | grep -q "INNOMCP"; then
         return 0
     else
@@ -87,7 +110,7 @@ extract_title() {
 check_port() {
     local host="$1"
     local port="$2"
-    timeout 3 bash -c "echo >/dev/tcp/$host/$port" 2>/dev/null
+    timeout "$TIMEOUT" bash -c "echo >/dev/tcp/$host/$port" 2>/dev/null
     local rc=$?
     if [[ $rc -eq 0 ]]; then
         return 0
@@ -97,24 +120,36 @@ check_port() {
     fi
 }
 
-# ---------- Test: health endpoint on :3015 ----------
-echo "Running tests..."
+# ---------- Execution ----------
+check_deps
+
+echo "-------------------------------------------------------------------"
+echo "INNOMCP Smoke Test"
+echo "Timestamp: $(date '+%Y-%m-%d %H:%M:%S')"
+echo "Target: $HOST (Web: $WEB_PORT, API: $API_PORT)"
+echo "-------------------------------------------------------------------"
+
+# 0. Basic Reachability
+run_test "Host $HOST reachable" \
+    "check_port $HOST $API_PORT"
+
+# API Tests
 run_test "Health endpoint HTTP 200" \
-    "check_http_status http://localhost:3015/api/health 200"
+    "check_http_status http://$HOST:$API_PORT/api/health 200"
 
 run_test "Health endpoint JSON status field" \
-    "check_json_status http://localhost:3015/api/health"
+    "check_json_status http://$HOST:$API_PORT/api/health"
 
-# ---------- Test: web endpoint on :3000 ----------
+# Web Tests
 run_test "Web endpoint HTTP 200" \
-    "check_http_status http://localhost:3000 200"
+    "check_http_status http://$HOST:$WEB_PORT 200"
 
 run_test "Web title contains INNOMCP" \
-    "extract_title http://localhost:3000"
+    "extract_title http://$HOST:$WEB_PORT"
 
-# ---------- Test: WS port reachability (assuming port 3015) ----------
-run_test "WS port 3015 reachable" \
-    "check_port localhost 3015"
+# Port Tests
+run_test "WS port $API_PORT reachable" \
+    "check_port $HOST $API_PORT"
 
 # ---------- Summary table ----------
 echo ""
@@ -129,6 +164,8 @@ echo ""
 echo "TOTAL PASS: $pass_count  FAIL: $fail_count"
 
 if [[ $fail_count -gt 0 ]]; then
+    echo "Result: FAILED"
     exit 1
 fi
+echo "Result: SUCCESS"
 exit 0
