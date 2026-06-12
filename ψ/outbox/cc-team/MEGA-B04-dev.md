@@ -18,6 +18,7 @@ HOST=${HOST:-"localhost"}
 WEB_PORT=${WEB_PORT:-3000}
 API_PORT=${API_PORT:-3015}
 TIMEOUT=${TIMEOUT:-5}
+USER_AGENT="INNOMCP-SmokeTest/1.0"
 
 # ---------- helper functions ----------
 pass_count=0
@@ -52,7 +53,6 @@ run_test() {
     local description="$1"
     shift
     local cmd_output
-    # Use a subshell to execute the test command
     cmd_output=$(eval "$@" 2>&1)
     local rc=$?
     if [[ $rc -eq 0 ]]; then
@@ -67,7 +67,10 @@ check_http_status() {
     local url="$1"
     local expected_http="$2"
     local http_code
-    http_code=$(curl -s -o /dev/null -w "%{http_code}" "$url" --connect-timeout "$TIMEOUT" --max-time 10 2>/dev/null)
+    http_code=$(curl -s -o /dev/null -w "%{http_code}" "$url" \
+        --user-agent "$USER_AGENT" \
+        --connect-timeout "$TIMEOUT" \
+        --max-time 10 2>/dev/null)
     if [[ "$http_code" -eq "$expected_http" ]]; then
         return 0
     else
@@ -79,7 +82,10 @@ check_http_status() {
 check_json_status() {
     local url="$1"
     local json
-    json=$(curl -s "$url" --connect-timeout "$TIMEOUT" --max-time 10 2>/dev/null)
+    json=$(curl -s "$url" \
+        --user-agent "$USER_AGENT" \
+        --connect-timeout "$TIMEOUT" \
+        --max-time 10 2>/dev/null)
     if echo "$json" | jq -e '.status == "ok"' >/dev/null 2>&1; then
         return 0
     else
@@ -91,13 +97,15 @@ check_json_status() {
 extract_title() {
     local url="$1"
     local html
-    html=$(curl -s "$url" --connect-timeout "$TIMEOUT" --max-time 10 2>/dev/null)
+    html=$(curl -s "$url" \
+        --user-agent "$USER_AGENT" \
+        --connect-timeout "$TIMEOUT" \
+        --max-time 10 2>/dev/null)
     if [[ -z "$html" ]]; then
         echo "Failed to fetch HTML from $url"
         return 1
     fi
     local title
-    # More robust title extraction: handle case-insensitive <TITLE> and multiple lines
     title=$(echo "$html" | grep -ioP '(?<=<title>).*?(?=</title>)' | head -n 1)
     if echo "$title" | grep -q "INNOMCP"; then
         return 0
@@ -127,10 +135,11 @@ echo "-------------------------------------------------------------------"
 echo "INNOMCP Smoke Test"
 echo "Timestamp: $(date '+%Y-%m-%d %H:%M:%S')"
 echo "Target: $HOST (Web: $WEB_PORT, API: $API_PORT)"
+echo "User-Agent: $USER_AGENT"
 echo "-------------------------------------------------------------------"
 
 # 0. Basic Reachability
-run_test "Host $HOST reachable" \
+run_test "Host $HOST reachable (Port $API_PORT)" \
     "check_port $HOST $API_PORT"
 
 # API Tests
