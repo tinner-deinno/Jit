@@ -1,109 +1,50 @@
 {
-  "plan_id": "CC-TEAM-2026-06-11",
+  "plan_id": "CC-TEAM-2026-06-12-UIFIX",
   "planned_by": "jit (Fable 5)",
-  "sa_reviewer": "sonnet",
+  "sa_reviewer": "jit",
   "provider": "commandcode",
-  "created_at": "2026-06-11T02:17:00+07:00",
+  "created_at": "2026-06-12T16:05:00+07:00",
+  "context": "innomcp frontend debug wave. Evidence: browser VQA found frontend calling dead backend localhost:3011 (401 loop), relative fetches to nonexistent Next routes (404), test credentials exposed on login page. Docker now bakes NEXT_PUBLIC_BACKEND_URL=http://localhost:3015 at build. Backend REST lives at http://localhost:3015 (docker, maps to container :3011). Next.js app itself serves on :3000.",
   "groups": [
     {
-      "id": "A",
-      "mission": "TICKET-002: Thai Knowledge Routing Audit — produce test corpus, harness, and hardening proposals",
+      "id": "U",
+      "mission": "innomcp UI debug wave — central backend URL helper, fix broken fetches, hide test creds, VQA regression spec",
       "members": [
         {
-          "id": "A1",
+          "id": "U1",
           "role": "dev",
           "model": "deepseek/deepseek-v4-pro",
           "status": "done",
-          "task": "You are a senior Thai NLP engineer. Produce a JSON array of exactly 24 Thai-language test prompts for auditing a deterministic routing system that assigns prompts to lanes: innova (code/dev work), chamu (testing/QA), rupa (UI/design), pada (deploy/infra), netra (monitoring/observation). Each element: {\"id\": \"T01\"..\"T24\", \"prompt\": \"<realistic Thai prompt>\", \"expected_lane\": \"<lane>\", \"rationale\": \"<1 sentence Thai>\"}. Cover: 8 coding requests, 4 testing, 4 design, 4 deploy, 4 monitoring. Mix formal/casual Thai. Output ONLY the JSON array, no markdown fences.",
-          "output": "ψ\\outbox\\cc-team\\A-A1-dev.md",
-          "finished_at": "2026-06-10T19:20:00.544Z"
+          "task": "You are a senior Next.js 14 (app router) TypeScript engineer. Write the COMPLETE content of a new file `src/app/lib/backendUrl.ts` for a Next.js frontend that talks to an Express backend. Requirements: (1) export const BACKEND: string — resolution order: process.env.NEXT_PUBLIC_BACKEND_URL if non-empty; else if running in browser (typeof window !== 'undefined') and window.location.port === '3000' use 'http://localhost:3015'; else '' (empty string means same-origin). (2) export const WS_BACKEND: string — process.env.NEXT_PUBLIC_WS_URL if non-empty; else derive from BACKEND by replacing leading http with ws; else ''. (3) export function backendFetch(path: string, init?: RequestInit): Promise<Response> — prefixes path with BACKEND, always sets credentials: 'include', merges any provided init (init.headers must merge, not overwrite). (4) Strict TypeScript, no `any`, no external imports, works under `isolatedModules`. (5) Top-of-file comment (English, 2 lines max) explaining that scattered hardcoded localhost:3011 fallbacks are the bug this centralizes. Output ONLY the raw TypeScript file content. No markdown fences, no explanation.",
+          "output": "ψ\\outbox\\cc-team\\U-U1-dev.md",
+          "finished_at": "2026-06-12T08:54:18.914Z"
         },
         {
-          "id": "A2",
+          "id": "U2",
           "role": "dev",
           "model": "Qwen/Qwen3.7-Max",
           "status": "done",
-          "task": "You are a systems architect reviewing a multi-backend LLM routing system. The system routes jobs deterministically using a Thai syllable splitter hash on routing keys, across lanes with weights (ollama_mdes, thaillm, commandcode weight=18, concurrency limit 2). Known constraints: routing key must be non-empty (past bug), same goal+worker must always route to same backend, circuit breaker trips after 3 consecutive errors with 60s cooldown. Write a determinism hardening proposal in Thai with sections: (1) 5 failure modes that break determinism, (2) concrete mitigation per mode, (3) 3 invariant checks to add to CI. Be specific and implementation-ready. Output markdown.",
-          "output": "ψ\\outbox\\cc-team\\A-A2-dev.md",
-          "finished_at": "2026-06-10T19:20:32.109Z"
+          "task": "You are a senior React/TypeScript engineer fixing a bug in `src/app/components/chat/ChatSidebar.tsx`. BUG: three fetch() calls use relative paths (/api/projects, /api/tasks) which hit the Next.js server on :3000 where those routes do not exist (404). They must call the Express backend instead via a central helper. The helper exists at `src/app/lib/backendUrl.ts` and exports `BACKEND: string` (e.g. 'http://localhost:3015' or '' for same-origin). Here are the three EXACT current code blocks:\n\nBLOCK-A (inside createProject callback):\n      const response = await fetch(\"/api/projects\", {\n        method: \"POST\",\n        credentials: \"include\",\n        headers: { \"Content-Type\": \"application/json\" },\n        body: JSON.stringify({ name: trimmed }),\n      }).catch(() => null);\n\nBLOCK-B (inside a useEffect loading projects):\n    fetch(\"/api/projects\", { credentials: \"include\" })\n      .then((response) => (response.ok ? response.json() : null))\n\nBLOCK-C (inside a useEffect loading recent tasks):\n    fetch(\"/api/tasks?limit=8\", { credentials: \"include\" })\n      .then((r) => (r.ok ? r.json() : null))\n\nProduce the corrected version of each block using template literal `${BACKEND}/api/...` (keep everything else byte-identical, same indentation), plus the single import line to add: import { BACKEND } from (correct relative path from src/app/components/chat/ to src/app/lib/). Output format EXACTLY:\nIMPORT:\n<import line>\nBLOCK-A-NEW:\n<corrected block A>\nBLOCK-B-NEW:\n<corrected block B>\nBLOCK-C-NEW:\n<corrected block C>\nNo markdown fences, no commentary.",
+          "output": "ψ\\outbox\\cc-team\\U-U2-dev.md",
+          "finished_at": "2026-06-12T08:54:13.598Z"
         },
         {
-          "id": "A3",
-          "role": "test",
-          "model": "deepseek/deepseek-v4-flash",
-          "status": "done",
-          "task": "Write a complete Node.js test file named thai-routing-audit.test.js (no external deps, plain node:assert + node:test). It must: (1) load a prompt corpus from eval/thai-routing-prompts.json (array of {id,prompt,expected_lane}), (2) for each prompt compute a routing lane via a function routeLane(prompt) imported from ../limbs/route-lane.js (assume it exists, document the expected signature), (3) assert determinism by calling routeLane 5 times per prompt and asserting identical results, (4) assert non-empty routing keys, (5) print a summary table pass/fail. Output ONLY the JavaScript code, no markdown fences.",
-          "output": "ψ\\outbox\\cc-team\\A-A3-test.md",
-          "finished_at": "2026-06-10T19:20:33.802Z"
-        },
-        {
-          "id": "A4",
-          "role": "test",
+          "id": "U3",
+          "role": "dev",
           "model": "zai-org/GLM-5.1",
           "status": "done",
-          "task": "You are a QA engineer specializing in Thai language edge cases. Produce a JSON array of exactly 12 edge-case prompts for testing a Thai text routing system: code-switching Thai-English (3), Thai numerals and Arabic numerals mixed (2), emoji-heavy (2), transliterated English in Thai script (2), very long prompt 500+ chars (1), whitespace/zero-width chars (1), empty-adjacent like single space (1). Each element: {\"id\": \"E01\"..\"E12\", \"prompt\": \"<the edge case text>\", \"category\": \"<category>\", \"expected_behavior\": \"<what a robust router must do, in Thai>\"}. Output ONLY the JSON array, no markdown fences.",
-          "output": "ψ\\outbox\\cc-team\\A-A4-test.md",
-          "finished_at": "2026-06-10T19:23:11.514Z"
+          "task": "You are a security-minded React engineer. In `src/app/login/page.tsx` a Test Credentials hint box (real admin/user/officer passwords) renders unconditionally — it must only render outside production. EXACT current block:\n\n            {/* Test Credentials Hint */}\n            <div className=\"bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4\">\n              <p className=\"text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2\">\n                🔑 Test Credentials\n              </p>\n              <div className=\"space-y-1 text-xs text-blue-700 dark:text-blue-400 font-mono\">\n                <p><strong>Admin:</strong> admin@example.local / &lt;REDACTED_PASSWORD&gt;</p>\n                <p><strong>User:</strong> user@example.local / &lt;REDACTED_PASSWORD&gt;</p>\n                <p><strong>Officer:</strong> officer@example.local / &lt;REDACTED_PASSWORD&gt;</p>\n              </div>\n            </div>\n\nProduce the replacement block that wraps this EXACT JSX in {process.env.NODE_ENV !== \"production\" && ( ... )} preserving the comment line and all inner content byte-identical, with correct JSX syntax and indentation (keep 12-space base indent). Output ONLY the replacement block, no markdown fences, no commentary.",
+          "output": "ψ\\outbox\\cc-team\\U-U3-dev.md",
+          "finished_at": "2026-06-12T08:54:48.696Z"
         },
         {
-          "id": "A5",
+          "id": "U4",
           "role": "test",
           "model": "moonshotai/Kimi-K2.6",
           "status": "done",
-          "task": "You are a security-minded QA lead. Write an adversarial test checklist (markdown, in Thai) for an LLM routing system with file-based message bus at /tmp/manusat-bus/<agent>/. Cover: (1) prompt injection attempting to change routing lane, (2) empty/null routing keys, (3) path traversal in agent names, (4) oversized payloads, (5) unicode normalization attacks, (6) concurrent write races on inbox files. For each: attack scenario, expected safe behavior, one-line test idea. 6 sections, concise, implementation-ready.",
-          "output": "ψ\\outbox\\cc-team\\A-A5-test.md",
-          "finished_at": "2026-06-10T19:21:22.641Z"
-        }
-      ]
-    },
-    {
-      "id": "B",
-      "mission": "TICKET-006 Phase 2: Manus-pattern integration PoC for innomcp — request_id wrapper, skill registration, tests",
-      "members": [
-        {
-          "id": "B1",
-          "role": "dev",
-          "model": "deepseek/deepseek-v4-pro",
-          "status": "done",
-          "task": "Write a complete Node.js module manus-wrapper.js (CommonJS, no external deps) implementing the Manus response pattern for a multi-agent system: (1) generateRequestId() returning 'req_' + timestamp + random suffix, (2) wrapOk(request_id, data) returning {ok:true, request_id, data}, (3) wrapErr(request_id, code, message) returning {ok:false, request_id, error:{code,message}}, (4) withRequestId(fn) higher-order wrapper that injects request_id, catches exceptions into wrapErr, and logs '[req_id] start/end/error' lines, (5) module.exports for all. Include JSDoc on every function. Output ONLY JavaScript, no markdown fences.",
-          "output": "ψ\\outbox\\cc-team\\B-B1-dev.md",
-          "finished_at": "2026-06-10T19:21:41.989Z"
-        },
-        {
-          "id": "B2",
-          "role": "dev",
-          "model": "Qwen/Qwen3.7-Max",
-          "status": "done",
-          "task": "Design skill registration definitions following the Manus Skills pattern for 3 organs of a multi-agent system: mouth (broadcast message to agent inbox: inputs agent/message/prefix, outputs message_id/delivered_at/inbox_size), oracle (knowledge search: inputs query/limit, outputs results[]/search_time_ms), verifier (test runner: inputs test_suite/tests[], outputs passed/failed/total/pass_rate/failures[]). Output a single JSON object: {\"skills\": [ {\"id\", \"name\", \"description\", \"inputs\": {<field>: {\"type\", \"required\", \"default?\"}}, \"outputs\": {<field>: {\"type\"}}, \"errors\": [{\"code\", \"when\"}］} x3 ]}. Use proper JSON (no ］, use ]). Output ONLY JSON, no markdown fences.",
-          "output": "ψ\\outbox\\cc-team\\B-B2-dev.md",
-          "finished_at": "2026-06-10T19:22:38.173Z"
-        },
-        {
-          "id": "B3",
-          "role": "test",
-          "model": "deepseek/deepseek-v4-flash",
-          "status": "done",
-          "task": "Write a complete Node.js test file manus-wrapper.test.js using node:test and node:assert (no external deps) for a module ../limbs/manus-wrapper.js exporting generateRequestId, wrapOk, wrapErr, withRequestId. Tests: (1) request ids unique across 1000 calls and match /^req_/, (2) wrapOk shape exact, (3) wrapErr shape exact, (4) withRequestId passes through return value wrapped in ok envelope, (5) withRequestId converts thrown Error into {ok:false,...} with same request_id, (6) async function support. Output ONLY JavaScript, no markdown fences.",
-          "output": "ψ\\outbox\\cc-team\\B-B3-test.md",
-          "finished_at": "2026-06-10T19:22:51.512Z"
-        },
-        {
-          "id": "B4",
-          "role": "test",
-          "model": "zai-org/GLM-5.1",
-          "status": "done",
-          "task": "Write a webhook handler specification (markdown, Thai) for task-completion webhooks in a multi-agent system following the Manus pattern. Endpoint: POST /webhooks/manus/:event with body {request_id, task_id, project_id, status, data, timestamp}. Spec sections: (1) signature validation flow, (2) event types table (task:completed, task:failed, input:required) with required actions, (3) error cases table: bad signature 401, unknown event 400, replayed request_id 409, oversized body 413, handler crash 500 — each with response body and retry semantics, (4) idempotency strategy, (5) 5 acceptance criteria. Concise, implementation-ready.",
-          "output": "ψ\\outbox\\cc-team\\B-B4-test.md",
-          "finished_at": "2026-06-10T19:23:49.203Z"
-        },
-        {
-          "id": "B5",
-          "role": "test",
-          "model": "MiniMaxAI/MiniMax-M3",
-          "status": "done",
-          "task": "Write an end-to-end integration test plan (markdown, Thai) for: agent task submitted -> skill executes (mouth broadcast writes file to /tmp/manusat-bus/<agent>/) -> webhook fires on completion -> requesting agent receives notification. Sections: (1) test environment setup steps, (2) 6 E2E scenarios (happy path, skill error, webhook endpoint down, duplicate request_id, concurrent 10 tasks, bus directory missing) each with given/when/then, (3) verification commands (bash one-liners), (4) pass criteria. Implementation-ready, concise.",
-          "output": "ψ\\outbox\\cc-team\\B-B5-test.md",
-          "finished_at": "2026-06-10T19:24:27.302Z"
+          "task": "You are a QA automation engineer. Write the COMPLETE content of a Playwright spec file `tests/vqa-regression.spec.ts` using @playwright/test for a Next.js app at http://localhost:3000 (chat UI at /living-chat, login at /login). The spec must contain exactly these tests: (1) 'no requests to dead backend port 3011' — collect all request URLs during load of /living-chat (domcontentloaded + 5s settle), assert none contain 'localhost:3011'. (2) 'no 404 API responses' — collect responses during the same load, assert no response with status 404 whose URL contains '/api/'. (3) 'page has a title' — assert (await page.title()).length > 0. (4) 'no zero-size content panels' — evaluate elements matching 'main div' that have non-empty textContent, assert none with offsetWidth === 0 and offsetHeight === 0. (5) 'login page hides test credentials in production' — goto /login, read body text; this test must be skipped (test.skip) unless process.env.VQA_PROD === '1', and when run asserts body text does NOT contain 'Test Credentials'. Use a test.describe block 'VQA regression', test.setTimeout(30000) per test or describe-level, viewport 1440x900 via test.use. Strict TypeScript. Output ONLY the raw TypeScript file content, no markdown fences, no commentary.",
+          "output": "ψ\\outbox\\cc-team\\U-U4-test.md",
+          "finished_at": "2026-06-12T08:55:28.057Z"
         }
       ]
     }
