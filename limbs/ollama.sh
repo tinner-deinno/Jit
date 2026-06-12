@@ -5,11 +5,16 @@
 # "ความพยายามที่ดีคือใช้ให้ถูกทาง ไม่มากเกิน ไม่น้อยเกิน"
 #
 # Usage:
-#   ./ollama.sh ask "prompt"              — ถาม Ollama ตรงๆ
+#   ./ollama.sh ask "prompt"              — ถาม Ollama ตรงๆ (lane auto)
 #   ./ollama.sh think "prompt" "context" — ถามพร้อม context จาก Oracle
 #   ./ollama.sh create "งาน" "กรอบ"      — สร้างสรรค์ใหม่
 #   ./ollama.sh translate "ข้อความ"      — แปล/อธิบาย
-#   ./ollama.sh status                   — ทดสอบ connection
+#   ./ollama.sh status                   — ทดสอบ connection ทั้งสอง lane
+#
+# Lanes (OLLAMA_LANE=auto|local|mdes, default auto):
+#   local — daemon ที่ http://localhost:11434 (model: OLLAMA_CLOUD_MODEL,
+#           default gemma4:31b-cloud) — เร็วกว่า ไม่ต้อง token
+#   mdes  — https://ollama.mdes-innova.online (gemma4:26b) — fallback
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JIT_ROOT="${SCRIPT_DIR}/.."
@@ -20,6 +25,9 @@ if [ -f "$JIT_ROOT/.env" ]; then
   set -a; source "$JIT_ROOT/.env"; set +a
 fi
 
+OLLAMA_LANE="${OLLAMA_LANE:-auto}"
+OLLAMA_LOCAL_URL="${OLLAMA_LOCAL_URL:-http://localhost:11434}"
+OLLAMA_LOCAL_MODEL="${OLLAMA_LOCAL_MODEL:-${OLLAMA_CLOUD_MODEL:-gemma4:31b-cloud}}"
 OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-${OLLAMA_URL:-https://ollama.mdes-innova.online}}"
 OLLAMA_MODEL="${OLLAMA_MODEL:-${JIT_OLLAMA_MODEL:-gemma4:26b}}"
 OLLAMA_API_PATH="${OLLAMA_API_PATH:-/api/generate}"
@@ -27,36 +35,58 @@ OLLAMA_API_PATH="${OLLAMA_API_PATH:-/api/generate}"
 CMD="${1:-ask}"
 shift || true
 
+# lane resolution: auto = local daemon ถ้ามีชีวิต, ไม่งั้น mdes
+_resolve_lane() {
+  case "$OLLAMA_LANE" in
+    local) echo "local" ;;
+    mdes)  echo "mdes" ;;
+    *)
+      if curl -s --max-time 2 "${OLLAMA_LOCAL_URL}/api/version" >/dev/null 2>&1; then
+        echo "local"
+      else
+        echo "mdes"
+      fi
+      ;;
+  esac
+}
+
+# Entire HTTP call lives in node: Thai/UTF-8 survives stdin->fetch->stdout,
+# unlike curl --data "$VAR" whose argv gets codepage-mangled on Windows.
 _call_ollama() {
   local PROMPT="$1"
   local TIMEOUT="${2:-45}"
-  log_action "OLLAMA_CALL" "${PROMPT:0:80}..."
+  local LANE
+  LANE="$(_resolve_lane)"
+  log_action "OLLAMA_CALL" "[$LANE] ${PROMPT:0:80}..."
 
-  local JSON_BODY=$(printf '%s' "$PROMPT" | node -e "
-    const fs = require('fs');
-    const prompt = fs.readFileSync(0, 'utf8');
-    const model = process.env.OLLAMA_MODEL || 'gemma4:26b';
-    process.stdout.write(JSON.stringify({ model, prompt, stream: false }));
-  ")
-
-  local API_URL="${OLLAMA_BASE_URL%/}${OLLAMA_API_PATH}"
-  local RESPONSE=$(curl -s --max-time "$TIMEOUT" "$API_URL" \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $OLLAMA_TOKEN" \
-    --data "$JSON_BODY" 2>/dev/null)
-
-  if [ -z "$RESPONSE" ]; then
-    echo "ERROR: Ollama timeout or no response" >&2
-    return 1
+  local URL MODEL TOKEN
+  if [ "$LANE" = "local" ]; then
+    URL="${OLLAMA_LOCAL_URL%/}${OLLAMA_API_PATH}"
+    MODEL="$OLLAMA_LOCAL_MODEL"
+    TOKEN=""
+    # cloud-backed models ผ่าน daemon local อาจช้ากว่า 45s default
+    [ "$TIMEOUT" -lt 90 ] && TIMEOUT=90
+  else
+    URL="${OLLAMA_BASE_URL%/}${OLLAMA_API_PATH}"
+    MODEL="$OLLAMA_MODEL"
+    TOKEN="$OLLAMA_TOKEN"
   fi
 
-  echo "$RESPONSE" | node -e "
-    const fs = require('fs');
-    try {
-      const data = JSON.parse(fs.readFileSync(0, 'utf8'));
-      process.stdout.write(data.response || '');
-    } catch(e) { process.exit(1); }
-  " 2>/dev/null
+  printf '%s' "$PROMPT" | OLLAMA_CALL_URL="$URL" OLLAMA_CALL_MODEL="$MODEL" \
+    OLLAMA_CALL_TOKEN="$TOKEN" OLLAMA_CALL_TIMEOUT="$TIMEOUT" node --no-warnings -e "
+    const prompt = require('fs').readFileSync(0, 'utf8');
+    const { OLLAMA_CALL_URL, OLLAMA_CALL_MODEL, OLLAMA_CALL_TOKEN, OLLAMA_CALL_TIMEOUT } = process.env;
+    const headers = { 'Content-Type': 'application/json' };
+    if (OLLAMA_CALL_TOKEN) headers.Authorization = 'Bearer ' + OLLAMA_CALL_TOKEN;
+    fetch(OLLAMA_CALL_URL, {
+      method: 'POST', headers,
+      body: JSON.stringify({ model: OLLAMA_CALL_MODEL, prompt, stream: false }),
+      signal: AbortSignal.timeout(parseInt(OLLAMA_CALL_TIMEOUT, 10) * 1000),
+    })
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(d => process.stdout.write(d.response || ''))
+      .catch(e => { console.error('ERROR: Ollama ' + e.message); process.exit(1); });
+  "
 }
 
 case "$CMD" in
@@ -65,7 +95,12 @@ case "$CMD" in
   ask)
     PROMPT="$*"
     if [ -z "$PROMPT" ]; then err "ต้องระบุ prompt"; exit 1; fi
-    step "Ask Ollama (${OLLAMA_MODEL})..."
+    LANE="$(_resolve_lane)"
+    if [ "$LANE" = "local" ]; then
+      step "Ask Ollama [local ${OLLAMA_LOCAL_MODEL}]..."
+    else
+      step "Ask Ollama [mdes ${OLLAMA_MODEL}]..."
+    fi
     _call_ollama "$PROMPT"
     ;;
 
@@ -118,13 +153,22 @@ $TEXT"
 
   # ── ทดสอบ connection ──────────────────────────────────────────────
   status)
-    step "ทดสอบ Ollama connection..."
-    RESULT=$(_call_ollama "สวัสดี ตอบสั้นๆ ว่าพร้อมทำงาน" 20 2>/dev/null)
-    if [ -n "$RESULT" ]; then
-      ok "Ollama พร้อม: ${RESULT:0:80}"
+    step "ทดสอบ Ollama ทั้งสอง lane..."
+    if curl -s --max-time 2 "${OLLAMA_LOCAL_URL}/api/version" >/dev/null 2>&1; then
+      RESULT=$(OLLAMA_LANE=local _call_ollama "สวัสดี ตอบสั้นๆ ว่าพร้อมทำงาน" 60 2>/dev/null)
+      if [ -n "$RESULT" ]; then
+        ok "local  [${OLLAMA_LOCAL_MODEL}]: ${RESULT:0:80}"
+      else
+        err "local  daemon มีชีวิตแต่ model ไม่ตอบ (${OLLAMA_LOCAL_MODEL})"
+      fi
     else
-      err "Ollama ไม่ตอบสนอง (timeout หรือ network error)"
-      exit 1
+      err "local  daemon ไม่ทำงาน (${OLLAMA_LOCAL_URL})"
+    fi
+    RESULT=$(OLLAMA_LANE=mdes _call_ollama "สวัสดี ตอบสั้นๆ ว่าพร้อมทำงาน" 30 2>/dev/null)
+    if [ -n "$RESULT" ]; then
+      ok "mdes   [${OLLAMA_MODEL}]: ${RESULT:0:80}"
+    else
+      err "mdes   ไม่ตอบสนอง (timeout หรือ network error)"
     fi
     ;;
 
