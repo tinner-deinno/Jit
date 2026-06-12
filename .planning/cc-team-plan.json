@@ -1,50 +1,334 @@
 {
-  "plan_id": "CC-TEAM-2026-06-12-UIFIX",
-  "planned_by": "jit (Fable 5)",
-  "sa_reviewer": "jit",
-  "provider": "commandcode",
-  "created_at": "2026-06-12T16:05:00+07:00",
-  "context": "innomcp frontend debug wave. Evidence: browser VQA found frontend calling dead backend localhost:3011 (401 loop), relative fetches to nonexistent Next routes (404), test credentials exposed on login page. Docker now bakes NEXT_PUBLIC_BACKEND_URL=http://localhost:3015 at build. Backend REST lives at http://localhost:3015 (docker, maps to container :3011). Next.js app itself serves on :3000.",
+  "plan_id": "innomcp-hyper-burn-v1",
+  "mission": "Exhaustive Bug Hunting and Fixing for innomcp (CommandCode Fleet)",
   "groups": [
     {
-      "id": "U",
-      "mission": "innomcp UI debug wave — central backend URL helper, fix broken fetches, hide test creds, VQA regression spec",
+      "id": "dim-ui",
+      "mission": "Frontend UI/UX Analysis",
       "members": [
         {
-          "id": "U1",
-          "role": "dev",
-          "model": "deepseek/deepseek-v4-pro",
+          "id": "ui-hunter",
+          "role": "Bug Hunter",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Deeply analyze C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-next for UI/UX bugs, layout shifts, and styling inconsistencies. Return a list of issues with file paths and suggested fixes.",
           "status": "done",
-          "task": "You are a senior Next.js 14 (app router) TypeScript engineer. Write the COMPLETE content of a new file `src/app/lib/backendUrl.ts` for a Next.js frontend that talks to an Express backend. Requirements: (1) export const BACKEND: string — resolution order: process.env.NEXT_PUBLIC_BACKEND_URL if non-empty; else if running in browser (typeof window !== 'undefined') and window.location.port === '3000' use 'http://localhost:3015'; else '' (empty string means same-origin). (2) export const WS_BACKEND: string — process.env.NEXT_PUBLIC_WS_URL if non-empty; else derive from BACKEND by replacing leading http with ws; else ''. (3) export function backendFetch(path: string, init?: RequestInit): Promise<Response> — prefixes path with BACKEND, always sets credentials: 'include', merges any provided init (init.headers must merge, not overwrite). (4) Strict TypeScript, no `any`, no external imports, works under `isolatedModules`. (5) Top-of-file comment (English, 2 lines max) explaining that scattered hardcoded localhost:3011 fallbacks are the bug this centralizes. Output ONLY the raw TypeScript file content. No markdown fences, no explanation.",
-          "output": "ψ\\outbox\\cc-team\\U-U1-dev.md",
-          "finished_at": "2026-06-12T08:54:18.914Z"
+          "output": "ψ\\outbox\\cc-team\\dim-ui-ui-hunter-Bug Hunter.md",
+          "finished_at": "2026-06-12T10:27:37.696Z"
         },
         {
-          "id": "U2",
-          "role": "dev",
-          "model": "Qwen/Qwen3.7-Max",
+          "id": "ui-skeptic",
+          "role": "Skeptic",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Review the findings of ui-hunter in C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-next. Challenge every assumption and find missing edge cases.",
           "status": "done",
-          "task": "You are a senior React/TypeScript engineer fixing a bug in `src/app/components/chat/ChatSidebar.tsx`. BUG: three fetch() calls use relative paths (/api/projects, /api/tasks) which hit the Next.js server on :3000 where those routes do not exist (404). They must call the Express backend instead via a central helper. The helper exists at `src/app/lib/backendUrl.ts` and exports `BACKEND: string` (e.g. 'http://localhost:3015' or '' for same-origin). Here are the three EXACT current code blocks:\n\nBLOCK-A (inside createProject callback):\n      const response = await fetch(\"/api/projects\", {\n        method: \"POST\",\n        credentials: \"include\",\n        headers: { \"Content-Type\": \"application/json\" },\n        body: JSON.stringify({ name: trimmed }),\n      }).catch(() => null);\n\nBLOCK-B (inside a useEffect loading projects):\n    fetch(\"/api/projects\", { credentials: \"include\" })\n      .then((response) => (response.ok ? response.json() : null))\n\nBLOCK-C (inside a useEffect loading recent tasks):\n    fetch(\"/api/tasks?limit=8\", { credentials: \"include\" })\n      .then((r) => (r.ok ? r.json() : null))\n\nProduce the corrected version of each block using template literal `${BACKEND}/api/...` (keep everything else byte-identical, same indentation), plus the single import line to add: import { BACKEND } from (correct relative path from src/app/components/chat/ to src/app/lib/). Output format EXACTLY:\nIMPORT:\n<import line>\nBLOCK-A-NEW:\n<corrected block A>\nBLOCK-B-NEW:\n<corrected block B>\nBLOCK-C-NEW:\n<corrected block C>\nNo markdown fences, no commentary.",
-          "output": "ψ\\outbox\\cc-team\\U-U2-dev.md",
-          "finished_at": "2026-06-12T08:54:13.598Z"
+          "output": "ψ\\outbox\\cc-team\\dim-ui-ui-skeptic-Skeptic.md",
+          "finished_at": "2026-06-12T10:27:32.016Z"
         },
         {
-          "id": "U3",
-          "role": "dev",
-          "model": "zai-org/GLM-5.1",
+          "id": "ui-fixer",
+          "role": "Fix Planner",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Based on ui-hunter and ui-skeptic, provide the exact code diffs to fix all UI/UX bugs in C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-next.",
           "status": "done",
-          "task": "You are a security-minded React engineer. In `src/app/login/page.tsx` a Test Credentials hint box (real admin/user/officer passwords) renders unconditionally — it must only render outside production. EXACT current block:\n\n            {/* Test Credentials Hint */}\n            <div className=\"bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4\">\n              <p className=\"text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2\">\n                🔑 Test Credentials\n              </p>\n              <div className=\"space-y-1 text-xs text-blue-700 dark:text-blue-400 font-mono\">\n                <p><strong>Admin:</strong> admin@example.local / &lt;REDACTED_PASSWORD&gt;</p>\n                <p><strong>User:</strong> user@example.local / &lt;REDACTED_PASSWORD&gt;</p>\n                <p><strong>Officer:</strong> officer@example.local / &lt;REDACTED_PASSWORD&gt;</p>\n              </div>\n            </div>\n\nProduce the replacement block that wraps this EXACT JSX in {process.env.NODE_ENV !== \"production\" && ( ... )} preserving the comment line and all inner content byte-identical, with correct JSX syntax and indentation (keep 12-space base indent). Output ONLY the replacement block, no markdown fences, no commentary.",
-          "output": "ψ\\outbox\\cc-team\\U-U3-dev.md",
-          "finished_at": "2026-06-12T08:54:48.696Z"
+          "output": "ψ\\outbox\\cc-team\\dim-ui-ui-fixer-Fix Planner.md",
+          "finished_at": "2026-06-12T10:28:01.290Z"
+        }
+      ]
+    },
+    {
+      "id": "dim-api-client",
+      "mission": "Frontend API Integration Analysis",
+      "members": [
+        {
+          "id": "api-c-hunter",
+          "role": "Bug Hunter",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Analyze C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-next for bugs in API calling logic, WebSocket handling, and state synchronization.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-api-client-api-c-hunter-Bug Hunter.md",
+          "finished_at": "2026-06-12T10:27:37.311Z"
         },
         {
-          "id": "U4",
-          "role": "test",
-          "model": "deepseek/deepseek-v4-pro",
+          "id": "api-c-skeptic",
+          "role": "Skeptic",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Review api-c-hunter findings. Identify race conditions or missing error boundaries in the frontend API layer.",
           "status": "done",
-          "task": "Output a complete Playwright spec file. CRITICAL: respond with ONLY raw TypeScript code starting with the import statement — zero explanation, zero reasoning, zero markdown. File: tests/vqa-regression.spec.ts using @playwright/test. App: http://localhost:3000. Content: import { test, expect } from \"@playwright/test\"; then test.describe(\"VQA regression\") containing test.use({ viewport: { width: 1440, height: 900 } }); and exactly 5 tests, each self-contained (each does its own page.goto): (1) \"no requests to dead backend port 3011\": goto /living-chat with waitUntil domcontentloaded, collect request URLs via page.on(\"request\") attached BEFORE goto, waitForTimeout(5000), expect no URL to contain \"localhost:3011\". (2) \"no 404 API responses\": same load pattern, collect via page.on(\"response\"), expect no response where status()===404 and url() contains \"/api/\". (3) \"page has a title\": goto /living-chat, expect (await page.title()).length greater than 0. (4) \"no zero-size content panels\": goto /living-chat, waitForTimeout(5000), page.evaluate over document.querySelectorAll(\"main div\"), filter elements whose textContent trim length > 0, return count of those with offsetWidth===0 && offsetHeight===0, expect 0. (5) \"login page hides test credentials in production\": test.skip when process.env.VQA_PROD !== \"1\"; goto /login, expect body innerText NOT to contain \"Test Credentials\". Use test.setTimeout(30000) inside each test or describe level. Strict TS, typed arrays (string[]). Begin your output with the word import.",
-          "output": "ψ\\outbox\\cc-team\\U-U4-test.md",
-          "finished_at": "2026-06-12T08:59:26.267Z"
+          "output": "ψ\\outbox\\cc-team\\dim-api-client-api-c-skeptic-Skeptic.md",
+          "finished_at": "2026-06-12T10:27:53.276Z"
+        },
+        {
+          "id": "api-c-fixer",
+          "role": "Fix Planner",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Provide exact code diffs to fix frontend API integration bugs in C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-next.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-api-client-api-c-fixer-Fix Planner.md",
+          "finished_at": "2026-06-12T10:27:40.067Z"
+        }
+      ]
+    },
+    {
+      "id": "dim-api-core",
+      "mission": "Backend API Core Analysis",
+      "members": [
+        {
+          "id": "api-core-hunter",
+          "role": "Bug Hunter",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Deeply analyze C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-node for bugs in controllers, middleware, and business logic.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-api-core-api-core-hunter-Bug Hunter.md",
+          "finished_at": "2026-06-12T10:27:46.061Z"
+        },
+        {
+          "id": "api-core-skeptic",
+          "role": "Skeptic",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Review api-core-hunter findings. Challenge the logic and find potential crashes or data corruption paths.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-api-core-api-core-skeptic-Skeptic.md",
+          "finished_at": "2026-06-12T10:28:07.626Z"
+        },
+        {
+          "id": "api-core-fixer",
+          "role": "Fix Planner",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Provide exact code diffs to fix backend API core bugs in C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-node.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-api-core-api-core-fixer-Fix Planner.md",
+          "finished_at": "2026-06-12T10:27:45.816Z"
+        }
+      ]
+    },
+    {
+      "id": "dim-db",
+      "mission": "Database Layer Analysis",
+      "members": [
+        {
+          "id": "db-hunter",
+          "role": "Bug Hunter",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Analyze C:\\Users\\USER-NT\\DEV\\innomcp for DB connection leaks, incorrect port configs (3306 vs 3308), and inefficient queries.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-db-db-hunter-Bug Hunter.md",
+          "finished_at": "2026-06-12T10:27:56.912Z"
+        },
+        {
+          "id": "db-skeptic",
+          "role": "Skeptic",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Review db-hunter findings. Verify if the port fixes are truly deterministic and handle all environment modes.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-db-db-skeptic-Skeptic.md",
+          "finished_at": "2026-06-12T10:28:11.928Z"
+        },
+        {
+          "id": "db-fixer",
+          "role": "Fix Planner",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Provide exact code diffs to fix all database related bugs in C:\\Users\\USER-NT\\DEV\\innomcp.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-db-db-fixer-Fix Planner.md",
+          "finished_at": "2026-06-12T10:28:01.582Z"
+        }
+      ]
+    },
+    {
+      "id": "dim-mcp",
+      "mission": "MCP Server Logic Analysis",
+      "members": [
+        {
+          "id": "mcp-hunter",
+          "role": "Bug Hunter",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Analyze C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-server-node for MCP protocol compliance, tool definition bugs, and session management issues.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-mcp-mcp-hunter-Bug Hunter.md",
+          "finished_at": "2026-06-12T10:28:08.385Z"
+        },
+        {
+          "id": "mcp-skeptic",
+          "role": "Skeptic",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Review mcp-hunter findings. Look for protocol violations or tool-call hallucinations.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-mcp-mcp-skeptic-Skeptic.md",
+          "finished_at": "2026-06-12T10:28:09.229Z"
+        },
+        {
+          "id": "mcp-fixer",
+          "role": "Fix Planner",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Provide exact code diffs to fix MCP server bugs in C:\\Users\\USER-NT\\DEV\\innomcp\\innomcp-server-node.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-mcp-mcp-fixer-Fix Planner.md",
+          "finished_at": "2026-06-12T10:28:21.791Z"
+        }
+      ]
+    },
+    {
+      "id": "dim-docker",
+      "mission": "Env & Docker Config Analysis",
+      "members": [
+        {
+          "id": "docker-hunter",
+          "role": "Bug Hunter",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Analyze docker-compose.yml and .env files in C:\\Users\\USER-NT\\DEV\\innomcp for networking issues, stale volume configs, or missing env vars.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-docker-docker-hunter-Bug Hunter.md",
+          "finished_at": "2026-06-12T10:28:13.811Z"
+        },
+        {
+          "id": "docker-skeptic",
+          "role": "Skeptic",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Review docker-hunter findings. Verify if the published ports and internal DNS are correctly aligned.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-docker-docker-skeptic-Skeptic.md",
+          "finished_at": "2026-06-12T10:28:30.355Z"
+        },
+        {
+          "id": "docker-fixer",
+          "role": "Fix Planner",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Provide exact code diffs to fix Docker and Env configuration issues in C:\\Users\\USER-NT\\DEV\\innomcp.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-docker-docker-fixer-Fix Planner.md",
+          "finished_at": "2026-06-12T10:28:13.765Z"
+        }
+      ]
+    },
+    {
+      "id": "dim-error",
+      "mission": "Error Handling Analysis",
+      "members": [
+        {
+          "id": "err-hunter",
+          "role": "Bug Hunter",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Analyze C:\\Users\\USER-NT\\DEV\\innomcp for empty catch blocks, unhandled promise rejections, and poor error messaging.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-error-err-hunter-Bug Hunter.md",
+          "finished_at": "2026-06-12T10:28:21.806Z"
+        },
+        {
+          "id": "err-skeptic",
+          "role": "Skeptic",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Review err-hunter findings. Find paths where errors are swallowed and hide critical system failures.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-error-err-skeptic-Skeptic.md",
+          "finished_at": "2026-06-12T10:28:26.113Z"
+        },
+        {
+          "id": "err-fixer",
+          "role": "Fix Planner",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Provide exact code diffs to implement robust error handling and logging across the system.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-error-err-fixer-Fix Planner.md",
+          "finished_at": "2026-06-12T10:28:35.181Z"
+        }
+      ]
+    },
+    {
+      "id": "dim-auth",
+      "mission": "Auth & JWT Analysis",
+      "members": [
+        {
+          "id": "auth-hunter",
+          "role": "Bug Hunter",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Analyze JWT validation, secret management, and authentication middleware in C:\\Users\\USER-NT\\DEV\\innomcp.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-auth-auth-hunter-Bug Hunter.md",
+          "finished_at": "2026-06-12T10:32:03.769Z"
+        },
+        {
+          "id": "auth-skeptic",
+          "role": "Skeptic",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Review auth-hunter findings. Search for potential token leakage or authentication bypass vulnerabilities.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-auth-auth-skeptic-Skeptic.md",
+          "finished_at": "2026-06-12T10:28:37.481Z"
+        },
+        {
+          "id": "auth-fixer",
+          "role": "Fix Planner",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Provide exact code diffs to harden the authentication and JWT layer.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-auth-auth-fixer-Fix Planner.md",
+          "finished_at": "2026-06-12T10:28:50.669Z"
+        }
+      ]
+    },
+    {
+      "id": "dim-perf",
+      "mission": "Performance Analysis",
+      "members": [
+        {
+          "id": "perf-hunter",
+          "role": "Bug Hunter",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Analyze C:\\Users\\USER-NT\\DEV\\innomcp for memory leaks, slow DB queries, and blocking Event Loop operations.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-perf-perf-hunter-Bug Hunter.md",
+          "finished_at": "2026-06-12T10:28:51.062Z"
+        },
+        {
+          "id": "perf-skeptic",
+          "role": "Skeptic",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Review perf-hunter findings. Question the impact of identified bottlenecks on real-world usage.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-perf-perf-skeptic-Skeptic.md",
+          "finished_at": "2026-06-12T10:28:50.879Z"
+        },
+        {
+          "id": "perf-fixer",
+          "role": "Fix Planner",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Provide exact code diffs to optimize performance and resolve identified leaks.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-perf-perf-fixer-Fix Planner.md",
+          "finished_at": "2026-06-12T10:28:42.323Z"
+        }
+      ]
+    },
+    {
+      "id": "dim-edge",
+      "mission": "Edge Case Analysis",
+      "members": [
+        {
+          "id": "edge-hunter",
+          "role": "Bug Hunter",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Analyze C:\\Users\\USER-NT\\DEV\\innomcp for edge cases: empty states, extreme inputs, network timeouts, and race conditions.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-edge-edge-hunter-Bug Hunter.md",
+          "finished_at": "2026-06-12T10:28:50.224Z"
+        },
+        {
+          "id": "edge-skeptic",
+          "role": "Skeptic",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Review edge-hunter findings. Propose even more extreme scenarios that could break the system.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-edge-edge-skeptic-Skeptic.md",
+          "finished_at": "2026-06-12T10:29:21.343Z"
+        },
+        {
+          "id": "edge-fixer",
+          "role": "Fix Planner",
+          "model": "deepseek/deepseek-v4-flash",
+          "task": "Provide exact code diffs to make the system resilient against all identified edge cases.",
+          "status": "done",
+          "output": "ψ\\outbox\\cc-team\\dim-edge-edge-fixer-Fix Planner.md",
+          "finished_at": "2026-06-12T10:28:54.840Z"
         }
       ]
     }
