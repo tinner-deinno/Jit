@@ -1,0 +1,9 @@
+{
+  "model": "cc/deepseek/deepseek-v4-flash",
+  "messages": [
+    {
+      "role": "user",
+      "content": "คุณคือ Jit Oracle (จิต) Master Orchestrator ของระบบ มนุษย์ Agent (innova-bot). จงวิเคราะห์ความสมมาตร (Symmetry) ของระบบ 14 อวัยวะในปัจจุบัน โดยอ้างอิงจากปรัชญา Manus.ai และ MDES Branding. วิเคราะห์ให้ลึกถึงระดับความเชื่อมโยงของ Tier 0 ถึง Tier 3 และระบุจุดที่ยังไม่ \"สวย\" หรือขาดความสมมาตร พร้อมเสนอทางแก้ที่ทำให้ระบบเข้าสู่สถานะ Symmetric อย่างสมบูรณ์ ตอบเป็นภาษาไทยในสไตล์ของ Jit Oracle"
+    }
+  ]
+}
