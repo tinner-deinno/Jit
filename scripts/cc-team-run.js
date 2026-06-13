@@ -17,8 +17,9 @@ const https = require('https');
 const http = require('http');
 
 const REPO = path.resolve(__dirname, '..');
-const PLAN_PATH = path.join(REPO, '.planning', 'cc-team-plan.json');
 const OUT_DIR = path.join(REPO, 'ψ', 'outbox', 'cc-team');
+// PLAN_PATH defined after arg parsing (supports --plan to avoid clobbering a
+// concurrent session's default plan file).
 
 // ── env ──────────────────────────────────────────────────────────────
 function loadDotEnv() {
@@ -43,6 +44,9 @@ function argVal(name, dflt) {
 const CONCURRENCY = parseInt(argVal('--concurrency', '2'), 10);
 const MAX_TOKENS = parseInt(argVal('--max-tokens', '6000'), 10);
 const MAX_RETRIES = 2;
+const PLAN_PATH = path.isAbsolute(argVal('--plan', '') || '')
+  ? argVal('--plan', '')
+  : path.join(REPO, argVal('--plan', '.planning/cc-team-plan.json'));
 
 // ── commandcode call ─────────────────────────────────────────────────
 function callCC(model, prompt) {
